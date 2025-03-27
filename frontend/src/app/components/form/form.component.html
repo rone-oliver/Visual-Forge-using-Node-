@@ -1,0 +1,10 @@
+<div class="bg-background-light dark:bg-background-dark p-8 rounded-lg shadow-lg">
+    <h1 class="text-3xl font-bold text-text-light dark:text-text-dark mb-6">Login</h1>
+    <input type="text" placeholder="Username" [(ngModel)]="username"
+        class="w-full mb-4 p-2 rounded bg-gray-100 dark:bg-gray-700 text-text-light dark:text-text-dark">
+    <input type="password" placeholder="Password" [(ngModel)]="password"
+        class="w-full mb-6 p-2 rounded bg-gray-100 dark:bg-gray-700 text-text-light dark:text-text-dark">
+    <button (click)="Login()" class="bg-primary-light dark:bg-primary-dark text-white px-4 py-2 rounded">
+        Login
+    </button>
+</div>

@@ -1,1 +1,30 @@
 /* You can add global styles to this file, and also import other style files */
+@use "tailwindcss/base";
+@use "tailwindcss/components";
+@use "tailwindcss/utilities";
+
+@layer base {
+  :root {
+    --color-primary: theme('colors.primary.light');
+    --color-background: theme('colors.background.light');
+    --color-text: theme('colors.text.light');
+    --color-secondary-100: theme('colors.secondary.100');
+    --color-secondary-200: theme('colors.secondary.200');
+    --color-secondary-300: theme('colors.secondary.300');
+    --color-secondary-400: theme('colors.secondary.400');
+    --color-secondary-500: theme('colors.secondary.500');
+    --color-neutral-100: theme('colors.neutral.100');
+    --color-neutral-200: theme('colors.neutral.200');
+    --color-neutral-300: theme('colors.neutral.300');
+    --color-neutral-400: theme('colors.neutral.400');
+    --color-neutral-500: theme('colors.neutral.500');
+    --color-neutral-600: theme('colors.neutral.600');
+    --color-neutral-700: theme('colors.neutral.700');
+  }
+
+  .dark {
+    --color-primary: theme('colors.primary.dark');
+    --color-background: theme('colors.background.dark');
+    --color-text: theme('colors.text.dark');
+  }
+}

@@ -42,10 +42,13 @@ export class User {
     })
     mobileNumber?: string;
 
+    @Prop({ type: Boolean, default: false})
+    isVerified: boolean;
+
     @Prop({ type: String, enum: Gender, required: true })
     gender: Gender;
 
-    @Prop({ type: String, enum: Language, required: true })
+    @Prop({ type: String, enum: Language, required: true, default: Language.ENGLISH })
     language: Language;
 
     @Prop({
