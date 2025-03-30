@@ -8,7 +8,7 @@ interface VerifyOtpDto{
     otp:string;
 }
 
-@Controller('auth/users')
+@Controller('auth/user')
 export class UsersAuthController {
     constructor(private usersAuthService: UsersAuthService){};
 
@@ -26,20 +26,20 @@ export class UsersAuthController {
         }
     }
 
-    @Get('refresh')
-    async refresh(
-        @Req() request: Request,
-        @Res({ passthrough: true}) response: Response
-    ){
-        const refreshToken = request.cookies['refreshToken'];
-        try {
-            const tokens = await this.usersAuthService.refreshAccessToken(refreshToken);
-            this.usersAuthService.setRefreshTokenCookie(response, tokens.refreshToken);
-            return { accessToken: tokens.accessToken};
-        } catch (error) {
-            throw new UnauthorizedException('Invalid refresh token');
-        }
-    }
+    // @Get('refresh')
+    // async refresh(
+    //     @Req() request: Request,
+    //     @Res({ passthrough: true}) response: Response
+    // ){
+    //     const refreshToken = request.cookies['refreshToken'];
+    //     try {
+    //         const tokens = await this.usersAuthService.refreshAccessToken(refreshToken);
+    //         this.usersAuthService.setRefreshTokenCookie(response, tokens.refreshToken);
+    //         return { accessToken: tokens.accessToken};
+    //     } catch (error) {
+    //         throw new UnauthorizedException('Invalid refresh token');
+    //     }
+    // }
 
     @Post('register')
     async register(
@@ -49,7 +49,7 @@ export class UsersAuthController {
         return await this.usersAuthService.register(userData,response);
     }
 
-    @Post('verify-otp')
+    @Post('verify-email')
     async verifyOtp(
         @Body() verifyOtpDto: VerifyOtpDto,
     ){

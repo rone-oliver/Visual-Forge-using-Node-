@@ -3,7 +3,7 @@ import { AdminsAuthService } from './admins-auth.service';
 import { Request, Response } from 'express';
 import { adminLoginData } from './interfaces/admin-login.interface';
 
-@Controller('auth/admins')
+@Controller('auth/admin')
 export class AdminsAuthController {
     private readonly logger = new Logger(AdminsAuthController.name);
     constructor(private adminsAuthService: AdminsAuthService){};

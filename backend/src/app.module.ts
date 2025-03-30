@@ -13,6 +13,9 @@ import { AdminsAuthModule } from './auth/admins-auth/admins.module';
 import { UsersAuthService } from './auth/users-auth/users-auth.service';
 import { UsersAuthController } from './auth/users-auth/users-auth.controller';
 import { JwtService } from '@nestjs/jwt';
+import { TokenRefreshService } from './auth/token-refresh/token-refresh.service';
+import { TokenRefreshController } from './auth/token-refresh/token-refresh.controller';
+import { JwtConfigModule } from './common/config/jwt.module';
 
 @Module({
   imports: [
@@ -46,9 +49,9 @@ import { JwtService } from '@nestjs/jwt';
       inject: [ConfigService],
     }),
     // MongooseModule.forRoot(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/visualForge'),
-    UsersModule, DatabaseModule, AdminsModule, EditorsModule, UsersAuthModule, EditorsAuthModule, AdminsAuthModule
+    UsersModule, DatabaseModule, AdminsModule, EditorsModule, UsersAuthModule, EditorsAuthModule, AdminsAuthModule, JwtConfigModule
   ],
-  controllers: [AppController, UsersAuthController],
-  providers: [AppService, JwtService],
+  controllers: [AppController, UsersAuthController, TokenRefreshController],
+  providers: [AppService, JwtService, TokenRefreshService],
 })
 export class AppModule {}

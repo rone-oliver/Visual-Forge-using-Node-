@@ -1,6 +1,9 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TokenRefreshService } from 'src/auth/token-refresh/token-refresh.service';
+import { TokenRefreshController } from 'src/auth/token-refresh/token-refresh.controller';
+import { JwtMiddleware } from 'src/auth/middleware/jwt.middleware';
 
 @Module({
   imports: [
@@ -21,6 +24,23 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       inject: [ConfigService],
     }),
   ],
+  providers: [TokenRefreshService],
+  controllers: [TokenRefreshController],
   exports: [JwtModule],
 })
-export class JwtConfigModule {}
+export class JwtConfigModule implements NestModule {
+  constructor(private configService: ConfigService){};
+
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(JwtMiddleware)
+      .exclude(
+        { path: 'auth/user/login', method: RequestMethod.POST },
+        { path: 'auth/user/register', method: RequestMethod.POST },
+        { path: 'auth/user/verify-otp', method: RequestMethod.POST },
+        { path: 'auth/admin/login', method: RequestMethod.POST },
+        { path: 'auth/refresh', method: RequestMethod.GET },
+      )
+      .forRoutes({ path: '*', method: RequestMethod.ALL }); // Apply to all routes
+  }
+}

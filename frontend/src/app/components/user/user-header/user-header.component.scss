@@ -1,0 +1,100 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    background-color: var(--color-background);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--color-text);
+}
+
+.nav-links {
+    display: flex;
+    gap: 25px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: var(--color-text);
+    transition: color 0.3s ease;
+}
+
+.nav-links a:hover {
+    color: var(--color-primary);
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.icon-button {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
+}
+
+.icon-button:hover {
+    background-color: var(--color-primary);
+}
+
+.icon-button svg {
+    stroke: var(--color-text);
+    transition: stroke 0.3s ease;
+}
+
+.icon-button:hover svg {
+    stroke: var(--color-neutral-500);
+}
+
+.auth-buttons {
+    display: flex;
+    gap: 15px;
+}
+
+.auth-buttons .btn {
+    padding: 8px 15px;
+    border: 1px solid;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.auth-buttons .btn-signin {
+    color: var(--color-background);
+    border-color: var(--color-neutral-700);
+    background-color: var(--color-neutral-700);
+}
+
+.auth-buttons .btn-signup {
+    color: white;
+    border-color:  var(--color-secondary-400);
+    background-color: var(--color-secondary-400);
+}
+
+.auth-buttons .btn:hover {
+    border-color: transparent;
+    background-color: var(--color-secondary-300);
+    color: white;
+}

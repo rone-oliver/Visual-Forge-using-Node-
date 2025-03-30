@@ -45,11 +45,11 @@ export class User {
     @Prop({ type: Boolean, default: false})
     isVerified: boolean;
 
-    @Prop({ type: String, enum: Gender, required: true })
-    gender: Gender;
+    @Prop({ type: String, enum: Gender })
+    gender?: Gender;
 
-    @Prop({ type: String, enum: Language, required: true, default: Language.ENGLISH })
-    language: Language;
+    @Prop({ type: String, enum: Language, default: Language.ENGLISH })
+    language?: Language;
 
     @Prop({
         type: Number,

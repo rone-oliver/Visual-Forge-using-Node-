@@ -1,8 +1,50 @@
 import { Routes } from '@angular/router';
-import { FormComponent } from './components/form/form.component';
+import { AdminLayoutComponent } from './Layouts/admin-layout/admin-layout.component';
+import { UserLayoutComponent } from './Layouts/user-layout/user-layout.component';
+import { LandingPageComponent } from './Pages/User/landing-page/landing-page.component';
+import { UserRegisterComponent } from './components/user/user-register/user-register.component';
+import { LoginComponent } from './Pages/User/login/login.component';
+import { LoginComponent as AdminLoginComponent } from './Pages/Admin/login/login.component';
+import { AuthLayoutComponent } from './Layouts/auth-layout/auth-layout.component';
+import { userGuard, adminGuard } from './guards/auth.guard';
+import { HomeComponent } from './components/user/home/home.component';
 
 export const routes: Routes = [
     {
-        path:'', component: FormComponent
+        path:'', component: LandingPageComponent
+    },
+    {
+        path:'auth',component: AuthLayoutComponent,
+        children: [
+            {
+                path: 'login', component: LoginComponent
+            },
+            {
+                path: 'register', component: UserRegisterComponent
+            },
+            {
+                path: 'admin/login', component: AdminLoginComponent
+            }
+        ]
+    },
+    {
+        path:'admin', component: AdminLayoutComponent,
+        canActivate: [adminGuard],
+        canActivateChild: [adminGuard],
+        children: [
+            // {
+            //     path:'home',
+            // },
+        ]
+    },
+    {
+        path:'user', component: UserLayoutComponent,
+        canActivate: [userGuard],
+        canActivateChild: [userGuard],
+        children: [
+            {
+                path:'', component: HomeComponent,
+            },
+        ]
     }
 ];
