@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { FormComponent } from '../../shared/form/form.component';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { AuthService } from '../../../services/auth.service';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -13,15 +13,34 @@ import { CommonModule } from '@angular/common';
 })
 export class UserRegisterComponent {
   isVerifying = false;
+
+  static confirmPasswordValidator(control: AbstractControl): ValidationErrors | null {
+    const password = control.get('password');
+    const confirmPassword = control.get('confirmPassword');
+    
+    if (password && confirmPassword && password.value !== confirmPassword.value) {
+      return { 'passwordMismatch': true };
+    }
+    return null;
+  }
+
+  static otpValidator(control: AbstractControl): ValidationErrors | null {
+    const value = control.value;
+    if (value && !/^\d+$/.test(value)) {
+      return { 'invalidOTP': true };
+    }
+    return null;
+  }
+
   registerControls = [
     { name: 'username', label: 'Username', type: 'text', validators: [Validators.required, Validators.minLength(4)] },
     { name: 'email', label: 'Email', type: 'email', validators: [Validators.required, Validators.email] },
     { name: 'fullname', label: 'Fullname', type: 'text', validators:[Validators.required, Validators.minLength(3)]},
     { name: 'password', label: 'Password', type: 'password', validators: [Validators.required, Validators.minLength(8)] },
-    { name: 'confirmPassword', label: 'Confirm Password', type: 'password', validators: [Validators.required, Validators.minLength(8)] },
+    { name: 'confirmPassword', label: 'Confirm Password', type: 'password', validators: [Validators.required, Validators.minLength(8)]},
   ];
   otpControls = [
-    { name: 'otp', label: 'OTP', type: 'text', validators: [Validators.required,Validators.minLength(6)]}
+    { name: 'otp', label: 'OTP', type: 'text', validators: [Validators.required,Validators.minLength(6), UserRegisterComponent.otpValidator]}
   ]
   constructor(
     private authService: AuthService,

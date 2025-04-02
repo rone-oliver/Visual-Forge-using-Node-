@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormControl, Validators, ValidatorFn, AbstractControl } from '@angular/forms';
 import { AuthService } from '../../../services/auth.service';
+import { UserRegisterComponent } from '../../user/user-register/user-register.component';
 
 interface FormControlConfig {
   name: string;
@@ -40,7 +41,9 @@ export class FormComponent implements OnInit {
     this.formControls.forEach((control: FormControlConfig)=>{
       controls[control.name]= new FormControl('',control.validators || [])
     });
-    this.myForm = this.fb.group(controls);
+    this.myForm = this.fb.group(controls, {
+      validators: UserRegisterComponent.confirmPasswordValidator
+    });
   }
 
   onSubmit(){
@@ -58,6 +61,8 @@ export class FormComponent implements OnInit {
           case 'required': return `${controlName} is required.`;
           case 'email': return `${controlName} is not a valid email.`;
           case 'minlength': return `${controlName} must be at least ${errors['minlength']?.requiredLength} characters long.`;
+          case 'passwordMismatch': return `Passwords do not match.`;
+          case 'invalidOTP': return `OTP is not valid.`;
           default: return `${controlName} has an error.`;
         }
     });

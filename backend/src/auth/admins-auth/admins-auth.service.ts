@@ -21,24 +21,23 @@ export class AdminsAuthService {
                 {
                     sub: admin._id,
                     username: admin.username,
-                    userType: 'admin'
+                    role: 'Admin'
                 },
                 { 
                     secret: this.configService.get<string>('JWT_SECRET'),
                     expiresIn: this.configService.get<string>('ACCESS_TOKEN_EXPIRATION') 
                 }
-                // { expiresIn: process.env.ACCESS_TOKEN_EXPIRATION }
             ),
             this.jwtService.signAsync(
                 {
                     sub: admin._id,
-                    userType: 'admin'
+                    username: admin.username,
+                    role: 'Admin'
                 },
                 { 
                     secret: this.configService.get<string>('JWT_SECRET'),
                     expiresIn: this.configService.get<string>('REFRESH_TOKEN_EXPIRATION')
                 }
-                // { expiresIn: process.env.REFRESH_TOKEN_EXPIRATION }
             )
         ]);
 

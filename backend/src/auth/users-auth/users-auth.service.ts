@@ -26,26 +26,24 @@ export class UsersAuthService {
                     userId: user._id,
                     username: user.username,
                     email: user.email,
-                    role: 'user'
+                    role: 'User'
                 },
                 {
                     secret: this.configService.get<string>('JWT_SECRET'),
                     expiresIn: this.configService.get<string>('ACCESS_TOKEN_EXPIRATION')
                 },
-                // { expiresIn: process.env.ACCESS_TOKEN_EXPIRATION }
             ),
             this.jwtService.signAsync(
                 {
                     userId: user._id,
                     username: user.username,
                     email: user.email,
-                    role: 'user'
+                    role: 'User'
                 },
                 {
                     secret: this.configService.get<string>('JWT_SECRET'),
                     expiresIn: this.configService.get<string>('REFRESH_TOKEN_EXPIRATION')
                 },
-                // { expiresIn: process.env.REFRESH_TOKEN_EXPIRATION }
             )
         ]);
 

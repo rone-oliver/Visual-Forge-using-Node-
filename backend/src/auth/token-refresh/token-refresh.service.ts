@@ -12,7 +12,7 @@ export class TokenRefreshService {
     async refreshAccessToken(refreshToken: string): Promise<{accessToken: string}> {
         try {
             const payload = this.jwtService.verify(refreshToken, {
-                secret: this.configService.get<string>('JWT_REFRESH_SECRET')
+                secret: this.configService.get<string>('JWT_SECRET')
             })
             const accessToken = this.jwtService.sign(
                 {
@@ -26,7 +26,19 @@ export class TokenRefreshService {
                     expiresIn: this.configService.get<string>('ACCESS_TOKEN_EXPIRATION')
                 }
             )
+            console.log('refresh Access Token called');
+            console.log(accessToken);
             return {accessToken};
+        } catch (error) {
+            throw new HttpException('Invalid refresh token', 401);
+        }
+    }
+
+    async verifyRefreshToken(refreshToken: string): Promise<void> {
+        try {
+            this.jwtService.verify(refreshToken, {
+                secret: this.configService.get<string>('JWT_SECRET')
+            });
         } catch (error) {
             throw new HttpException('Invalid refresh token', 401);
         }

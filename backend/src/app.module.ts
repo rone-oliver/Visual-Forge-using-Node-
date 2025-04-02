@@ -16,6 +16,7 @@ import { JwtService } from '@nestjs/jwt';
 import { TokenRefreshService } from './auth/token-refresh/token-refresh.service';
 import { TokenRefreshController } from './auth/token-refresh/token-refresh.controller';
 import { JwtConfigModule } from './common/config/jwt.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -36,7 +37,7 @@ import { JwtConfigModule } from './common/config/jwt.module';
                 logger.error(`MongoDB connection error: ${error.message}`);
               });
               connection.on('disconnected', () => {
-                logger.warn('❌ MongoDB disconnected');
+                logger.warn('MongoDB disconnected');
               });
               return connection;
             },
@@ -49,7 +50,7 @@ import { JwtConfigModule } from './common/config/jwt.module';
       inject: [ConfigService],
     }),
     // MongooseModule.forRoot(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/visualForge'),
-    UsersModule, DatabaseModule, AdminsModule, EditorsModule, UsersAuthModule, EditorsAuthModule, AdminsAuthModule, JwtConfigModule
+    AuthModule,UsersModule, DatabaseModule, AdminsModule, EditorsModule, UsersAuthModule, EditorsAuthModule, AdminsAuthModule, JwtConfigModule
   ],
   controllers: [AppController, UsersAuthController, TokenRefreshController],
   providers: [AppService, JwtService, TokenRefreshService],

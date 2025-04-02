@@ -1,7 +1,7 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { jwtDecode } from 'jwt-decode';
-import { BehaviorSubject, catchError, map, Observable, of, tap, throwError } from 'rxjs';
+import { BehaviorSubject, catchError, firstValueFrom, map, Observable, of, tap, throwError } from 'rxjs';
 
 const httpOptions = {
   headers: new HttpHeaders({
@@ -42,21 +42,75 @@ export class AuthService {
   private registrationEmail: string | null = null;
   private accessToken: string | null = null;
   private jwtPayload: JwtPayload | null = null;
-  private accessTokenSubject = new BehaviorSubject<string | null>(this.accessToken);
+  private accessTokenSubject = new BehaviorSubject<string | null>(null);
   accessToken$ = this.accessTokenSubject.asObservable();
 
-  private isAuthenticatedSubject = new BehaviorSubject<boolean>(this.isAuthenticated());
+  private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
   isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
   
   private userRoleSubject = new BehaviorSubject<string | null>(this.getUserRole());
   userRole$ = this.userRoleSubject.asObservable();
 
   constructor(private http: HttpClient) {
-    if(this.accessToken){
-      this.isAuthenticatedSubject.next(true);
-      this.userRoleSubject.next(this.jwtPayload?.role || null);
-    }
+    this.loadAccessToken().catch(()=>{
+      this.clearToken();
+    });
+    // if(this.accessToken){
+    //   this.isAuthenticatedSubject.next(true);
+    //   this.userRoleSubject.next(this.jwtPayload?.role || null);
+    // }
   };
+  
+  private async loadAccessToken(): Promise<void> {
+    try {
+      const response = await firstValueFrom(
+        this.http.get<{ valid: boolean }>(`${this.backendUrl}/auth/check-refresh-token`, {
+          withCredentials: true
+        })
+      );
+  
+      if (!response.valid) {
+        this.clearToken();
+        return;
+      }
+  
+      const token = sessionStorage.getItem('accessToken');
+      if (token) {
+        this.setAccessToken(token);
+      }
+    } catch {
+      this.clearToken();
+    }
+  }
+  
+  private _isTokenValid(): boolean {
+    // if (!this.accessToken) return of(false);
+    console.log("jwt payload from _isTokenValid fn",this.jwtPayload);
+    if (!this.jwtPayload) return false;
+    const currentTime = Math.floor(Date.now() / 1000);
+    return this.jwtPayload.exp > currentTime;
+  }
+
+  isAuthenticated(): boolean {
+    // alert(this.accessToken);
+    // alert(this._isTokenValid());
+    return !!this.accessToken && this._isTokenValid();
+  }
+  
+  setAccessToken(token: string): void {
+    this.accessToken = token;
+    this.accessTokenSubject.next(token);
+    sessionStorage.setItem('accessToken', token);
+    this._setJwtPayload(token);
+    this.isAuthenticatedSubject.next(this._isTokenValid());
+  }
+  
+  getAccessToken(): string | null{
+    if (this.accessToken && this._isTokenValid()) {
+      return this.accessToken;
+    }
+    return null;
+  }
 
   login(credentials: LoginCredentials,userType: UserType): Observable<LoginResponse>{
     const loginEndpoint = userType === 'Admin' 
@@ -119,19 +173,19 @@ export class AuthService {
       );
   }
 
-  logout(): void{
-    this.accessToken = null;
-    this.accessTokenSubject.next(null);
-    this.isAuthenticatedSubject.next(false);
-    this.userRoleSubject.next(null);
-    this.accessToken=null;
-    this.jwtPayload = null;
+  logout(){
+    return this.http.post(`${this.backendUrl}/auth/logout`,{}, { withCredentials: true})
+    .pipe(
+      tap(() => {
+        this.clearToken();
+      }),
+      catchError(error => {
+        console.error('Logout failed:', error);
+        return throwError(() => error);
+      })
+    );
   }
   
-  isAuthenticated(): boolean {
-    return !!this.accessToken && this._isTokenValid();
-  }
-
   hasRole(role: string): boolean {
     return this.jwtPayload?.role === role;      // Doubt
   }
@@ -145,15 +199,11 @@ export class AuthService {
       withCredentials: true
     }).pipe(
       map(response => {
-        this.accessToken = response.accessToken;
-        this.accessTokenSubject.next(response.accessToken);     // Doubt in the next line
-        this._setJwtPayload(response.accessToken);
+        this.setAccessToken(response.accessToken);
         return response.accessToken;
       }),
       catchError(error => {
-        this.accessToken = null;
-        this.accessTokenSubject.next(null);
-        this.jwtPayload = null;
+        this.clearToken();
         return throwError(() => error);
       })
     );
@@ -170,39 +220,20 @@ export class AuthService {
     }
   }
 
-  private _isTokenValid(): boolean {
-    // if (!this.accessToken) return of(false);
-    if (!this.jwtPayload) return false;
-    const currentTime = Math.floor(Date.now() / 1000);
-    return this.jwtPayload.exp > currentTime;
-    // return this.http.get<{ valid: boolean }>(`${this.backendUrl}/auth/validate-token`, {
-    //   withCredentials: true
-    // }).pipe(
-    //   map(response => response.valid),
-    //   catchError(() => of(false))
-    // );
-  }
-
-  getAccessToken(): Observable<string | null> {
-    if (this.accessToken && this._isTokenValid()) {
-      return of(this.accessToken);
-    } else {
-      return this.refreshAccessToken();
-    }
-  }
-
-  setToken(token: string): void {
-    this.accessToken = token;
-    this.accessTokenSubject.next(token);
-    this._setJwtPayload(token);
-  }
-
+  // getAccessToken(): Observable<string | null> {
+  //   if (this.accessToken && this._isTokenValid()) {
+  //     return of(this.accessToken);
+  //   } else {
+  //     return this.refreshAccessToken();
+  //   }
+  // }
   clearToken(): void {
     this.accessToken = null;
     this.accessTokenSubject.next(null);
     this.isAuthenticatedSubject.next(false);
-    this.userRoleSubject.next(null);
+    // this.userRoleSubject.next(null);
     this.jwtPayload = null;
+    sessionStorage.removeItem('accessToken');
   }
 
   // adminLogin(username: string, password: string):Observable<any>{
