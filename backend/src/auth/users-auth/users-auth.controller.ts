@@ -26,21 +26,6 @@ export class UsersAuthController {
         }
     }
 
-    // @Get('refresh')
-    // async refresh(
-    //     @Req() request: Request,
-    //     @Res({ passthrough: true}) response: Response
-    // ){
-    //     const refreshToken = request.cookies['refreshToken'];
-    //     try {
-    //         const tokens = await this.usersAuthService.refreshAccessToken(refreshToken);
-    //         this.usersAuthService.setRefreshTokenCookie(response, tokens.refreshToken);
-    //         return { accessToken: tokens.accessToken};
-    //     } catch (error) {
-    //         throw new UnauthorizedException('Invalid refresh token');
-    //     }
-    // }
-
     @Post('register')
     async register(
         @Body() userData: User,

@@ -1,4 +1,4 @@
-import { Controller, Get, HttpException, Post, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, HttpException, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { TokenRefreshService } from './token-refresh.service';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -7,8 +7,9 @@ export class TokenRefreshController {
     constructor(private readonly tokenRefreshService: TokenRefreshService) {};
 
     @Get('refresh')
-    async refreshAccessToken(@Req() req): Promise<{ accessToken: string }> {
-        const refreshToken = req.cookies.refreshToken;
+    async refreshAccessToken(@Req() req, @Query('role') role: 'Admin' | 'User'): Promise<{ accessToken: string }> {
+        const lowerCaseRole = role.toLowerCase();
+        const refreshToken = req.cookies[`${lowerCaseRole}RefreshToken`];
         if(!refreshToken){
             throw new HttpException('Refresh token not found', 401);
         }

@@ -4,6 +4,32 @@ export default {
   theme: {
     extend: {
       colors: {
+        admin: {
+          primary: {
+            light: '#8355ff', // Lighter purple for light theme
+            dark: '#6a37ff'   // Purple from the image
+          },
+          secondary: {
+            light: '#4fcbff', // Lighter blue for light theme
+            dark: '#41b7fb'   // Blue from the image
+          },
+          text: {
+            light: '#333333', // Dark text for light theme
+            dark: '#ffffff'   // White text from the image
+          },
+          background: {
+            light: '#f5f7fa', // Light gray-blue background
+            dark: '#0a0d1f'   // Dark blue-black from the image
+          },
+          surface: {
+            light: '#ffffff', // White surface for light theme
+            dark: '#151b33'   // Card/panel background from the image
+          },
+          border: {
+            light: '#e0e4e8', // Light gray border for light theme
+            dark: '#2a2f47'   // Border color from the image
+          }
+        },
         primary: {
           light: '#6C72FF',
           dark: '#6C72FF',

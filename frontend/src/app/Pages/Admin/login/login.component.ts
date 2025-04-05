@@ -24,7 +24,9 @@ export class LoginComponent {
   onFormSubmit(formData:{username:string, password: string}){
     console.log("Login Form Data:", formData);
     this.authService.login(formData, "Admin").subscribe({
-      next:()=>{
+      next:(response)=>{
+        console.log("Admin Logged in");
+        this.authService.setAccessToken(response.accessToken,'Admin');
         this.router.navigate(['/admin/dashboard'])
       },
       error:(error)=>{

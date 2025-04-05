@@ -25,7 +25,7 @@ export class LoginComponent {
     console.log("Login Form Data:", credentials);
     this.authService.login(credentials, 'User').subscribe({
       next: (response) => {
-        this.authService.setAccessToken(response.accessToken);
+        this.authService.setAccessToken(response.accessToken,'User');
         this.router.navigate(['/user']);
       },
       error: (error) => {

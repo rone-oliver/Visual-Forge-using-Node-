@@ -1,0 +1,9 @@
+.admin-container {
+    background-color: var(--admin-color-background);
+    color: var(--admin-color-text);
+    
+    .admin-card {
+      background-color: var(--admin-color-surface);
+      border-color: var(--admin-color-border);
+    }
+  }

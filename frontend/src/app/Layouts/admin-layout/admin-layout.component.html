@@ -1,4 +1,6 @@
-<app-admin-header></app-admin-header>
-<div class="content">
-    <router-outlet></router-outlet>
+<div class="admin-container" [class.admin-dark]="themeService.isAdminDarkTheme$ | async">
+    <app-sidebar></app-sidebar>
+    <div class="content">
+        <router-outlet></router-outlet>
+    </div>
 </div>

@@ -14,7 +14,7 @@ body {
     align-items: center;
     padding: 15px 30px;
     background-color: var(--color-background);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .logo {
@@ -59,13 +59,26 @@ body {
     background-color: var(--color-primary);
 }
 
-.icon-button svg {
-    stroke: var(--color-text);
-    transition: stroke 0.3s ease;
-}
+.icon-button {
+    svg {
+        stroke: var(--color-text);
+        transition: stroke 0.3s ease;
+    }
 
-.icon-button:hover svg {
-    stroke: var(--color-neutral-500);
+    mat-icon {
+        color: var(--color-text);
+        transition: color 0.3s ease;
+    }
+
+    &:hover {
+        svg {
+            stroke: var(--color-neutral-500);
+        }
+
+        mat-icon {
+            color: var(--color-neutral-500);
+        }
+    }
 }
 
 .auth-buttons {
@@ -89,7 +102,7 @@ body {
 
 .auth-buttons .btn-signup {
     color: white;
-    border-color:  var(--color-secondary-400);
+    border-color: var(--color-secondary-400);
     background-color: var(--color-secondary-400);
 }
 

@@ -45,7 +45,7 @@ export class AdminsAuthService {
     }
 
     private setCookies(response: Response, refreshToken: string) {
-        response.cookie('refreshToken', refreshToken, {
+        response.cookie('adminRefreshToken', refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',

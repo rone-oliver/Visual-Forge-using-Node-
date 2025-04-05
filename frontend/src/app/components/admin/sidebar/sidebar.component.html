@@ -1,0 +1,88 @@
+<div class="sidebar bg-navy dark:bg-navy text-white">
+    <!-- Logo -->
+    <div class="sidebar-header">
+        <div class="logo">Visual Forge</div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-container">
+        <div class="search-wrapper">
+            <mat-icon class="search-icon">search</mat-icon>
+            <input type="text" placeholder="Search for..." class="search-input">
+        </div>
+    </div>
+
+    <!-- Main Menu Items -->
+    <nav class="sidebar-nav">
+        <ul class="menu-items">
+            <li class="menu-item active">
+                <a href="/admin/dashboard" class="menu-link">
+                    <mat-icon class="menu-icon">dashboard</mat-icon>
+                    <span class="menu-text">Dashboard</span>
+                    <mat-icon class="expand-icon">chevron_right</mat-icon>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/admin/editors" class="menu-link">
+                    <mat-icon class="menu-icon">edit</mat-icon>
+                    <span class="menu-text">Editors</span>
+                    <mat-icon class="expand-icon">chevron_right</mat-icon>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/admin/users" class="menu-link">
+                    <mat-icon class="menu-icon">people</mat-icon>
+                    <span class="menu-text">Users</span>
+                    <mat-icon class="expand-icon">chevron_right</mat-icon>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/admin/programs" class="menu-link">
+                    <mat-icon class="menu-icon">campaign</mat-icon>
+                    <span class="menu-text">Programs</span>
+                    <mat-icon class="expand-icon">chevron_right</mat-icon>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/admin/activities" class="menu-link">
+                    <mat-icon class="menu-icon">admin_panel_settings</mat-icon>
+                    <span class="menu-text">Admin Activities</span>
+                    <mat-icon class="expand-icon">chevron_right</mat-icon>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/admin/reports" class="menu-link">
+                    <mat-icon class="menu-icon">report</mat-icon>
+                    <span class="menu-text">Reported Users</span>
+                    <mat-icon class="expand-icon">chevron_right</mat-icon>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Bottom Section -->
+    <div class="sidebar-footer">
+        <a href="/admin/settings" class="menu-link">
+            <mat-icon class="menu-icon">settings</mat-icon>
+            <span class="menu-text">Settings</span>
+            <mat-icon class="expand-icon">chevron_right</mat-icon>
+        </a>
+        <div class="user-profile">
+            <div class="avatar">
+                <img src="assets/images/man.png" alt="User Avatar">
+            </div>
+            <div class="user-info">
+                <div class="user-name">John Carter</div>
+                <div class="user-role">Account settings</div>
+            </div>
+            <mat-icon class="expand-icon">chevron_right</mat-icon>
+        </div>
+        <div class="menu-item">
+            <button mat-button (click)="logout()" class="menu-link">
+                <mat-icon class="menu-icon">logout</mat-icon>
+                <span class="menu-text">Logout</span>
+                <mat-icon class="expand-icon">chevron_right</mat-icon>
+            </button>
+        </div>
+    </div>
+</div>

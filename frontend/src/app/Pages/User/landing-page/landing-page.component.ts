@@ -58,14 +58,14 @@ export class LandingPageComponent implements OnInit, OnDestroy {
   ) {}
   
   ngOnInit(): void {
-    this.themeSubscription = this.themeService.isDarkTheme$.subscribe(
+    this.themeSubscription = this.themeService.isUserDarkTheme$.subscribe(
       isDark => {
         this.isDarkMode=isDark;
         document.documentElement.classList.toggle('dark', isDark);
       }
     );
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    this.themeService.setTheme(prefersDark);
+    this.themeService.setTheme(prefersDark,'User');
   }
 
   ngOnDestroy(): void {

@@ -20,11 +20,28 @@
     --color-neutral-500: theme('colors.neutral.500');
     --color-neutral-600: theme('colors.neutral.600');
     --color-neutral-700: theme('colors.neutral.700');
+
+    // Admin Theme colours
+    --admin-color-primary: theme('colors.admin.primary.light');
+    --admin-color-secondary: theme('colors.admin.secondary.light');
+    --admin-color-text: theme('colors.admin.text.light');
+    --admin-color-background: theme('colors.admin.background.light');
+    --admin-color-surface: theme('colors.admin.surface.light');
+    --admin-color-border: theme('colors.admin.border.light');
   }
 
   .dark {
     --color-primary: theme('colors.primary.dark');
     --color-background: theme('colors.background.dark');
     --color-text: theme('colors.text.dark');
+  }
+
+  .admin-dark {
+    --admin-color-primary: theme('colors.admin.primary.dark');
+    --admin-color-secondary: theme('colors.admin.secondary.dark');
+    --admin-color-text: theme('colors.admin.text.dark');
+    --admin-color-background: theme('colors.admin.background.dark');
+    --admin-color-surface: theme('colors.admin.surface.dark');
+    --admin-color-border: theme('colors.admin.border.dark');
   }
 }

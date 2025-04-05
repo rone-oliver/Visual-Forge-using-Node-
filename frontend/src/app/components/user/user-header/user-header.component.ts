@@ -3,13 +3,14 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ThemeService } from '../../../services/theme.service';
 import { RouterLink } from '@angular/router';
 import { Router } from '@angular/router';
-import { combineLatest, Subscription, take } from 'rxjs';
+import { combineLatest, Subscription} from 'rxjs';
 import { AuthService } from '../../../services/auth.service';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-user-header',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, MatIconModule],
   templateUrl: './user-header.component.html',
   styleUrl: './user-header.component.scss'
 })
@@ -26,18 +27,25 @@ export class UserHeaderComponent implements OnInit, OnDestroy{
     // this.themeService.isDarkTheme$.pipe(take(1)).subscribe(isDark => {
     //   document.documentElement.classList.toggle('dark', isDark);
     // });
+    this.authService.userIsAuthenticated$.subscribe(isAuthenticated => {
+      this.isAuthenticated = isAuthenticated;
+    });
+    this.authService.userRole$.subscribe(role=>{
+      this.userRole = role;
+    })
   };
 
   ngOnInit() {
     // Subscribe to authentication changes
-    this.authSubscription = combineLatest([
-      this.authService.isAuthenticated$,
-      this.authService.userRole$
-    ]).subscribe(([isAuthenticated, role]) => {
-      this.isAuthenticated = isAuthenticated;
-      this.userRole = role;
-      // this.updateHeaderUI();
-    });
+    // this.authSubscription = combineLatest([
+    //   this.authService.isAuthenticated$,
+    //   this.authService.userRole$
+    // ]).subscribe(([isAuthenticated, getUserRole]) => {
+    //   this.isAuthenticated = isAuthenticated;
+    //   this.userRole = getUserRole;
+    //   // this.updateHeaderUI();
+    // });
+    // console.log(this.userRole);
 
     // this.themeSubscription = this.themeService.isDarkTheme$.subscribe(isDark => {
     //   document.documentElement.classList.toggle('dark', isDark);
@@ -54,7 +62,7 @@ export class UserHeaderComponent implements OnInit, OnDestroy{
   }
 
   logout() {
-    this.authService.logout().subscribe({
+    this.authService.logout('User').subscribe({
       next: () => {
         this.router.navigate(['/auth/login']);
         console.log('Logout successful');

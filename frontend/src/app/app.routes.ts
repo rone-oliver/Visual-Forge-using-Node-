@@ -6,8 +6,9 @@ import { UserRegisterComponent } from './components/user/user-register/user-regi
 import { LoginComponent } from './Pages/User/login/login.component';
 import { LoginComponent as AdminLoginComponent } from './Pages/Admin/login/login.component';
 import { AuthLayoutComponent } from './Layouts/auth-layout/auth-layout.component';
-import { userGuard, adminGuard } from './guards/auth.guard';
-import { HomeComponent } from './components/user/home/home.component';
+import { userGuard, adminGuard, userLoginGuard, adminLoginGuard } from './guards/auth.guard';
+import { HomeComponent as UserHomeComponent } from './components/user/home/home.component';
+import { HomeComponent as AdminHomeComponent } from './components/admin/home/home.component';
 
 export const routes: Routes = [
     {
@@ -17,13 +18,13 @@ export const routes: Routes = [
         path:'auth',component: AuthLayoutComponent,
         children: [
             {
-                path: 'login', component: LoginComponent
+                path: 'login', component: LoginComponent, canActivate:[userLoginGuard]
             },
             {
                 path: 'register', component: UserRegisterComponent
             },
             {
-                path: 'admin/login', component: AdminLoginComponent
+                path: 'admin/login', component: AdminLoginComponent, canActivate:[adminLoginGuard]
             }
         ]
     },
@@ -32,9 +33,9 @@ export const routes: Routes = [
         canActivate: [adminGuard],
         canActivateChild: [adminGuard],
         children: [
-            // {
-            //     path:'home',
-            // },
+            {
+                path:'dashboard', component: AdminHomeComponent,
+            },
         ]
     },
     {
@@ -43,7 +44,7 @@ export const routes: Routes = [
         canActivateChild: [userGuard],
         children: [
             {
-                path:'', component: HomeComponent,
+                path:'', component: UserHomeComponent,
             },
         ]
     }

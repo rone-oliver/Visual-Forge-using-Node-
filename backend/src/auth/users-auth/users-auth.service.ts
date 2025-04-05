@@ -51,7 +51,7 @@ export class UsersAuthService {
     }
 
     private setCookies(response: Response, refreshToken: string) {
-        response.cookie('refreshToken', refreshToken, {
+        response.cookie('userRefreshToken', refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
@@ -93,21 +93,7 @@ export class UsersAuthService {
             throw error;
         }
     }
-    async refreshAccessToken(refreshToken: string) {
-        try {
-            const payload = await this.jwtService.verifyAsync(refreshToken);
-            const user = await this.usersService.findOne({ _id: payload.sub });
-
-            if (!user) {
-                throw new UnauthorizedException('Invalid refresh token');
-            }
-
-            const tokens = await this.generateTokens(user);
-            return tokens;
-        } catch (error) {
-            throw new UnauthorizedException('Invalid refresh token');
-        }
-    }
+    
     async register(userData: User, response: Response): Promise<User> {
         try {
             this.logger.log('New user registration attempt');
