@@ -1,0 +1,48 @@
+<div class="user-card">
+    <div class="user-card-header">
+        <span class="since-badge">Since 2025</span>
+    </div>
+
+    <div class="user-card-avatar-container">
+        <div class="user-card-avatar">
+            <ng-container *ngIf="user?.profileImage; else defaultAvatar">
+                <img [src]="user.profileImage" alt="User Avatar">
+            </ng-container>
+            <ng-template #defaultAvatar>
+                <div class="default-avatar">
+                    <mat-icon>person</mat-icon>
+                </div>
+            </ng-template>
+        </div>
+        <div class="user-phone" *ngIf="user?.mobileNumber">{{user.mobileNumber}}</div>
+    </div>
+
+    <div class="user-card-content">
+        <div class="info-field">
+            <div class="info-label">Username</div>
+            <div class="info-value">{{user.username || 'Not set'}}</div>
+        </div>
+
+        <div class="info-field">
+            <div class="info-label">E-Mail</div>
+            <div class="info-value">{{user.email || 'Not set'}}</div>
+        </div>
+
+        <div class="info-field">
+            <div class="info-label">Name</div>
+            <div class="info-value">{{user.fullname || 'Not set'}}</div>
+        </div>
+
+        <div class="info-field-row">
+            <div class="info-field half-width">
+                <div class="info-label">Gender</div>
+                <div class="info-value">{{user.gender || 'Not set'}}</div>
+            </div>
+
+            <div class="info-field half-width">
+                <div class="info-label">Beh. Rating</div>
+                <div class="info-value">{{user.behaviourRating || 'N/A'}}</div>
+            </div>
+        </div>
+    </div>
+</div>

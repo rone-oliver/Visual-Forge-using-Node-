@@ -4,6 +4,7 @@ import { EMPTY, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
 import { catchError, switchMap, tap } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 export const adminAuthInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
@@ -11,13 +12,13 @@ export const adminAuthInterceptor: HttpInterceptorFn = (req, next) => {
 
   console.log('AdminAuthInterceptor - Request URL:', req.url);
 
-  if (req.url.includes('/auth/admin/login') ||
-    req.url.includes('/auth/refresh')
+  if (req.url.startsWith('/auth/admin/login') ||
+    req.url.startsWith('/auth/refresh')
   ) {
     return next(req);
   }
 
-  if (req.url.includes('/admin') ||
+  if (req.url.startsWith(`${environment.apiUrl}/admin`) ||
     req.url.includes('/auth/admin/logout') ||
     req.url.includes('/auth/admin/theme-preference')
   ) {

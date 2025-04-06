@@ -2,6 +2,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, catchError, delay, firstValueFrom, of } from 'rxjs';
 import { AuthService } from './auth.service';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +14,7 @@ export class ThemeService {
   isUserDarkTheme$ = this.isDarkTheme.asObservable();
   isAdminDarkTheme$ = this.isAdminTheme.asObservable();
 
-  private backendUrl = 'http://localhost:5000';
+  private backendUrl = environment.apiUrl;
 
   constructor(
     private http: HttpClient,

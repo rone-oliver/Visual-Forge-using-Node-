@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { jwtDecode } from 'jwt-decode';
 import { BehaviorSubject, catchError, firstValueFrom, map, Observable, of, tap, throwError } from 'rxjs';
 import { TokenService } from './token.service';
+import { environment } from '../../environments/environment';
 
 const httpOptions = {
   headers: new HttpHeaders({
@@ -39,7 +40,7 @@ interface RegisterCredentials {
   providedIn: 'root'
 })
 export class AuthService {
-  private backendUrl = 'http://localhost:5000';
+  private backendUrl = environment.apiUrl;
   private registrationEmail: string | null = null;
 
   private userIsAuthenticatedSubject = new BehaviorSubject<boolean>(false);

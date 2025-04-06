@@ -4,16 +4,18 @@ import { ThemeService } from '../../../services/theme.service';
 import { Observable } from 'rxjs';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../../services/auth.service';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-sidebar',
-  imports:[MatIconModule],
+  imports:[MatIconModule,RouterModule,CommonModule],
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.scss']
 })
 export class SidebarComponent implements OnInit {
   isDarkTheme$!: Observable<boolean>;
+  activeTab: string | null = null;
   
   menuItems = [
     { icon: 'dashboard', text: 'Dashboard', link: '/dashboard' },
@@ -25,7 +27,7 @@ export class SidebarComponent implements OnInit {
   ];
   
   constructor(
-    private themeService: ThemeService,
+    public themeService: ThemeService,
     private authService: AuthService,
     private router: Router
   ) { }
@@ -47,5 +49,9 @@ export class SidebarComponent implements OnInit {
         console.error('Logout failed:', error);
       }
     });
+  }
+
+  toggleFilter(tab: string): void {
+    this.activeTab = tab;
   }
 }

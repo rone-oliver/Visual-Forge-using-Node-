@@ -9,6 +9,7 @@ import { AuthLayoutComponent } from './Layouts/auth-layout/auth-layout.component
 import { userGuard, adminGuard, userLoginGuard, adminLoginGuard } from './guards/auth.guard';
 import { HomeComponent as UserHomeComponent } from './components/user/home/home.component';
 import { HomeComponent as AdminHomeComponent } from './components/admin/home/home.component';
+import { UserSectionComponent } from './components/admin/user-section/user-section.component';
 
 export const routes: Routes = [
     {
@@ -36,6 +37,9 @@ export const routes: Routes = [
             {
                 path:'dashboard', component: AdminHomeComponent,
             },
+            {
+                path:'users', component: UserSectionComponent,
+            }
         ]
     },
     {

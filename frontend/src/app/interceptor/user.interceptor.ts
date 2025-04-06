@@ -3,6 +3,7 @@ import { inject } from '@angular/core';
 import { EMPTY, switchMap, catchError, throwError, tap } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
+import { environment } from '../../environments/environment';
 
 export const userAuthInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
@@ -11,16 +12,16 @@ export const userAuthInterceptor: HttpInterceptorFn = (req, next) => {
   console.log('UserAuthInterceptor - Request URL:', req.url);
 
   if (
-    req.url.includes('/auth/user/login') ||
-    req.url.includes('/auth/refresh') ||
-    req.url.includes('/auth/user/register') ||
-    req.url.includes('/auth/user/verify-email')
+    req.url.startsWith('/auth/user/login') ||
+    req.url.startsWith('/auth/refresh') ||
+    req.url.startsWith('/auth/user/register') ||
+    req.url.startsWith('/auth/user/verify-email')
   ) {
     return next(req);
   }
 
   if (
-    req.url.includes('/user') ||
+    req.url.startsWith(`${environment.apiUrl}/user`) ||
     req.url.includes('/auth/user/logout') ||
     req.url.includes('/auth/user/theme-preference')
   ) {

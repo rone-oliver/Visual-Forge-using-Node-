@@ -1,19 +1,26 @@
 .sidebar {
-  display: flex;
-  flex-direction: column;
+  position: sticky;
+  left: 0;
+  top: 0;
   width: 280px;
   height: 100vh;
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
   transition: all 0.3s ease;
   border-right: 1px solid var(--admin-color-border);
   background-color: var(--admin-color-background);
   color: var(--admin-color-text);
   overflow-y: auto;
+  z-index: 1000;
 }
 
 // Logo Section
 .sidebar-header {
   padding: 20px;
   border-bottom: 1px solid var(--admin-color-border);
+  display: flex;
+  justify-content: space-between;
   
   .logo {
     font-size: 22px;
@@ -33,8 +40,9 @@
     
     .search-icon {
       position: absolute;
-      left: 10px;
-      font-size: 18px;
+      left: 8px;
+      top: 55%;
+      transform: translateY(-50%);
       color: var(--admin-color-text);
       opacity: 0.7;
     }
@@ -42,7 +50,8 @@
     .search-input {
       width: 100%;
       padding: 10px 10px 10px 35px;
-      border-radius: 5px;
+      border-radius: 25px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       border: none;
       background-color: var(--admin-color-surface);
       color: var(--admin-color-text);
@@ -73,6 +82,12 @@
   
   .menu-item {
     margin: 5px 0;
+    &:hover, &.active {
+      background-color: var(--admin-color-surface);
+    }
+    &.active {
+      border-left: 3px solid var(--admin-color-primary);
+    }
   }
   
   .menu-link {

@@ -3,6 +3,7 @@ import { AdminsService } from './admins.service';
 import { AdminsController } from './admins.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Admin, adminSchema } from './models/admin.schema';
+import { User, userSchema } from 'src/users/models/user.schema';
 
 @Module({
   providers: [AdminsService],
@@ -10,6 +11,9 @@ import { Admin, adminSchema } from './models/admin.schema';
   imports:[
     MongooseModule.forFeature([
       { name: Admin.name, schema: adminSchema }
+    ]),
+    MongooseModule.forFeature([
+      { name: User.name, schema: userSchema}
     ])
   ],
   exports: [AdminsService, MongooseModule]

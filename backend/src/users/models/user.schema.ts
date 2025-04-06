@@ -33,6 +33,9 @@ export class User {
     @Prop({ required: true, trim: true })
     fullname: string;
 
+    @Prop({ type: String, trim: true })
+    profileImage?: string;
+
     @Prop({
         type: String,
         validate: {
