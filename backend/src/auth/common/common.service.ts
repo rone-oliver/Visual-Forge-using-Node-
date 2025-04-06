@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Response } from 'express';
 import { Model, Types } from 'mongoose';
@@ -27,7 +27,6 @@ export class CommonService {
   }
 
   async updateThemePreference(res: Response,userId:Types.ObjectId, userType: 'User' | 'Admin', isDark: boolean): Promise<void> {
-    // const userId = this.getUserIdFromRequest(res, userType); // Implement this method
     if (!userId) {
       res.status(401).json({ message: 'Unauthorized or User ID not found' });
       return;
@@ -49,26 +48,21 @@ export class CommonService {
   }
 
   async getThemePreference(res: Response,userId:Types.ObjectId, userType: 'User' | 'Admin'): Promise<void> {
-    // const userId = this.getUserIdFromRequest(res, userType); // Implement this method
     if (!userId) {
-      res.status(401).json({ message: 'Unauthorized or User ID not found' });
-      return;
+      throw new UnauthorizedException('Unauthorized or User ID not found');
+      // res.status(401).json({ message: 'Unauthorized or User ID not found' });
+      // return;
     }
 
-    const preference = await this.preferenceModel.findOne({ userId });
-    if (preference && preference.preferences && preference.preferences.theme) {
-      res.status(200).json({ isDark:preference.preferences.theme === 'dark' ? true : false });
-    } else {
+    try {
+      const preference = await this.preferenceModel.findOne({ userId });
+      if (preference && preference.preferences && preference.preferences.theme) {
+        res.status(200).json({ isDark:preference.preferences.theme === 'dark' ? true : false });
+      } else {
+        res.status(404).json({ message: 'No theme preference found' });
+      }
+    } catch (error) {
       res.status(404).json({ message: 'No theme preference found' });
     }
   }
-
-  // private getUserIdFromRequest(res: Response, userType: 'User' | 'Admin'): string | null {
-  //   // Assuming your authentication middleware adds user information to the request
-  //   const user = (res.req as any).user; // You might need to adjust the type
-  //   if (user) {
-  //     return user.userId; // Or user._id depending on your user object structure
-  //   }
-  //   return null;
-  // }
 }

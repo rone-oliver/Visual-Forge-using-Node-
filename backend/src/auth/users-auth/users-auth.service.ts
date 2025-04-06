@@ -79,12 +79,6 @@ export class UsersAuthService {
                 throw new UnauthorizedException('Invalid password');
                 // return ["Invalid password"];
             }
-
-            // const payload = {
-            //     sub: user._id,
-            //     username: user.username,
-            //     userType: 'user'
-            // }
             const tokens = await this.generateTokens(user);
             this.setCookies(response, tokens.refreshToken);
             return { user, accessToken: tokens.accessToken };

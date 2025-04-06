@@ -58,9 +58,8 @@ export const adminLoginGuard: CanActivateFn = (route, state) => {
 export const adminGuard: CanActivateFn = async (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
-  const tokenService = inject(TokenService);
 
-  const token = tokenService.getToken('Admin');
+  const token = authService.getAccessToken('Admin');
   if(!token){
     console.log('redirected when token is absent');
     router.navigate(['/auth/admin/login']);

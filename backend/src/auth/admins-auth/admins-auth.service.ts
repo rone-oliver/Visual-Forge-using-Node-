@@ -19,7 +19,7 @@ export class AdminsAuthService {
         const [accessToken, refreshToken] = await Promise.all([
             this.jwtService.signAsync(
                 {
-                    sub: admin._id,
+                    userId: admin._id,
                     username: admin.username,
                     role: 'Admin'
                 },
@@ -30,7 +30,7 @@ export class AdminsAuthService {
             ),
             this.jwtService.signAsync(
                 {
-                    sub: admin._id,
+                    userId: admin._id,
                     username: admin.username,
                     role: 'Admin'
                 },
@@ -76,21 +76,6 @@ export class AdminsAuthService {
         } catch (error) {
             this.logger.error(`Login failed for admin ${username}: ${error.message}`);
             throw error;
-        }
-    }
-    async refreshAccessToken(refreshToken: string) {
-        try {
-            const payload = await this.jwtService.verifyAsync(refreshToken);
-            const admin = await this.adminsService.findOne({ _id: payload.sub });
-
-            if (!admin) {
-                throw new UnauthorizedException('Invalid refresh token');
-            }
-
-            const tokens = await this.generateTokens(admin);
-            return tokens;
-        } catch (error) {
-            throw new UnauthorizedException('Invalid refresh token');
         }
     }
     async register(registerData: any) {

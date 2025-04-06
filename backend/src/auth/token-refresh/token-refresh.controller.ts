@@ -1,6 +1,5 @@
 import { Controller, Get, HttpException, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { TokenRefreshService } from './token-refresh.service';
-import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
 export class TokenRefreshController {

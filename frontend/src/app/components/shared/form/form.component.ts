@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormControl, Validators, ValidatorFn, AbstractControl } from '@angular/forms';
 import { AuthService } from '../../../services/auth.service';
 import { UserRegisterComponent } from '../../user/user-register/user-register.component';
+import { Router } from '@angular/router';
 
 interface FormControlConfig {
   name: string;
@@ -24,9 +25,17 @@ export class FormComponent implements OnInit {
   @Output() formSubmit = new EventEmitter<any>();
 
   myForm!: FormGroup;
-  constructor(private fb: FormBuilder){};
+  constructor(private fb: FormBuilder, private router: Router){};
 
   ngOnInit(): void {
+    const currentRoute = this.router.url;
+    if(
+      currentRoute === '/auth/login' || 
+      currentRoute === '/auth/register' ||
+      currentRoute === '/auth/admin/login'
+    ){
+      document.documentElement.classList.remove('dark');
+    }
     this.createForm();
   }
 
@@ -67,18 +76,4 @@ export class FormComponent implements OnInit {
         }
     });
   }
-
-  // username:string='';
-  // password:string='';
-  // constructor(private authService: AuthService){};
-  // Login(){
-  //   this.authService.adminLogin(this.username, this.password).subscribe((res:any)=>{
-  //     console.log(res);
-  //   });
-  // }
-  // Register(){
-  //   this.authService.adminRegister({username:this.username, password:this.password}).subscribe((res:any)=>{
-  //     console.log(res);
-  //   });
-  // }
 }

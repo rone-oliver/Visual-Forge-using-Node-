@@ -41,20 +41,6 @@ interface RegisterCredentials {
 export class AuthService {
   private backendUrl = 'http://localhost:5000';
   private registrationEmail: string | null = null;
-  // private accessToken: string | null = null;
-  // private jwtPayload: JwtPayload | null = null;
-  // private userRole!: string;
-  // private accessTokenSubject = new BehaviorSubject<string | null>(null);
-  // accessToken$ = this.accessTokenSubject.asObservable();
-
-  // private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
-  // isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
-  // private userRoleSubject = new BehaviorSubject<string | null>(this.getUserRole());
-  // userRole$ = this.userRoleSubject.asObservable();
-
-  // // User subjects
-  // private userAccessTokenSubject = new BehaviorSubject<string | null>(null);
-  // userAccessToken$ = this.userAccessTokenSubject.asObservable();
 
   private userIsAuthenticatedSubject = new BehaviorSubject<boolean>(false);
   userIsAuthenticated$ = this.userIsAuthenticatedSubject.asObservable();
@@ -62,23 +48,10 @@ export class AuthService {
   private userRoleSubject = new BehaviorSubject<string | null>(null);
   userRole$ = this.userRoleSubject.asObservable();
 
-  // // Admin subjects
-  // private adminAccessTokenSubject = new BehaviorSubject<string | null>(null);
-  // adminAccessToken$ = this.adminAccessTokenSubject.asObservable();
-
   private adminIsAuthenticatedSubject = new BehaviorSubject<boolean>(false);
   adminIsAuthenticated$ = this.adminIsAuthenticatedSubject.asObservable();
 
   constructor(private http: HttpClient,private tokenService: TokenService) {
-    // this.loadAccessToken().catch((error)=>{
-    //   console.log("response from check-refreshToken failed",error);
-    //   this.clearToken();
-    // });
-
-    // if(this.accessToken){
-    //   this.isAuthenticatedSubject.next(true);
-    //   this.userRoleSubject.next(this.jwtPayload?.role || null);
-    // }
     this.initializeAuth();
   };
 
@@ -107,44 +80,15 @@ export class AuthService {
     }
   }
   
-  // private async loadAccessToken(userType: 'User' | 'Admin'): Promise<void> {
-  //   console.log("load access Token triggered");
-  //   try {
-  //     const token = this.tokenService.getToken(userType);
-  //     if (!token) {
-  //       this.clearToken();
-  //       return;
-  //     }
-  //     const response = await firstValueFrom(
-  //       this.http.get<{ valid: boolean }>(`${this.backendUrl}/auth/check-refreshToken`, {
-  //         withCredentials: true
-  //       })
-  //     );
-  
-  //     if (!response.valid) {
-  //       console.log("response from check-refreshToken",response.valid);
-  //       this.clearToken();
-  //       return;
-  //     }
-  
-  //   } catch {
-  //     console.log('Load access token failed');
-  //     this.clearToken();
-  //   }
-  // }
-
   getAccessToken(userType: 'User' | 'Admin'): string | null{
     const token = this.tokenService.getToken(userType);
-    if (token && this._isTokenValid(token)) {           // Is there a need to check validity separately?
+    if (token && this._isTokenValid(token)) {
       return token;
     }
     return null;
   }
 
   setAccessToken(token: string, userType: 'User' | 'Admin'): void {
-    // this.accessToken = token;
-    // this.accessTokenSubject.next(token);
-    // sessionStorage.setItem('accessToken', token);
     this.tokenService.setToken(token,userType);
     if (userType === 'User') {
       // this.userAccessTokenSubject.next(token);
@@ -155,19 +99,13 @@ export class AuthService {
       this.adminIsAuthenticatedSubject.next(this._isTokenValid(token));
       this.setRole(token, 'Admin');
     }
-    // this._setJwtPayload(token);
-    // this.isAuthenticatedSubject.next(this._isTokenValid(token));
-    // this.userRoleSubject.next(this.jwtPayload?.role || null);
   }
 
   logout(userType: 'User' | 'Admin'):Observable<any>{
     const endpoint = userType === 'User' ? 'user/logout' : 'admin/logout';
-    const token = this.tokenService.getToken(userType);
-    return this.http.post(`${this.backendUrl}/auth/${endpoint}`,{}, { 
-      // headers: {
-      //   Authorization: `Bearer ${token}`
-      // },
-      withCredentials: true})
+    return this.http.post(`${this.backendUrl}/auth/${endpoint}`,{}, {
+      withCredentials: true
+    })
     .pipe(
       tap(() => {
         this.tokenService.clearToken(userType);
@@ -214,11 +152,6 @@ export class AuthService {
     return this.http.post<LoginResponse>(loginEndpoint, credentials, {withCredentials:true})
     .pipe(
       tap(response => {
-        // this.accessToken = response.accessToken;
-        // this.accessTokenSubject.next(response.accessToken);
-        // this.userRoleSubject.next(this.jwtPayload?.role || null);
-        // this._setJwtPayload(response.accessToken);
-        // this.isAuthenticatedSubject.next(true);
         this.setAccessToken(response.accessToken,userType);
       }),
       catchError(error => {
@@ -288,10 +221,9 @@ export class AuthService {
   }
 
   isAuthenticated(userType: 'User' | 'Admin'): boolean {
-    alert(this.tokenService.getToken(userType));
+    // alert(this.tokenService.getToken(userType));
     const token = this.tokenService.getToken(userType);
-    if (!token) return false;
-    return this._isTokenValid(token);
+    return !!token && this._isTokenValid(token);
   }
   
   hasRole(role: string, userType: 'User' | 'Admin'): boolean {
@@ -305,35 +237,4 @@ export class AuthService {
       return false;
     }
   }
-
-  // getUserRole(): string | null {
-  //   return this.jwtPayload?.role || null;
-  // }
-
-  // Not finished
-  // private _setJwtPayload(accessToken: string): JwtPayload | null {
-  //   try {
-  //     this.jwtPayload = jwtDecode<JwtPayload>(accessToken);
-  //     return this.jwtPayload;
-  //   } catch (error) {
-  //     this.jwtPayload = null;
-  //     return null;
-  //   }
-  // }
-
-  // getAccessToken(): Observable<string | null> {
-  //   if (this.accessToken && this._isTokenValid()) {
-  //     return of(this.accessToken);
-  //   } else {
-  //     return this.refreshAccessToken();
-  //   }
-  // }
-  // private clearToken(): void {
-  //   this.accessToken = null;
-  //   this.jwtPayload = null;
-  //   // this.userRole = null;
-  //   this.accessTokenSubject.next(null);
-  //   this.isAuthenticatedSubject.next(false);
-    // this.userRoleSubject.next(null);
-  // }
 }
