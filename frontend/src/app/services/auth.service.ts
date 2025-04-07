@@ -1,4 +1,4 @@
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { jwtDecode } from 'jwt-decode';
 import { BehaviorSubject, catchError, firstValueFrom, map, Observable, of, tap, throwError } from 'rxjs';
@@ -162,17 +162,32 @@ export class AuthService {
     );
   }
 
-  register(credentials: RegisterCredentials): Observable<any>{
-    return this.http.post<RegisterCredentials>(`${this.backendUrl}/auth/user/register`,credentials,{withCredentials:true})
-    .pipe(
-      tap(response=>{
-        this.registrationEmail = response.email;
-        return true;
-      }),
-      catchError(error=>{
-        return throwError(()=>error);
-      })
-    )
+  register(credentials: RegisterCredentials): Observable<any> {
+    return this.http.post<any>(`${this.backendUrl}/auth/user/register`, credentials, { withCredentials: true })
+      .pipe(
+        tap({
+          next: (response) => {
+            console.log('Registration response:', response);
+            if (response.success) {
+              this.registrationEmail = response.data.user.email;
+              return true;
+            }
+            throw response.error;
+          },
+          error: (error) => {
+            console.error('Error from auth.service on registering:', error);
+            throw error;
+          }
+        }),
+        catchError(error => {
+          console.error('Error in catchError:', error);
+          if (error instanceof HttpErrorResponse && error.error?.error) {
+            console.log("response error propogated to the component");
+            throw error.error.error;
+          }
+        return throwError(() => error); 
+        })
+      );
   }
 
   verifyEmail(otp: string): Observable<boolean> {
@@ -180,13 +195,14 @@ export class AuthService {
       throw new Error('No registration email found');
     }
 
-    return this.http.post<{ verified: boolean }>(`${this.backendUrl}/auth/user/verify-email`, {
+    return this.http.post<{ success: boolean }>(`${this.backendUrl}/auth/user/verify-email`, {
       email: this.registrationEmail,
       otp: otp
     }, { withCredentials: true })
       .pipe(
         map(response => {
-          return response.verified;
+          console.log("email verification response: ",response);
+          return response.success;
         }),
         tap(verified => {
           if (verified) {

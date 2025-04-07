@@ -6,7 +6,35 @@
             <p *ngIf="!isVerifying" class="text-gray-600 mt-2">Create your account and start building</p>
         </div>
 
+        <div *ngIf="successMessage" class="success-message-container">
+            <div class="success-icon">
+                <mat-icon>check_circle_outline</mat-icon>
+            </div>
+            <div class="success-text">
+                {{ successMessage }}
+            </div>
+        </div>
+
+        <div *ngIf="errorMessage" class="error-message-container">
+            <div class="error-icon">
+                <mat-icon>error_outline</mat-icon>
+            </div>
+            <div class="error-text">
+                {{ errorMessage }}
+            </div>
+        </div>
+
         <app-form [formControls]="registerControls" [submitButtonLabel]="isVerifying ? 'Verify Email' : 'Register'"
             (formSubmit)="onFormSubmit($event)"></app-form>
+
+        <!-- Add this div after the form -->
+        <div *ngIf="!isVerifying" class="text-center mt-6">
+            <p class="text-sm text-gray-600">
+                Existing user? 
+                <a [routerLink]="['/auth/login']" class="font-medium text-indigo-600 hover:text-indigo-500">
+                    Sign in
+                </a>
+            </p>
+        </div>
     </div>
 </div>

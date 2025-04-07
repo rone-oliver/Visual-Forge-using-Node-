@@ -2,12 +2,12 @@ import { Component } from '@angular/core';
 import { FormComponent } from '../../../components/shared/form/form.component';
 import { Validators } from '@angular/forms';
 import { AuthService } from '../../../services/auth.service';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-user-login',
   standalone: true,
-  imports: [FormComponent],
+  imports: [FormComponent,RouterModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })

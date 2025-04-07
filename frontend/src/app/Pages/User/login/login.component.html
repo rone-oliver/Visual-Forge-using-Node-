@@ -7,5 +7,14 @@
         </div>
         <app-form [formControls]="loginControls" [submitButtonLabel]="'Login'"
             (formSubmit)="onFormSubmit($event)"></app-form>
+        
+        <div class="text-center mt-6">
+            <p class="text-sm text-gray-600">
+                Just joining? 
+                <a [routerLink]="['/auth/register']" class="font-medium text-indigo-600 hover:text-indigo-500">
+                    Register here
+                </a>
+            </p>
+        </div>
     </div>
 </div>

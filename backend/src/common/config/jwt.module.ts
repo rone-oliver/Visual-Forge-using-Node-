@@ -37,7 +37,7 @@ export class JwtConfigModule implements NestModule {
       .exclude(
         { path: 'auth/user/login', method: RequestMethod.POST },
         { path: 'auth/user/register', method: RequestMethod.POST },
-        { path: 'auth/user/verify-otp', method: RequestMethod.POST },
+        { path: 'auth/user/verify-email', method: RequestMethod.POST },
         { path: 'auth/admin/login', method: RequestMethod.POST },
         { path: 'auth/refresh', method: RequestMethod.GET },
       )

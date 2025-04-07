@@ -20,6 +20,14 @@ export class UsersService {
         }
     }
 
+    async findByUsername(username:string){
+        return await this.userModel.findOne({ username });
+    }
+
+    async findByEmail(email:string){
+        return await this.userModel.findOne({ email });
+    }
+    
     async createUser(user: Partial<User>): Promise<User> {
         try {
             if(user.password){

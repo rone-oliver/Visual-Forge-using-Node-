@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
+import { Injectable, UnauthorizedException, Logger, HttpStatus, HttpException } from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
 import { User } from 'src/users/models/user.schema';
 import * as bcrypt from 'bcrypt';
@@ -87,29 +87,77 @@ export class UsersAuthService {
             throw error;
         }
     }
-    
-    async register(userData: User, response: Response): Promise<User> {
+
+    async register(userData: User, response: Response): Promise<User | Response> {
         try {
             this.logger.log('New user registration attempt');
+
+            const existingUserByUsername = await this.usersService.findByUsername(userData.username);
+            if (existingUserByUsername) {
+                return response.status(HttpStatus.BAD_REQUEST).json({
+                    success: false,
+                    error: {
+                      message: 'Username already exists',
+                      usernameExists: true,
+                      emailExists: false
+                    }
+                  });
+            }
+
+            const existingUserByEmail = await this.usersService.findByEmail(userData.email);
+            if (existingUserByEmail) {
+                return response.status(HttpStatus.BAD_REQUEST).json({
+                    success: false,
+                    error: {
+                      message: 'Email already registered',
+                      usernameExists: false,
+                      emailExists: true
+                    }
+                  });
+            }
+
             const user = await this.usersService.createUser(userData);
 
             const otp = await this.otpService.createOtp(user.email);
-            await this.otpService.sendOtpEmail(user.email, otp);
+            this.otpService.sendOtpEmail(user.email, otp);
             this.logger.log('OTP Sent for verification');
-            return user;
+            return response.status(HttpStatus.CREATED).json({
+                success: true,
+                data: {
+                  user
+                }
+              });
         } catch (error) {
             this.logger.error(`Registration failed for user ${userData.username}: ${error.message}`);
-            throw error;
+            throw new HttpException({
+                success: false,
+                error: {
+                    message: 'Registration failed',
+                    usernameExists: false,
+                    emailExists: false
+                }
+            }, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    async verifyOtp(email:string, otp: string): Promise<boolean> {
+    async verifyOtp(email: string, otp: string): Promise<any> {
         const isValid = await this.otpService.verifyOtp(email, otp);
         if (isValid) {
             await this.usersService.updateOne(
                 { email },
                 { isVerified: true }
             );
+            return {
+                success: true,
+                message: 'Email verified successfully',
+                verified: true
+            };
         }
-        return isValid;
+        return {
+            success: false,
+            error: {
+              message: 'Invalid OTP',
+              otpInvalid: true
+            }
+        };
     }
 }

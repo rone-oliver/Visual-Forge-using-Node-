@@ -29,7 +29,7 @@ export class UsersAuthController {
     @Post('register')
     async register(
         @Body() userData: User,
-        @Res({ passthrough: true}) response: Response
+        @Res({passthrough: true}) response: Response
     ){
         return await this.usersAuthService.register(userData,response);
     }
@@ -41,19 +41,25 @@ export class UsersAuthController {
         try {
             const { email, otp} = verifyOtpDto;
             if(!email || !otp){
-                throw new BadRequestException('User ID and OTP are required');
+                return {
+                    success: false,
+                    error: {
+                      message: 'Email and OTP are required',
+                      fieldsMissing: true
+                    }
+                };
             }
             console.log(email, otp);
-            const isVerified = await this.usersAuthService.verifyOtp(email,otp);
-            if(!isVerified){
-                throw new BadRequestException('Invalid OTP');
-            }
-            return {
-                message: 'Email verified successfully',
-                verified: true
-            }
+            const result = await this.usersAuthService.verifyOtp(email,otp);
+            return result;
         } catch (error) {
-            throw new UnauthorizedException('Invalid OTP');
+            return {
+                success: false,
+                error: {
+                  message: 'Verification failed',
+                  verificationFailed: true
+                }
+            };
         }
     }
 }

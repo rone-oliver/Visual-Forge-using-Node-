@@ -13,7 +13,8 @@ import { UserSectionComponent } from './components/admin/user-section/user-secti
 
 export const routes: Routes = [
     {
-        path:'', component: LandingPageComponent
+        path:'', component: LandingPageComponent,
+        canActivate:[userLoginGuard]
     },
     {
         path:'auth',component: AuthLayoutComponent,
