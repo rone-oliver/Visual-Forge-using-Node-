@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ConfigService } from '@nestjs/config';
@@ -21,24 +21,36 @@ export class OtpService {
                 pass: this.configService.get<string>('EMAIL_APP_PASSWORD')
             }
         })
-        console.log(this.configService.get<string>('EMAIL'))
-        console.log(this.configService.get<string>('EMAIL_APP_PASSWORD'));
     }
 
-    async createOtp(email:string): Promise<string> {
-        const otp = this.generateOtp();
-        const expiresAt = new Date();
-        expiresAt.setMinutes(expiresAt.getMinutes() + 10);
+    async createOtp(email: string): Promise<string> {
+        try {
+            const otp = this.generateOtp();
+            const expiresAt = new Date();
+            expiresAt.setMinutes(expiresAt.getMinutes() + 10);
 
-        await this.otpModel.create({
-            email,
-            otp,
-            expiresAt,
-            isVerified: false
-        });
-        return otp;
+            const result = await this.otpModel.updateOne(
+                { email },
+                {
+                    $set: {
+                        otp,
+                        expiresAt,
+                        isVerified: false
+                    }
+                },
+                { upsert: true }
+            );
+
+            if (!result.acknowledged) {
+                throw new HttpException('Failed to create OTP', HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+            return otp;
+        } catch (error) {
+            this.logger.error(`Failed to create OTP for email ${email}: ${error.message}`);
+            throw new HttpException('Failed to create OTP', HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
-    async verifyOtp(email:string, otp: string): Promise<boolean> {
+    async verifyOtp(email: string, otp: string): Promise<boolean> {
         const updateResult = await this.otpModel.updateOne(
             {
                 email,
