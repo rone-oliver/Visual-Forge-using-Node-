@@ -40,6 +40,7 @@ export class JwtConfigModule implements NestModule {
         { path: 'auth/user/verify-email', method: RequestMethod.POST },
         { path: 'auth/admin/login', method: RequestMethod.POST },
         { path: 'auth/refresh', method: RequestMethod.GET },
+        { path: 'auth/google', method: RequestMethod.POST },
       )
       .forRoutes({ path: '*', method: RequestMethod.ALL }); // Apply to all routes
   }

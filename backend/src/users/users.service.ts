@@ -1,6 +1,6 @@
 import { Injectable, Inject, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { User, UserDocument } from './models/user.schema';
 import * as bcrypt from 'bcrypt';
 
@@ -37,6 +37,44 @@ export class UsersService {
             return this.userModel.create(user);
         } catch (error) {
             this.logger.error(`Error creating user: ${error.message}`);
+            throw error;
+        }
+    }
+
+    private async generateUniqueUsername(): Promise<string> {
+        let isUnique = false;
+        let username = '';
+        
+        while (!isUnique) {
+            const randomString = Math.random().toString(36).substring(2, 6);
+            username = `user_${randomString}`;
+            
+            const existingUser = await this.userModel.findOne({ username });
+            if (!existingUser) {
+                isUnique = true;
+            }
+        }
+        return username;
+    }
+
+    async createGoogleUser(user: Partial<User>): Promise<User> {
+        try {
+            if (!user.username) {
+                user.username = await this.generateUniqueUsername();
+            }
+            user.isVerified = true;
+            return this.createUser(user);
+        } catch (error) {
+            this.logger.error(`Failed to create Google user: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async updateUserGoogleId(userId: Types.ObjectId, googleId: string): Promise<User | null> {
+        try {
+            return await this.userModel.findOneAndUpdate({_id: userId},{$set:{googleId}},{new: true})
+        } catch (error) {
+            this.logger.error(`Error updating user: ${error.message}`);
             throw error;
         }
     }

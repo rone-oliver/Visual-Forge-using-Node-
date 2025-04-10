@@ -24,7 +24,7 @@ export class UsersAuthService {
             this.jwtService.signAsync(
                 {
                     userId: user._id,
-                    username: user.username,
+                    // username: user.username,
                     email: user.email,
                     role: 'User'
                 },
@@ -36,7 +36,7 @@ export class UsersAuthService {
             this.jwtService.signAsync(
                 {
                     userId: user._id,
-                    username: user.username,
+                    // username: user.username,
                     email: user.email,
                     role: 'User'
                 },

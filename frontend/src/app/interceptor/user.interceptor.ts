@@ -15,7 +15,8 @@ export const userAuthInterceptor: HttpInterceptorFn = (req, next) => {
     req.url.startsWith('/auth/user/login') ||
     req.url.startsWith('/auth/refresh') ||
     req.url.startsWith('/auth/user/register') ||
-    req.url.startsWith('/auth/user/verify-email')
+    req.url.startsWith('/auth/user/verify-email') ||
+    req.url.startsWith('/auth/google')
   ) {
     return next(req);
   }

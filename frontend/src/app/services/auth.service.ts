@@ -21,7 +21,7 @@ interface JwtPayload {
 }
 
 export type UserType = 'Admin' | 'User';
-interface LoginResponse {
+export interface LoginResponse {
   accessToken: string;
 }
 interface LoginCredentials {

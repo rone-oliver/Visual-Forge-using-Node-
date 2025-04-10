@@ -13,7 +13,8 @@ export const adminAuthInterceptor: HttpInterceptorFn = (req, next) => {
   console.log('AdminAuthInterceptor - Request URL:', req.url);
 
   if (req.url.startsWith('/auth/admin/login') ||
-    req.url.startsWith('/auth/refresh')
+    req.url.startsWith('/auth/refresh') ||
+    req.url.startsWith('/auth/google')
   ) {
     return next(req);
   }

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { CommonService } from './common.service';
 import { Types } from 'mongoose';
@@ -38,5 +38,14 @@ export class AuthController {
   async getAdminThemePreference(@Req() req: Request, @Res() res: Response, @Query() query:{userType:'User' | 'Admin'}) {
     const user = req['user'] as { userId: Types.ObjectId; role: string };
     this.commonService.getThemePreference(res,user.userId,query.userType);
+  }
+
+  @Post('google')
+  async authGoogle(@Body() body:{credential:string}, @Res() res:Response){
+    if(!body.credential){
+      throw new BadRequestException('No credential provided');
+    }else{
+      return this.commonService.handleGoogleAuth(body.credential,res);
+    }
   }
 }

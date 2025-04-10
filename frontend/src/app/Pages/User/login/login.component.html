@@ -5,6 +5,23 @@
             <h2 class="text-2xl font-semibold text-gray-800">Welcome Back!</h2>
             <p class="text-gray-600 mt-2">Sign in to continue your journey</p>
         </div>
+        <div *ngIf="successMessage" class="success-message-container">
+            <div class="success-icon">
+                <mat-icon>check_circle_outline</mat-icon>
+            </div>
+            <div class="success-text">
+                {{ successMessage }}
+            </div>
+        </div>
+
+        <div *ngIf="errorMessage" class="error-message-container">
+            <div class="error-icon">
+                <mat-icon>error_outline</mat-icon>
+            </div>
+            <div class="error-text">
+                {{ errorMessage }}
+            </div>
+        </div>
         <app-form [formControls]="loginControls" [submitButtonLabel]="'Login'"
             (formSubmit)="onFormSubmit($event)"></app-form>
         
@@ -15,6 +32,22 @@
                     Register here
                 </a>
             </p>
+        </div>
+        <div class="mt-6 w-full">
+            <!-- Divider -->
+            <div class="relative">
+                <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t border-gray-300 dark:border-gray-700"></div>
+                </div>
+                <div class="relative flex justify-center text-sm">
+                    <span class="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">Or continue with</span>
+                </div>
+            </div>
+        
+            <!-- Google Sign-In Container -->
+            <div class="mt-6 flex justify-center">
+                <div id="googleSignInDiv" class="g_id_signin"></div>
+            </div>
         </div>
     </div>
 </div>

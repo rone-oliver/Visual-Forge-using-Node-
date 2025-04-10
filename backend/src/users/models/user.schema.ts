@@ -21,13 +21,28 @@ export enum Language {
 export class User {
     _id: Types.ObjectId;
 
-    @Prop({ required: true, unique: true, trim: true, match: /^[a-zA-Z0-9_]+$/ })
+    @Prop({
+        required: true, 
+        unique: true, 
+        trim: true, 
+        match: /^[a-zA-Z0-9_]+$/
+    })
     username: string;
 
     @Prop({ required: true, unique: true, match: /^\S+@\S+\.\S+$/ })
     email: string;
 
-    @Prop({ required: true, minlength: 8 })
+    @Prop({
+        type: String, required: function (this: User) {
+            return !this.googleId;
+        }, minlength: 8,
+        validate: {
+            validator: function (value: string) {
+                return this.googleId || (value && value.length >= 8);
+            },
+            message: 'Password must be at least 8 characters long'
+        }
+    })
     password: string;
 
     @Prop({ required: true, trim: true })
@@ -45,8 +60,11 @@ export class User {
     })
     mobileNumber?: string;
 
-    @Prop({ type: Boolean, default: false})
+    @Prop({ type: Boolean, default: false })
     isVerified: boolean;
+
+    @Prop({ type: Boolean, default: false})
+    isBlocked: boolean;
 
     @Prop({ type: String, enum: Gender })
     gender?: Gender;
@@ -65,7 +83,7 @@ export class User {
     })
     age?: number;
 
-    @Prop({ type: String, unique: true, sparse: true }) 
+    @Prop({ type: String, unique: true, sparse: true })
     googleId?: string;
 
     @Prop({ type: Boolean, default: false })
