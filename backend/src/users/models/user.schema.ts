@@ -48,6 +48,9 @@ export class User {
     @Prop({ required: true, trim: true })
     fullname: string;
 
+    @Prop({ type: String, trim: true})
+    about?: string;
+
     @Prop({ type: String, trim: true })
     profileImage?: string;
 

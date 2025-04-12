@@ -11,7 +11,7 @@ export class UsersService {
 
     async findOne(filter: Partial<User>): Promise<User | null> {
         try {
-            this.logger.log(`Creating new user: ${filter.email}`);
+            this.logger.log(`Finding the user: ${filter.email}`);
             return this.userModel.findOne(filter).exec();
         } catch (error) {
             this.logger.error(`Error finding user: ${error.message}`);
@@ -85,6 +85,16 @@ export class UsersService {
             this.logger.log("User data updated successfully");
         } catch (error) {
             this.logger.error(`Error updating User: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async getUserDetails(userId: Types.ObjectId): Promise<User | null> {
+        try {
+            this.logger.log(`Fetching user details for ID: ${userId}`);
+            return await this.userModel.findById(userId);
+        } catch (error) {
+            this.logger.error(`Error fetching user details: ${error.message}`);
             throw error;
         }
     }

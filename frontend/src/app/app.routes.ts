@@ -10,6 +10,7 @@ import { userGuard, adminGuard, userLoginGuard, adminLoginGuard } from './guards
 import { HomeComponent as UserHomeComponent } from './components/user/home/home.component';
 import { HomeComponent as AdminHomeComponent } from './components/admin/home/home.component';
 import { UserSectionComponent } from './components/admin/user-section/user-section.component';
+import { ProfileComponent } from './components/user/profile/profile.component';
 
 export const routes: Routes = [
     {
@@ -51,6 +52,9 @@ export const routes: Routes = [
             {
                 path:'', component: UserHomeComponent,
             },
+            {
+                path:'profile', component: ProfileComponent
+            }
         ]
     }
 ];

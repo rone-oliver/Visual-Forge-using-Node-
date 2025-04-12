@@ -1,1 +1,94 @@
-<p>profile works!</p>
+<div class="user-profile-container" *ngIf="user$ | async as user">
+    <div class="profile-header">
+        <div class="cover-photo"></div>
+
+        <div class="profile-info">
+            <div class="avatar-container">
+                <div class="avatar">
+                    <ng-container *ngIf="user.profileImage; else defaultAvatar">
+                        <img [src]="user.profileImage" [alt]="user.fullname || 'User Avatar'">
+                    </ng-container>
+                    <ng-template #defaultAvatar>
+                        <mat-icon>person</mat-icon>
+                    </ng-template>
+                </div>
+            </div>
+
+            <div class="user-name-container">
+                <h1 class="user-name">{{user.fullname || 'User Name'}}</h1>
+                <span class="username">{{user.username || 'username'}}</span>
+            </div>
+
+            <div class="user-stats" *ngIf="user.isEditor">
+                <div class="stat-item">
+                    <!-- <span class="stat-value">{{user.followers || 0}}</span> -->
+                    <span class="stat-label">Followers</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <!-- <span class="stat-value">{{user.following || 0}}</span> -->
+                    <span class="stat-label">Following</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <!-- <span class="stat-value">{{user.posts || 0}}</span> -->
+                    <span class="stat-label">Posts</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="profile-content">
+        <div class="info-section">
+            <h2 class="section-title">User Information</h2>
+
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Email</span>
+                    <span class="info-value">{{user.email || 'Not provided'}}</span>
+                </div>
+
+                <div class="info-item">
+                    <span class="info-label">Phone</span>
+                    <span class="info-value">{{user.mobileNumber || 'Not provided'}}</span>
+                </div>
+
+                <div class="info-item">
+                    <span class="info-label">Language</span>
+                    <span class="info-value">{{user.language || 'Not provided'}}</span>
+                </div>
+
+                <div class="info-item">
+                    <span class="info-label">Member Since</span>
+                    <span class="info-value">{{user.createdAt | customDate }}</span>
+                </div>
+
+                <div class="info-item">
+                    <span class="info-label">Gender</span>
+                    <span class="info-value">{{user.gender || 'Not provided'}}</span>
+                </div>
+
+                <div class="info-item">
+                    <span class="info-label">Role</span>
+                    <span class="info-value role-badge" [ngClass]="{'editor-role': user.isEditor}">
+                        {{user.isEditor ? 'Editor' : 'User'}}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <h2 class="section-title">About</h2>
+            <p class="about-text">{{user.about || 'No information provided.'}}</p>
+        </div>
+
+        <div class="editor-request-container" *ngIf="!user.isEditor">
+            <button class="editor-request-button">
+                <span class="button-text">Wish to be an Editor?</span>
+                <div class="animated-bg"></div>
+            </button>
+            <p class="editor-info">Editors can create and publish content, manage community posts, and get priority
+                support.</p>
+        </div>
+    </div>
+</div>

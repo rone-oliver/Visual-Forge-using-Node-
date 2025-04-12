@@ -14,10 +14,10 @@
             <mat-icon>search</mat-icon>
         </div>
         <ng-container *ngIf="isAuthenticated">
-            <div class="icon-button">
+            <div [routerLink]="['/user/messaging']" class="icon-button">
                 <mat-icon>chat</mat-icon>
             </div>
-            <div class="icon-button">
+            <div [routerLink]="['/user/profile']" class="icon-button">
                 <mat-icon>person</mat-icon>
             </div>
             <div *ngIf="userRole === 'Editor'" class="icon-button">
