@@ -21,6 +21,21 @@
 
             <div class="user-stats" *ngIf="user.isEditor">
                 <div class="stat-item">
+                    <span class="stat-value">{{user.editorDetails?.score || 0}}</span>
+                    <span class="stat-label">Score</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-value">{{user.editorDetails?.ratingsCount || 0}}</span>
+                    <span class="stat-label">Ratings</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-value">{{user.editorDetails?.averageRating || 0}}</span>
+                    <span class="stat-label">Avg. Rating</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
                     <!-- <span class="stat-value">{{user.followers || 0}}</span> -->
                     <span class="stat-label">Followers</span>
                 </div>
@@ -73,6 +88,65 @@
                     <span class="info-value role-badge" [ngClass]="{'editor-role': user.isEditor}">
                         {{user.isEditor ? 'Editor' : 'User'}}
                     </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-section" *ngIf="user.isEditor && user.editorDetails">
+            <h2 class="section-title">Editor Information</h2>
+
+            <div class="info-grid">
+                <div class="info-item" *ngIf="user.editorDetails?.category?.length">
+                    <span class="info-label">Categories</span>
+                    <div class="categories-container">
+                        <span class="category-badge" *ngFor="let category of user.editorDetails?.category">
+                            {{category}}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <span class="info-label">Editor Since</span>
+                    <span class="info-value">{{user.editorDetails.createdAt | customDate}}</span>
+                </div>
+
+                <div class="info-item">
+                    <span class="info-label">Average Rating</span>
+                    <div class="rating-display">
+                        <span class="rating-value">{{user.editorDetails.averageRating || 0}}/5</span>
+                        <span class="rating-count">({{user.editorDetails.ratingsCount || 0}} ratings)</span>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <span class="info-label">Score</span>
+                    <span class="info-value score-value">{{user.editorDetails.score || 0}} points</span>
+                </div>
+            </div>
+
+            <div class="social-links" *ngIf="hasSocialLinks(user.editorDetails?.socialLinks)">
+                <h3 class="subsection-title">Social Links</h3>
+                <div class="social-links-grid">
+                    <a *ngIf="user.editorDetails?.socialLinks?.website" [href]="user.editorDetails.socialLinks?.website" target="_blank" class="social-link website">
+                        <mat-icon>language</mat-icon>
+                        <span>Website</span>
+                    </a>
+                    <a *ngIf="user.editorDetails?.socialLinks?.linkedIn" [href]="user.editorDetails.socialLinks?.linkedIn" target="_blank" class="social-link linkedin">
+                        <mat-icon>work</mat-icon>
+                        <span>LinkedIn</span>
+                    </a>
+                    <a *ngIf="user.editorDetails?.socialLinks?.instagram" [href]="user.editorDetails.socialLinks?.instagram" target="_blank" class="social-link instagram">
+                        <mat-icon>photo_camera</mat-icon>
+                        <span>Instagram</span>
+                    </a>
+                    <a *ngIf="user.editorDetails?.socialLinks?.facebook" [href]="user.editorDetails.socialLinks?.facebook" target="_blank" class="social-link facebook">
+                        <mat-icon>thumb_up</mat-icon>
+                        <span>Facebook</span>
+                    </a>
+                    <a *ngIf="user.editorDetails?.socialLinks?.pinterest" [href]="user.editorDetails.socialLinks?.pinterest" target="_blank" class="social-link pinterest">
+                        <mat-icon>push_pin</mat-icon>
+                        <span>Pinterest</span>
+                    </a>
                 </div>
             </div>
         </div>

@@ -61,4 +61,9 @@ export class ProfileComponent implements OnInit{
       }
     })
   }
+
+  hasSocialLinks(socialLinks: any): boolean {
+    if (!socialLinks) return false;
+    return Object.values(socialLinks).some(link => !!link);
+  }
 }

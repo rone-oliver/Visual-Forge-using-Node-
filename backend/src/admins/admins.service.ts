@@ -69,7 +69,7 @@ export class AdminsService {
             const request = await this.editorRequestModel.findOneAndUpdate({ _id: requestId}, { status: EditorRequestStatus.APPROVED, approvedBy: adminId});
             if(request && request.userId){
                 await this.userModel.updateOne({ _id: request.userId},{isEditor: true});
-                await this.editorModel.create({userId: request.userId, category: [request.categories]});
+                await this.editorModel.create({userId: new Types.ObjectId(request.userId), category: [request.categories]});
                 return true;
             }
             return false;

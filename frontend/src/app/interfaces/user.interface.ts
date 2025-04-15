@@ -14,6 +14,7 @@ export interface User {
     mobileNumber: string;
     age: number;
     behaviourRating: number;
+    editorDetails?: EditorDetails;
 }
 
 enum EditorRequestStatus {
@@ -26,6 +27,21 @@ export enum Categories {
     VIDEO = 'Video',
     AUDIO = 'Audio',
     IMAGE = 'Image'
+}
+
+export interface EditorDetails {
+    category?: string[];
+    score?: number;
+    ratingsCount?: number;
+    averageRating?: number;
+    socialLinks?: {
+        linkedIn?: string;
+        pinterest?: string;
+        instagram?: string;
+        facebook?: string;
+        website?: string;
+    };
+    createdAt: Date;
 }
 
 export interface EditorRequest {

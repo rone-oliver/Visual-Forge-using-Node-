@@ -17,7 +17,7 @@ export class UserService {
   getUserProfile(){
     return this.http.get<User>(`${this.apiUrl}/user/profile`).pipe(
       map((response:any)=> {
-        console.log(`user profile response: ${response}`);
+        console.log(`user profile response: `,response);
         return response;
       }),
       catchError((error)=>{

@@ -11,6 +11,7 @@ export class UsersController {
         console.log('controlled hitted on /user/profile');
         const user = req['user'] as { userId: Types.ObjectId; role: string}
         const userDet = await this.userService.getUserDetails(user.userId);
+        console.log('user profile data',userDet);
         return userDet;
     }
 

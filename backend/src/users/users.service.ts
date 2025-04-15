@@ -4,12 +4,14 @@ import { Model, Types } from 'mongoose';
 import { User, UserDocument } from './models/user.schema';
 import { Categories, EditorRequest, EditorRequestDocument } from 'src/common/models/editorRequest.schema';
 import * as bcrypt from 'bcrypt';
+import { Editor, EditorDocument } from 'src/editors/models/editor.schema';
 
 @Injectable()
 export class UsersService {
     private readonly logger = new Logger(UsersService.name);
     constructor(
         @InjectModel(User.name) private userModel: Model<UserDocument>,
+        @InjectModel(Editor.name) private editorModel: Model<EditorDocument>,
         @InjectModel(EditorRequest.name) private editorRequestModel: Model<EditorRequestDocument>,
     ) { }
 
@@ -93,14 +95,42 @@ export class UsersService {
         }
     }
 
-    async getUserDetails(userId: Types.ObjectId): Promise<User | null> {
+    async getUserDetails(userId: Types.ObjectId): Promise<User & { editorDetails?: any} | null> {
         try {
             this.logger.log(`Fetching user details for ID: ${userId}`);
-            return await this.userModel.findById(userId);
+            const user = await this.userModel.findById(userId);
+            if(user && user.isEditor){
+                this.logger.log('Fetching the editor details');
+                console.log('user id: ', user._id);
+                const editorDetails = await this.editorModel.findOne({userId: user._id}).lean();
+                if(editorDetails){
+                    this.logger.log('Editor details: ', editorDetails)
+                    const userObj = user.toObject();
+                    return {
+                        ...userObj,
+                        editorDetails: {
+                            category: editorDetails.category || [],
+                            score: editorDetails.score || 0,
+                            ratingsCount: editorDetails.ratings?.length || 0,
+                            averageRating: this.calculateAverageRating(editorDetails.ratings),
+                            socialLinks: editorDetails.socialLinks || {},
+                            createdAt: editorDetails.createdAt,
+                        }
+                    }
+                }else console.log('no editor details');
+            }
+            return user;
         } catch (error) {
             this.logger.error(`Error fetching user details: ${error.message}`);
             throw error;
         }
+    }
+
+    private calculateAverageRating(ratings: any[] | undefined): number {
+        if (!ratings || ratings.length === 0) return 0;
+        
+        const sum = ratings.reduce((acc, curr) => acc + curr.rating, 0);
+        return parseFloat((sum / ratings.length).toFixed(1));
     }
 
     async requestForEditor(userId: Types.ObjectId): Promise<boolean> {
