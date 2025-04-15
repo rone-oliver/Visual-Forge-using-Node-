@@ -79,14 +79,14 @@ export class CommonService {
   }
 
   // Helper function to generate JWT tokens
-  private async generateTokens(user: User) {
+  private async generateTokens(user: User, role: 'User' | 'Editor') {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(
         {
           userId: user._id,
           // username: user.username,
           email: user.email,
-          role: 'User'
+          role
         },
         {
           secret: this.configService.get<string>('JWT_SECRET'),
@@ -98,7 +98,7 @@ export class CommonService {
           userId: user._id,
           // username: user.username,
           email: user.email,
-          role: 'User'
+          role
         },
         {
           secret: this.configService.get<string>('JWT_SECRET'),
@@ -156,20 +156,21 @@ export class CommonService {
       if (user && !user.googleId) {
         user = await this.userService.updateUserGoogleId(user._id, googleId);
       }
-
-      const tokens = await this.generateTokens(user!);
-
-      res.cookie('userRefreshToken', tokens.refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 7 * 24 * 60 * 60 * 1000
-      });
-
-      return res.json({
-        accessToken: tokens.accessToken,
-        message: 'Google sign-in successful'
-      });
+      if(user){
+        const tokens = await this.generateTokens(user!, user.isEditor ? 'Editor' : 'User');
+        
+        res.cookie('userRefreshToken', tokens.refreshToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict',
+          maxAge: 7 * 24 * 60 * 60 * 1000
+        });
+  
+        return res.json({
+          accessToken: tokens.accessToken,
+          message: 'Google sign-in successful'
+        });
+      }
     } catch (error) {
       throw new BadRequestException('Invalid google Token')
     }

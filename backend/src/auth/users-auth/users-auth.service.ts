@@ -19,14 +19,15 @@ export class UsersAuthService {
     private readonly logger = new Logger(UsersAuthService.name);
 
     // Helper
-    private async generateTokens(user: User) {
+    private async generateTokens(user: User, role: 'User' | 'Editor') {
+        console.log('user Role: ',role);
         const [accessToken, refreshToken] = await Promise.all([
             this.jwtService.signAsync(
                 {
                     userId: user._id,
                     // username: user.username,
                     email: user.email,
-                    role: 'User'
+                    role
                 },
                 {
                     secret: this.configService.get<string>('JWT_SECRET'),
@@ -38,7 +39,7 @@ export class UsersAuthService {
                     userId: user._id,
                     // username: user.username,
                     email: user.email,
-                    role: 'User'
+                    role
                 },
                 {
                     secret: this.configService.get<string>('JWT_SECRET'),
@@ -72,14 +73,12 @@ export class UsersAuthService {
             const user = await this.usersService.findOne({ username });
             if (!user) {
                 throw new UnauthorizedException('User not found');
-                // return ["User not found"];
             }
             const isPasswordValid = await this.checkPassword(password, user.password);
             if (!isPasswordValid) {
                 throw new UnauthorizedException('Invalid password');
-                // return ["Invalid password"];
             }
-            const tokens = await this.generateTokens(user);
+            const tokens = await this.generateTokens(user, user.isEditor ? 'Editor' : 'User');
             this.setCookies(response, tokens.refreshToken);
             return { user, accessToken: tokens.accessToken };
         } catch (error) {

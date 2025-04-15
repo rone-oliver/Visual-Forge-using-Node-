@@ -74,6 +74,7 @@ export class AuthService {
     try {
       const payload = jwtDecode<JwtPayload>(token);
       if (userType === 'User') {
+        console.log('User role: ',payload.role);
         this.userRoleSubject.next(payload.role);
       }
     } catch (error) {
@@ -93,6 +94,7 @@ export class AuthService {
     this.tokenService.setToken(token,userType);
     if (userType === 'User') {
       // this.userAccessTokenSubject.next(token);
+      console.log('inside the userType User block in the setAccessToken method');
       this.userIsAuthenticatedSubject.next(this._isTokenValid(token));
       this.setRole(token, 'User');
     } else {
@@ -153,6 +155,7 @@ export class AuthService {
     return this.http.post<LoginResponse>(loginEndpoint, credentials, {withCredentials:true})
     .pipe(
       tap(response => {
+        console.log('login success and setAccessToken called');
         this.setAccessToken(response.accessToken,userType);
       }),
       catchError(error => {
@@ -228,6 +231,7 @@ export class AuthService {
   }
 
   private _isTokenValid(token: string): boolean {
+    console.log('inside the _isTokenValid method');
     // if (!this.accessToken) return of(false);
     // console.log("jwt payload from _isTokenValid fn",this.jwtPayload);
     // if (!this.jwtPayload) return false;
