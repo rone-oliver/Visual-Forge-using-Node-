@@ -162,12 +162,12 @@
     padding: 3px 10px;
     border-radius: 20px;
     background-color: var(--color-neutral-200);
+    color: whitesmoke;
     font-size: 14px;
     font-weight: 500;
 
     &.editor-role {
         background-color: var(--color-primary);
-        color: white;
     }
 }
 
@@ -207,6 +207,16 @@
             transform: scale(1.5);
         }
     }
+
+    &.pending {
+        background-color: #808080;
+        cursor: not-allowed;
+        opacity: 0.8;
+
+        .animated-bg {
+            display: none;
+        }
+    }
 }
 
 .button-text {
@@ -232,6 +242,68 @@
     transition: all 0.6s ease;
     z-index: 0;
     animation: rotate 6s linear infinite;
+}
+
+.success-snackbar {
+    background-color: var(--color-success);
+    color: white;
+    border-radius: 12px;
+    padding: 8px 16px;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    backdrop-filter: blur(10px);
+    box-shadow: 
+        0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    // Container styling
+    .mat-simple-snackbar {
+        font-size: 0.9375rem;
+        font-weight: 500;
+        line-height: 1.5;
+    }
+
+    // Action button styling
+    .mat-simple-snackbar-action {
+        color: white;
+        font-weight: 600;
+        padding: 4px 8px;
+        border-radius: 6px;
+        margin-left: 16px;
+        transition: all 0.2s ease;
+
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        &:active {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+    }
+
+    // Dark theme adjustments
+    :host-context(.dark-theme) & {
+        background-color: var(--color-success);
+        box-shadow: 
+            0 4px 6px -1px rgba(0, 0, 0, 0.2),
+            0 2px 4px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    // Animation
+    animation: snackbarSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes snackbarSlideIn {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
 @keyframes rotate {

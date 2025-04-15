@@ -27,7 +27,9 @@ export const adminAuthInterceptor: HttpInterceptorFn = (req, next) => {
     const accessToken = authService.getAccessToken('Admin');
     console.log('AdminAuthInterceptor - Access Token:', accessToken);
 
-    if (!accessToken) {
+    const isLoginPage = window.location.href.includes('/auth/admin/login');
+
+    if (!accessToken && !isLoginPage) {
       console.log('Admin session expired. Redirecting to login.');
       router.navigate(['/auth/admin/login']);
       return EMPTY;

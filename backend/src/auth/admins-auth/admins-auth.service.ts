@@ -25,7 +25,8 @@ export class AdminsAuthService {
                 },
                 { 
                     secret: this.configService.get<string>('JWT_SECRET'),
-                    expiresIn: this.configService.get<string>('ACCESS_TOKEN_EXPIRATION') 
+                    expiresIn: this.configService.get<string>('ACCESS_TOKEN_EXPIRATION')
+                    // expiresIn: '1m' 
                 }
             ),
             this.jwtService.signAsync(

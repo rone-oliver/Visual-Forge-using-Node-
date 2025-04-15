@@ -6,8 +6,11 @@ export type EditorDocument = Editor & Document;
 
 @Schema({ timestamps: true })
 export class Editor {
-  @Prop({ type: Types.ObjectId, required:true, ref:'User' })
+  _id: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, unique: true, required:true, ref:'User' })
   userId: Types.ObjectId;
+  
   @Prop({ type: [String] })
   category?: string[];
 
@@ -32,6 +35,9 @@ export class Editor {
     facebook?:string,
     website?:string
   }
+
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export const editorSchema = SchemaFactory.createForClass(Editor);

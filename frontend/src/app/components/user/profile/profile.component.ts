@@ -5,6 +5,7 @@ import { User } from '../../../interfaces/user.interface';
 import { UserService } from '../../../services/user/user.service';
 import { Observable } from 'rxjs';
 import { DatePipe } from '../../../pipes/date.pipe';
+import { MatSnackBarConfig, MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-profile',
@@ -14,18 +15,50 @@ import { DatePipe } from '../../../pipes/date.pipe';
 })
 export class ProfileComponent implements OnInit{
   user$!:Observable<User>;
+  editorRequestStatus: string | null = null;
 
   constructor(
     private userService: UserService,
+    private snackBar: MatSnackBar,
   ) { }
+
+  showSuccess(message:string):void {
+    const config: MatSnackBarConfig = {
+      duration: 3000,
+        horizontalPosition: 'end',
+        verticalPosition: 'top',
+        panelClass: ['success-snackbar'],
+    }
+    this.snackBar.open(message, 'Close', config);
+  }
 
   ngOnInit(): void {
     this.user$ = this.userService.getUserProfile();
+    this.checkEditorRequestStatus();
+  }
+
+  private checkEditorRequestStatus(): void {
+    this.userService.getEditorRequestStatus().subscribe({
+      next: (status) => {
+        this.editorRequestStatus = status;
+      },
+      error: (error) => {
+        console.error('Error fetching editor request status:', error);
+      }
+    });
   }
 
   requestEditorStatus(): void {
-    // Implement editor request logic
     console.log('Editor status requested');
-    // Here you would typically call a service to submit the request
+    this.userService.requestForEditor().subscribe({
+      next:(response)=>{
+        console.log('Editor request response:', response);
+        this.showSuccess('Editor request sent successfully!');
+        this.checkEditorRequestStatus();
+      },
+      error:(error)=>{
+        console.error('Error requesting for becoming Editor: ', error);
+      }
+    })
   }
 }

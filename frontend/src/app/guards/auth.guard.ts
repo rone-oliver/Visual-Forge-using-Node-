@@ -57,11 +57,16 @@ export const adminLoginGuard: CanActivateFn = (route, state) => {
 
 export const adminGuard: CanActivateFn = async (route, state) => {
   const authService = inject(AuthService);
+  const tokenService = inject(TokenService);
   const router = inject(Router);
 
-  const token = authService.getAccessToken('Admin');
+  // if (state.url.includes('/auth/admin/login')) {
+  //   return true;
+  // }
+
+  const token = tokenService.getToken('Admin');
   if(!token){
-    console.log('redirected when token is absent');
+    console.log('redirected when token is absent from adminGuard');
     router.navigate(['/auth/admin/login']);
     return false;
   }
@@ -73,7 +78,6 @@ export const adminGuard: CanActivateFn = async (route, state) => {
       return true;
     } catch (error) {
       authService.logout('Admin').subscribe();
-    console.log('redirected when token is expired');
       router.navigate(['/auth/admin/login']);
       return false;
     }

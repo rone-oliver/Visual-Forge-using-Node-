@@ -20,6 +20,8 @@
     --color-neutral-500: theme('colors.neutral.500');
     --color-neutral-600: theme('colors.neutral.600');
     --color-neutral-700: theme('colors.neutral.700');
+    --color-success: #10B981;
+    --color-danger: #EF4444;
 
     // Admin Theme colours
     --admin-color-primary: theme('colors.admin.primary.light');
@@ -34,6 +36,8 @@
     --color-primary: theme('colors.primary.dark');
     --color-background: theme('colors.background.dark');
     --color-text: theme('colors.text.dark');
+    --color-success: #059669;
+    --color-danger: #DC2626;
   }
 
   .admin-dark {
@@ -43,5 +47,36 @@
     --admin-color-background: theme('colors.admin.background.dark');
     --admin-color-surface: theme('colors.admin.surface.dark');
     --admin-color-border: theme('colors.admin.border.dark');
+  }
+
+  // For success Alerts
+  .success-snackbar {
+    &.mat-mdc-snack-bar-container {
+      --mdc-snackbar-container-color: var(--color-success);
+      --mat-mdc-snack-bar-button-color: white;
+      --mdc-snackbar-supporting-text-color: white;
+
+      .mdc-snackbar__surface {
+        background-color: var(--color-success);
+        border-radius: 12px;
+        padding: 8px 16px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        backdrop-filter: blur(10px);
+      }
+
+      .mat-mdc-snack-bar-actions {
+        .mdc-button {
+          color: white;
+          font-weight: 500;
+
+          &:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+          }
+        }
+      }
+    }
   }
 }

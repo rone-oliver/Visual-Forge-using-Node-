@@ -1,1 +1,188 @@
-<p>editor-section works!</p>
+<div class="editors-admin-container">
+    <div class="header">
+        <h1 class="title">Editors</h1>
+        <div class="actions">
+            <button class="btn-export">
+                <lucide-icon [name]="icons.export"></lucide-icon>
+                <span>Export data</span>
+            </button>
+            <!-- <button class="btn-create">
+                <lucide-icon [name]="icons.plus"></lucide-icon>
+                <span>Create report</span>
+            </button> -->
+        </div>
+    </div>
+
+    <div class="filters-section">
+        <div class="search-filter-row">
+            <div class="search-container">
+                <lucide-icon [name]="icons.search" class="search-icon"></lucide-icon>
+                <input type="search" placeholder="Search Editors..." class="search-input">
+            </div>
+            <!-- <div class="tag-filters">
+                <button class="tag-btn tag-active">Video</button>
+                <button class="tag-btn">Above 8</button>
+            </div> -->
+
+            <!-- <div class="tag-filters">
+                <div class="filter-chips">
+                    <div class="chip" *ngFor="let chip of getActiveFilterChips()">
+                        <span class="chip-text">{{ chip.value }}</span>
+                        <button class="chip-remove" (click)="removeFilter(chip.type, chip.value)">
+                            <lucide-icon name="x" size="16"></lucide-icon>
+                        </button>
+                    </div>
+                </div>
+            </div> -->
+        </div>
+
+        <div class="filter-controls">
+            <!-- Category Filter -->
+            <div class="filter-dropdown">
+                <button (click)="toggleFilter('category')" [class.active]="activeFilters['category']"
+                    class="filter-btn">
+                    <span>Category</span>
+                    <lucide-icon [name]="icons.chevronDown"></lucide-icon>
+                </button>
+                <div *ngIf="activeFilters['category']" class="dropdown-menu">
+                    <div class="dropdown-item">
+                        <input type="checkbox" id="video" class="filter-checkbox">
+                        <label for="video">Video</label>
+                    </div>
+                    <div class="dropdown-item">
+                        <input type="checkbox" id="image" class="filter-checkbox">
+                        <label for="image">Image</label>
+                    </div>
+                    <div class="dropdown-item">
+                        <input type="checkbox" id="audio" class="filter-checkbox">
+                        <label for="audio">Audio</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rating Filter -->
+            <div class="filter-dropdown">
+                <button (click)="toggleFilter('rating')" [class.active]="activeFilters['rating']" class="filter-btn">
+                    <span>Rating</span>
+                    <lucide-icon [name]="icons.chevronDown"></lucide-icon>
+                </button>
+                <div *ngIf="activeFilters['rating']" class="dropdown-menu">
+                    <div class="dropdown-item">
+                        <lucide-icon [name]="icons.star" class="star-icon"></lucide-icon>
+                        <span>5 stars</span>
+                    </div>
+                    <div class="dropdown-item">
+                        <lucide-icon [name]="icons.star" class="star-icon"></lucide-icon>
+                        <span>4+ stars</span>
+                    </div>
+                    <div class="dropdown-item">
+                        <lucide-icon [name]="icons.star" class="star-icon"></lucide-icon>
+                        <span>3+ stars</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Avg. Time Filter -->
+            <div class="filter-dropdown">
+                <button (click)="toggleFilter('avgTime')" [class.active]="activeFilters['avgTime']" class="filter-btn">
+                    <span>Avg. Time</span>
+                    <lucide-icon [name]="icons.chevronDown"></lucide-icon>
+                </button>
+                <div *ngIf="activeFilters['avgTime']" class="dropdown-menu">
+                    <div class="dropdown-item">
+                        <lucide-icon [name]="icons.clock"></lucide-icon>
+                        <span>Fast (< 24h)</span>
+                    </div>
+                    <div class="dropdown-item">
+                        <lucide-icon [name]="icons.clock"></lucide-icon>
+                        <span>Medium (1-3d)</span>
+                    </div>
+                    <div class="dropdown-item">
+                        <lucide-icon [name]="icons.clock"></lucide-icon>
+                        <span>Slow (> 3d)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Editor Requests Button -->
+            <button class="btn-editor-requests" (click)="toggleRequestsSidebar()">
+                <span>View editor requests</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="content-area">
+        <app-table [data]="editors" [columns]="editorColumns" [loading]="loading" (rowClick)="onEditorClick($event)"
+            (actionClick)="onEditorAction($event)">
+        </app-table>
+        <!-- <div class="placeholder-message">
+            <p>Editors listing component will be rendered here</p>
+        </div> -->
+    </div>
+
+    <!-- Editor Requests Sidebar -->
+    <div class="sidebar-overlay" *ngIf="sidebarVisible" (click)="toggleRequestsSidebar()"></div>
+    <div class="sidebar" [class.visible]="sidebarVisible">
+        <div class="sidebar-header">
+            <h2>Editor Requests</h2>
+            <button class="btn-close" (click)="toggleRequestsSidebar()">
+                <lucide-icon [name]="icons.close"></lucide-icon>
+            </button>
+        </div>
+
+        <!-- Rejection Form -->
+        <div class="rejection-form" *ngIf="currentRequest">
+            <h3>Reject Request</h3>
+            <p>Please provide a reason for rejecting {{ currentRequest.fullname }}'s request:</p>
+
+            <textarea class="rejection-reason" [(ngModel)]="rejectionReason" placeholder="Enter rejection reason..."
+                rows="4"></textarea>
+
+            <div class="action-buttons">
+                <button class="btn-cancel" (click)="cancelRejection()">Cancel</button>
+                <button class="btn-reject" [disabled]="!rejectionReason.trim()" (click)="confirmRejection()">
+                    Confirm Rejection
+                </button>
+            </div>
+        </div>
+
+        <!-- Requests List -->
+        <div class="requests-list" *ngIf="!currentRequest">
+            <div class="request-card" *ngFor="let request of editorRequests">
+                <div class="request-info">
+                    <h3>{{ request.fullname }}</h3>
+                    <p class="request-email">{{ request.email }}</p>
+                    <div class="request-details">
+                        <span class="request-category">{{ request.categories }}</span>
+                        <span class="request-date">{{ request.createdAt | customDate }}</span>
+                    </div>
+                </div>
+
+                <div class="request-actions" *ngIf="request.status === 'Pending'">
+                    <button class="btn-approve" (click)="approveRequest(request)">
+                        <lucide-icon [name]="icons.check"></lucide-icon>
+                        <span>Approve</span>
+                    </button>
+                    <button class="btn-reject" (click)="showRejectionForm(request)">
+                        <lucide-icon [name]="icons.x"></lucide-icon>
+                        <span>Reject</span>
+                    </button>
+                </div>
+
+                <div class="request-status" *ngIf="request.status !== 'Pending'">
+                    <div class="status-badge" [class.approved]="request.status === 'Approved'"
+                        [class.rejected]="request.status === 'Rejected'">
+                        {{ request.status }}
+                    </div>
+                    <p class="rejection-reason-text" *ngIf="request.status === 'Rejected' && request.reason">
+                        Reason: {{ request.reason }}
+                    </p>
+                </div>
+            </div>
+
+            <div class="empty-state" *ngIf="editorRequests.length === 0">
+                <p>No editor requests available at this time.</p>
+            </div>
+        </div>
+    </div>
+</div>

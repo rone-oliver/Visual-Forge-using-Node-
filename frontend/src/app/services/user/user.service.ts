@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { User } from '../../interfaces/user.interface';
-import { catchError, map } from 'rxjs';
+import { catchError, map, Observable, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -24,6 +24,17 @@ export class UserService {
         console.error('Error fetching user profile:', error);
         throw error;
       })
+    );
+  }
+
+  requestForEditor(){
+    return this.http.post<boolean>(`${this.apiUrl}/user/editorRequest`,{},{withCredentials: true});
+  }
+
+  getEditorRequestStatus(): Observable<string | null>{
+    return this.http.get<{status: string}>(`${this.apiUrl}/user/editorRequest/status`,{withCredentials: true}).pipe(
+      map(response=>response.status),
+      catchError(()=> of(null))
     );
   }
 }

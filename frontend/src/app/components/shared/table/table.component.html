@@ -1,0 +1,108 @@
+<div class="table-container">
+    <!-- Loading overlay -->
+    <div class="loading-overlay" *ngIf="loading">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Empty state -->
+    <div class="empty-state" *ngIf="!loading && (!data || data.length === 0)">
+        <p>{{ emptyMessage }}</p>
+    </div>
+
+    <!-- Table -->
+    <table *ngIf="!loading && data && data.length > 0" class="data-table">
+        <!-- Table header -->
+        <thead>
+            <tr>
+                <th *ngFor="let column of columns" [ngStyle]="{'width': column.width || 'auto'}"
+                    [ngClass]="{'sortable': column.sortable, 'sorted': sortColumn === column.key}"
+                    (click)="column.sortable && sort(column)">
+                    {{ column.header }}
+                    <span class="sort-icon" *ngIf="column.sortable">
+                        <span class="arrow up"
+                            [ngClass]="{'active': sortColumn === column.key && sortDirection === 'asc'}"></span>
+                        <span class="arrow down"
+                            [ngClass]="{'active': sortColumn === column.key && sortDirection === 'desc'}"></span>
+                    </span>
+                </th>
+            </tr>
+        </thead>
+
+        <!-- Table body -->
+        <tbody>
+            <tr *ngFor="let item of paginatedData" class="table-row" (click)="onRowClick(item)">
+                <td *ngFor="let column of columns">
+                    <!-- Text content -->
+                    <ng-container *ngIf="column.type === 'text' || !column.type">
+                        {{ column.format ? column.format(getNestedProperty(item, column.key)) : getNestedProperty(item,
+                        column.key) }}
+                    </ng-container>
+
+                    <!-- Date content -->
+                    <ng-container *ngIf="column.type === 'date'">
+                        {{ column.format ? column.format(getNestedProperty(item, column.key)) : getNestedProperty(item,
+                        column.key) | customDate}}
+                    </ng-container>
+
+                    <!-- Image content -->
+                    <ng-container *ngIf="column.type === 'image'">
+                        <img *ngIf="getNestedProperty(item, column.key)" [src]="getNestedProperty(item, column.key)"
+                            alt="Image" class="table-image">
+                        <div *ngIf="!getNestedProperty(item, column.key)" class="image-placeholder"></div>
+                    </ng-container>
+
+                    <!-- Boolean content -->
+                    <ng-container *ngIf="column.type === 'boolean'">
+                        <span class="status-indicator" [ngClass]="{'active': getNestedProperty(item, column.key), 
+                                'inactive': !getNestedProperty(item, column.key)}">
+                            <lucide-icon *ngIf="getNestedProperty(item, column.key)" [name]="icons.check"
+                                class="verified-icon"></lucide-icon>
+                            <lucide-icon *ngIf="!getNestedProperty(item, column.key)" [name]="icons.x"
+                                class="not-verified-icon"></lucide-icon>
+                        </span>
+                    </ng-container>
+
+                    <!-- Actions content -->
+                    <ng-container *ngIf="column.type === 'actions'">
+                        <div class="action-buttons">
+                            <button *ngIf="getNestedProperty(item, 'canEdit') !== false" class="action-btn edit"
+                                (click)="onActionClick('edit', item, $event)">
+                                <lucide-icon [name]="icons.edit"></lucide-icon>
+                                <!-- <span class="action-text">Edit</span> -->
+                            </button>
+                            <button *ngIf="getNestedProperty(item, 'canDelete') !== false" class="action-btn delete"
+                                (click)="onActionClick('delete', item, $event)">
+                                <lucide-icon [name]="icons.delete"></lucide-icon>
+                                <!-- <span class="action-text">Delete</span> -->
+                            </button>
+                            <button *ngIf="getNestedProperty(item, 'canView') !== false" class="action-btn view"
+                                (click)="onActionClick('view', item, $event)">
+                                <lucide-icon [name]="icons.view"></lucide-icon>
+                                <!-- <span class="action-text">View</span> -->
+                            </button>
+                        </div>
+                    </ng-container>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="showPagination && data && data.length > pageSize">
+        <button class="pagination-btn" [disabled]="currentPage === 1" (click)="prevPage()">
+            Previous
+        </button>
+
+        <div class="page-numbers">
+            <button *ngFor="let page of [].constructor(totalPages > 5 ? 5 : totalPages); let i = index"
+                class="page-number" [ngClass]="{'active': currentPage === i + 1}" (click)="goToPage(i + 1)">
+                {{ i + 1 }}
+            </button>
+            <span *ngIf="totalPages > 5">...</span>
+        </div>
+
+        <button class="pagination-btn" [disabled]="currentPage === totalPages" (click)="nextPage()">
+            Next
+        </button>
+    </div>
+</div>

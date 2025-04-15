@@ -1,4 +1,4 @@
-import { Controller, Get, Req } from '@nestjs/common';
+import { Controller, Get, Post, Req } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { UsersService } from './users.service';
 
@@ -11,7 +11,20 @@ export class UsersController {
         console.log('controlled hitted on /user/profile');
         const user = req['user'] as { userId: Types.ObjectId; role: string}
         const userDet = await this.userService.getUserDetails(user.userId);
-        console.log('user profile response: ', userDet);
         return userDet;
+    }
+
+    @Post('editorRequest')
+    async requestForEditor(@Req() req: Request){
+        const user = req['user'] as { userId: Types.ObjectId; role: string};
+        const response = await this.userService.requestForEditor(user.userId);
+        return response;
+    }
+
+    @Get('editorRequest/status')
+    async getEditorRequestStatus(@Req() req: Request){
+        const user = req['user'] as { userId: Types.ObjectId; role: string};
+        const status = await this.userService.getEditorRequestStatus(user.userId);
+        return {status};
     }
 }

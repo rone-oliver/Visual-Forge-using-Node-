@@ -11,6 +11,7 @@ import { HomeComponent as UserHomeComponent } from './components/user/home/home.
 import { HomeComponent as AdminHomeComponent } from './components/admin/home/home.component';
 import { UserSectionComponent } from './components/admin/user-section/user-section.component';
 import { ProfileComponent } from './components/user/profile/profile.component';
+import { EditorSectionComponent } from './components/admin/editor-section/editor-section.component';
 
 export const routes: Routes = [
     {
@@ -41,6 +42,9 @@ export const routes: Routes = [
             },
             {
                 path:'users', component: UserSectionComponent,
+            },
+            {
+                path:'editors', component: EditorSectionComponent,
             }
         ]
     },

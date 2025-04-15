@@ -83,12 +83,22 @@
         </div>
 
         <div class="editor-request-container" *ngIf="!user.isEditor">
-            <button class="editor-request-button">
-                <span class="button-text">Wish to be an Editor?</span>
+            <button class="editor-request-button" 
+                (click)="requestEditorStatus()"
+                [disabled]="editorRequestStatus === 'Pending'"
+                [class.pending]="editorRequestStatus === 'Pending'">
+                <span class="button-text">
+                    {{ editorRequestStatus === 'Pending' 
+                    ? 'Pending Approval' 
+                    : 'Wish to be an Editor?' }}
+                </span>
                 <div class="animated-bg"></div>
             </button>
-            <p class="editor-info">Editors can create and publish content, manage community posts, and get priority
-                support.</p>
+            <p class="editor-info">
+                {{ editorRequestStatus === 'Pending' 
+                   ? 'Your request is being reviewed by our admins.' 
+                   : 'Editors can create and publish content, manage community posts, and get priority support.' }}
+            </p>
         </div>
     </div>
 </div>
