@@ -12,6 +12,7 @@ import { HomeComponent as AdminHomeComponent } from './components/admin/home/hom
 import { UserSectionComponent } from './components/admin/user-section/user-section.component';
 import { ProfileComponent } from './components/user/profile/profile.component';
 import { EditorSectionComponent } from './components/admin/editor-section/editor-section.component';
+import { QuotationComponent as UserQuotationComponent } from './components/user/quotation/quotation.component';
 
 export const routes: Routes = [
     {
@@ -58,6 +59,9 @@ export const routes: Routes = [
             },
             {
                 path:'profile', component: ProfileComponent
+            },
+            {
+                path:'quotations', component: UserQuotationComponent
             }
         ]
     }

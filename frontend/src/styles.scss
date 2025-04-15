@@ -8,6 +8,7 @@
     --color-primary: theme('colors.primary.light');
     --color-background: theme('colors.background.light');
     --color-text: theme('colors.text.light');
+    --color-surface: theme('colors.surface.light');
     --color-secondary-100: theme('colors.secondary.100');
     --color-secondary-200: theme('colors.secondary.200');
     --color-secondary-300: theme('colors.secondary.300');
@@ -36,6 +37,7 @@
     --color-primary: theme('colors.primary.dark');
     --color-background: theme('colors.background.dark');
     --color-text: theme('colors.text.dark');
+    --color-surface: theme('colors.surface.dark');
     --color-success: #059669;
     --color-danger: #DC2626;
   }

@@ -58,6 +58,10 @@ export default {
           light: '#FFFFFF',
           dark: '#080F25',
         },
+        surface: {
+          light: '#E8EAF6',
+          dark: '#151C32',
+        },
         text: {
           light: '#080F25',
           dark: '#D9E1FA',

@@ -1,0 +1,70 @@
+<!-- quotations.component.html -->
+<div class="quotations-container">
+    <div class="header">
+        <div class="title-section">
+            <h1>Your Quotations</h1>
+            <i class="fas fa-angle-double-right"></i>
+        </div>
+        <button class="create-button">
+            <i class="fas fa-plus"></i>
+            Create new
+        </button>
+    </div>
+
+    <div class="filter-tabs">
+        <button [class.active]="activeFilter === 'all'" (click)="setFilter('all')">
+            All
+        </button>
+        <button [class.active]="activeFilter === 'accepted'" (click)="setFilter('accepted')">
+            Accepted
+        </button>
+        <button [class.active]="activeFilter === 'pending'" (click)="setFilter('pending')">
+            Pending
+        </button>
+        <button [class.active]="activeFilter === 'finished'" (click)="setFilter('finished')">
+            Finished
+        </button>
+        <button [class.active]="activeFilter === 'expired'" (click)="setFilter('expired')">
+            Expired
+        </button>
+    </div>
+
+    <div class="quotations-grid">
+        <div class="quotation-card" *ngFor="let quotation of filteredQuotations">
+            <div class="card-image-container">
+                <img [src]="quotation.imageUrl" [alt]="quotation.title">
+                <div class="amount-badge">${{ quotation.amount }}</div>
+                <div class="status-badge" [ngClass]="getStatusClass(quotation.status)">
+                    {{ quotation.status | titlecase }}
+                </div>
+            </div>
+
+            <div class="card-content">
+                <h3>{{ quotation.title }}</h3>
+                <p class="description">{{ quotation.description }}</p>
+
+                <div class="details">
+                    <div class="detail-item">
+                        <mat-icon>edit</mat-icon>
+                        <span>Editor: {{ quotation.editor }}</span>
+                    </div>
+
+                    <div class="detail-item">
+                        <mat-icon>label</mat-icon>
+                        <span>Theme: {{ quotation.theme }}</span>
+                    </div>
+
+                    <div class="detail-item">
+                        <mat-icon>link</mat-icon>
+                        <span>Linked files: {{ quotation.linkedFiles }}</span>
+                    </div>
+
+                    <div class="payment-warning" *ngIf="quotation.paymentPending">
+                        <mat-icon>error</mat-icon>
+                        <span>Adv. payment pending</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
