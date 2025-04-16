@@ -13,6 +13,7 @@ import { UserSectionComponent } from './components/admin/user-section/user-secti
 import { ProfileComponent } from './components/user/profile/profile.component';
 import { EditorSectionComponent } from './components/admin/editor-section/editor-section.component';
 import { QuotationComponent as UserQuotationComponent } from './components/user/quotation/quotation.component';
+import { CreateQuotationComponent } from './components/user/create-quotation/create-quotation.component';
 
 export const routes: Routes = [
     {
@@ -62,6 +63,9 @@ export const routes: Routes = [
             },
             {
                 path:'quotations', component: UserQuotationComponent
+            },
+            {
+                path:'create-quotation', component: CreateQuotationComponent
             }
         ]
     }

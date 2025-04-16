@@ -1,0 +1,96 @@
+<div class="flex flex-col items-center pb-8 justify-center min-h-screen px-4 bg-background text-text">
+    <h1 class="text-2xl md:text-3xl font-bold mb-6 text-center">
+        Craft your unique quotation
+    </h1>
+
+    <form [formGroup]="quotationForm" (ngSubmit)="onSubmit()" class="relative w-full max-w-4xl">
+        <div class="p-6 rounded-lg shadow-lg glass">
+            <div class="absolute inset-0 w-full h-full rounded-lg opacity-20 z-0 bg-image"></div>
+
+            <div class="relative z-10">
+                <div class="mb-4">
+                    <label class="block text-lg font-bold mb-2">
+                        Title
+                    </label>
+                    <input formControlName="title"
+                        class="w-full p-2 border rounded input-field focus:outline-none focus:ring-2 focus:ring-primary transition duration-300"
+                        placeholder="Title" type="text" />
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-lg font-bold mb-2">
+                        Description
+                    </label>
+                    <textarea formControlName="description"
+                        class="w-full p-2 border rounded input-field focus:outline-none focus:ring-2 focus:ring-primary transition duration-300"
+                        placeholder="Description" rows="4"></textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-lg font-bold mb-2">
+                        Theme
+                    </label>
+                    <input formControlName="theme"
+                        class="w-full p-2 border rounded input-field focus:outline-none focus:ring-2 focus:ring-primary transition duration-300"
+                        placeholder="Theme" type="text" />
+                </div>
+
+                <div class="mb-4 flex flex-col md:flex-row md:space-x-4">
+                    <div class="flex-1 mb-4 md:mb-0">
+                        <label class="block text-lg font-bold mb-2">
+                            Due Date
+                        </label>
+                        <div class="flex items-center">
+                            <span class="mr-2 font-bold">Before</span>
+                            <input formControlName="dueDate"
+                                class="w-full p-2 border rounded input-field focus:outline-none focus:ring-2 focus:ring-primary transition duration-300"
+                                placeholder="21/04/2005" type="text" />
+                        </div>
+                    </div>
+
+                    <div class="flex-1">
+                        <label class="block text-lg font-bold mb-2">
+                            Price
+                        </label>
+                        <div class="flex items-center">
+                            <span class="text-success font-bold mr-2">$</span>
+                            <input formControlName="price"
+                                class="w-full p-2 border rounded input-field focus:outline-none focus:ring-2 focus:ring-primary transition duration-300"
+                                placeholder="Price" type="text" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-lg font-bold mb-2">
+                        Add Files
+                    </label>
+                    <div class="flex items-center justify-center w-full">
+                        <label
+                            class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer file-upload-area">
+                            <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                <svg class="w-8 h-8 mb-2 file-icon" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                </svg>
+                                <p class="text-sm"><span class="font-semibold">Click to upload</span> or drag and drop
+                                </p>
+                                <p class="text-xs">Image, Audio, or Video files</p>
+                            </div>
+                            <input type="file" class="hidden" (change)="onFileSelected($event)" accept="image/*, audio/*, video/*"/>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="flex justify-end mt-6">
+                    <button type="submit"
+                        class="create-button w-full sm:w-auto font-bold py-3 px-6 rounded-lg text-white transition duration-300"
+                        [disabled]="!quotationForm.valid">
+                        Publish
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

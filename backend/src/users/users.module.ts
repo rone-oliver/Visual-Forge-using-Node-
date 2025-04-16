@@ -5,6 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { User, userSchema } from './models/user.schema';
 import { EditorRequestSchema } from 'src/common/models/editorRequest.schema';
 import { Editor, editorSchema } from 'src/editors/models/editor.schema';
+import { Quotation, QuotationSchema } from 'src/common/models/quotation.schema';
 
 @Module({
   controllers: [UsersController],
@@ -13,7 +14,8 @@ import { Editor, editorSchema } from 'src/editors/models/editor.schema';
     MongooseModule.forFeature([
       { name:User.name, schema: userSchema},
       { name: 'EditorRequest', schema: EditorRequestSchema},
-      { name: Editor.name, schema: editorSchema}
+      { name: Editor.name, schema: editorSchema},
+      { name: Quotation.name , schema: QuotationSchema},
     ])
   ],
   exports: [UsersService]

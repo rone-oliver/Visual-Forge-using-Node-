@@ -28,4 +28,11 @@ export class UsersController {
         const status = await this.userService.getEditorRequestStatus(user.userId);
         return {status};
     }
+
+    @Get('quotations')
+    async getQuotations(@Req() req: Request){
+        const user = req['user'] as { userId: Types.ObjectId; role: string};
+        const quotations = await this.userService.getQuotations(user.userId);
+        return quotations;
+    }
 }

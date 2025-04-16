@@ -37,4 +37,11 @@ export class UserService {
       catchError(()=> of(null))
     );
   }
+
+  getQuotations(): Observable<any[]>{
+    return this.http.get<any[]>(`${this.apiUrl}/user/quotations`).pipe(
+      map((response)=>response),
+      catchError((error)=> {throw error})
+    )
+  }
 }

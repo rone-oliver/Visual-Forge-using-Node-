@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
+import { UserService } from '../../../services/user/user.service';
+import { RouterModule } from '@angular/router';
 
 
 interface Quotation {
@@ -17,15 +19,17 @@ interface Quotation {
 }
 @Component({
   selector: 'app-quotation',
-  imports: [CommonModule,MatIconModule],
+  imports: [CommonModule, MatIconModule,RouterModule],
   templateUrl: './quotation.component.html',
   styleUrl: './quotation.component.scss'
 })
-export class QuotationComponent implements OnInit{
+export class QuotationComponent implements OnInit {
   quotations: Quotation[] = [];
   activeFilter: 'all' | 'accepted' | 'pending' | 'finished' | 'expired' = 'all';
 
-  constructor() { }
+  constructor(
+    private userService: UserService,
+  ) { }
 
   ngOnInit(): void {
     this.loadQuotations();
@@ -33,77 +37,85 @@ export class QuotationComponent implements OnInit{
 
   loadQuotations(): void {
     // This would typically come from a service
-    this.quotations = [
-      {
-        id: 1,
-        amount: 200,
-        title: 'The good police',
-        description: 'A short video',
-        imageUrl: 'https://placehold.co/600x400',
-        status: 'accepted',
-        editor: 'username',
-        paymentPending: true,
-        theme: 'National Police Day',
-        linkedFiles: 2
+    // this.quotations = [
+    //   {
+    //     id: 1,
+    //     amount: 200,
+    //     title: 'The good police',
+    //     description: 'A short video',
+    //     imageUrl: 'https://placehold.co/600x400',
+    //     status: 'accepted',
+    //     editor: 'username',
+    //     paymentPending: true,
+    //     theme: 'National Police Day',
+    //     linkedFiles: 2
+    //   },
+    //   {
+    //     id: 2,
+    //     amount: 200,
+    //     title: 'The good police',
+    //     description: 'A short video',
+    //     imageUrl: 'https://placehold.co/600x400',
+    //     status: 'expired',
+    //     editor: 'username',
+    //     theme: 'National Police Day',
+    //     linkedFiles: 2
+    //   },
+    //   {
+    //     id: 3,
+    //     amount: 200,
+    //     title: 'The good police',
+    //     description: 'A short video',
+    //     imageUrl: 'https://placehold.co/600x400',
+    //     status: 'pending',
+    //     editor: 'username',
+    //     theme: 'National Police Day',
+    //     linkedFiles: 2
+    //   },
+    //   {
+    //     id: 4,
+    //     amount: 200,
+    //     title: 'The good police',
+    //     description: 'A short video',
+    //     imageUrl: 'https://placehold.co/600x400',
+    //     status: 'accepted',
+    //     editor: 'username',
+    //     paymentPending: true,
+    //     theme: 'National Police Day',
+    //     linkedFiles: 2
+    //   },
+    //   {
+    //     id: 5,
+    //     amount: 200,
+    //     title: 'The good police',
+    //     description: 'A short video',
+    //     imageUrl: 'https://placehold.co/600x400',
+    //     status: 'finished',
+    //     editor: 'username',
+    //     theme: 'National Police Day',
+    //     linkedFiles: 2
+    //   },
+    //   {
+    //     id: 6,
+    //     amount: 200,
+    //     title: 'The good police',
+    //     description: 'A short video',
+    //     imageUrl: 'https://placehold.co/600x400',
+    //     status: 'accepted',
+    //     editor: 'username',
+    //     paymentPending: true,
+    //     theme: 'National Police Day',
+    //     linkedFiles: 2
+    //   }
+    // ];
+    this.userService.getQuotations().subscribe({
+      next: (quotations) => {
+        this.quotations = quotations;
       },
-      {
-        id: 2,
-        amount: 200,
-        title: 'The good police',
-        description: 'A short video',
-        imageUrl: 'https://placehold.co/600x400',
-        status: 'expired',
-        editor: 'username',
-        theme: 'National Police Day',
-        linkedFiles: 2
-      },
-      {
-        id: 3,
-        amount: 200,
-        title: 'The good police',
-        description: 'A short video',
-        imageUrl: 'https://placehold.co/600x400',
-        status: 'pending',
-        editor: 'username',
-        theme: 'National Police Day',
-        linkedFiles: 2
-      },
-      {
-        id: 4,
-        amount: 200,
-        title: 'The good police',
-        description: 'A short video',
-        imageUrl: 'https://placehold.co/600x400',
-        status: 'accepted',
-        editor: 'username',
-        paymentPending: true,
-        theme: 'National Police Day',
-        linkedFiles: 2
-      },
-      {
-        id: 5,
-        amount: 200,
-        title: 'The good police',
-        description: 'A short video',
-        imageUrl: 'https://placehold.co/600x400',
-        status: 'finished',
-        editor: 'username',
-        theme: 'National Police Day',
-        linkedFiles: 2
-      },
-      {
-        id: 6,
-        amount: 200,
-        title: 'The good police',
-        description: 'A short video',
-        imageUrl: 'https://placehold.co/600x400',
-        status: 'accepted',
-        editor: 'username',
-        paymentPending: true,
-        theme: 'National Police Day',
-        linkedFiles: 2
+      error: (err) => {
+        console.error('error getting quotations', err);
       }
-    ];
+    })
   }
 
   setFilter(filter: 'all' | 'accepted' | 'pending' | 'finished' | 'expired'): void {

@@ -5,6 +5,7 @@ import { User, UserDocument } from './models/user.schema';
 import { Categories, EditorRequest, EditorRequestDocument } from 'src/common/models/editorRequest.schema';
 import * as bcrypt from 'bcrypt';
 import { Editor, EditorDocument } from 'src/editors/models/editor.schema';
+import { Quotation, QuotationDocument } from 'src/common/models/quotation.schema';
 
 @Injectable()
 export class UsersService {
@@ -13,6 +14,7 @@ export class UsersService {
         @InjectModel(User.name) private userModel: Model<UserDocument>,
         @InjectModel(Editor.name) private editorModel: Model<EditorDocument>,
         @InjectModel(EditorRequest.name) private editorRequestModel: Model<EditorRequestDocument>,
+        @InjectModel(Quotation.name) private quotationModel: Model<QuotationDocument>,
     ) { }
 
     async findOne(filter: Partial<User>): Promise<User | null> {
@@ -161,6 +163,16 @@ export class UsersService {
             return null;
         } catch (error) {
             this.logger.error(`Error fetching editor request status: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async getQuotations(userId: Types.ObjectId): Promise<any[]>{
+        try {
+            const quotations = await this.quotationModel.find({userId});
+            return quotations;
+        } catch (error) {
+            this.logger.error(`Error fetching quotations: ${error}`);
             throw error;
         }
     }

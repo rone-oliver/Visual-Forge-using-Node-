@@ -1,0 +1,128 @@
+/* quotation-form.component.scss */
+
+:host {
+    display: block;
+}
+
+.bg-background {
+    background-color: var(--color-background);
+}
+
+.text-text {
+    color: var(--color-text);
+}
+
+.glass {
+    background: rgba(var(--color-surface-rgb), 0.2);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+}
+
+.bg-image {
+    background-image: url('https://placehold.co/400x600.png');
+    background-size: cover;
+    background-position: center;
+}
+
+.input-field {
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--color-text);
+}
+
+.file-upload-area {
+    background-color: var(--file-upload-bg);
+    border-color: var(--file-upload-border);
+    color: var(--file-upload-text);
+    transition: all 0.3s ease;
+
+    &:hover {
+        background-color: var(--file-upload-hover-bg);
+    }
+}
+
+.file-icon {
+    color: var(--file-upload-icon);
+}
+
+.create-button {
+    background-color: var(--color-primary);
+    margin: 0 1rem 1rem;
+    font-size: 1.125rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+
+    @media (max-width: 640px) {
+        width: calc(100% - 2rem);
+    }
+
+    &:hover {
+        background-color: var(--button-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    &:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    &:disabled {
+        background-color: var(--color-neutral-400);
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+        color:rgb(81, 80, 80)
+    }
+
+    &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0));
+        border-radius: inherit;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    &:hover::after {
+        opacity: 1;
+    }
+}
+
+.text-success {
+    color: var(--color-success);
+}
+
+/* Theme-specific CSS variables */
+:host-context(.light) {
+    --input-bg: white;
+    --input-border: var(--color-neutral-300);
+    --button-hover: #5b61e6;
+    /* Slightly darker than primary */
+    --file-upload-bg: white;
+    --file-upload-border: var(--color-neutral-300);
+    --file-upload-text: var(--color-neutral-600);
+    --file-upload-icon: var(--color-neutral-500);
+    --file-upload-hover-bg: var(--color-neutral-100);
+    --color-surface-rgb: 232, 234, 246;
+}
+
+:host-context(.dark) {
+    --input-bg: var(--color-neutral-200);
+    --input-border: var(--color-neutral-500);
+    --button-hover: #7b80ff;
+    /* Slightly lighter than primary */
+    --file-upload-bg: var(--color-neutral-200);
+    --file-upload-border: var(--color-neutral-500);
+    --file-upload-text: var(--color-neutral-400);
+    --file-upload-icon: var(--color-neutral-300);
+    --file-upload-hover-bg: var(--color-neutral-100);
+    --color-surface-rgb: 21, 28, 50;
+}
