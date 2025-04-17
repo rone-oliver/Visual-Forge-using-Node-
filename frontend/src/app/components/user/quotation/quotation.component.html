@@ -32,8 +32,8 @@
     <div class="quotations-grid">
         <div class="quotation-card" *ngFor="let quotation of filteredQuotations">
             <div class="card-image-container">
-                <img [src]="quotation.imageUrl" [alt]="quotation.title">
-                <div class="amount-badge">${{ quotation.amount }}</div>
+                <img [src]="quotation.imageUrl || 'https://placehold.co/600x400'" [alt]="quotation.title">
+                <div class="amount-badge">${{ quotation.estimatedBudget }}</div>
                 <div class="status-badge" [ngClass]="getStatusClass(quotation.status)">
                     {{ quotation.status | titlecase }}
                 </div>
@@ -46,7 +46,7 @@
                 <div class="details">
                     <div class="detail-item">
                         <mat-icon>edit</mat-icon>
-                        <span>Editor: {{ quotation.editor }}</span>
+                        <span>Editor: {{ quotation.editor || 'Not assigned' }}</span>
                     </div>
 
                     <div class="detail-item">
@@ -55,8 +55,13 @@
                     </div>
 
                     <div class="detail-item">
+                        <mat-icon>category</mat-icon>
+                        <span>Output Type: {{ quotation.outputType }}</span>
+                    </div>
+
+                    <div class="detail-item">
                         <mat-icon>link</mat-icon>
-                        <span>Linked files: {{ quotation.linkedFiles }}</span>
+                        <span>Linked files: {{ quotation.linkedFiles || 'Nothing provided' }}</span>
                     </div>
 
                     <div class="payment-warning" *ngIf="quotation.paymentPending">

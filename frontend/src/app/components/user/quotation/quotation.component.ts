@@ -3,20 +3,21 @@ import { Component, OnInit } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { UserService } from '../../../services/user/user.service';
 import { RouterModule } from '@angular/router';
+import { IQuotation } from '../../../interfaces/quotation.interface';
 
 
-interface Quotation {
-  id: number;
-  amount: number;
-  title: string;
-  description: string;
-  imageUrl: string;
-  status: 'accepted' | 'expired' | 'pending' | 'finished';
-  editor: string;
-  paymentPending?: boolean;
-  theme: string;
-  linkedFiles: number;
-}
+// interface Quotation {
+//   id: number;
+//   estimatedBudget: number;
+//   title: string;
+//   description: string;
+//   imageUrl: string;
+//   status: 'accepted' | 'expired' | 'pending' | 'finished';
+//   editor: string;
+//   paymentPending?: boolean;
+//   theme: string;
+//   linkedFiles: number;
+// }
 @Component({
   selector: 'app-quotation',
   imports: [CommonModule, MatIconModule,RouterModule],
@@ -24,7 +25,7 @@ interface Quotation {
   styleUrl: './quotation.component.scss'
 })
 export class QuotationComponent implements OnInit {
-  quotations: Quotation[] = [];
+  quotations: IQuotation[] = [];
   activeFilter: 'all' | 'accepted' | 'pending' | 'finished' | 'expired' = 'all';
 
   constructor(
@@ -122,7 +123,7 @@ export class QuotationComponent implements OnInit {
     this.activeFilter = filter;
   }
 
-  get filteredQuotations(): Quotation[] {
+  get filteredQuotations(): IQuotation[] {
     if (this.activeFilter === 'all') {
       return this.quotations;
     }

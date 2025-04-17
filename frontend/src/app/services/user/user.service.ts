@@ -44,4 +44,11 @@ export class UserService {
       catchError((error)=> {throw error})
     )
   }
+
+  createQuotation(quotation:any): Observable<boolean>{
+    return this.http.post<boolean>(`${this.apiUrl}/user/create-quotation`,{quotation}).pipe(
+      map(response=>response),
+      catchError(err=>{ throw err})
+    )
+  }
 }

@@ -97,15 +97,15 @@ export class UsersService {
         }
     }
 
-    async getUserDetails(userId: Types.ObjectId): Promise<User & { editorDetails?: any} | null> {
+    async getUserDetails(userId: Types.ObjectId): Promise<User & { editorDetails?: any } | null> {
         try {
             this.logger.log(`Fetching user details for ID: ${userId}`);
             const user = await this.userModel.findById(userId);
-            if(user && user.isEditor){
+            if (user && user.isEditor) {
                 this.logger.log('Fetching the editor details');
                 console.log('user id: ', user._id);
-                const editorDetails = await this.editorModel.findOne({userId: user._id}).lean();
-                if(editorDetails){
+                const editorDetails = await this.editorModel.findOne({ userId: user._id }).lean();
+                if (editorDetails) {
                     this.logger.log('Editor details: ', editorDetails)
                     const userObj = user.toObject();
                     return {
@@ -119,7 +119,7 @@ export class UsersService {
                             createdAt: editorDetails.createdAt,
                         }
                     }
-                }else console.log('no editor details');
+                } else console.log('no editor details');
             }
             return user;
         } catch (error) {
@@ -130,14 +130,14 @@ export class UsersService {
 
     private calculateAverageRating(ratings: any[] | undefined): number {
         if (!ratings || ratings.length === 0) return 0;
-        
+
         const sum = ratings.reduce((acc, curr) => acc + curr.rating, 0);
         return parseFloat((sum / ratings.length).toFixed(1));
     }
 
     async requestForEditor(userId: Types.ObjectId): Promise<boolean> {
         try {
-            
+
             const user = await this.userModel.findById(userId).select('isEditor');
             if (user && !user.isEditor) {
                 this.logger.log(`User ${userId} is not an editor. Proceeding with request.`);
@@ -153,10 +153,10 @@ export class UsersService {
         }
     }
 
-    async getEditorRequestStatus(userId: Types.ObjectId): Promise<string | null>{
+    async getEditorRequestStatus(userId: Types.ObjectId): Promise<string | null> {
         try {
-            const request = await this.editorRequestModel.findOne({ userId});
-            if(request){
+            const request = await this.editorRequestModel.findOne({ userId });
+            if (request) {
                 this.logger.log(`Editor request status for user ${userId}: ${request.status}`);
                 return request.status;
             }
@@ -167,12 +167,24 @@ export class UsersService {
         }
     }
 
-    async getQuotations(userId: Types.ObjectId): Promise<any[]>{
+    async getQuotations(userId: Types.ObjectId): Promise<any[]> {
         try {
-            const quotations = await this.quotationModel.find({userId});
+            const quotations = await this.quotationModel.find({ userId });
             return quotations;
         } catch (error) {
             this.logger.error(`Error fetching quotations: ${error}`);
+            throw error;
+        }
+    }
+
+    async createQuotation(quotation: Partial<Quotation>,userId: Types.ObjectId): Promise<Quotation> {
+        try {
+            this.logger.log(quotation)
+            if (!quotation.dueDate) throw new Error('Due date is required');
+            quotation.userId = userId;
+            return this.quotationModel.create(quotation);
+        } catch (error) {
+            this.logger.error(`Error creating quotation: ${error.message}`);
             throw error;
         }
     }

@@ -9,6 +9,13 @@ export enum QuotationStatus{
     CANCELLED = 'Cancelled',
 }
 
+export enum OutputType {
+    IMAGE = 'Image',
+    VIDEO = 'Video',
+    AUDIO = 'Audio',
+    MIXED = 'Mixed'
+}
+
 export type QuotationDocument = Quotation & Document;
 
 @Schema({ timestamps: true, collection: 'Quotations'})
@@ -28,7 +35,10 @@ export class Quotation {
     theme: string;
 
     @Prop({ type: Number})
-    price: number;
+    estimatedBudget: number;
+
+    @Prop({ type: String, enum: OutputType, required: true})
+    outputType: string;
 
     @Prop({ type: Number })
     advanceAmount: number;
@@ -39,7 +49,7 @@ export class Quotation {
     @Prop({ type: Array})
     attachedFiles: string[];
 
-    @Prop({ type: String, enum: QuotationStatus})
+    @Prop({ type: String, enum: QuotationStatus, default: QuotationStatus.PUBLISHED})
     status: QuotationStatus;
 
     @Prop({ type: Types.ObjectId, ref: 'Editor'})
