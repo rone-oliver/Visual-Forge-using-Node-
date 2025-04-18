@@ -188,4 +188,14 @@ export class UsersService {
             throw error;
         }
     }
+
+    async updateProfileImage(url:string,userId:Types.ObjectId){
+        try {
+            await this.userModel.updateOne({_id: userId}, { profileImage: url});
+            return true;
+        } catch (error) {
+            this.logger.error(`Error updating profile image: ${error.message}`);
+            throw error;
+        }
+    }
 }

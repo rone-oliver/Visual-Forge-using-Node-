@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, Req } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { UsersService } from './users.service';
 
@@ -40,6 +40,16 @@ export class UsersController {
     async createQuotation(@Req() req: Request, @Body() body){
         const user = req['user'] as { userId: Types.ObjectId; role: string};
         const success = await this.userService.createQuotation(body.quotation,user.userId);
+        if(success){
+            return true;
+        }
+        return false;
+    }
+
+    @Patch('profile-image')
+    async updateProfileImage(@Req() req: Request, @Body() body){
+        const user = req['user'] as { userId: Types.ObjectId, role: string}
+        const success = await this.userService.updateProfileImage(body.url, user.userId);
         if(success){
             return true;
         }

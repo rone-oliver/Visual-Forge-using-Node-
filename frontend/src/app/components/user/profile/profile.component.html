@@ -1,4 +1,4 @@
-<div class="user-profile-container" *ngIf="user$ | async as user">
+<div class="user-profile-container" *ngIf="user">
     <div class="profile-header">
         <div class="cover-photo"></div>
 
@@ -11,6 +11,35 @@
                     <ng-template #defaultAvatar>
                         <mat-icon>person</mat-icon>
                     </ng-template>
+                    
+                    <!-- Edit icon overlay -->
+                    <label>
+                        <div class="edit-overlay">
+                            <mat-icon>edit</mat-icon>
+                        </div>
+                        <!-- Hidden file input -->
+                        <input 
+                            type="file" 
+                            #fileInput 
+                            style="display: none" 
+                            accept="image/*" 
+                            (change)="onFileSelected($event)"
+                        >
+                    </label>
+                </div>
+                
+            </div>
+
+            <div *ngIf="selectedFile" class="image-upload-dialog">
+                <div class="dialog-content">
+                    <h3>Update Profile Picture</h3>
+                    <div class="image-preview">
+                        <img [src]="previewUrl" alt="Preview">
+                    </div>
+                    <div class="dialog-actions">
+                        <button class="cancel-btn" (click)="cancelUpload()">Cancel</button>
+                        <button class="upload-btn" (click)="uploadImage()">Update</button>
+                    </div>
                 </div>
             </div>
 

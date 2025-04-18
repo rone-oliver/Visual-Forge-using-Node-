@@ -51,4 +51,11 @@ export class UserService {
       catchError(err=>{ throw err})
     )
   }
+
+  updateProfileImage(url: string): Observable<boolean>{
+    return this.http.patch<boolean>(`${this.apiUrl}/user/profile-image`,{ url}).pipe(
+      map(response=>response),
+      catchError(error=>{throw error})
+    )
+  }
 }

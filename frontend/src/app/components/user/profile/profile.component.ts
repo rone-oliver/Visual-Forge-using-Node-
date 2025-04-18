@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { User } from '../../../interfaces/user.interface';
 import { UserService } from '../../../services/user/user.service';
 import { Observable } from 'rxjs';
 import { DatePipe } from '../../../pipes/date.pipe';
 import { MatSnackBarConfig, MatSnackBar } from '@angular/material/snack-bar';
+import { CloudinaryService } from '../../../services/cloudinary.service';
 
 @Component({
   selector: 'app-profile',
@@ -14,12 +15,16 @@ import { MatSnackBarConfig, MatSnackBar } from '@angular/material/snack-bar';
   styleUrl: './profile.component.scss'
 })
 export class ProfileComponent implements OnInit{
-  user$!:Observable<User>;
+  user!:User;
   editorRequestStatus: string | null = null;
+  selectedFile: File | null = null;
+  previewUrl: string | ArrayBuffer | null = null;
+  @ViewChild('fileInput') fileInput!: ElementRef;
 
   constructor(
     private userService: UserService,
     private snackBar: MatSnackBar,
+    private cloudinaryService: CloudinaryService,
   ) { }
 
   showSuccess(message:string):void {
@@ -33,8 +38,19 @@ export class ProfileComponent implements OnInit{
   }
 
   ngOnInit(): void {
-    this.user$ = this.userService.getUserProfile();
+    this.getUserData();
     this.checkEditorRequestStatus();
+  }
+
+  private getUserData(){
+    this.userService.getUserProfile().subscribe({
+      next:(userData)=>{
+        this.user = userData;
+      },
+      error:(error)=>{
+        console.error('Error fetching user profile:', error);
+      }
+    })
   }
 
   private checkEditorRequestStatus(): void {
@@ -65,5 +81,43 @@ export class ProfileComponent implements OnInit{
   hasSocialLinks(socialLinks: any): boolean {
     if (!socialLinks) return false;
     return Object.values(socialLinks).some(link => !!link);
+  }
+
+  onFileSelected(event:any){
+    if (event.target.files && event.target.files.length > 0) {
+      this.selectedFile = event.target.files[0];
+      this.createImagePreview();
+    }
+  }
+
+  private createImagePreview() {
+    if(!this.selectedFile) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.previewUrl = reader.result;
+    };
+    reader.readAsDataURL(this.selectedFile);
+  }
+
+  cancelUpload() {
+    this.selectedFile = null;
+    this.previewUrl = null;
+    setTimeout(() => {
+      if (this.fileInput) {
+        this.fileInput.nativeElement.value = '';
+      }
+    });
+  }
+
+  uploadImage(){
+    if(this.selectedFile){
+      this.cloudinaryService.uploadProfileImage(this.selectedFile, this.user.username).subscribe((url:string)=>{
+        this.userService.updateProfileImage(url).subscribe(()=>{
+          this.showSuccess('Profile image updated successfully!');
+          this.getUserData();
+          this.cancelUpload();
+        })
+      })
+    }
   }
 }
