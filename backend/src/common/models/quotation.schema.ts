@@ -16,7 +16,35 @@ export enum OutputType {
     MIXED = 'Mixed'
 }
 
+export enum FileType {
+    IMAGE = 'image',
+    VIDEO = 'video',
+    AUDIO = 'audio',
+    DOCUMENT = 'document'
+}
+
 export type QuotationDocument = Quotation & Document;
+
+@Schema()
+class FileAttachment {
+    @Prop({ required: true })
+    url: string;
+
+    @Prop({ required: true, enum: FileType, type: String })
+    fileType: FileType;
+
+    @Prop()
+    fileName: string;
+
+    @Prop()
+    size?: number;
+
+    @Prop()
+    mimeType?: string;
+
+    @Prop({ default: Date.now })
+    uploadedAt: Date;
+}
 
 @Schema({ timestamps: true, collection: 'Quotations'})
 export class Quotation {
@@ -46,8 +74,8 @@ export class Quotation {
     @Prop({ type: Date})
     dueDate: Date;
 
-    @Prop({ type: Array})
-    attachedFiles: string[];
+    @Prop({ type: [{ type: FileAttachment }] })
+    attachedFiles: FileAttachment[];
 
     @Prop({ type: String, enum: QuotationStatus, default: QuotationStatus.PUBLISHED})
     status: QuotationStatus;

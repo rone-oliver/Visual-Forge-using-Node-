@@ -6,6 +6,7 @@ import { Categories, EditorRequest, EditorRequestDocument } from 'src/common/mod
 import * as bcrypt from 'bcrypt';
 import { Editor, EditorDocument } from 'src/editors/models/editor.schema';
 import { Quotation, QuotationDocument } from 'src/common/models/quotation.schema';
+import { CloudinaryService, FileUploadResult } from 'src/common/cloudinary/cloudinary.service';
 
 @Injectable()
 export class UsersService {
@@ -15,6 +16,7 @@ export class UsersService {
         @InjectModel(Editor.name) private editorModel: Model<EditorDocument>,
         @InjectModel(EditorRequest.name) private editorRequestModel: Model<EditorRequestDocument>,
         @InjectModel(Quotation.name) private quotationModel: Model<QuotationDocument>,
+        private cloudinaryService: CloudinaryService,
     ) { }
 
     async findOne(filter: Partial<User>): Promise<User | null> {
@@ -195,6 +197,16 @@ export class UsersService {
             return true;
         } catch (error) {
             this.logger.error(`Error updating profile image: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async uploadFiles(files:Express.Multer.File[], folder?:string): Promise<FileUploadResult[]> {
+        try {
+            const uploadPromises = await this.cloudinaryService.uploadFiles(files, folder);
+            return Promise.all(uploadPromises);
+        } catch (error) {
+            this.logger.error(`Error in uploadFiles: ${error.message}`);
             throw error;
         }
     }

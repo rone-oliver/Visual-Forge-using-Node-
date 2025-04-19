@@ -17,6 +17,7 @@ import { TokenRefreshService } from './auth/token-refresh/token-refresh.service'
 import { TokenRefreshController } from './auth/token-refresh/token-refresh.controller';
 import { JwtConfigModule } from './common/config/jwt.module';
 import { AuthModule } from './auth/auth.module';
+import { CloudinaryService } from './common/cloudinary/cloudinary.service';
 
 @Module({
   imports: [
@@ -53,6 +54,6 @@ import { AuthModule } from './auth/auth.module';
     AuthModule,UsersModule, DatabaseModule, AdminsModule, EditorsModule, UsersAuthModule, EditorsAuthModule, AdminsAuthModule, JwtConfigModule
   ],
   controllers: [AppController, UsersAuthController, TokenRefreshController],
-  providers: [AppService, JwtService, TokenRefreshService],
+  providers: [AppService, JwtService, TokenRefreshService, CloudinaryService],
 })
 export class AppModule {}

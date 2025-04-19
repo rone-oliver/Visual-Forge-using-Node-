@@ -13,6 +13,40 @@ export enum OutputType {
     MIXED = 'Mixed'
 }
 
+export enum FileType {
+    IMAGE = 'image',
+    VIDEO = 'video',
+    AUDIO = 'audio',
+    DOCUMENT = 'document'
+}
+
+export interface FileAttachment {
+    url: string;
+    fileType: FileType;
+    fileName: string;
+    size?: number;
+    mimeType?: string;
+    uploadedAt?: Date;
+}
+
+export interface FileAttachmentResponse {
+    url: string;
+    fileType: FileType;
+    fileName: string;
+    size: number;
+    mimeType: string;
+    uploadedAt: Date;
+}
+
+export interface FileUploadProgress {
+    file: File;
+    progress: number;
+    status: 'pending' | 'uploading' | 'completed' | 'error';
+    url?: string;
+    fileType: FileType;
+    error?: string;
+}
+
 export interface IQuotation {
     _id?: string;
     userId?: string;
@@ -27,7 +61,7 @@ export interface IQuotation {
     editor?: string;
     editorId?: string;
     paymentPending?: boolean;
-    linkedFiles?: number;
+    attachedFiles?: FileAttachment[];
     imageUrl?: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;

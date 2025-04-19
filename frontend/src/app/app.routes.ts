@@ -6,7 +6,7 @@ import { UserRegisterComponent } from './components/user/user-register/user-regi
 import { LoginComponent } from './Pages/User/login/login.component';
 import { LoginComponent as AdminLoginComponent } from './Pages/Admin/login/login.component';
 import { AuthLayoutComponent } from './Layouts/auth-layout/auth-layout.component';
-import { userGuard, adminGuard, userLoginGuard, adminLoginGuard } from './guards/auth.guard';
+import { userGuard, adminGuard, userLoginGuard, adminLoginGuard, editorGuard } from './guards/auth.guard';
 import { HomeComponent as UserHomeComponent } from './components/user/home/home.component';
 import { HomeComponent as AdminHomeComponent } from './components/admin/home/home.component';
 import { UserSectionComponent } from './components/admin/user-section/user-section.component';
@@ -14,6 +14,7 @@ import { ProfileComponent } from './components/user/profile/profile.component';
 import { EditorSectionComponent } from './components/admin/editor-section/editor-section.component';
 import { QuotationComponent as UserQuotationComponent } from './components/user/quotation/quotation.component';
 import { CreateQuotationComponent } from './components/user/create-quotation/create-quotation.component';
+import { QuotationComponent as EditorQuotationComponent } from './components/editor/quotation/quotation.component';
 
 export const routes: Routes = [
     {
@@ -66,6 +67,16 @@ export const routes: Routes = [
             },
             {
                 path:'create-quotation', component: CreateQuotationComponent
+            }
+        ]
+    },
+    {
+        path: 'editor', component: UserLayoutComponent,
+        canActivate: [editorGuard],
+        canActivateChild: [editorGuard],
+        children: [
+            {
+                path:'quotations',component: EditorQuotationComponent
             }
         ]
     }

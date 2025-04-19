@@ -12,20 +12,23 @@
     </div>
 
     <div class="filter-tabs">
-        <button [class.active]="activeFilter === 'all'" (click)="setFilter('all')">
+        <button [class.active]="activeFilter === 'All'" (click)="setFilter('All')">
             All
         </button>
-        <button [class.active]="activeFilter === 'accepted'" (click)="setFilter('accepted')">
+        <button [class.active]="activeFilter === 'Accepted'" (click)="setFilter('Accepted')">
             Accepted
         </button>
-        <button [class.active]="activeFilter === 'pending'" (click)="setFilter('pending')">
-            Pending
+        <button [class.active]="activeFilter === 'Published'" (click)="setFilter('Published')">
+            Published
         </button>
-        <button [class.active]="activeFilter === 'finished'" (click)="setFilter('finished')">
-            Finished
+        <button [class.active]="activeFilter === 'Completed'" (click)="setFilter('Completed')">
+            Completed
         </button>
-        <button [class.active]="activeFilter === 'expired'" (click)="setFilter('expired')">
+        <button [class.active]="activeFilter === 'Expired'" (click)="setFilter('Expired')">
             Expired
+        </button>
+        <button [class.active]="activeFilter === 'Cancelled'" (click)="setFilter('Cancelled')">
+            Cancelled
         </button>
     </div>
 
@@ -59,9 +62,41 @@
                         <span>Output Type: {{ quotation.outputType }}</span>
                     </div>
 
-                    <div class="detail-item">
-                        <mat-icon>link</mat-icon>
-                        <span>Linked files: {{ quotation.linkedFiles || 'Nothing provided' }}</span>
+                    <!-- File Attachments Section -->
+                    <div class="file-attachments" *ngIf="quotation.attachedFiles && quotation.attachedFiles.length > 0">
+                        <div class="file-type-badges">
+                            <!-- Image Files -->
+                            <div class="file-badge" 
+                                 *ngIf="countFilesByType(quotation, FileType.IMAGE) > 0"
+                                 (click)="openFileModal(quotation, FileType.IMAGE)">
+                                <mat-icon>image</mat-icon>
+                                <span>Images: {{ countFilesByType(quotation, FileType.IMAGE) }}</span>
+                            </div>
+                            
+                            <!-- Video Files -->
+                            <div class="file-badge" 
+                                 *ngIf="countFilesByType(quotation, FileType.VIDEO) > 0"
+                                 (click)="openFileModal(quotation, FileType.VIDEO)">
+                                <mat-icon>videocam</mat-icon>
+                                <span>Videos: {{ countFilesByType(quotation, FileType.VIDEO) }}</span>
+                            </div>
+                            
+                            <!-- Audio Files -->
+                            <div class="file-badge" 
+                                 *ngIf="countFilesByType(quotation, FileType.AUDIO) > 0"
+                                 (click)="openFileModal(quotation, FileType.AUDIO)">
+                                <mat-icon>audiotrack</mat-icon>
+                                <span>Audio: {{ countFilesByType(quotation, FileType.AUDIO) }}</span>
+                            </div>
+                            
+                            <!-- Document Files -->
+                            <div class="file-badge" 
+                                 *ngIf="countFilesByType(quotation, FileType.DOCUMENT) > 0"
+                                 (click)="openFileModal(quotation, FileType.DOCUMENT)">
+                                <mat-icon>description</mat-icon>
+                                <span>Documents: {{ countFilesByType(quotation, FileType.DOCUMENT) }}</span>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="payment-warning" *ngIf="quotation.paymentPending">

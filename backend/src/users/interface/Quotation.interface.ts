@@ -15,8 +15,24 @@ export interface IQuotation {
     editor?: string;
     editorId?: string | Types.ObjectId;
     paymentPending?: boolean;
-    linkedFiles?: number;
+    attachedFiles?: FileAttachment[];
     imageUrl?: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+}
+
+export enum FileType {
+    IMAGE = 'image',
+    VIDEO = 'video',
+    AUDIO = 'audio',
+    DOCUMENT = 'document'
+}
+
+export interface FileAttachment {
+    url: string;
+    fileType: FileType;
+    fileName: string;
+    size?: number;
+    mimeType?: string;
+    uploadedAt?: Date;
 }

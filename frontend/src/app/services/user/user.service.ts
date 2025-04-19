@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { User } from '../../interfaces/user.interface';
 import { catchError, map, Observable, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { FileAttachmentResponse } from '../../interfaces/quotation.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -56,6 +57,17 @@ export class UserService {
     return this.http.patch<boolean>(`${this.apiUrl}/user/profile-image`,{ url}).pipe(
       map(response=>response),
       catchError(error=>{throw error})
+    )
+  }
+
+  uploadQuotationFiles(files: File[]): Observable<FileAttachmentResponse[]>{
+    const formData = new FormData();
+    files.forEach(file => {
+      formData.append('files', file);
+    });
+    formData.append('folder','Visual Forge/Quotation Attachments');
+    return this.http.post<FileAttachmentResponse[]>(`${this.apiUrl}/user/quotation/files-upload`, formData,{ reportProgress: true}).pipe(
+      catchError(error=> { throw error})
     )
   }
 }

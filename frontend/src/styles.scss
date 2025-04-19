@@ -24,6 +24,17 @@
     --color-success: #10B981;
     --color-danger: #EF4444;
 
+    // File upload component colors
+    --file-pending-bg: theme('colors.neutral.400');
+    --file-pending-border: theme('colors.neutral.500');
+    --file-pending-hover-bg: theme('colors.neutral.500');
+    --file-uploaded-bg: rgba(16, 185, 129, 0.1); // Based on success color
+    --file-uploaded-border: rgba(16, 185, 129, 0.3);
+    --file-uploaded-hover-bg: rgba(16, 185, 129, 0.2);
+    --color-link: theme('colors.primary.light');
+    --color-link-hover: theme('colors.secondary.300');
+    --color-surface-rgb: 232, 234, 246; // RGB value of surface.light
+
     // Admin Theme colours
     --admin-color-primary: theme('colors.admin.primary.light');
     --admin-color-secondary: theme('colors.admin.secondary.light');
@@ -40,6 +51,17 @@
     --color-surface: theme('colors.surface.dark');
     --color-success: #059669;
     --color-danger: #DC2626;
+
+    // File upload component colors for dark theme
+    --file-pending-bg: theme('colors.neutral.200');
+    --file-pending-border: theme('colors.neutral.300');
+    --file-pending-hover-bg: theme('colors.neutral.300');
+    --file-uploaded-bg: rgba(5, 150, 105, 0.2); // Based on dark success color
+    --file-uploaded-border: rgba(5, 150, 105, 0.4);
+    --file-uploaded-hover-bg: rgba(5, 150, 105, 0.3);
+    --color-link: theme('colors.secondary.300');
+    --color-link-hover: theme('colors.secondary.400');
+    --color-surface-rgb: 21, 28, 50;
   }
 
   .admin-dark {

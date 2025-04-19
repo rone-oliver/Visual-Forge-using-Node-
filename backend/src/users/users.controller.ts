@@ -1,9 +1,11 @@
-import { Body, Controller, Get, Patch, Post, Req } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Patch, Post, Req, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { UsersService } from './users.service';
+import { FilesInterceptor } from '@nestjs/platform-express';
 
 @Controller('user')
 export class UsersController {
+    private readonly logger = new Logger(UsersController.name);
     constructor(private userService: UsersService){};
 
     @Get('profile')
@@ -54,5 +56,17 @@ export class UsersController {
             return true;
         }
         return false;
+    }
+
+    @Post('quotation/files-upload')
+    @UseInterceptors(FilesInterceptor('files',5))
+    async uploadFile(
+        @Req() req: Request, 
+        @UploadedFiles() files: Express.Multer.File[],
+        @Body('folder') folder?: string,
+    ){
+        this.logger.log(`Uploading ${files.length} files`);
+        const result = await this.userService.uploadFiles(files,folder);
+        return result;
     }
 }

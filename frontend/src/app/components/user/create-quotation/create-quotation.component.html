@@ -96,7 +96,9 @@
                     </label>
                     <div class="flex items-center justify-center w-full">
                         <label
-                            class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer file-upload-area">
+                            class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer file-upload-area"
+                            [class.opacity-50]="selectedFiles.length >= maxFiles || isUploading"
+                            [class.cursor-not-allowed]="selectedFiles.length >= maxFiles || isUploading">
                             <div class="flex flex-col items-center justify-center pt-5 pb-6">
                                 <svg class="w-8 h-8 mb-2 file-icon" xmlns="http://www.w3.org/2000/svg" fill="none"
                                     viewBox="0 0 24 24" stroke="currentColor">
@@ -108,16 +110,69 @@
                                 <p class="text-xs">Image, Audio, or Video files</p>
                             </div>
                             <input type="file" class="hidden" (change)="onFileSelected($event)"
-                                accept="image/*, audio/*, video/*" />
+                                accept="image/*, audio/*, video/*" multiple
+                                [disabled]="selectedFiles.length >= maxFiles || isUploading" />
                         </label>
+                    </div>
+
+                    <!-- Selected files list -->
+                    <div *ngIf="selectedFiles.length > 0" class="mt-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="font-semibold text-text">Selected Files ({{ selectedFiles.length }}/{{ maxFiles }})</h4>
+                            <button type="button" class="create-button text-white px-4 py-2 rounded"
+                                (click)="uploadFiles()" [disabled]="isUploading">
+                                <span *ngIf="!isUploading">Upload Files</span>
+                                <span *ngIf="isUploading">Uploading...</span>
+                            </button>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <div *ngFor="let file of selectedFiles; let i = index"
+                                class="file-item-pending rounded p-2 flex items-center">
+                                <span class="truncate max-w-xs text-text">{{ file.name }}</span>
+                                <button type="button" class="ml-2 text-red-500" (click)="removeFile(i)">
+                                    <mat-icon>close</mat-icon>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- <mat-progress-bar mode="determinate" [value]="uploadProgress"></mat-progress-bar>
+                    <div *ngIf="uploadProgress === 100">Upload Complete!</div> -->
+
+                    <!-- Upload progress -->
+                    <!-- <div *ngIf="isUploading" class="mt-4">
+                        <h4 class="font-semibold mb-2">Upload Progress</h4>
+                        <div *ngFor="let progress of cloudinaryService.uploadProgress$ | async" class="mb-2">
+                            <div class="flex justify-between mb-1">
+                                <span>{{ progress.file.name }}</span>
+                                <span>{{ progress.progress }}%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                <div class="bg-primary h-2.5 rounded-full" [style.width.%]="progress.progress"></div>
+                            </div>
+                        </div>
+                    </div> -->
+
+                    <!-- Uploaded files -->
+                    <div *ngIf="uploadedFiles.length > 0" class="mt-4">
+                        <h4 class="font-semibold mb-2 text-text">Uploaded Files ({{ uploadedFiles.length }})</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <div *ngFor="let file of uploadedFiles" 
+                                class="file-item-uploaded rounded p-2 flex items-center">
+                                <span class="truncate max-w-xs text-text">{{ file.fileName }}</span>
+                                <a [href]="file.url" target="_blank" class="ml-2 file-link">
+                                    <mat-icon>open_in_new</mat-icon>
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <div class="flex justify-end mt-6">
                     <button type="submit"
                         class="create-button w-full sm:w-auto font-bold py-3 px-6 rounded-lg text-white transition duration-300"
-                        [disabled]="!quotationForm.valid">
-                        Publish
+                        [disabled]="!quotationForm.valid || isUploading">
+                        {{ isUploading ? 'Please wait...' : 'Publish Quotation' }}
                     </button>
                 </div>
             </div>
