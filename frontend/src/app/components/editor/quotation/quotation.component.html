@@ -1,1 +1,38 @@
-<p>quotation works!</p>
+<div class="quotations-container">
+    <!-- Page Header -->
+    <header class="page-header">
+        <div class="header-content">
+            <h1 class="page-title">Recent Quotations</h1>
+            <button class="btn-primary" (click)="navigateToAccepted()">
+                <span>Go to Accepted Quotations</span>
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Media Type Filter Tabs -->
+    <nav class="media-filter" aria-label="Quotation media types" role="tablist">
+        <button class="tab-button" [ngClass]="{'active': selectedMediaType === OutputType.MIXED}" (click)="setMediaType(OutputType.MIXED)"
+            role="tab" [attr.aria-selected]="selectedMediaType === OutputType.MIXED">
+            All
+        </button>
+        <button class="tab-button" [ngClass]="{'active': selectedMediaType === OutputType.AUDIO}" (click)="setMediaType(OutputType.AUDIO)"
+            role="tab" [attr.aria-selected]="selectedMediaType === OutputType.AUDIO">
+            Audio
+        </button>
+        <button class="tab-button" [ngClass]="{'active': selectedMediaType === OutputType.VIDEO}" (click)="setMediaType(OutputType.VIDEO)"
+            role="tab" [attr.aria-selected]="selectedMediaType === OutputType.VIDEO">
+            Video
+        </button>
+        <button class="tab-button" [ngClass]="{'active': selectedMediaType === OutputType.IMAGE}" (click)="setMediaType(OutputType.IMAGE)"
+            role="tab" [attr.aria-selected]="selectedMediaType === OutputType.IMAGE">
+            Image
+        </button>
+    </nav>
+
+    <!-- Quotation Cards Grid -->
+    <section class="quotations-grid">
+        <app-quotation-card *ngFor="let quotation of filteredQuotations; trackBy: trackByQuotationId" [quotation]="quotation" (quotationAccepted)="quotationAcceptedHandler(quotation._id!)">
+        </app-quotation-card>
+    </section>
+</div>

@@ -1,0 +1,76 @@
+<article class="quotation-card" tabindex="0">
+    <!-- Card Media Section -->
+    <div class="card-media">
+        <img [src]="quotation.imageUrl || 'https://placehold.co/600x400'" [alt]="quotation.title" class="media-image" loading="lazy">
+        <div class="price-badge">${{ quotation.estimatedBudget }}</div>
+    </div>
+
+    <!-- Card Content Section -->
+    <div class="card-content">
+        <div class="content-header">
+            <h2 class="card-title">{{ quotation.title }}</h2>
+            <p class="card-description">{{ quotation.description }}</p>
+        </div>
+
+        <div class="metadata-grid">
+            <div class="metadata-item">
+                <span class="metadata-label">Theme:</span>
+                <span class="metadata-value">{{ quotation.theme }}</span>
+            </div>
+
+            <div class="metadata-item">
+                <span class="metadata-label">Output Type:</span>
+                <span class="metadata-value">{{ quotation.outputType }}</span>
+            </div>
+
+            <div class="metadata-item deadline">
+                <span class="metadata-label deadline-label">Before:</span>
+                <span class="metadata-value">
+                    {{ quotation.dueDate ? (quotation.dueDate | localDate : 'medium') : 'No deadline' }}
+                </span>
+            </div>
+
+            <!-- File Attachments Section -->
+            <div class="file-attachments" *ngIf="quotation.attachedFiles && quotation.attachedFiles.length > 0">
+                <div class="file-type-badges">
+                    <!-- Image Files -->
+                    <div class="file-badge" 
+                         *ngIf="countFilesByType(FileType.IMAGE) > 0"
+                         (click)="openFileModal(FileType.IMAGE)">
+                        <mat-icon>image</mat-icon>
+                        <span>{{ countFilesByType(FileType.IMAGE) }}</span>
+                    </div>
+                    
+                    <!-- Video Files -->
+                    <div class="file-badge" 
+                         *ngIf="countFilesByType(FileType.VIDEO) > 0"
+                         (click)="openFileModal(FileType.VIDEO)">
+                        <mat-icon>videocam</mat-icon>
+                        <span>{{ countFilesByType(FileType.VIDEO) }}</span>
+                    </div>
+                    
+                    <!-- Audio Files -->
+                    <div class="file-badge" 
+                         *ngIf="countFilesByType(FileType.AUDIO) > 0"
+                         (click)="openFileModal(FileType.AUDIO)">
+                        <mat-icon>audiotrack</mat-icon>
+                        <span>{{ countFilesByType(FileType.AUDIO) }}</span>
+                    </div>
+                    
+                    <!-- Document Files -->
+                    <div class="file-badge" 
+                         *ngIf="countFilesByType(FileType.DOCUMENT) > 0"
+                         (click)="openFileModal(FileType.DOCUMENT)">
+                        <mat-icon>description</mat-icon>
+                        <span>{{ countFilesByType(FileType.DOCUMENT) }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn-accept" (click)="acceptQuotation(quotation)" [disabled]="!quotation._id">
+            Accept
+            <span class="check-mark">✓</span>
+        </button>
+    </div>
+</article>
