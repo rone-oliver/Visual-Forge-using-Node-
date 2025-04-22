@@ -103,4 +103,27 @@
       }
     }
   }
+  .custom-snackbar {
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    border-left: 4px solid var(--color-primary);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    
+    .mat-simple-snackbar {
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    
+    .mat-simple-snackbar-action {
+      color: var(--color-primary);
+      
+      button {
+        font-weight: 500;
+        
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+  }
 }

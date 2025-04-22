@@ -15,6 +15,8 @@ import { EditorSectionComponent } from './components/admin/editor-section/editor
 import { QuotationComponent as UserQuotationComponent } from './components/user/quotation/quotation.component';
 import { CreateQuotationComponent } from './components/user/create-quotation/create-quotation.component';
 import { QuotationComponent as EditorQuotationComponent } from './components/editor/quotation/quotation.component';
+import { AcceptedQuotationComponent } from './components/editor/accepted-quotation/accepted-quotation.component';
+import { WorksHistoryComponent } from './components/editor/works-history/works-history.component';
 
 export const routes: Routes = [
     {
@@ -76,7 +78,13 @@ export const routes: Routes = [
         canActivateChild: [editorGuard],
         children: [
             {
-                path:'quotations',component: EditorQuotationComponent
+                path:'published-quotations',component: EditorQuotationComponent
+            },
+            {
+                path:'accepted-quotations', component: AcceptedQuotationComponent
+            },
+            {
+                path:'works/history', component: WorksHistoryComponent
             }
         ]
     }

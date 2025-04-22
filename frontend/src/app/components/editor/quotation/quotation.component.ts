@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { QuotationCardComponent } from '../quotation-card/quotation-card.component';
 import { IQuotation, OutputType } from '../../../interfaces/quotation.interface';
 import { EditorService } from '../../../services/editor/editor.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-quotation',
@@ -15,6 +16,7 @@ export class QuotationComponent implements OnInit {
   OutputType = OutputType;
   selectedMediaType: OutputType = OutputType.MIXED;
   constructor(
+    private router: Router,
     private editorService:EditorService,
   ){};
   ngOnInit():void{
@@ -34,10 +36,10 @@ export class QuotationComponent implements OnInit {
 
   navigateToAccepted(){
     console.log('Navigating to accepted quotations');
+    this.router.navigate(['/editor/accepted-quotations']);
   }
 
   setMediaType(type: OutputType){
-    // this.quotations = this.quotations.filter(quotation => quotation.outputType === type );
     this.selectedMediaType = type;
   }
 
