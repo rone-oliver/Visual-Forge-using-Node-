@@ -15,10 +15,11 @@
     <div class="users-filters-container">
         <div class="search-container">
             <mat-icon class="search-icon">search</mat-icon>
-            <input type="text" placeholder="Search Users..." class="search-input">
+            <input type="text" placeholder="Search Users..." class="search-input"
+            [(ngModel)]="searchQuery">
         </div>
 
-        <div class="active-filters">
+        <!-- <div class="active-filters">
             <div class="filter-chip">
                 <span>Male</span>
                 <mat-icon>close</mat-icon>
@@ -27,36 +28,41 @@
                 <span>Age < 30</span>
                 <mat-icon>close</mat-icon>
             </div>
-        </div>
+        </div> -->
     </div>
 
     <div class="filter-buttons">
-        <button class="filter-button" [class.active]="activeFilters.includes('gender')"
-            (click)="toggleFilter('gender')">
-            <span>Gender</span>
-            <mat-icon>expand_more</mat-icon>
-        </button>
+            <button class="filter-button" [class.active]="activeFilters.includes('gender')"
+                (click)="toggleFilter('gender')">
+                <span>Gender</span>
+                <mat-icon>expand_more</mat-icon>
+            </button>
 
         <button class="filter-button" [class.active]="activeFilters.includes('age')" (click)="toggleFilter('age')">
             <span>Age</span>
             <mat-icon>expand_more</mat-icon>
         </button>
 
-        <button class="filter-button" [class.active]="activeFilters.includes('isEditor')"
-            (click)="toggleFilter('isEditor')">
-            <span>isEditor</span>
-            <mat-icon>expand_more</mat-icon>
-        </button>
+            <button class="filter-button" [class.active]="activeFilters.includes('isEditor')"
+                (click)="toggleFilter('isEditor')">
+                <span>isEditor</span>
+                <mat-icon>expand_more</mat-icon>
+            </button>
 
-        <button class="filter-button" [class.active]="activeFilters.includes('behRating')"
-            (click)="toggleFilter('behRating')">
-            <span>Beh. Rating</span>
-            <mat-icon>expand_more</mat-icon>
-        </button>
-    </div>
+            <button class="filter-button" [class.active]="activeFilters.includes('behRating')"
+                (click)="toggleFilter('behRating')">
+                <span>Beh. Rating</span>
+                <mat-icon>expand_more</mat-icon>
+            </button>
+        </div>
 
-    <div class="users-grid">
-        <!-- This is where your app-user-card components will go -->
-        <app-profile-card *ngFor="let user of users$ | async" [user]="user"></app-profile-card>
+    <div class="content-area">
+        <app-table 
+            [data]="displayUsers" 
+            [columns]="userColumns" 
+            [loading]="loading"
+            (rowClick)="onUserClick($event)"
+            (actionClick)="onUserAction($event)">
+        </app-table>
     </div>
 </div>
