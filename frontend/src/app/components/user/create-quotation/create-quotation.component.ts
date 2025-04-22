@@ -127,7 +127,8 @@ export class CreateQuotationComponent {
     this.snackBar.open(message, 'Close', {
       duration: 3000,
       horizontalPosition: 'center',
-      verticalPosition: 'bottom'
+      verticalPosition: 'bottom',
+      panelClass: ['custom-snackbar']
     });
   }
 

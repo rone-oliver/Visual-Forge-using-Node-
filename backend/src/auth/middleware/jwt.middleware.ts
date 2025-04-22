@@ -25,7 +25,7 @@ export class JwtMiddleware implements NestMiddleware {
                       secret: this.configService.get<string>('JWT_SECRET'),
                   });
                   // Attach the user information to the request object
-                  req['user'] = { userId: payload.userId, role: payload.role, /* other user info */ };
+                  req['user'] = { userId: payload.userId, role: payload.role,};
                   next();
               } catch (error) {
                   this.logger.error('Invalid accessToken:', error.message);
