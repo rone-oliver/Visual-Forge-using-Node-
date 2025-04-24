@@ -13,7 +13,7 @@ export class UsersController {
     constructor(private userService: UsersService){};
 
     @Get('profile')
-    @Roles('User')
+    // @Roles('User')
     async getUserProfile(@Req() req: Request){
         console.log('controlled hitted on /user/profile');
         const user = req['user'] as { userId: Types.ObjectId; role: string}
@@ -39,7 +39,7 @@ export class UsersController {
     }
 
     @Get('quotations')
-    @Roles('User')
+    @Roles('User','Editor')
     async getQuotations(@Req() req: Request){
         const user = req['user'] as { userId: Types.ObjectId; role: string};
         const quotations = await this.userService.getQuotations(user.userId);

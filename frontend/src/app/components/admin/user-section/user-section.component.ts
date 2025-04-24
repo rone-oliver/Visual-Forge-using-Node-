@@ -82,5 +82,19 @@ export class UserSectionComponent implements OnInit {
 
   onUserAction(event: {action: string, item: any}) {
     console.log(`${event.action} clicked for:`, event.item);
+    if(event.action === 'block'){
+      this.blockUser(event.item);
+    }
+  }
+
+  blockUser(user: User):void{
+    this.userManagementService.blockUser(user._id).subscribe({
+      next:(response)=>{
+        this.loadUsers();
+      },
+      error:(error)=>{
+        console.error('Error blocking user:', error);
+      }
+    });
   }
 }

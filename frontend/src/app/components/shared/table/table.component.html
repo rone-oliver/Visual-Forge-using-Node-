@@ -68,17 +68,16 @@
                             <button *ngIf="getNestedProperty(item, 'canEdit') !== false" class="action-btn edit"
                                 (click)="onActionClick('edit', item, $event)">
                                 <lucide-icon [name]="icons.edit"></lucide-icon>
-                                <!-- <span class="action-text">Edit</span> -->
                             </button>
-                            <button *ngIf="getNestedProperty(item, 'canDelete') !== false" class="action-btn delete"
+                            <!-- <button *ngIf="getNestedProperty(item, 'canDelete') !== false" class="action-btn delete"
                                 (click)="onActionClick('delete', item, $event)">
                                 <lucide-icon [name]="icons.delete"></lucide-icon>
-                                <!-- <span class="action-text">Delete</span> -->
-                            </button>
-                            <button *ngIf="getNestedProperty(item, 'canView') !== false" class="action-btn view"
-                                (click)="onActionClick('view', item, $event)">
-                                <lucide-icon [name]="icons.view"></lucide-icon>
-                                <!-- <span class="action-text">View</span> -->
+                            </button> -->
+                            <button *ngIf="getNestedProperty(item, 'canView') !== false" class="action-btn" 
+                                [title]="item.isBlocked ? 'Unblock User' : 'Block User'"
+                                (click)="onActionClick('block', item, $event)">
+                                <lucide-icon *ngIf="!item.isBlocked" class="block-icon" [name]="icons.block"></lucide-icon>
+                                <lucide-icon *ngIf="item.isBlocked" class="unblock-icon" [name]="icons.unblock"></lucide-icon>
                             </button>
                         </div>
                     </ng-container>

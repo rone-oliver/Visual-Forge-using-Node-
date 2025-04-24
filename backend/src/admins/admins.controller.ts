@@ -40,4 +40,10 @@ export class AdminsController {
     async getEditors(){
         return await this.adminService.getEditors();
     }
+
+    @Patch('users/block')
+    @Roles('Admin')
+    async blockUser(@Body() body: { userId: string }): Promise<boolean> {
+        return await this.adminService.blockUser(new Types.ObjectId(body.userId));
+    }
 }

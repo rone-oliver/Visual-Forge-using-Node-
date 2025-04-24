@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '../../../pipes/date.pipe';
-import { LucideAngularModule, CheckCircle, XCircle, Edit, Trash, Eye } from 'lucide-angular';
+import { LucideAngularModule, CheckCircle, XCircle, Edit, Trash, Ban, Check} from 'lucide-angular';
 
 export interface TableColumn {
   key: string;          // Property name in data object
@@ -52,7 +52,8 @@ export class TableComponent {
     x: XCircle,
     edit: Edit,
     delete: Trash,
-    view: Eye
+    block: Ban,
+    unblock: Check,
   }
 
   onRowClick(item: any): void {

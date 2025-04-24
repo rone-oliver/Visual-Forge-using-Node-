@@ -318,18 +318,27 @@
             }
         }
         
-        &.delete {
-            background-color: rgba(var(--color-danger, 239, 68, 68), 0.1);
-            color: var(--color-danger, #EF4444);
-            
-            &:hover {
-                background-color: rgba(var(--color-danger, 239, 68, 68), 0.2);
-            }
-        }
-        
         &.view {
             background-color: rgba(var(--admin-color-primary, 131, 85, 255), 0.1);
             color: var(--admin-color-primary);
+            
+            &:hover {
+                background-color: rgba(var(--admin-color-primary, 131, 85, 255), 0.2);
+            }
+        }
+
+        .block-icon {
+            background-color: rgba(var(--admin-color-primary, 131, 85, 255), 0.1);
+            color: red;
+            
+            &:hover {
+                background-color: rgba(var(--admin-color-primary, 131, 85, 255), 0.2);
+            }
+        }
+
+        .unblock-icon {
+            background-color: rgba(var(--admin-color-primary, 131, 85, 255), 0.1);
+            color: greenyellow;
             
             &:hover {
                 background-color: rgba(var(--admin-color-primary, 131, 85, 255), 0.2);

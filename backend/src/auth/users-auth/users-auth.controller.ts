@@ -29,7 +29,7 @@ export class UsersAuthController {
     @Post('register')
     async register(
         @Body() userData: User,
-        @Res({passthrough: true}) response: Response
+        @Res() response: Response
     ){
         return await this.usersAuthService.register(userData,response);
     }

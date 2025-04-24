@@ -32,4 +32,8 @@ export class UserManagementService {
   getUser(username: string):Observable<User>{
     return this.http.get<User>(`${this.apiUrl}/${username}`);
   }
+
+  blockUser(userId: string): Observable<boolean> {
+    return this.http.patch<boolean>(`${this.apiUrl}/block`,{userId});
+  }
 }

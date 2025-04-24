@@ -126,4 +126,19 @@ export class AdminsService {
             throw new HttpException('No editors found', HttpStatus.NOT_FOUND);
         }
     }
+
+    async blockUser(userId:Types.ObjectId): Promise<boolean> {
+        try {
+            // const user = await this.userModel.findByIdAndUpdate(userId, { isBlocked: true });
+            const user = await this.userModel.findOne({_id:userId});
+            if(!user){
+                return false;
+            }
+            await this.userModel.findOneAndUpdate({_id:user._id},{isBlocked:!user.isBlocked})
+            return true;
+        } catch (error) {
+            this.logger.error(`Error blocking user: ${error.message}`);
+            throw new HttpException('Failed to block user', HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }

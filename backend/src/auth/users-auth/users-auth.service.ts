@@ -78,6 +78,9 @@ export class UsersAuthService {
             if (!isPasswordValid) {
                 throw new UnauthorizedException('Invalid password');
             }
+            if(user.isBlocked){
+                throw new UnauthorizedException('User is blocked');
+            }
             const tokens = await this.generateTokens(user, user.isEditor ? 'Editor' : 'User');
             this.setCookies(response, tokens.refreshToken);
             return { user, accessToken: tokens.accessToken };
