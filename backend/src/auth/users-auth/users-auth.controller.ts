@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Res, Req, Get, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Body, Res, Req, Get, UnauthorizedException, BadRequestException, HttpCode, HttpStatus } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { UsersAuthService } from './users-auth.service';
 import { User } from 'src/users/models/user.schema';
@@ -27,11 +27,11 @@ export class UsersAuthController {
     }
 
     @Post('register')
+    @HttpCode(HttpStatus.CREATED)
     async register(
         @Body() userData: User,
-        @Res() response: Response
     ){
-        return await this.usersAuthService.register(userData,response);
+        return await this.usersAuthService.register(userData);
     }
 
     @Post('verify-email')

@@ -90,32 +90,32 @@ export class UsersAuthService {
         }
     }
 
-    async register(userData: User, response: Response): Promise<User | Response> {
+    async register(userData: User): Promise<any> {
         try {
             this.logger.log('New user registration attempt');
 
             const existingUserByUsername = await this.usersService.findByUsername(userData.username);
             if (existingUserByUsername) {
-                return response.status(HttpStatus.BAD_REQUEST).json({
+                throw new HttpException({
                     success: false,
                     error: {
                       message: 'Username already exists',
                       usernameExists: true,
                       emailExists: false
                     }
-                  });
+                  }, HttpStatus.BAD_REQUEST);
             }
 
             const existingUserByEmail = await this.usersService.findByEmail(userData.email);
             if (existingUserByEmail) {
-                return response.status(HttpStatus.BAD_REQUEST).json({
+                throw new HttpException({
                     success: false,
                     error: {
                       message: 'Email already registered',
                       usernameExists: false,
                       emailExists: true
                     }
-                  });
+                  }, HttpStatus.BAD_REQUEST);
             }
 
             const user = await this.usersService.createUser(userData);
@@ -123,12 +123,12 @@ export class UsersAuthService {
             const otp = await this.otpService.createOtp(user.email);
             this.otpService.sendOtpEmail(user.email, otp);
             this.logger.log('OTP Sent for verification');
-            return response.status(HttpStatus.CREATED).json({
+            return {
                 success: true,
                 data: {
                   user
                 }
-              });
+              };
         } catch (error) {
             this.logger.error(`Registration failed for user ${userData.username}: ${error.message}`);
             throw new HttpException({
