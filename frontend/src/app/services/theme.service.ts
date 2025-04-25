@@ -32,6 +32,7 @@ export class ThemeService {
       if (!isAuthenticated) {
         this.loadDefaultTheme('Admin');
       } else {
+        console.log('called the constructor');
         this.loadSavedTheme('Admin');
       }
     });
@@ -55,7 +56,7 @@ export class ThemeService {
         this.loadDefaultTheme(role);
       } else if(response.body) {
         this.setTheme(response.body.isDark, role);
-        localStorage.setItem(`${role.toLowerCase()}-theme`, response.body.isDark ? 'dark' : 'light');
+        // localStorage.setItem(`${role.toLowerCase()}-theme`, response.body.isDark ? 'dark' : 'light');
       }
     } catch (error) {
       console.error('Failed to load theme preference:', error);
@@ -95,7 +96,7 @@ export class ThemeService {
           withCredentials: true
         })
       );
-      localStorage.setItem(`${role.toLowerCase()}-theme`, isDark ? 'dark' : 'light');
+      // localStorage.setItem(`${role.toLowerCase()}-theme`, isDark ? 'dark' : 'light');
     } catch (error) {
       console.error('Failed to save theme preference: ',error);
     }

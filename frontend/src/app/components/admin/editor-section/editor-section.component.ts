@@ -1,31 +1,33 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideAngularModule } from 'lucide-angular';
+import { Activity, Hourglass, LucideAngularModule, Zap } from 'lucide-angular';
 import { Search, Funnel, ChevronDown, ShareIcon, Plus, Clock, Star, X, X as XIcon, Check } from 'lucide-angular';
 import { EditorRequest } from '../../../interfaces/user.interface';
 import { EditorManagementService } from '../../../services/admin/editor-management.service';
 import { DatePipe } from '../../../pipes/date.pipe';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { TableColumn, TableComponent } from '../../shared/table/table.component';
+import { MatIconModule } from '@angular/material/icon';
+import { Editor } from '../../../interfaces/editor.interface';
 
 @Component({
   selector: 'app-editor-section',
-  imports: [CommonModule, FormsModule, LucideAngularModule, DatePipe, TableComponent],
+  imports: [CommonModule, FormsModule, MatIconModule, MatCheckboxModule, LucideAngularModule, DatePipe, TableComponent],
   templateUrl: './editor-section.component.html',
   styleUrl: './editor-section.component.scss'
 })
 export class EditorSectionComponent implements OnInit {
-
+  searchQuery:string ='';
   // Sidebar visibility state
   sidebarVisible = false;
-
   // Request being reviewed (for rejection reason)
   currentRequest: EditorRequest | null = null;
   rejectionReason = '';
 
   // Editor requests data
   editorRequests: EditorRequest[] = [];
-  editors: [] = [];
+  editors: Editor[] = [];
 
   loading: boolean = false;
 
@@ -61,6 +63,46 @@ export class EditorSectionComponent implements OnInit {
     })
   }
 
+  get getEditors(): Editor[] {
+    console.log('editors data: ',this.editors);
+    return this.editors.filter(editor => {
+      //Search filter
+      const query = this.searchQuery.trim().toLowerCase();
+      const matchesSearch =
+        !query ||
+        (editor.fullname && editor.fullname.toLowerCase().includes(query)) ||
+        (editor.email && editor.email.toLowerCase().includes(query));
+  
+      //Category filter
+      const selectedCategories = Object.entries(this.selectedFilters.category)
+        .filter(([cat, selected]) => selected)
+        .map(([cat]) => cat.toLowerCase());
+
+      const editorCategories = Array.isArray(editor.category)
+        ? editor.category.map((cat: string) => cat.toLowerCase())
+        : [];
+  
+      const matchesCategory =
+        selectedCategories.length === 0 ||
+        (selectedCategories.every(cat => editorCategories.includes(cat)));
+      
+      //Rating filter
+      const matchesRating =
+        !this.selectedFilters.rating ||
+        (editor.score && editor.score >= this.selectedFilters.rating);
+  
+      // Avg Time filter
+      // You need to define how avgTime is represented in your editor object.
+      // Example assumes editor.avgTime is 'fast' | 'medium' | 'slow'
+      // const matchesAvgTime =
+      //   !this.selectedFilters.avgTime ||
+      //   (editor.avgTime && editor.avgTime === this.selectedFilters.avgTime);
+  
+      // // --- Combine all filters ---
+      return matchesSearch && matchesCategory && matchesRating;
+    });
+  }
+
   // Define your columns
 editorColumns: TableColumn[] = [
   { key: 'fullname', header: 'Name', sortable: true },
@@ -89,7 +131,9 @@ onEditorAction(event: {action: string, item: any}) {
     chevronDown: ChevronDown,
     export: ShareIcon,
     plus: Plus,
-    clock: Clock,
+    fast: Zap,
+    medium: Activity,
+    slow: Hourglass,
     star: Star,
     close: X,
     check: Check,
@@ -105,12 +149,12 @@ onEditorAction(event: {action: string, item: any}) {
 
   selectedFilters = {
     category: {
-      video: true,
+      video: false,
       image: false,
       audio: false
     },
-    rating: '',
-    avgTime: ''
+    rating: 0,
+    avgTime: 0,
   };
 
   // Toggle filter visibility
@@ -123,6 +167,14 @@ onEditorAction(event: {action: string, item: any}) {
         this.activeFilters[key] = false;
       }
     });
+  }
+
+  toggleRating(rating: number) {
+    this.selectedFilters.rating = this.selectedFilters.rating === rating ? 0 : rating;
+  }
+
+  selectAvgTime(time: number){
+    this.selectedFilters.avgTime = time;
   }
 
   // Open/close sidebar

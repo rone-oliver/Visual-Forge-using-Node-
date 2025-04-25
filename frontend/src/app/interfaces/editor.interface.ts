@@ -9,10 +9,11 @@ export interface Editor {
     profileImage?: string; // From User
     
     // Editor-specific information
-    category?: string[];   // Editor categories/specialties
+    category: string[];   // Editor categories/specialties
     score?: number;        // Overall editor score
     ratingsCount?: number; // Number of ratings received
     averageRating?: number; // Average rating value
+    avgTime?: number;      // Average time taken for editing
     
     // Status information
     createdAt: string;     // When they became an editor

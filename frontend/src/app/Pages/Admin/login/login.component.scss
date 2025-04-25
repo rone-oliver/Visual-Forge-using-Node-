@@ -1,0 +1,18 @@
+.login-theme {
+  background-color: var(--admin-color-background);
+  color: var(--admin-color-text);
+
+  .title {
+    color: var(--admin-color-primary);
+    font-weight: bold;
+    font-size: 2.25rem;
+  }
+  .subtitle {
+    color: var(--admin-color-text);
+    font-weight: 600;
+    font-size: 1.5rem;
+  }
+  .desc {
+    color: var(--admin-color-secondary);
+  }
+}
