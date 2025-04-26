@@ -89,7 +89,7 @@
     flex: 1;
     min-width: 280px;
     max-width: 500px;
-    
+
     .search-icon {
         position: absolute;
         left: 16px;
@@ -97,7 +97,7 @@
         transform: translateY(-50%);
         color: rgba(150, 150, 150, 0.8);
     }
-    
+
     .search-input {
         width: 100%;
         padding: 12px 12px 12px 48px;
@@ -187,6 +187,49 @@
         width: 18px;
     }
 }
+
+// .filters-row {
+//     display: flex;
+//     flex-wrap: wrap; // allows wrapping on small screens
+//     gap: 1rem; // space between filters, adjust as needed
+//     align-items: center;
+//     margin-bottom: 1rem; // space below the filter row
+// }
+
+.filter-dropdown {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .absolute-dropdown {
+    position: absolute;
+    left: 0;
+    top: 100%;
+    z-index: 1000;
+    min-width: 100%;
+    background: #fff;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+    border-radius: 0.5rem;
+    padding: 0.5rem 0;
+  }
+  
+  .filter-button {
+    min-width: 120px; // adjust as needed
+    text-align: left;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .filter-mat-select {
+    min-width: 140px;
+    margin-right: 1rem;
+  }
+  .filters-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
 
 // User cards grid
 .users-grid {

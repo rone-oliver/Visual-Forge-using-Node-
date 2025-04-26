@@ -1,14 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { User, UserManagementService } from '../../../services/admin/user-management.service';
-import { Observable } from 'rxjs';
+import { MatSelectModule } from '@angular/material/select';
 import { TableColumn,TableComponent } from '../../shared/table/table.component';
 import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-user-section',
-  imports: [TableComponent, FormsModule, CommonModule, MatIconModule],
+  imports: [TableComponent, FormsModule, MatSelectModule, CommonModule, MatIconModule, MatSlideToggleModule],
   templateUrl: './user-section.component.html',
   styleUrl: './user-section.component.scss'
 })
@@ -18,6 +19,10 @@ export class UserSectionComponent implements OnInit {
   filteredUsers: User[] = [];
   loading: boolean = true;
   activeFilters: string[] = [];
+  private _hideEditors: boolean = false;
+  selectedAge: string = '';
+  selectedBehRating: number | null = null;
+  selectedGender: string = '';
 
   userColumns: TableColumn[] = [
     { key: 'fullname', header: 'Name', sortable: true },
@@ -30,8 +35,18 @@ export class UserSectionComponent implements OnInit {
     { key: 'createdAt', header: 'Joined', type: 'date', sortable: true },
     { key: 'type', header: 'Actions', type: 'actions' }
   ];
+
+  ageLabelMap: { [key: string]: string } = {
+    below18: 'Below 18',
+    '18to30': 'Between 18 and 30',
+    '30to60': 'Between 30 and 60',
+    above60: 'Above 60'
+  };
   
-  constructor(private userManagementService: UserManagementService) { }
+  constructor(
+    private userManagementService: UserManagementService,
+    private cdr: ChangeDetectorRef
+  ) { }
 
   ngOnInit(): void {
     // this.users$ = this.userManagementService.getAllUsers();
@@ -54,17 +69,22 @@ export class UserSectionComponent implements OnInit {
   }
 
   get displayUsers(): User[] {
-    if (!this.searchQuery.trim()) {
-      return this.users;
-    }
-    
     const query = this.searchQuery.toLowerCase().trim();
     return this.users.filter(user => {
       return (
-        (user.fullname && user.fullname.toLowerCase().includes(query)) ||
-        (user.email && user.email.toLowerCase().includes(query))
+        ((user.fullname && user.fullname.toLowerCase().trim().includes(query)) ||
+        (user.email && user.email.toLowerCase().trim().includes(query))) && 
+        ( this.hideEditors ? !user.isEditor : true)
       );
     });
+  }
+
+  get hideEditors(): boolean {
+    return this._hideEditors;
+  }
+  set hideEditors(value: boolean) {
+    this._hideEditors = value;
+    // Optionally trigger change detection if needed
   }
 
   toggleFilter(filter: string): void {
@@ -74,6 +94,27 @@ export class UserSectionComponent implements OnInit {
     } else {
       this.activeFilters.push(filter);
     }
+  }
+
+  selectGender(gender: string) {
+    this.selectedGender = gender;
+    // Optionally close the dropdown after selection:
+    this.activeFilters = this.activeFilters.filter(f => f !== 'gender');
+    // Optionally trigger filtering here
+  }
+
+  selectAge(age: string) {
+    this.selectedAge = age;
+    // Optionally close the dropdown after selection:
+    this.activeFilters = this.activeFilters.filter(f => f !== 'age');
+    // Optionally trigger filtering here
+  }
+
+  selectBehRating(rating: number) {
+    this.selectedBehRating = rating;
+    // Optionally close the dropdown after selection:
+    this.activeFilters = this.activeFilters.filter(f => f !== 'behRating');
+    // Optionally trigger filtering here
   }
 
   onUserClick(user: any) {

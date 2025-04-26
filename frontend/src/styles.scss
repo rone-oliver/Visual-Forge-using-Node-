@@ -2,6 +2,9 @@
 @use "tailwindcss/base";
 @use "tailwindcss/components";
 @use "tailwindcss/utilities";
+// @use '@angular/material' as mat;
+// @use '@angular/material/core' as mat-core;
+@import '@angular/material/prebuilt-themes/pink-bluegrey.css';
 
 @layer base {
   :root {

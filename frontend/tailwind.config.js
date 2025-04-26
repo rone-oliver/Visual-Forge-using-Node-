@@ -65,7 +65,8 @@ export default {
         text: {
           light: '#080F25',
           dark: '#D9E1FA',
-        }
+        },
+        danger: '#EF4444',
       },
     },
   },
