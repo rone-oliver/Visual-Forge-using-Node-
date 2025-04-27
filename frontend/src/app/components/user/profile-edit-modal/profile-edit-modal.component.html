@@ -1,0 +1,86 @@
+<div class="profile-edit-container">
+    <div class="profile-edit-header">
+        <h2 class="profile-title">Edit Profile</h2>
+        <button mat-icon-button mat-dialog-close class="close-button">
+            <mat-icon>close</mat-icon>
+        </button>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <div class="profile-edit-content">
+        <form (ngSubmit)="save()" #editForm="ngForm" autocomplete="off" class="profile-edit-form">
+            <div class="form-grid">
+                <mat-form-field appearance="outline" class="form-field">
+                    <mat-label>Full Name</mat-label>
+                    <input matInput [(ngModel)]="editUser.fullname" name="fullname" required minlength="2"
+                        #fullname="ngModel" autofocus />
+                    <mat-icon matSuffix>person</mat-icon>
+                    <mat-error *ngIf="fullname.invalid && (fullname.dirty || fullname.touched)">
+                        <span *ngIf="fullname.errors?.['required']">Full Name is required.</span>
+                        <span *ngIf="fullname.errors?.['minlength']">Minimum 2 characters required.</span>
+                    </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="form-field">
+                    <mat-label>Username</mat-label>
+                    <input matInput [(ngModel)]="editUser.username" name="username" required minlength="4"
+                        pattern="^[a-zA-Z0-9_]+$" #username="ngModel" />
+                    <mat-icon matSuffix>alternate_email</mat-icon>
+                    <mat-error *ngIf="username.invalid && (username.dirty || username.touched)">
+                        <span *ngIf="username.errors?.['required']">Username is required.</span>
+                        <span *ngIf="username.errors?.['minlength']">Minimum 4 characters required.</span>
+                        <span *ngIf="username.errors?.['pattern']">Only letters, numbers, and underscores allowed.</span>
+                    </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="form-field">
+                    <mat-label>Mobile Number</mat-label>
+                    <input matInput [(ngModel)]="editUser.mobileNumber" name="mobileNumber" pattern="^[0-9]{10,15}$"
+                        #mobileNumber="ngModel" type="tel" />
+                    <mat-icon matSuffix>phone</mat-icon>
+                    <mat-error *ngIf="mobileNumber.invalid && (mobileNumber.dirty || mobileNumber.touched)">
+                        <span *ngIf="mobileNumber.errors?.['pattern']">Enter a valid mobile number (10 to 15 digits).</span>
+                    </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="form-field">
+                    <mat-label>Language</mat-label>
+                    <mat-select [(ngModel)]="editUser.language" name="language">
+                        <mat-option *ngFor="let lang of languages" [value]="lang">{{ lang }}</mat-option>
+                    </mat-select>
+                    <mat-icon matSuffix>language</mat-icon>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="form-field">
+                    <mat-label>Gender</mat-label>
+                    <mat-select [(ngModel)]="editUser.gender" name="gender">
+                        <mat-option value="male">Male</mat-option>
+                        <mat-option value="female">Female</mat-option>
+                        <mat-option value="other">Other</mat-option>
+                    </mat-select>
+                    <mat-icon matSuffix>people</mat-icon>
+                </mat-form-field>
+            </div>
+
+            <mat-form-field appearance="outline" class="about-field">
+                <mat-label>About</mat-label>
+                <textarea matInput [(ngModel)]="editUser.about" name="about" rows="3" maxlength="250"
+                    #about="ngModel"></textarea>
+                <mat-icon matSuffix>description</mat-icon>
+                <mat-hint align="end">{{editUser.about?.length || 0}} / 250</mat-hint>
+                <mat-error *ngIf="about.invalid && (about.dirty || about.touched)">
+                    <span *ngIf="about.errors?.['maxlength']">Maximum 250 characters allowed.</span>
+                </mat-error>
+            </mat-form-field>
+
+            <div class="profile-edit-actions">
+                <button mat-button class="cancel-button" mat-dialog-close type="button">Cancel</button>
+                <button mat-flat-button class="save-button" type="submit"
+                    [disabled]="!editForm.form.valid || !hasChanges()">
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

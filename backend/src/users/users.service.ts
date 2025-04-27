@@ -210,4 +210,29 @@ export class UsersService {
             throw error;
         }
     }
+
+    async updateProfile(editedData:any,userId:Types.ObjectId): Promise<boolean>{
+        try {
+            await this.userModel.updateOne({_id: userId},{$set:editedData})
+            return true;
+        } catch (error) {
+            this.logger.error(`Error updating profile: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async resetPassword(body:{currentPassword: string, newPassword: string}, userId: Types.ObjectId): Promise<boolean> {
+        try {
+            const user = await this.userModel.findById(userId);
+            if (!user) throw new Error('User not found');
+            const isPasswordValid = await bcrypt.compare(body.currentPassword, user.password);
+            if (!isPasswordValid) throw new Error('Current password is incorrect');
+            const hashedPassword = await bcrypt.hash(body.newPassword, 10);
+            await this.userModel.updateOne({_id: userId},{$set:{password: hashedPassword}});
+            return true;
+        } catch (error) {
+            this.logger.error(`Error resetting password: ${error.message}`);
+            throw error;
+        }
+    }
 }

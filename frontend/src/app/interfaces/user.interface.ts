@@ -23,6 +23,14 @@ enum EditorRequestStatus {
     REJECTED = 'Rejected'
 }
 
+export enum Language {
+    ENGLISH = 'English',
+    SPANISH = 'Spanish',
+    FRENCH = 'French',
+    GERMAN = 'German',
+    HINDI = 'Hindi'
+}
+
 export enum Categories {
     VIDEO = 'Video',
     AUDIO = 'Audio',

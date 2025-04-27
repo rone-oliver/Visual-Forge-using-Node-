@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Logger, Patch, Post, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Logger, Patch, Post, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { UsersService } from './users.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -13,7 +13,7 @@ export class UsersController {
     constructor(private userService: UsersService){};
 
     @Get('profile')
-    // @Roles('User')
+    @Roles('User','Editor')
     async getUserProfile(@Req() req: Request){
         console.log('controlled hitted on /user/profile');
         const user = req['user'] as { userId: Types.ObjectId; role: string}
@@ -47,7 +47,7 @@ export class UsersController {
     }
 
     @Post('create-quotation')
-    @Roles('User')
+    @Roles('User','Editor')
     async createQuotation(@Req() req: Request, @Body() body){
         const user = req['user'] as { userId: Types.ObjectId; role: string};
         const success = await this.userService.createQuotation(body.quotation,user.userId);
@@ -58,7 +58,7 @@ export class UsersController {
     }
 
     @Patch('profile-image')
-    @Roles('User')
+    @Roles('User','Editor')
     async updateProfileImage(@Req() req: Request, @Body() body){
         const user = req['user'] as { userId: Types.ObjectId, role: string}
         const success = await this.userService.updateProfileImage(body.url, user.userId);
@@ -69,7 +69,7 @@ export class UsersController {
     }
 
     @Post('quotation/files-upload')
-    @Roles('User')
+    @Roles('User','Editor')
     @UseInterceptors(FilesInterceptor('files',5))
     async uploadFile(
         @Req() req: Request, 
@@ -79,5 +79,28 @@ export class UsersController {
         this.logger.log(`Uploading ${files.length} files`);
         const result = await this.userService.uploadFiles(files,folder);
         return result;
+    }
+
+    @Patch('profile/update')
+    @Roles('User','Editor')
+    async updateProfile(@Req() req: Request, @Body() body){
+        const user = req['user'] as { userId: Types.ObjectId, role: string}
+        const success = await this.userService.updateProfile(body, user.userId);
+        if(success){
+            return true;
+        }
+        return false;
+    }
+
+    @Patch('reset-password')
+    @Roles('User','Editor')
+    async resetPassword(@Req() req: Request, @Body() body:{currentPassword: string, newPassword: string}){
+        const user = req['user'] as { userId: Types.ObjectId, role: string}
+        try {
+            const response = await this.userService.resetPassword(body, user.userId);
+            return response;
+        } catch (error) {
+            throw new BadRequestException(error.message);
+        }
     }
 }

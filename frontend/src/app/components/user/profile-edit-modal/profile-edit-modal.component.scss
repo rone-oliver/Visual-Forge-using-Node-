@@ -1,0 +1,150 @@
+.profile-edit-container {
+    width: 100%;
+    max-width: 600px;
+    border-radius: 16px;
+    color: var(--color-text);
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+}
+
+.profile-edit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    flex-shrink: 0;
+
+    .profile-title {
+        font-size: 24px;
+        font-weight: 600;
+        margin: 0;
+        color: var(--color-text);
+    }
+
+    .close-button {
+        color: var(--color-neutral-600);
+        transition: all 0.2s ease;
+
+        &:hover {
+            color: var(--color-neutral-700);
+            background-color: var(--color-neutral-100);
+        }
+    }
+}
+
+.profile-edit-content {
+    overflow-y: auto;
+    padding: 0 24px 24px;
+    flex-grow: 1;
+}
+
+.profile-edit-form {
+    padding-top: 24px;
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+
+        @media (min-width: 768px) {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    .form-field {
+        width: 100%;
+        margin-bottom: 8px;
+
+        ::ng-deep .mat-icon {
+            color: var(--color-neutral-500);
+        }
+    }
+
+    .about-field {
+        width: 100%;
+        margin-top: 16px;
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+    }
+}
+
+.profile-edit-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+
+    .cancel-button {
+        color: var(--color-neutral-700);
+        background-color: var(--color-neutral-100);
+        transition: all 0.2s ease;
+
+        &:hover {
+            background-color: var(--color-neutral-200);
+        }
+    }
+
+    .save-button {
+        background-color: var(--color-primary);
+        color: white;
+        padding: 0 24px;
+        transition: all 0.2s ease;
+
+        &:hover:not([disabled]) {
+            filter: brightness(1.1);
+        }
+
+        &:disabled,
+        &[disabled] {
+            background-color: var(--color-neutral-300);
+            color: var(--color-neutral-600);
+            cursor: not-allowed !important;
+            box-shadow: none !important;
+            opacity: 0.7;
+        }
+    }
+}
+
+mat-divider {
+    border-top-color: var(--color-neutral-200);
+    flex-shrink: 0;
+}
+
+// Fix vertical line in input fields
+::ng-deep {
+    .mat-form-field-appearance-outline .mat-form-field-infix {
+        border-top: 0 !important;
+    }
+
+    .mat-form-field-appearance-outline .mat-form-field-wrapper {
+        padding-bottom: 0;
+    }
+
+    // Remove the vertical line in the middle
+    .mat-form-field-appearance-outline .mat-form-field-subscript-wrapper {
+        padding: 0 !important;
+    }
+
+    // Remove the vertical line completely
+    .mat-mdc-text-field-wrapper {
+        background-color: transparent !important;
+    }
+
+    .mdc-notched-outline__notch {
+        border-right: none !important;
+    }
+
+    .mat-mdc-form-field-infix {
+        border: none !important;
+        padding: 0.75em 0 !important;
+    }
+
+    // Improve form field outlines
+    .mat-mdc-form-field-flex {
+        background-color: transparent !important;
+    }
+}

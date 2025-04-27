@@ -7,6 +7,10 @@ import { Observable } from 'rxjs';
 import { DatePipe } from '../../../pipes/date.pipe';
 import { MatSnackBarConfig, MatSnackBar } from '@angular/material/snack-bar';
 import { CloudinaryService } from '../../../services/cloudinary.service';
+import { MatDialog } from '@angular/material/dialog';
+import { ProfileEditModalComponent } from '../profile-edit-modal/profile-edit-modal.component';
+import { ResetPasswordComponent } from '../../modals/reset-password/reset-password.component';
+
 
 @Component({
   selector: 'app-profile',
@@ -25,6 +29,7 @@ export class ProfileComponent implements OnInit{
     private userService: UserService,
     private snackBar: MatSnackBar,
     private cloudinaryService: CloudinaryService,
+    private dialog: MatDialog,
   ) { }
 
   showSuccess(message:string):void {
@@ -119,5 +124,43 @@ export class ProfileComponent implements OnInit{
         })
       })
     }
+  }
+
+  openEditProfileModal() {
+    const dialogRef = this.dialog.open(ProfileEditModalComponent,{
+      width: '600px',
+      maxWidth: '95vw',
+      maxHeight: '90vh',
+      panelClass: 'profile-edit-dialog',
+      data: { user: this.user }
+    })
+    dialogRef.afterClosed().subscribe(result => {
+      if(result){
+        this.userService.updateProfile(result).subscribe({
+          next:()=>{
+            this.user = {...this.user,...result};
+            this.snackBar.open('Profile updated!','Close',{ duration: 3000, horizontalPosition: 'center', verticalPosition: 'bottom', panelClass: ['custom-snackbar']})
+          },
+          error: (error) => {
+            console.error('Error updating profile:', error);
+          }
+        })
+      }
+    })
+  }
+
+  openResetPasswordDialog(): void {
+    const dialogRef = this.dialog.open(ResetPasswordComponent, {
+      width: '450px',
+      panelClass: 'custom-dialog-container',
+      disableClose: true
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result === true) {
+        // Handle successful password reset if needed
+        console.log('Password reset successful');
+      }
+    });
   }
 }

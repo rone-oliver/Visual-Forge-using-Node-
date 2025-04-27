@@ -11,23 +11,18 @@
                     <ng-template #defaultAvatar>
                         <mat-icon>person</mat-icon>
                     </ng-template>
-                    
+
                     <!-- Edit icon overlay -->
                     <label>
                         <div class="edit-overlay">
-                            <mat-icon>edit</mat-icon>
+                            <mat-icon class="edit-avatar-icon">edit</mat-icon>
                         </div>
                         <!-- Hidden file input -->
-                        <input 
-                            type="file" 
-                            #fileInput 
-                            style="display: none" 
-                            accept="image/*" 
-                            (change)="onFileSelected($event)"
-                        >
+                        <input type="file" #fileInput style="display: none" accept="image/*"
+                            (change)="onFileSelected($event)">
                     </label>
                 </div>
-                
+
             </div>
 
             <div *ngIf="selectedFile" class="image-upload-dialog">
@@ -80,6 +75,10 @@
                 </div>
             </div>
         </div>
+        <button class="edit-profile-btn fab" (click)="openEditProfileModal()" mat-fab
+            color="primary" aria-label="Edit Profile">
+            <mat-icon>edit</mat-icon><span>Edit Profile</span>
+        </button>
     </div>
 
     <div class="profile-content">
@@ -119,6 +118,13 @@
                     </span>
                 </div>
             </div>
+
+            <div class="reset-password-container">
+                <button class="reset-password-btn" (click)="openResetPasswordDialog()">
+                    <mat-icon>lock_reset</mat-icon>
+                    <span>Reset Password</span>
+                </button>
+            </div>
         </div>
 
         <div class="info-section" *ngIf="user.isEditor && user.editorDetails">
@@ -156,23 +162,30 @@
             <div class="social-links" *ngIf="hasSocialLinks(user.editorDetails?.socialLinks)">
                 <h3 class="subsection-title">Social Links</h3>
                 <div class="social-links-grid">
-                    <a *ngIf="user.editorDetails?.socialLinks?.website" [href]="user.editorDetails.socialLinks?.website" target="_blank" class="social-link website">
+                    <a *ngIf="user.editorDetails?.socialLinks?.website" [href]="user.editorDetails.socialLinks?.website"
+                        target="_blank" class="social-link website">
                         <mat-icon>language</mat-icon>
                         <span>Website</span>
                     </a>
-                    <a *ngIf="user.editorDetails?.socialLinks?.linkedIn" [href]="user.editorDetails.socialLinks?.linkedIn" target="_blank" class="social-link linkedin">
+                    <a *ngIf="user.editorDetails?.socialLinks?.linkedIn"
+                        [href]="user.editorDetails.socialLinks?.linkedIn" target="_blank" class="social-link linkedin">
                         <mat-icon>work</mat-icon>
                         <span>LinkedIn</span>
                     </a>
-                    <a *ngIf="user.editorDetails?.socialLinks?.instagram" [href]="user.editorDetails.socialLinks?.instagram" target="_blank" class="social-link instagram">
+                    <a *ngIf="user.editorDetails?.socialLinks?.instagram"
+                        [href]="user.editorDetails.socialLinks?.instagram" target="_blank"
+                        class="social-link instagram">
                         <mat-icon>photo_camera</mat-icon>
                         <span>Instagram</span>
                     </a>
-                    <a *ngIf="user.editorDetails?.socialLinks?.facebook" [href]="user.editorDetails.socialLinks?.facebook" target="_blank" class="social-link facebook">
+                    <a *ngIf="user.editorDetails?.socialLinks?.facebook"
+                        [href]="user.editorDetails.socialLinks?.facebook" target="_blank" class="social-link facebook">
                         <mat-icon>thumb_up</mat-icon>
                         <span>Facebook</span>
                     </a>
-                    <a *ngIf="user.editorDetails?.socialLinks?.pinterest" [href]="user.editorDetails.socialLinks?.pinterest" target="_blank" class="social-link pinterest">
+                    <a *ngIf="user.editorDetails?.socialLinks?.pinterest"
+                        [href]="user.editorDetails.socialLinks?.pinterest" target="_blank"
+                        class="social-link pinterest">
                         <mat-icon>push_pin</mat-icon>
                         <span>Pinterest</span>
                     </a>
@@ -186,21 +199,19 @@
         </div>
 
         <div class="editor-request-container" *ngIf="!user.isEditor">
-            <button class="editor-request-button" 
-                (click)="requestEditorStatus()"
-                [disabled]="editorRequestStatus === 'Pending'"
-                [class.pending]="editorRequestStatus === 'Pending'">
+            <button class="editor-request-button" (click)="requestEditorStatus()"
+                [disabled]="editorRequestStatus === 'Pending'" [class.pending]="editorRequestStatus === 'Pending'">
                 <span class="button-text">
-                    {{ editorRequestStatus === 'Pending' 
-                    ? 'Pending Approval' 
+                    {{ editorRequestStatus === 'Pending'
+                    ? 'Pending Approval'
                     : 'Wish to be an Editor?' }}
                 </span>
                 <div class="animated-bg"></div>
             </button>
             <p class="editor-info">
-                {{ editorRequestStatus === 'Pending' 
-                   ? 'Your request is being reviewed by our admins.' 
-                   : 'Editors can create and publish content, manage community posts, and get priority support.' }}
+                {{ editorRequestStatus === 'Pending'
+                ? 'Your request is being reviewed by our admins.'
+                : 'Editors can create and publish content, manage community posts, and get priority support.' }}
             </p>
         </div>
     </div>

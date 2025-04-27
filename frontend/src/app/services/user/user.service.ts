@@ -70,4 +70,18 @@ export class UserService {
       catchError(error=> { throw error})
     )
   }
+
+  updateProfile(data: any): Observable<boolean>{
+    return this.http.patch<boolean>(`${this.apiUrl}/user/profile/update`, data).pipe(
+      map(response=>response),
+      catchError(error=>{throw error})
+    )
+  }
+
+  resetPassword(data: {currentPassword: string, newPassword: string}):Observable<any>{
+    return this.http.patch<any>(`${this.apiUrl}/user/reset-password`, data).pipe(
+      map(response=>response),
+      catchError(error=>{throw error})
+    )
+  }
 }
