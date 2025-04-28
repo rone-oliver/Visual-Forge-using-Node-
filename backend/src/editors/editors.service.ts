@@ -23,9 +23,9 @@ export class EditorsService {
         return this.editorModel.create(editor);
     }
 
-    async getPublishedQuotations(): Promise<IQuotation[]> {
+    async getPublishedQuotations(userId:Types.ObjectId): Promise<IQuotation[]> {
         try {
-            return await this.quotationModel.find({ status: QuotationStatus.PUBLISHED })
+            return await this.quotationModel.find({ status: QuotationStatus.PUBLISHED, userId:{$ne:userId}}).sort({ createdAt: -1}).lean() as unknown as IQuotation[];
         } catch (error) {
             this.logger.error('Error getting the published quotations', error);
             throw new Error('Error getting the published quotations');

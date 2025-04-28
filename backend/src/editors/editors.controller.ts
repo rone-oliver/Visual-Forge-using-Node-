@@ -17,10 +17,11 @@ export class EditorsController {
 
     @Get('quotations/published')
     @Roles('Editor')
-    async getPublishedQuotations(): Promise<IQuotation[]>{
-        return this.editorService.getPublishedQuotations();
+    async getPublishedQuotations(@Req() req: Request): Promise<IQuotation[]>{
+        const editor = req['user'] as { userId: Types.ObjectId, role: string};
+        return this.editorService.getPublishedQuotations(editor.userId);
     }
-
+    
     @Post('accept-quotation')
     @Roles('Editor')
     async acceptQuotation(@Body() body:{quotationId: string}, @Req() req: Request){
