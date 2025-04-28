@@ -5,8 +5,9 @@ import { User, UserDocument } from './models/user.schema';
 import { Categories, EditorRequest, EditorRequestDocument } from 'src/common/models/editorRequest.schema';
 import * as bcrypt from 'bcrypt';
 import { Editor, EditorDocument } from 'src/editors/models/editor.schema';
-import { Quotation, QuotationDocument } from 'src/common/models/quotation.schema';
+import { Quotation, QuotationDocument, QuotationStatus } from 'src/common/models/quotation.schema';
 import { CloudinaryService, FileUploadResult } from 'src/common/cloudinary/cloudinary.service';
+import { CompletedWork } from 'src/common/interfaces/completed-word.interface';
 
 @Injectable()
 export class UsersService {
@@ -232,6 +233,34 @@ export class UsersService {
             return true;
         } catch (error) {
             this.logger.error(`Error resetting password: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async getCompletedWorks(userId: Types.ObjectId): Promise<CompletedWork[]>{
+        try {
+            const completedQuotations = await this.quotationModel
+            .find({ userId, status: QuotationStatus.COMPLETED})
+            .populate('worksId')
+            .sort({ createdAt: -1})
+            .lean();
+
+            return completedQuotations.map(quotation => {
+                const worksData = quotation.worksId as any || {};
+                const { worksId,...quotationData } = quotation;
+                return {
+                    ...quotationData,
+                    ...worksData,
+                    quotationId: quotation._id,
+                    worksId: worksData._id || null,
+                    finalFiles: worksData.finalFiles || [],
+                    attachedFiles: quotationData.attachedFiles || [],
+                    comments: worksData.comments || '',
+                    completedAt: worksData.createdAt,
+                } as CompletedWork;
+            })
+        } catch (error) {
+            this.logger.error(`Error fetching completed works: ${error}`);
             throw error;
         }
     }

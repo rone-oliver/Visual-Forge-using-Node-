@@ -103,4 +103,12 @@ export class UsersController {
             throw new BadRequestException(error.message);
         }
     }
+
+    @Get('quotations/completed')
+    @Roles('User','Editor')
+    async getCompletedWorks(@Req() req: Request){
+        const user = req['user'] as { userId: Types.ObjectId, role: string}
+        const quotations = await this.userService.getCompletedWorks(user.userId);
+        return quotations;
+    }
 }

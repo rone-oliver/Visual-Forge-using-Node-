@@ -21,7 +21,7 @@
         <button [class.active]="activeFilter === 'Published'" (click)="setFilter('Published')">
             Published
         </button>
-        <button [class.active]="activeFilter === 'Completed'" (click)="setFilter('Completed')">
+        <button [class.active]="activeFilter === 'Completed'" (click)="showCompletedWorks()">
             Completed
         </button>
         <button [class.active]="activeFilter === 'Expired'" (click)="setFilter('Expired')">
@@ -33,78 +33,149 @@
     </div>
 
     <div class="quotations-grid">
-        <div class="quotation-card" *ngFor="let quotation of filteredQuotations">
-            <div class="card-image-container">
-                <img [src]="quotation.imageUrl || 'https://placehold.co/600x400'" [alt]="quotation.title">
-                <div class="amount-badge">${{ quotation.estimatedBudget }}</div>
-                <div class="status-badge" [ngClass]="getStatusClass(quotation.status)">
-                    {{ quotation.status | titlecase }}
+        <ng-container *ngIf="activeFilter !== 'Completed' else completedWorksContainer">
+            <div class="quotation-card" *ngFor="let quotation of filteredQuotations">
+                <div class="card-image-container">
+                    <img [src]="quotation.imageUrl || 'https://placehold.co/600x400'" [alt]="quotation.title">
+                    <div class="amount-badge">${{ quotation.estimatedBudget }}</div>
+                    <div class="status-badge" [ngClass]="getStatusClass(quotation.status)">
+                        {{ quotation.status | titlecase }}
+                    </div>
+                </div>
+
+                <div class="card-content">
+                    <h3>{{ quotation.title }}</h3>
+                    <p class="description">{{ quotation.description }}</p>
+
+                    <div class="details">
+                        <div class="detail-item">
+                            <mat-icon>edit</mat-icon>
+                            <span>Editor: {{ quotation.editor || 'Not assigned' }}</span>
+                        </div>
+
+                        <div class="detail-item">
+                            <mat-icon>label</mat-icon>
+                            <span>Theme: {{ quotation.theme }}</span>
+                        </div>
+
+                        <div class="detail-item">
+                            <mat-icon>category</mat-icon>
+                            <span>Output Type: {{ quotation.outputType }}</span>
+                        </div>
+
+                        <!-- File Attachments Section -->
+                        <div class="file-attachments"
+                            *ngIf="quotation.attachedFiles && quotation.attachedFiles.length > 0">
+                            <div class="file-type-badges">
+                                <!-- Image Files -->
+                                <div class="file-badge" *ngIf="countFilesByType(quotation, FileType.IMAGE) > 0"
+                                    (click)="openFileModal(quotation, FileType.IMAGE)">
+                                    <mat-icon>image</mat-icon>
+                                    <span>Images: {{ countFilesByType(quotation, FileType.IMAGE) }}</span>
+                                </div>
+
+                                <!-- Video Files -->
+                                <div class="file-badge" *ngIf="countFilesByType(quotation, FileType.VIDEO) > 0"
+                                    (click)="openFileModal(quotation, FileType.VIDEO)">
+                                    <mat-icon>videocam</mat-icon>
+                                    <span>Videos: {{ countFilesByType(quotation, FileType.VIDEO) }}</span>
+                                </div>
+
+                                <!-- Audio Files -->
+                                <div class="file-badge" *ngIf="countFilesByType(quotation, FileType.AUDIO) > 0"
+                                    (click)="openFileModal(quotation, FileType.AUDIO)">
+                                    <mat-icon>audiotrack</mat-icon>
+                                    <span>Audio: {{ countFilesByType(quotation, FileType.AUDIO) }}</span>
+                                </div>
+
+                                <!-- Document Files -->
+                                <div class="file-badge" *ngIf="countFilesByType(quotation, FileType.DOCUMENT) > 0"
+                                    (click)="openFileModal(quotation, FileType.DOCUMENT)">
+                                    <mat-icon>description</mat-icon>
+                                    <span>Documents: {{ countFilesByType(quotation, FileType.DOCUMENT) }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="payment-warning" *ngIf="quotation.paymentPending">
+                            <mat-icon>error</mat-icon>
+                            <span>Adv. payment pending</span>
+                        </div>
+                    </div>
                 </div>
             </div>
+        </ng-container>
 
-            <div class="card-content">
-                <h3>{{ quotation.title }}</h3>
-                <p class="description">{{ quotation.description }}</p>
+        <ng-template #completedWorksContainer>
+            <!-- Loading State -->
+            <div *ngIf="completedWorksLoading" class="loading-container">
+                <mat-icon class="spin">refresh</mat-icon>
+                <p>Loading your completed works...</p>
+            </div>
 
-                <div class="details">
-                    <div class="detail-item">
-                        <mat-icon>edit</mat-icon>
-                        <span>Editor: {{ quotation.editor || 'Not assigned' }}</span>
+            <!-- Empty State -->
+            <div *ngIf="!completedWorksLoading && completedWorks.length === 0" class="empty-state">
+                <mat-icon>work_off</mat-icon>
+                <h2>No completed works found</h2>
+                <p *ngIf="completedWorksSearch">Try adjusting your search criteria</p>
+                <p *ngIf="!completedWorksSearch">You haven't completed any works yet</p>
+            </div>
+
+            <!-- Works Grid -->
+            <div *ngFor="let work of completedWorks" class="work-card-wrapper">
+                <div class="work-card">
+                    <div class="work-card-header">
+                        <h3 class="work-title">{{ work.title }}</h3>
+                        <span class="work-date">{{ work.completedAt || null | localDate }}</span>
                     </div>
+                    <div class="work-card-content">
+                        <p class="work-description">{{ work.description }}</p>
 
-                    <div class="detail-item">
-                        <mat-icon>label</mat-icon>
-                        <span>Theme: {{ quotation.theme }}</span>
-                    </div>
+                        <!-- User's Attached Files -->
+                        <div class="work-files user-files" *ngIf="work.attachedFiles && work.attachedFiles.length > 0">
+                            <h4>Uploaded Files</h4>
+                            <div class="file-badges">
+                            <ng-container
+                                *ngFor="let fileType of [FileType.IMAGE, FileType.VIDEO, FileType.DOCUMENT, FileType.AUDIO]">
+                                    <div class="file-badge" *ngIf="countAttachedFilesByType(work, fileType) > 0"
+                                        (click)="openAttachedFileModal(work, fileType)">
+                                        <mat-icon>
+                                            {{ fileType === FileType.IMAGE ? 'image' :
+                                            fileType === FileType.VIDEO ? 'videocam' :
+                                            fileType === FileType.AUDIO ? 'audiotrack' : 'description' }}
+                                        </mat-icon>
+                                        <span>{{ countAttachedFilesByType(work, fileType) }}</span>
+                                    </div>
+                                </ng-container>
+                            </div>
+                        </div>
 
-                    <div class="detail-item">
-                        <mat-icon>category</mat-icon>
-                        <span>Output Type: {{ quotation.outputType }}</span>
-                    </div>
+                        <div class="work-response" *ngIf="work.comments">
+                            <h4>Editor comments</h4>
+                            <p>{{ work.comments }}</p>
+                        </div>
 
-                    <!-- File Attachments Section -->
-                    <div class="file-attachments" *ngIf="quotation.attachedFiles && quotation.attachedFiles.length > 0">
-                        <div class="file-type-badges">
-                            <!-- Image Files -->
-                            <div class="file-badge" 
-                                 *ngIf="countFilesByType(quotation, FileType.IMAGE) > 0"
-                                 (click)="openFileModal(quotation, FileType.IMAGE)">
-                                <mat-icon>image</mat-icon>
-                                <span>Images: {{ countFilesByType(quotation, FileType.IMAGE) }}</span>
-                            </div>
-                            
-                            <!-- Video Files -->
-                            <div class="file-badge" 
-                                 *ngIf="countFilesByType(quotation, FileType.VIDEO) > 0"
-                                 (click)="openFileModal(quotation, FileType.VIDEO)">
-                                <mat-icon>videocam</mat-icon>
-                                <span>Videos: {{ countFilesByType(quotation, FileType.VIDEO) }}</span>
-                            </div>
-                            
-                            <!-- Audio Files -->
-                            <div class="file-badge" 
-                                 *ngIf="countFilesByType(quotation, FileType.AUDIO) > 0"
-                                 (click)="openFileModal(quotation, FileType.AUDIO)">
-                                <mat-icon>audiotrack</mat-icon>
-                                <span>Audio: {{ countFilesByType(quotation, FileType.AUDIO) }}</span>
-                            </div>
-                            
-                            <!-- Document Files -->
-                            <div class="file-badge" 
-                                 *ngIf="countFilesByType(quotation, FileType.DOCUMENT) > 0"
-                                 (click)="openFileModal(quotation, FileType.DOCUMENT)">
-                                <mat-icon>description</mat-icon>
-                                <span>Documents: {{ countFilesByType(quotation, FileType.DOCUMENT) }}</span>
+                        <!-- Editor's Final Files -->
+                        <div class="work-files editor-files" *ngIf="work.finalFiles && work.finalFiles.length > 0">
+                            <h4>Final Edited Files</h4>
+                            <div class="file-badges">
+                            <ng-container
+                                *ngFor="let fileType of [FileType.IMAGE, FileType.VIDEO, FileType.DOCUMENT, FileType.AUDIO]">
+                                    <div class="file-badge" *ngIf="countFinalFilesByType(work, fileType) > 0"
+                                        (click)="openFinalFilesModal(work, fileType)">
+                                        <mat-icon>
+                                            {{ fileType === FileType.IMAGE ? 'image' :
+                                            fileType === FileType.VIDEO ? 'videocam' :
+                                            fileType === FileType.AUDIO ? 'audiotrack' : 'description' }}
+                                        </mat-icon>
+                                        <span>{{ countFinalFilesByType(work, fileType) }}</span>
+                                    </div>
+                                </ng-container>
                             </div>
                         </div>
                     </div>
-
-                    <div class="payment-warning" *ngIf="quotation.paymentPending">
-                        <mat-icon>error</mat-icon>
-                        <span>Adv. payment pending</span>
-                    </div>
                 </div>
             </div>
-        </div>
+        </ng-template>
     </div>
 </div>

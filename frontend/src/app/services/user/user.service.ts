@@ -4,6 +4,7 @@ import { User } from '../../interfaces/user.interface';
 import { catchError, map, Observable, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { FileAttachmentResponse } from '../../interfaces/quotation.interface';
+import { CompletedWork } from '../../interfaces/completed-word.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -83,5 +84,12 @@ export class UserService {
       map(response=>response),
       catchError(error=>{throw error})
     )
+  }
+
+  getCompletedWorks(): Observable<CompletedWork[]> {
+    return this.http.get<CompletedWork[]>(`${this.apiUrl}/user/quotations/completed`).pipe(
+      map((response) => response),
+      catchError((error) => { throw error })
+    );
   }
 }
