@@ -31,9 +31,15 @@ export class AdminsService {
         return this.adminModel.create(adminData);
     }
 
-    async getAllUsers(){
+    async getAllUsers(query: any): Promise<User[]>{
         try {
-            return await this.userModel.find({isVerified:true});
+            this.logger.log('Fetching users with query:', query);
+            const filter: any = {};
+            if (query.isEditor !== undefined) filter.isEditor = query.isEditor;
+            if (query.gender) filter.gender = query.gender;
+            if (query.behaviourRating) filter.behaviourRating = query.behaviourRating;
+            if (query.search) filter.username = { $regex: query.search, $options: 'i' };
+            return await this.userModel.find(filter);
         } catch (error) {
             console.error('Error fetching users:', error);
             throw new HttpException('No users found', HttpStatus.NOT_FOUND);

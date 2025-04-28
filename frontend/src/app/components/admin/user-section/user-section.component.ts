@@ -5,16 +5,18 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { User, UserManagementService } from '../../../services/admin/user-management.service';
 import { MatSelectModule } from '@angular/material/select';
 import { TableColumn,TableComponent } from '../../shared/table/table.component';
-import { FormsModule } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { debounceTime } from 'rxjs';
 
 @Component({
   selector: 'app-user-section',
-  imports: [TableComponent, FormsModule, MatSelectModule, CommonModule, MatIconModule, MatSlideToggleModule],
+  imports: [ReactiveFormsModule, TableComponent, FormsModule, MatSelectModule, CommonModule, MatIconModule, MatSlideToggleModule],
   templateUrl: './user-section.component.html',
   styleUrl: './user-section.component.scss'
 })
 export class UserSectionComponent implements OnInit {
   searchQuery: string = '';
+  searchControl = new FormControl();
   users: User[] = [];
   filteredUsers: User[] = [];
   loading: boolean = true;
@@ -51,14 +53,26 @@ export class UserSectionComponent implements OnInit {
   ngOnInit(): void {
     // this.users$ = this.userManagementService.getAllUsers();
     this.loadUsers();
+    this.searchControl.valueChanges
+    .pipe(debounceTime(400))
+    .subscribe(value => {
+      this.searchQuery = value;
+      this.loadUsers();
+    });
   }
 
   loadUsers(): void {
     this.loading = true;
-    this.userManagementService.getAllUsers().subscribe({
+    const params: any = {};
+    if(this.searchQuery.trim()) params.search = this.searchQuery;
+    if(this._hideEditors) params.isEditor = false;
+    if(this.selectedGender) params.gender = this.selectedGender;
+    if(this.selectedAge) params.age = this.selectedAge;
+    if(this.selectedBehRating) params.behaviourRating = this.selectedBehRating;
+    this.userManagementService.getAllUsers(params).subscribe({
       next: (users) => {
+        console.log('users:',users);
         this.users = users;
-        // this.filteredUsers = users;
         this.loading = false;
       },
       error: (error) => {
@@ -68,23 +82,29 @@ export class UserSectionComponent implements OnInit {
     });
   }
 
-  get displayUsers(): User[] {
-    const query = this.searchQuery.toLowerCase().trim();
-    return this.users.filter(user => {
-      return (
-        ((user.fullname && user.fullname.toLowerCase().trim().includes(query)) ||
-        (user.email && user.email.toLowerCase().trim().includes(query))) && 
-        ( this.hideEditors ? !user.isEditor : true)
-      );
-    });
-  }
-
   get hideEditors(): boolean {
     return this._hideEditors;
   }
   set hideEditors(value: boolean) {
     this._hideEditors = value;
-    // Optionally trigger change detection if needed
+  }
+  
+  onGenderChange() {
+    // Optionally close the dropdown after selection:
+    this.activeFilters = this.activeFilters.filter(f => f !== 'gender');
+    setTimeout(() => this.loadUsers(), 400);
+    // Optionally trigger filtering here
+  }
+  
+  onBehRatingChange() {
+    // Optionally close the dropdown after selection:
+    this.activeFilters = this.activeFilters.filter(f => f !== 'behRating');
+    // Optionally trigger filtering here
+    setTimeout(() => this.loadUsers(), 400);
+  }
+
+  onHideEditorsChange(){
+    setTimeout(() => this.loadUsers(), 400);
   }
 
   toggleFilter(filter: string): void {
@@ -96,24 +116,10 @@ export class UserSectionComponent implements OnInit {
     }
   }
 
-  selectGender(gender: string) {
-    this.selectedGender = gender;
-    // Optionally close the dropdown after selection:
-    this.activeFilters = this.activeFilters.filter(f => f !== 'gender');
-    // Optionally trigger filtering here
-  }
-
   selectAge(age: string) {
     this.selectedAge = age;
     // Optionally close the dropdown after selection:
     this.activeFilters = this.activeFilters.filter(f => f !== 'age');
-    // Optionally trigger filtering here
-  }
-
-  selectBehRating(rating: number) {
-    this.selectedBehRating = rating;
-    // Optionally close the dropdown after selection:
-    this.activeFilters = this.activeFilters.filter(f => f !== 'behRating');
     // Optionally trigger filtering here
   }
 

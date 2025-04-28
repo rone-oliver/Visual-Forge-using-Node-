@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -25,8 +25,17 @@ export class UserManagementService {
 
   constructor(private http: HttpClient) { }
 
-  getAllUsers():Observable<User[]>{
-    return this.http.get<User[]>(this.apiUrl);
+  getAllUsers(params?: {[key:string]: any}):Observable<User[]>{
+    let httpParams = new HttpParams();
+    if(params){
+      console.log('params:',params);
+      Object.keys(params).forEach(key => {
+        if (params[key] !== undefined && params[key] !== null && params[key] !== '') {
+          httpParams = httpParams.set(key, params[key]);
+        }
+      });
+    }
+    return this.http.get<User[]>(this.apiUrl,{ params: httpParams});
   }
 
   getUser(username: string):Observable<User>{

@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Patch, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Query, Req, UseGuards } from '@nestjs/common';
 import { AdminsService } from './admins.service';
 import { Types } from 'mongoose';
 import { RolesGuard } from 'src/auth/guards/role.guard';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
+import { User } from 'src/users/models/user.schema';
 
 @Controller('admin')
 @UseGuards(AuthGuard, RolesGuard)
@@ -11,8 +12,8 @@ export class AdminsController {
     constructor(private adminService: AdminsService) { };
     @Get('users')
     @Roles('Admin')
-    async getAllUsers() {
-        return await this.adminService.getAllUsers();
+    async getAllUsers(@Query() query: any): Promise<User[]> {
+        return await this.adminService.getAllUsers(query);
     }
 
     @Get('editor-requests')
