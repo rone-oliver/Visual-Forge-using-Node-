@@ -64,7 +64,7 @@ export class UserSectionComponent implements OnInit {
   loadUsers(): void {
     this.loading = true;
     const params: any = {};
-    if(this.searchQuery.trim()) params.search = this.searchQuery;
+    if(this.searchQuery.trim()) params.search = this.searchQuery.trim();
     if(this._hideEditors) params.isEditor = false;
     if(this.selectedGender) params.gender = this.selectedGender;
     if(this.selectedAge) params.age = this.selectedAge;

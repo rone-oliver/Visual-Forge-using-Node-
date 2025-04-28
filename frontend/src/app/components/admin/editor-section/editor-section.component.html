@@ -6,10 +6,6 @@
                 <lucide-icon [name]="icons.export"></lucide-icon>
                 <span>Export data</span>
             </button>
-            <!-- <button class="btn-create">
-                <lucide-icon [name]="icons.plus"></lucide-icon>
-                <span>Create report</span>
-            </button> -->
         </div>
     </div>
 
@@ -17,88 +13,35 @@
         <div class="search-filter-row">
             <div class="search-container">
                 <lucide-icon [name]="icons.search" class="search-icon"></lucide-icon>
-                <input type="search" [(ngModel)]="searchQuery" placeholder="Search Editors..." class="search-input">
+                <input type="search" [formControl]="searchControl" placeholder="Search Editors..." class="search-input">
             </div>
-            <!-- <div class="tag-filters">
-                <button class="tag-btn tag-active">Video</button>
-                <button class="tag-btn">Above 8</button>
-            </div> -->
-
-            <!-- <div class="tag-filters">
-                <div class="filter-chips">
-                    <div class="chip" *ngFor="let chip of getActiveFilterChips()">
-                        <span class="chip-text">{{ chip.value }}</span>
-                        <button class="chip-remove" (click)="removeFilter(chip.type, chip.value)">
-                            <lucide-icon name="x" size="16"></lucide-icon>
-                        </button>
-                    </div>
-                </div>
-            </div> -->
         </div>
 
         <div class="filter-controls">
             <!-- Category Filter -->
-            <div class="filter-dropdown">
-                <button (click)="toggleFilter('category')" [class.active]="activeFilters['category']"
-                    class="filter-btn">
-                    <span>Category</span>
-                    <lucide-icon [name]="icons.chevronDown"></lucide-icon>
-                </button>
-                <div *ngIf="activeFilters['category']" class="dropdown-menu">
-                    <div class="dropdown-item">
-                        <mat-checkbox color="primary" [(ngModel)]="selectedFilters.category.video">Video</mat-checkbox>
-                    </div>
-                    <div class="dropdown-item">
-                        <mat-checkbox color="primary" [(ngModel)]="selectedFilters.category.image">Image</mat-checkbox>
-                    </div>
-                    <div class="dropdown-item">
-                        <mat-checkbox color="primary" [(ngModel)]="selectedFilters.category.audio">Audio</mat-checkbox>
-                    </div>
-                </div>
+            <div class="filter-select">
+                <mat-form-field appearance="outline">
+                    <mat-label>Category</mat-label>
+                    <mat-select [formControl]="categoryFilterControl" multiple (selectionChange)="onFilterChange()">
+                        <mat-option value="video">Video</mat-option>
+                        <mat-option value="image">Image</mat-option>
+                        <mat-option value="audio">Audio</mat-option>
+                    </mat-select>
+                </mat-form-field>
             </div>
 
             <!-- Rating Filter -->
-            <div class="filter-dropdown">
-                <button (click)="toggleFilter('rating')" [class.active]="activeFilters['rating']" class="filter-btn">
-                    <span>Rating</span>
-                    <lucide-icon [name]="icons.chevronDown"></lucide-icon>
-                </button>
-                <div *ngIf="activeFilters['rating']" class="dropdown-menu">
-                    <div class="dropdown-item" *ngFor="let rating of [5, 4, 3]" (click)="toggleRating(rating)">
-                        <mat-icon class="star-rating" [ngClass]="{'selected': selectedFilters.rating === rating}">{{
-                            selectedFilters.rating === rating ? 'star' : 'star_border' }}</mat-icon>
-                        <span>{{ rating }}{{ rating === 5 ? ' stars' : '+ stars' }}</span>
-                    </div>
-                </div>
+            <div class="filter-select">
+                <mat-form-field appearance="outline">
+                    <mat-label>Rating</mat-label>
+                    <mat-select [formControl]="ratingFilterControl" (selectionChange)="onFilterChange()">
+                        <mat-option [value]="0">All Ratings</mat-option>
+                        <mat-option [value]="5">5+ <lucide-icon [name]="icons.star"></lucide-icon></mat-option>
+                        <mat-option [value]="4">4+ <lucide-icon [name]="icons.star"></lucide-icon></mat-option>
+                        <mat-option [value]="3">3+ <lucide-icon [name]="icons.star"></lucide-icon></mat-option>
+                    </mat-select>
+                </mat-form-field>
             </div>
-
-            <!-- Avg. Time Filter -->
-            <!-- <div class="filter-dropdown">
-                <button (click)="toggleFilter('avgTime')" [class.active]="activeFilters['avgTime']" class="filter-btn">
-                    <span>Avg. Time</span>
-                    <lucide-icon [name]="icons.chevronDown"></lucide-icon>
-                </button>
-                <div *ngIf="activeFilters['avgTime']" class="dropdown-menu">
-                    <div class="dropdown-item" [class.selected]="selectedFilters.avgTime < 24"
-                        (click)="selectAvgTime(24)">
-                        <lucide-icon [name]="icons.fast"
-                            [ngClass]="{'selected': selectedFilters.avgTime < 24}"></lucide-icon>
-                        <span>Fast ( &lt; 24h)</span>
-                    </div>
-                    <div class="dropdown-item" [class.selected]="selectedFilters.avgTime >=24 && selectedFilters.avgTime < 72 "
-                        (click)="selectAvgTime(72)">
-                        <lucide-icon [name]="icons.medium"
-                            [ngClass]="{'selected': selectedFilters.avgTime >=24 && selectedFilters.avgTime < 72 }"></lucide-icon>
-                        <span>Medium (1-3d)</span>
-                    </div>
-                    <div class="dropdown-item" [class.selected]="selectedFilters.avgTime >= 72"
-                        (click)="selectAvgTime(72)">
-                        <lucide-icon [name]="icons.slow"
-                            [ngClass]="{'selected': selectedFilters.avgTime >=72 }"></lucide-icon>
-                        <span>Slow ( &gt; 3d)</span>
-                    </div>
-                </div>
-            </div> -->
 
             <!-- Editor Requests Button -->
             <button class="btn-editor-requests" (click)="toggleRequestsSidebar()">

@@ -12,13 +12,13 @@ export class AdminsService {
     private readonly logger = new Logger(AdminsService.name);
 
     constructor(
-        @InjectModel(Admin.name) private adminModel:Model<AdminDocument>,
-        @InjectModel(User.name) private userModel:Model<UserDocument>,
+        @InjectModel(Admin.name) private adminModel: Model<AdminDocument>,
+        @InjectModel(User.name) private userModel: Model<UserDocument>,
         @InjectModel(EditorRequest.name) private editorRequestModel: Model<EditorRequestDocument>,
         @InjectModel(Editor.name) private editorModel: Model<EditorDocument>,
-    ){};
+    ) { };
 
-    async findOne(filter: Partial<Admin>): Promise<Admin | null>{
+    async findOne(filter: Partial<Admin>): Promise<Admin | null> {
         try {
             return this.adminModel.findOne(filter).exec();
         } catch (error) {
@@ -26,12 +26,12 @@ export class AdminsService {
         }
     }
 
-    async createAdmin(adminData: any){
-        adminData.password = await bcrypt.hash(adminData.password,10);
+    async createAdmin(adminData: any) {
+        adminData.password = await bcrypt.hash(adminData.password, 10);
         return this.adminModel.create(adminData);
     }
 
-    async getAllUsers(query: any): Promise<User[]>{
+    async getAllUsers(query: any): Promise<User[]> {
         try {
             this.logger.log('Fetching users with query:', query);
             const filter: any = {};
@@ -46,13 +46,13 @@ export class AdminsService {
         }
     }
 
-    async getEditorRequests(){
+    async getEditorRequests() {
         try {
             const requests = await this.editorRequestModel.find({ status: EditorRequestStatus.PENDING }).populate('userId');
-            
+
             return requests.map(request => {
                 const user = request.userId as any;
-                
+
                 return {
                     _id: request._id,
                     userId: user._id,
@@ -70,12 +70,12 @@ export class AdminsService {
         }
     }
 
-    async approveRequest(requestId: Types.ObjectId, adminId: Types.ObjectId): Promise<boolean>{
+    async approveRequest(requestId: Types.ObjectId, adminId: Types.ObjectId): Promise<boolean> {
         try {
-            const request = await this.editorRequestModel.findOneAndUpdate({ _id: requestId}, { status: EditorRequestStatus.APPROVED, approvedBy: adminId});
-            if(request && request.userId){
-                await this.userModel.updateOne({ _id: request.userId},{isEditor: true});
-                await this.editorModel.create({userId: new Types.ObjectId(request.userId), category: [request.categories]});
+            const request = await this.editorRequestModel.findOneAndUpdate({ _id: requestId }, { status: EditorRequestStatus.APPROVED, approvedBy: adminId });
+            if (request && request.userId) {
+                await this.userModel.updateOne({ _id: request.userId }, { isEditor: true });
+                await this.editorModel.create({ userId: new Types.ObjectId(request.userId), category: [request.categories] });
                 return true;
             }
             return false;
@@ -85,9 +85,9 @@ export class AdminsService {
         }
     }
 
-    async rejectRequest(requestId: Types.ObjectId,reason: string){
+    async rejectRequest(requestId: Types.ObjectId, reason: string) {
         try {
-            const request = await this.editorRequestModel.findOneAndUpdate({ _id: requestId}, { status: EditorRequestStatus.REJECTED, reason});
+            const request = await this.editorRequestModel.findOneAndUpdate({ _id: requestId }, { status: EditorRequestStatus.REJECTED, reason });
             return request !== null;
         } catch (error) {
             this.logger.error(`Error rejecting request: ${error.message}`);
@@ -95,52 +95,113 @@ export class AdminsService {
         }
     }
 
-    async getEditors(){
+    async getEditors(query: any) {
         try {
-            const editors = await this.editorModel.find({}).populate('userId');
-            return editors.map(editor => {
-                const user = editor.userId as any;
-                return {
-                    _id: editor._id,
-                    userId: user._id,
+            this.logger.log('Fetching editor with these query:', query);
 
-                    //user info
-                    fullname: user.fullname,
-                    username: user.username,
-                    email: user.email,
-                    profileImage: user.profileImage,
+            // Start with a pipeline for more complex filtering
+            const pipeline:any[] = [];
 
-                    // Editor info
-                    category: editor.category || [],
-                    score: editor.score || 0,
-                    ratingsCount: editor.ratings?.length || 0,
-                    averageRating: editor.ratings?.length ? 
-                        editor.ratings.reduce((sum,r)=> sum+r.rating, 0)/editor.ratings.length :
-                        0,
+            // Match stage for basic filtering
+            const matchStage: any = {};
 
-                    // status
-                    createdAt: editor.createdAt,
-                    isVerified: user.isVerified,
-                    isBlocked: user.isBlocked,
+            // Category filtering
+            const categoryFilters:string[] = [];
+            if (query.video === 'true') categoryFilters.push('Video');
+            if (query.image === 'true') categoryFilters.push('Image');
+            if (query.audio === 'true') categoryFilters.push('Audio');
 
-                    // social links
-                    socialLinks: editor.socialLinks || {}
-                };
+            if (categoryFilters.length > 0) {
+                matchStage['category'] = { $all: categoryFilters };
+            }
+
+            // Add match stage if we have filters
+            if (Object.keys(matchStage).length > 0) {
+                pipeline.push({ $match: matchStage });
+            }
+
+            // Add a stage to calculate average rating
+            pipeline.push({
+                $addFields: {
+                    averageRating: {
+                        $cond: {
+                            if: { $eq: [{ $size: "$ratings" }, 0] },
+                            then: 0,
+                            else: { $avg: "$ratings.rating" }
+                        }
+                    }
+                }
             });
+
+            // Filter by rating if specified
+            if (query.rating) {
+                pipeline.push({
+                    $match: {
+                        averageRating: { $gte: parseFloat(query.rating) }
+                    }
+                });
+            }
+
+            // Lookup to populate user data
+            pipeline.push({
+                $lookup: {
+                    from: 'users',
+                    localField: 'userId',
+                    foreignField: '_id',
+                    as: 'userInfo'
+                }
+            });
+
+            // Unwind the user array
+            pipeline.push({
+                $unwind: '$userInfo'
+            });
+
+            // Filter by username search if specified
+            if (query.search) {
+                pipeline.push({
+                    $match: {
+                        'userInfo.username': { $regex: query.search, $options: 'i' }
+                    }
+                });
+            }
+
+            // Project to format the output
+            pipeline.push({
+                $project: {
+                    _id: 1,
+                    userId: '$userInfo._id',
+                    fullname: '$userInfo.fullname',
+                    username: '$userInfo.username',
+                    email: '$userInfo.email',
+                    profileImage: '$userInfo.profileImage',
+                    category: { $ifNull: ['$category', []] },
+                    score: { $ifNull: ['$score', 0] },
+                    ratingsCount: { $size: '$ratings' },
+                    averageRating: 1,
+                    createdAt: 1,
+                    isVerified: '$userInfo.isVerified',
+                    isBlocked: '$userInfo.isBlocked',
+                    socialLinks: { $ifNull: ['$socialLinks', {}] }
+                }
+            });
+
+            const editors = await this.editorModel.aggregate(pipeline);
+            return editors;
         } catch (error) {
             this.logger.error(`Error fetching editors: ${error.message}`);
             throw new HttpException('No editors found', HttpStatus.NOT_FOUND);
         }
     }
 
-    async blockUser(userId:Types.ObjectId): Promise<boolean> {
+    async blockUser(userId: Types.ObjectId): Promise<boolean> {
         try {
             // const user = await this.userModel.findByIdAndUpdate(userId, { isBlocked: true });
-            const user = await this.userModel.findOne({_id:userId});
-            if(!user){
+            const user = await this.userModel.findOne({ _id: userId });
+            if (!user) {
                 return false;
             }
-            await this.userModel.findOneAndUpdate({_id:user._id},{isBlocked:!user.isBlocked})
+            await this.userModel.findOneAndUpdate({ _id: user._id }, { isBlocked: !user.isBlocked })
             return true;
         } catch (error) {
             this.logger.error(`Error blocking user: ${error.message}`);

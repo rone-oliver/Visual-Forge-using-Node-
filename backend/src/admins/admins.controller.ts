@@ -38,8 +38,8 @@ export class AdminsController {
 
     @Get('editors')
     @Roles('Admin')
-    async getEditors(){
-        return await this.adminService.getEditors();
+    async getEditors(@Query() query:any){
+        return await this.adminService.getEditors(query);
     }
 
     @Patch('users/block')
