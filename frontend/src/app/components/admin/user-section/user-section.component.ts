@@ -27,10 +27,10 @@ export class UserSectionComponent implements OnInit {
   userColumns: TableColumn[] = [
     { key: 'fullname', header: 'Name', sortable: true },
     { key: 'email', header: 'Email', sortable: true },
-    { key: 'phone', header: 'Phone' },
-    { key: 'gender', header: 'Gender' },
-    { key: 'age', header: 'Age', sortable: true },
-    { key: 'rating', header: 'Rating', sortable: true },
+    { key: 'username', header: 'Username', sortable: true},
+    { key: 'mobileNumber', header: 'Phone', placeholder:'Not provided' },
+    { key: 'gender', header: 'Gender', placeholder:'Not specified' },
+    { key: 'behaviourRating', header: 'Rating', sortable: true, placeholder:'Not Rated' },
     { key: 'isEditor', header: 'Editor Status', type: 'boolean' },
     { key: 'createdAt', header: 'Joined', type: 'date', sortable: true },
     { key: 'type', header: 'Actions', type: 'actions' }
@@ -58,7 +58,7 @@ export class UserSectionComponent implements OnInit {
     this.userManagementService.getAllUsers().subscribe({
       next: (users) => {
         this.users = users;
-        this.filteredUsers = users;
+        // this.filteredUsers = users;
         this.loading = false;
       },
       error: (error) => {

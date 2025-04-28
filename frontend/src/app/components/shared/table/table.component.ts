@@ -8,6 +8,7 @@ export interface TableColumn {
   key: string;          // Property name in data object
   header: string;       // Display name for column header
   type?: 'text' | 'date' | 'image' | 'boolean' | 'actions'; // Type of data for rendering
+  placeholder?:string;
   width?: string;       // Optional width (e.g., '100px', '10%')
   sortable?: boolean;   // Whether column is sortable
   format?: (value: any) => string; // Optional formatter function
@@ -33,6 +34,7 @@ export class TableComponent {
   @Output() rowClick = new EventEmitter<any>();
   @Output() actionClick = new EventEmitter<{ action: string, item: any}>();
 
+  defaultPlaceholder: string = 'N/A'
   currentPage: number = 1;
   sortColumn: string | null = null;
   sortDirection: 'asc' | 'desc' = 'asc';
