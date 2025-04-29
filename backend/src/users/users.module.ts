@@ -7,6 +7,7 @@ import { EditorRequestSchema } from 'src/common/models/editorRequest.schema';
 import { Editor, editorSchema } from 'src/editors/models/editor.schema';
 import { Quotation, QuotationSchema } from 'src/common/models/quotation.schema';
 import { CloudinaryService } from 'src/common/cloudinary/cloudinary.service';
+import { Works, workSchema } from 'src/common/models/works.schema';
 
 @Module({
   controllers: [UsersController],
@@ -17,6 +18,7 @@ import { CloudinaryService } from 'src/common/cloudinary/cloudinary.service';
       { name: 'EditorRequest', schema: EditorRequestSchema},
       { name: Editor.name, schema: editorSchema},
       { name: Quotation.name , schema: QuotationSchema},
+      { name: Works.name, schema: workSchema}
     ])
   ],
   exports: [UsersService]

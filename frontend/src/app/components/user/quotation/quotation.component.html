@@ -135,8 +135,8 @@
                         <div class="work-files user-files" *ngIf="work.attachedFiles && work.attachedFiles.length > 0">
                             <h4>Uploaded Files</h4>
                             <div class="file-badges">
-                            <ng-container
-                                *ngFor="let fileType of [FileType.IMAGE, FileType.VIDEO, FileType.DOCUMENT, FileType.AUDIO]">
+                                <ng-container
+                                    *ngFor="let fileType of [FileType.IMAGE, FileType.VIDEO, FileType.DOCUMENT, FileType.AUDIO]">
                                     <div class="file-badge" *ngIf="countAttachedFilesByType(work, fileType) > 0"
                                         (click)="openAttachedFileModal(work, fileType)">
                                         <mat-icon>
@@ -153,14 +153,19 @@
                         <div class="work-response" *ngIf="work.comments">
                             <h4>Editor comments</h4>
                             <p>{{ work.comments }}</p>
+
+                            <button class="rate-btn editor-rate editor-rating-btn" (click)="openEditorRatingModal(work)">
+                                <mat-icon>supervisor_account</mat-icon>
+                                Rate Editor
+                            </button>
                         </div>
 
                         <!-- Editor's Final Files -->
                         <div class="work-files editor-files" *ngIf="work.finalFiles && work.finalFiles.length > 0">
                             <h4>Final Edited Files</h4>
                             <div class="file-badges">
-                            <ng-container
-                                *ngFor="let fileType of [FileType.IMAGE, FileType.VIDEO, FileType.DOCUMENT, FileType.AUDIO]">
+                                <ng-container
+                                    *ngFor="let fileType of [FileType.IMAGE, FileType.VIDEO, FileType.DOCUMENT, FileType.AUDIO]">
                                     <div class="file-badge" *ngIf="countFinalFilesByType(work, fileType) > 0"
                                         (click)="openFinalFilesModal(work, fileType)">
                                         <mat-icon>
@@ -172,6 +177,28 @@
                                     </div>
                                 </ng-container>
                             </div>
+                        </div>
+
+                        <!-- Quotation Rating Display -->
+<div *ngIf="work.rating || work.feedback" class="work-rating-display">
+    <div class="work-rating-stars" *ngIf="work.rating">
+      <mat-icon *ngFor="let star of [].constructor(5); let i = index"
+                [ngClass]="{'filled': i < work.rating}">
+        star
+      </mat-icon>
+      <span class="work-rating-value">{{ work.rating }}/5</span>
+    </div>
+    <div class="work-rating-feedback" *ngIf="work.feedback">
+      <mat-icon>comment</mat-icon>
+      <span>{{ work.feedback }}</span>
+    </div>
+  </div>
+
+                        <div class="rating-buttons-container">
+                            <button class="rate-btn work-rate" (click)="openWorkRatingModal(work)">
+                                <mat-icon>star</mat-icon>
+                                {{ work.rating || work.feedback ? 'Update Work Rating' : 'Rate their Work' }}
+                            </button>
                         </div>
                     </div>
                 </div>

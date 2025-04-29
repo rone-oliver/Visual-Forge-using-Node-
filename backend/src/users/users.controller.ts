@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Logger, Patch, Post, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Logger, Patch, Post, Query, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { UsersService } from './users.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -110,5 +110,37 @@ export class UsersController {
         const user = req['user'] as { userId: Types.ObjectId, role: string}
         const quotations = await this.userService.getCompletedWorks(user.userId);
         return quotations;
+    }
+
+    @Post('quotations/rate')
+    @Roles('User','Editor')
+    async rateWork(@Req() req: Request, @Body() body:{workId: string, rating: number, feedback: string}){
+        const user = req['user'] as { userId: Types.ObjectId, role: string}
+        console.log('worksId from controller:',body.workId);
+        const success = await this.userService.rateWork(body.workId, body.rating, body.feedback);
+        if(success){
+            return true;
+        }
+        return false;
+    }
+
+    @Post('editor/rate')
+    @Roles('User','Editor')
+    async rateEditor(@Req() req: Request, @Body() body:{editorId: string, rating: number, feedback: string}){
+        this.logger.log('rating editor:',body.editorId,body.rating,body.feedback);
+        const user = req['user'] as { userId: Types.ObjectId, role: string}
+        const success = await this.userService.rateEditor(body.editorId, body.rating, body.feedback, user.userId);
+        if(success){
+            return true;
+        }
+        return false;
+    }
+
+    @Get('editor/rating')
+    @Roles('User','Editor')
+    async getCurrentEditorRating(@Req() req: Request, @Query('editorId') editorId: string){
+        const user = req['user'] as { userId: Types.ObjectId, role: string}
+        const rating = await this.userService.getCurrentEditorRating(editorId,user.userId);
+        return rating;
     }
 }

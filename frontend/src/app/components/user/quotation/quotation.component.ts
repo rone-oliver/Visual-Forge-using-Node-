@@ -8,6 +8,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { FilesPreviewComponent } from '../files-preview/files-preview.component';
 import { CompletedWork } from '../../../interfaces/completed-word.interface';
 import { DatePipe, LocalDatePipe } from '../../../pipes/date.pipe';
+import { RatingModalComponent } from '../../mat-dialogs/rating-modal/rating-modal.component';
 
 @Component({
   selector: 'app-quotation',
@@ -157,6 +158,91 @@ export class QuotationComponent implements OnInit {
     this.dialog.open(FilesPreviewComponent, {
       width: '800px',
       data: { files, title: 'Client Files' }
+    });
+  }
+
+  openEditorRatingModal(work: CompletedWork): void {
+    this.userService.getCurrentEditorRating(work.editorId).subscribe({
+      next: (rating) => {
+        console.log('Current editor rating: ', rating);
+        const dialogRef = this.dialog.open(RatingModalComponent, {
+          width: '400px',
+          data: {
+            title: 'Rate the Editor',
+            label: 'How would you rate the editor?',
+            submitText: rating ? 'Update Rating' : 'Submit Rating',
+            currentRating: rating?.rating ?? null,
+            currentFeedback: rating?.feedback ?? ''
+          }
+        });
+        dialogRef.afterClosed().subscribe(result => {
+          if (result) {
+            console.log(result);
+            this.userService.rateEditor(work.editorId, result.rating, result.feedback).subscribe({
+              next: () => {
+                console.log('Editor rated successfully');
+                this.loadCompletedWorks();
+              },
+              error: (err) => {
+                console.error('Error rating editor: ', err);
+              }
+            })
+          }
+        });
+      },
+      error: (err) => {
+        console.error('Error fetching current editor rating: ', err);
+        const dialogRef = this.dialog.open(RatingModalComponent, {
+          width: '400px',
+          data: {
+            title: 'Rate the Editor',
+            label: 'How would you rate the editor?',
+            submitText: 'Submit Rating'
+          }
+        });
+        dialogRef.afterClosed().subscribe(result => {
+          if (result) {
+            console.log(result);
+            this.userService.rateEditor(work.editorId, result.rating, result.feedback).subscribe({
+              next: () => {
+                console.log('Editor rated successfully');
+                this.loadCompletedWorks();
+              },
+              error: (err) => {
+                console.error('Error rating editor: ', err);
+              }
+            })
+          }
+        });
+      }
+    })
+  }
+
+  openWorkRatingModal(work: CompletedWork): void {
+    const dialogRef = this.dialog.open(RatingModalComponent, {
+      width: '400px',
+      data: {
+        title: 'Rate This Work',
+        label: 'How would you rate this work?',
+        submitText: 'Submit Rating',
+        currentRating: work.rating,
+        currentFeedback: work.feedback
+      }
+    });
+  
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        console.log(result);
+        console.log('worksId:',work.worksId);
+        this.userService.rateWork(work.worksId, result.rating, result.feedback).subscribe({
+          next: () => {
+            this.loadCompletedWorks();
+          },
+          error: (err) => {
+            console.error('Error rating work: ', err);
+          }
+        })
+      }
     });
   }
 }

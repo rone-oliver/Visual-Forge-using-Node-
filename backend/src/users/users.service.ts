@@ -8,6 +8,8 @@ import { Editor, EditorDocument } from 'src/editors/models/editor.schema';
 import { Quotation, QuotationDocument, QuotationStatus } from 'src/common/models/quotation.schema';
 import { CloudinaryService, FileUploadResult } from 'src/common/cloudinary/cloudinary.service';
 import { CompletedWork } from 'src/common/interfaces/completed-word.interface';
+import { Observable } from 'rxjs';
+import { Works, WorksDocument } from 'src/common/models/works.schema';
 
 @Injectable()
 export class UsersService {
@@ -17,6 +19,7 @@ export class UsersService {
         @InjectModel(Editor.name) private editorModel: Model<EditorDocument>,
         @InjectModel(EditorRequest.name) private editorRequestModel: Model<EditorRequestDocument>,
         @InjectModel(Quotation.name) private quotationModel: Model<QuotationDocument>,
+        @InjectModel(Works.name) private workModel: Model<WorksDocument>,
         private cloudinaryService: CloudinaryService,
     ) { }
 
@@ -261,6 +264,58 @@ export class UsersService {
             })
         } catch (error) {
             this.logger.error(`Error fetching completed works: ${error}`);
+            throw error;
+        }
+    }
+
+    async rateWork(workId:string,rating:number,feedback: string):Promise<boolean>{
+        try {
+            this.logger.log('rating work:',workId,rating,feedback);
+            const result = await this.workModel.updateOne({_id: new Types.ObjectId(workId)},{$set:{rating,feedback}});
+            console.log('rating work success');
+            if (result.matchedCount > 0 && result.modifiedCount > 0) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (error) {
+            this.logger.error(`Error rating work: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async rateEditor(editorId:string,rating:number,feedback: string,userId: Types.ObjectId):Promise<boolean>{
+        try {
+            this.logger.log('rating editor dto from service:',editorId,rating,feedback,userId);
+            const result = await this.editorModel.updateOne({userId: new Types.ObjectId(editorId)},{$push:{ratings:{rating,feedback,userId}}});
+            if (result.matchedCount > 0 && result.modifiedCount > 0) {
+                this.logger.log('rating editor success');
+                return true;
+            } else {
+                this.logger.log('rating editor failed');
+                return false;
+            }
+        } catch (error) {
+            this.logger.error(`Error rating editor: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async getCurrentEditorRating(editorId:string, userId: Types.ObjectId) {
+        try {
+            const editor = await this.editorModel.findOne({userId: new Types.ObjectId(editorId)}).select('ratings');
+            if (editor?.ratings) {
+                this.logger.log(`Editor ratings for user ${editorId}: ${editor.ratings}`);
+                const rating = editor.ratings.find((rating: any) => rating.userId.equals(userId));
+                if (rating) {
+                    this.logger.log(`Current rating of user ${userId} on editor ${editorId}: ${rating.rating}`);
+                    return rating;
+                }
+                return null;
+            }
+            return null;
+        } catch (error) {
+            this.logger.error(`Error getting current editor rating: ${error.message}`);
             throw error;
         }
     }

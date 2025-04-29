@@ -9,7 +9,7 @@ import { MatSnackBarConfig, MatSnackBar } from '@angular/material/snack-bar';
 import { CloudinaryService } from '../../../services/cloudinary.service';
 import { MatDialog } from '@angular/material/dialog';
 import { ProfileEditModalComponent } from '../profile-edit-modal/profile-edit-modal.component';
-import { ResetPasswordComponent } from '../../modals/reset-password/reset-password.component';
+import { ResetPasswordComponent } from '../../mat-dialogs/reset-password/reset-password.component';
 
 
 @Component({

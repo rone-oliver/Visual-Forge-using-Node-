@@ -92,4 +92,26 @@ export class UserService {
       catchError((error) => { throw error })
     );
   }
+
+  rateWork(workId: string, rating: number, feedback: string): Observable<boolean>{
+    console.log('worksId',workId);
+    return this.http.post<boolean>(`${this.apiUrl}/user/quotations/rate`, {workId, rating, feedback}).pipe(
+      map(response=>response),
+      catchError(error=>{throw error})
+    )
+  }
+
+  rateEditor(editorId: string, rating: number, feedback: string): Observable<boolean>{
+    return this.http.post<boolean>(`${this.apiUrl}/user/editor/rate`, {editorId, rating, feedback}).pipe(
+      map(response=>response),
+      catchError(error=>{throw error})
+    )
+  }
+
+  getCurrentEditorRating(editorId: string): Observable<{rating: number, feedback: string}>{
+    return this.http.get<{rating: number, feedback: string}>(`${this.apiUrl}/user/editor/rating`, {params: {editorId}}).pipe(
+      map(response=>response),
+      catchError(error=>{throw error})
+    )
+  }
 }

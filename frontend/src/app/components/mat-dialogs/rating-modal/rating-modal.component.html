@@ -1,0 +1,34 @@
+<div class="feedback-dialog">
+    <h2 mat-dialog-title>{{ data.title }}</h2>
+
+    <mat-dialog-content>
+        <div class="star-rating">
+            <mat-label>{{ data.label || 'How would you rate your experience?' }}</mat-label>
+
+            <mat-button-toggle-group [(ngModel)]="rating" aria-label="Rating" class="stars">
+                <mat-button-toggle *ngFor="let star of [1,2,3,4,5]" [value]="star">
+                    <mat-icon>{{ star <= rating ? 'star' : 'star_border' }}</mat-icon>
+                </mat-button-toggle>
+            </mat-button-toggle-group>
+
+            <div class="rating-text" *ngIf="rating">
+                {{ getRatingText(rating) }}
+            </div>
+        </div>
+
+        <mat-form-field appearance="outline" class="feedback-field">
+            <mat-label>Share your feedback</mat-label>
+            <textarea matInput [(ngModel)]="feedback" rows="4"
+                placeholder="Tell us more about your experience..."></textarea>
+        </mat-form-field>
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end">
+        <button mat-stroked-button (click)="dialogRef.close()">
+            Cancel
+        </button>
+        <button mat-flat-button color="primary" (click)="submit()" [disabled]="rating < 1">
+            {{ data.submitText || 'Submit Feedback' }}
+        </button>
+    </mat-dialog-actions>
+</div>
