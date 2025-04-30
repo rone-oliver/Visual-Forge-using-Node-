@@ -9,10 +9,12 @@ import { FilesPreviewComponent } from '../files-preview/files-preview.component'
 import { CompletedWork } from '../../../interfaces/completed-word.interface';
 import { DatePipe, LocalDatePipe } from '../../../pipes/date.pipe';
 import { RatingModalComponent } from '../../mat-dialogs/rating-modal/rating-modal.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatButton } from '@angular/material/button';
 
 @Component({
   selector: 'app-quotation',
-  imports: [CommonModule, MatIconModule, RouterModule, MatDialogModule, LocalDatePipe],
+  imports: [CommonModule, MatIconModule, RouterModule, MatDialogModule, LocalDatePipe, MatButton],
   templateUrl: './quotation.component.html',
   styleUrl: './quotation.component.scss'
 })
@@ -22,11 +24,13 @@ export class QuotationComponent implements OnInit {
   completedWorksSearch: string = '';
   completedWorksLoading: boolean = false;
   FileType = FileType;
-  activeFilter:  'All' | 'Accepted' | 'Published' | 'Completed' | 'Expired' | 'Cancelled' = 'All';
+  activeFilter: 'All' | 'Accepted' | 'Published' | 'Completed' | 'Expired' | 'Cancelled' = 'All';
 
   constructor(
     private userService: UserService,
     private dialog: MatDialog,
+    private snackBar: MatSnackBar,
+
   ) { }
 
   ngOnInit(): void {
@@ -76,13 +80,13 @@ export class QuotationComponent implements OnInit {
     if (!quotation.attachedFiles || quotation.attachedFiles.length === 0) {
       return;
     }
-    
+
     const files = quotation.attachedFiles.filter(file => file.fileType === fileType);
-    
+
     if (files.length === 0) {
       return;
     }
-    
+
     this.dialog.open(FilesPreviewComponent, {
       width: '800px',
       maxHeight: '80vh',
@@ -93,13 +97,13 @@ export class QuotationComponent implements OnInit {
     });
   }
 
-  showCompletedWorks(){
+  showCompletedWorks() {
     this.activeFilter = 'Completed';
     this.completedWorksLoading = true;
     this.loadCompletedWorks();
   }
 
-  loadCompletedWorks():void{
+  loadCompletedWorks(): void {
     this.userService.getCompletedWorks().subscribe({
       next: (works) => {
         console.log('Completed works: ', works);
@@ -107,13 +111,13 @@ export class QuotationComponent implements OnInit {
         this.completedWorksLoading = false;
       },
       error: (err) => {
-        console.error('Error fetching completed works: ',err);
+        console.error('Error fetching completed works: ', err);
         this.completedWorksLoading = false;
       }
     });
   }
 
-  countFinalFilesByType(work: CompletedWork, fileType: FileType): number{
+  countFinalFilesByType(work: CompletedWork, fileType: FileType): number {
     if (!work.finalFiles) return 0;
     return work.finalFiles.filter(file => file.fileType === fileType).length;
   }
@@ -229,11 +233,11 @@ export class QuotationComponent implements OnInit {
         currentFeedback: work.feedback
       }
     });
-  
+
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         console.log(result);
-        console.log('worksId:',work.worksId);
+        console.log('worksId:', work.worksId);
         this.userService.rateWork(work.worksId, result.rating, result.feedback).subscribe({
           next: () => {
             this.loadCompletedWorks();
@@ -242,6 +246,26 @@ export class QuotationComponent implements OnInit {
             console.error('Error rating work: ', err);
           }
         })
+      }
+    });
+  }
+
+  togglePublicStatus(work: any) {
+    const isPublic = !work.isPublic;
+    this.userService.updateWorkPublicStatus(work.worksId, isPublic).subscribe({
+      next: () => {
+        work.isPublic = isPublic;
+        this.snackBar.open(isPublic ? 'Work made public' : 'Work set to private', 'Dismiss', {
+          duration: 3000,
+          panelClass: isPublic ? 'custom-snack' : 'info-snack'
+        });
+      },
+      error: (err) => {
+        console.error('Error updating public status:', err);
+        this.snackBar.open('Failed to update public status', 'Dismiss', {
+          duration: 3000,
+          panelClass: 'error-snack'
+        });
       }
     });
   }

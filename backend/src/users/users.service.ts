@@ -319,4 +319,20 @@ export class UsersService {
             throw error;
         }
     }
+
+    async updateWorkPublicStatus(worksId:string,isPublic:boolean){
+        try {
+            const result = await this.workModel.updateOne({_id: new Types.ObjectId(worksId)}, {$set: {isPublic}});
+            if (result.matchedCount > 0 && result.modifiedCount > 0) {
+                this.logger.log('Work public status updated successfully');
+                return true;
+            } else {
+                this.logger.log('Work public status update failed');
+                return false;
+            }
+        } catch (error) {
+            this.logger.error(`Error updating work public status: ${error.message}`);
+            throw error;
+        }
+    }
 }

@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Logger, Patch, Post, Query, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Logger, Param, Patch, Post, Query, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { UsersService } from './users.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -142,5 +142,14 @@ export class UsersController {
         const user = req['user'] as { userId: Types.ObjectId, role: string}
         const rating = await this.userService.getCurrentEditorRating(editorId,user.userId);
         return rating;
+    }
+
+    @Patch('quotations/:workId/public')
+    async updateWorkPublicStatus(@Req() req: Request, @Param('workId') workId: string, @Body() body: { isPublic: boolean }) {
+        const success = await this.userService.updateWorkPublicStatus(workId, body.isPublic)
+        if (success) {
+            return true
+        }
+        return false
     }
 }

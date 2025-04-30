@@ -125,8 +125,18 @@
             <div *ngFor="let work of completedWorks" class="work-card-wrapper">
                 <div class="work-card">
                     <div class="work-card-header">
-                        <h3 class="work-title">{{ work.title }}</h3>
-                        <span class="work-date">{{ work.completedAt || null | localDate }}</span>
+                        <div class="work-header-content">
+                            <h3 class="work-title">{{ work.title }}</h3>
+                            <span class="work-date">{{ work.completedAt || null | localDate }}</span>
+                        </div>
+                        <div class="work-actions">
+                            <button mat-button 
+                                    [color]="work.isPublic ? 'primary' : 'accent'" 
+                                    (click)="togglePublicStatus(work)">
+                                <mat-icon>{{ work.isPublic ? 'public' : 'lock' }}</mat-icon>
+                                <span class="action-label">{{ work.isPublic ? 'Public' : 'Private' }}</span>
+                            </button>
+                        </div>
                     </div>
                     <div class="work-card-content">
                         <p class="work-description">{{ work.description }}</p>
@@ -154,7 +164,8 @@
                             <h4>Editor comments</h4>
                             <p>{{ work.comments }}</p>
 
-                            <button class="rate-btn editor-rate editor-rating-btn" (click)="openEditorRatingModal(work)">
+                            <button class="rate-btn editor-rate editor-rating-btn"
+                                (click)="openEditorRatingModal(work)">
                                 <mat-icon>supervisor_account</mat-icon>
                                 Rate Editor
                             </button>
@@ -180,19 +191,19 @@
                         </div>
 
                         <!-- Quotation Rating Display -->
-<div *ngIf="work.rating || work.feedback" class="work-rating-display">
-    <div class="work-rating-stars" *ngIf="work.rating">
-      <mat-icon *ngFor="let star of [].constructor(5); let i = index"
-                [ngClass]="{'filled': i < work.rating}">
-        star
-      </mat-icon>
-      <span class="work-rating-value">{{ work.rating }}/5</span>
-    </div>
-    <div class="work-rating-feedback" *ngIf="work.feedback">
-      <mat-icon>comment</mat-icon>
-      <span>{{ work.feedback }}</span>
-    </div>
-  </div>
+                        <div *ngIf="work.rating || work.feedback" class="work-rating-display">
+                            <div class="work-rating-stars" *ngIf="work.rating">
+                                <mat-icon *ngFor="let star of [].constructor(5); let i = index"
+                                    [ngClass]="{'filled': i < work.rating}">
+                                    star
+                                </mat-icon>
+                                <span class="work-rating-value">{{ work.rating }}/5</span>
+                            </div>
+                            <div class="work-rating-feedback" *ngIf="work.feedback">
+                                <mat-icon>comment</mat-icon>
+                                <span>{{ work.feedback }}</span>
+                            </div>
+                        </div>
 
                         <div class="rating-buttons-container">
                             <button class="rate-btn work-rate" (click)="openWorkRatingModal(work)">

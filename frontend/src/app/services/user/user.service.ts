@@ -114,4 +114,11 @@ export class UserService {
       catchError(error=>{throw error})
     )
   }
+
+  updateWorkPublicStatus(workId: string, isPublic: boolean): Observable<boolean> {
+    return this.http.patch<boolean>(`${this.apiUrl}/user/quotations/${workId}/public`, { isPublic }).pipe(
+        map(response => response),
+        catchError(error => { throw error })
+    );
+  }
 }
