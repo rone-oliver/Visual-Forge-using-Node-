@@ -608,6 +608,11 @@
             padding: 8px 24px;
             border-radius: 12px;
             background-color: var(--color-primary);
+
+            &:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
         }
     }
 }

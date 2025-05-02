@@ -1,0 +1,77 @@
+<div class="works-container">
+    <div class="works-header">
+        <h1 class="title">Public Works Gallery</h1>
+        <p class="description">Explore creative collaborations between editors and users</p>
+
+        <!-- Filters and Search -->
+        <div class="filters-bar">
+            <div class="search-container">
+                <mat-icon>search</mat-icon>
+                <input type="text" placeholder="Search works, editors or users..." (input)="onSearch($event)"
+                    [value]="searchTerm">
+            </div>
+
+            <div class="filter-options">
+                <div class="rating-filter">
+                    <span class="filter-label">Filter by rating:</span>
+                    <div class="rating-stars">
+                        <button mat-icon-button *ngFor="let i of [1, 2, 3, 4, 5]" [class.active]="filterRating === i"
+                            (click)="setRatingFilter(filterRating === i ? null : i)">
+                            <mat-icon>star</mat-icon>
+                        </button>
+                        <button mat-button class="clear-filter" *ngIf="filterRating !== null"
+                            (click)="setRatingFilter(null)">
+                            Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-state">
+        <mat-spinner></mat-spinner>
+        <p>Loading amazing works...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error" class="error-state">
+        <mat-icon>error_outline</mat-icon>
+        <p>{{error}}</p>
+        <button mat-raised-button color="primary" (click)="loadWorks()">Try Again</button>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && !error && filteredWorks.length === 0" class="empty-state">
+        <mat-icon>sentiment_dissatisfied</mat-icon>
+        <p>No works found matching your criteria</p>
+        <button mat-button (click)="setRatingFilter(null); searchTerm = ''; applyFilters()">Clear filters</button>
+    </div>
+
+    <!-- Works Grid -->
+    <div *ngIf="!isLoading && !error && filteredWorks.length > 0" class="works-grid"
+        [@staggerFadeIn]="filteredWorks.length">
+
+        <div *ngFor="let work of filteredWorks; trackBy: trackByWorkId" class="work-card-wrapper">
+            <app-works-card [work]="work" [editor]="getEditor(work.editorId)" [user]="getUser(work.userId)">
+            </app-works-card>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="totalItems > itemsPerPage" class="pagination">
+        <button mat-icon-button [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
+            <mat-icon>navigate_before</mat-icon>
+        </button>
+
+        <span class="page-indicator">
+            Page {{currentPage}} of {{Math.ceil(totalItems / itemsPerPage)}}
+        </span>
+
+        <button mat-icon-button [disabled]="currentPage * itemsPerPage >= totalItems"
+            (click)="changePage(currentPage + 1)">
+            <mat-icon>navigate_next</mat-icon>
+        </button>
+    </div>
+</div>

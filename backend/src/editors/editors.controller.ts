@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Logger, Post, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Param, Post, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { IQuotation } from 'src/users/interface/Quotation.interface';
 import { EditorsService } from './editors.service';
 import { Types } from 'mongoose';
@@ -6,6 +6,8 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { RolesGuard } from 'src/auth/guards/role.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
+import { Editor } from './models/editor.schema';
+import { User } from 'src/users/models/user.schema';
 
 @Controller('editor')
 @UseGuards(AuthGuard,RolesGuard)
@@ -59,5 +61,10 @@ export class EditorsController {
     async getCompletedWorks(@Req() req: Request): Promise<any[]> {
         const editor = req['user'] as { userId: Types.ObjectId, role: string};
         return this.editorService.getCompletedWorks(editor.userId);
+    }
+
+    @Get(':id')
+    async getEditor(@Param('id') id: string): Promise<User & { editorDetails?: any } | null> {
+        return this.editorService.getEditor(id);
     }
 }

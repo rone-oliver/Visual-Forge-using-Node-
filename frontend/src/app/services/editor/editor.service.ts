@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { catchError, Observable } from 'rxjs';
 import { FileAttachmentResponse, IQuotation } from '../../interfaces/quotation.interface';
 import { CompletedWork } from '../../interfaces/completed-word.interface';
+import { Editor } from '../../interfaces/editor.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -43,6 +44,12 @@ export class EditorService {
 
   getCompletedWorks(): Observable<CompletedWork[]> {
     return this.http.get<CompletedWork[]>(`${this.editorApiUrl}/works/completed`).pipe(
+      catchError(error => { throw error })
+    );
+  }
+
+  getEditor(id:string): Observable<any>{
+    return this.http.get<any>(`${this.editorApiUrl}/${id}`).pipe(
       catchError(error => { throw error })
     );
   }

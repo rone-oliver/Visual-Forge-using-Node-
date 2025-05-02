@@ -6,6 +6,7 @@ import { Editor, editorSchema } from './models/editor.schema';
 import { Quotation, QuotationSchema } from 'src/common/models/quotation.schema';
 import { CloudinaryService } from 'src/common/cloudinary/cloudinary.service';
 import { Works, workSchema } from 'src/common/models/works.schema';
+import { User, userSchema } from 'src/users/models/user.schema';
 
 @Module({
   providers: [EditorsService, CloudinaryService],
@@ -15,6 +16,7 @@ import { Works, workSchema } from 'src/common/models/works.schema';
       { name: Editor.name, schema: editorSchema},
       { name: Quotation.name, schema: QuotationSchema},
       { name: Works.name, schema: workSchema},
+      { name: User.name, schema: userSchema}
     ])
   ]
 })

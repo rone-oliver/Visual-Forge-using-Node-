@@ -106,7 +106,7 @@ export class AcceptedQuotationComponent {
     }
 
   submitResponse(): void {
-    if (!this.selectedQuotation || !this.selectedQuotation._id || !this.responseText.trim()) {
+    if (!this.selectedQuotation || !this.selectedQuotation._id || !this.responseText.trim() || this.uploadedFiles.length === 0) {
       return;
     }
     console.log(`Submitting response for quotation ${this.selectedQuotation._id}:`, this.responseText);
@@ -119,6 +119,8 @@ export class AcceptedQuotationComponent {
     this.editorService.submitQuotationResponse(workData).subscribe({
       next: (response) => {
         console.log('Quotation response submitted:', response);
+        this.showMessage('Your edit has been submitted successfully');
+        this.selectedQuotation = null;
         this.loadAcceptedQuotations();
       },
       error: (error) => {

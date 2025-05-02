@@ -8,6 +8,7 @@ import { Observable } from 'rxjs';
 import { CloudinaryService, FileUploadResult } from 'src/common/cloudinary/cloudinary.service';
 import { Works, WorksDocument } from 'src/common/models/works.schema';
 import { CompletedWork } from 'src/common/interfaces/completed-word.interface';
+import { User, UserDocument } from 'src/users/models/user.schema';
 
 @Injectable()
 export class EditorsService {
@@ -16,6 +17,7 @@ export class EditorsService {
         @InjectModel(Editor.name) private editorModel: Model<EditorDocument>,
         @InjectModel(Quotation.name) private quotationModel: Model<QuotationDocument>,
         @InjectModel(Works.name) private workModel: Model<WorksDocument>,
+        @InjectModel(User.name) private userModel: Model<UserDocument>,
         private cloudinaryService: CloudinaryService,
     ) { };
 
@@ -118,6 +120,43 @@ export class EditorsService {
         } catch (error) {
             this.logger.error('Error getting the completed works', error);
             throw new Error('Error getting the completed works');
+        }
+    }
+
+    private calculateAverageRating(ratings: any[] | undefined): number {
+        if (!ratings || ratings.length === 0) return 0;
+
+        const sum = ratings.reduce((acc, curr) => acc + curr.rating, 0);
+        return parseFloat((sum / ratings.length).toFixed(1));
+    }
+
+    async getEditor(editorId: string):Promise<User & { editorDetails?: any } | null>{
+        try {
+            const user = await this.userModel.findById(new Types.ObjectId(editorId));
+            if (user && user.isEditor) {
+                this.logger.log('Fetching the editor details');
+                console.log('user id: ', user._id);
+                const editorDetails = await this.editorModel.findOne({ userId: user._id }).lean();
+                if (editorDetails) {
+                    this.logger.log('Editor details: ', editorDetails)
+                    const userObj = user.toObject();
+                    return {
+                        ...userObj,
+                        editorDetails: {
+                            category: editorDetails.category || [],
+                            score: editorDetails.score || 0,
+                            ratingsCount: editorDetails.ratings?.length || 0,
+                            averageRating: this.calculateAverageRating(editorDetails.ratings),
+                            socialLinks: editorDetails.socialLinks || {},
+                            createdAt: editorDetails.createdAt,
+                        }
+                    }
+                } else console.log('no editor details');
+            }
+            return null;
+        } catch (error) {
+            this.logger.error('Error getting the editor', error);
+            throw new Error('Error getting the editor');
         }
     }
 }

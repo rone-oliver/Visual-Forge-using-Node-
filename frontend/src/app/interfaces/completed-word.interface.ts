@@ -35,3 +35,17 @@ export interface CompletedWork {
     updatedAt?: Date | string;
     completedAt?: Date | string;
 }
+
+export interface Works {
+    _id:string;
+    editorId:string;
+    userId:string;
+    finalFiles:FileAttachmentResponse[];
+    isPublic:boolean;
+    comments?:string;
+    rating?:number;
+    feedback?:string;
+
+    createdAt?:Date|string;
+    updatedAt?:Date|string;
+}

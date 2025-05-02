@@ -1,0 +1,92 @@
+<div class="work-card" [@cardHover]="cardState" (mouseenter)="onCardMouseEnter()" (mouseleave)="onCardMouseLeave()">
+
+    <!-- Main Card Content -->
+    <div class="work-card-content">
+        <!-- Preview Area -->
+        <div class="preview-area">
+            <div *ngIf="work.finalFiles.length > 0" class="file-preview">
+                <ng-container [ngSwitch]="getFileType(work.finalFiles[activeFileIndex].mimeType)">
+                    <img *ngSwitchCase="'image'" [src]="work.finalFiles[activeFileIndex].url" alt="Work preview"
+                        class="preview-content">
+                    <video *ngSwitchCase="'video'" controls class="preview-content">
+                        <source [src]="work.finalFiles[activeFileIndex].url" [type]="work.finalFiles[activeFileIndex].mimeType">
+                        Your browser does not support the video tag.
+                    </video>
+                    <audio *ngSwitchCase="'audio'" controls class="preview-content">
+                        <source [src]="work.finalFiles[activeFileIndex].url" [type]="work.finalFiles[activeFileIndex].mimeType">
+                        Your browser does not support the audio element.
+                    </audio>
+                    <div *ngSwitchDefault class="fallback-preview">
+                        <mat-icon>{{getFileIcon(work.finalFiles[activeFileIndex].mimeType)}}</mat-icon>
+                        <span>{{work.finalFiles[activeFileIndex].fileName}}</span>
+                    </div>
+                </ng-container>
+            </div>
+
+            <!-- Multiple Files Indicator -->
+            <div *ngIf="work.finalFiles.length > 1" class="multi-file-indicator">
+                <div class="file-dots">
+                    <span *ngFor="let file of work.finalFiles; let i = index" [class.active]="i === activeFileIndex"
+                        (click)="changeActiveFile(i)"></span>
+                </div>
+                <span class="file-count">{{activeFileIndex + 1}} / {{work.finalFiles.length}}</span>
+            </div>
+        </div>
+
+        <!-- Info Section -->
+        <div class="info-section">
+            <!-- Rating Display -->
+            <div class="rating">
+                <mat-icon *ngFor="let star of getRatingStars()" [class.filled]="star === 1">star</mat-icon>
+            </div>
+
+            <!-- Creator Info -->
+            <div class="creators">
+                <div class="creator editor" (click)="navigateToEditorProfile()">
+                    <div class="avatar">
+                        <img [src]="editor.profileImage || '../../../../assets/images/man.png'" alt="Editor avatar">
+                    </div>
+                    <div class="details">
+                        <span class="label">Editor</span>
+                        <span class="name">{{editor.fullname || 'Unknown Editor'}}</span>
+                    </div>
+                </div>
+
+                <div *ngIf="user" class="creator user" (click)="navigateToUserProfile()">
+                    <div class="avatar">
+                        <img [src]="user.profileImage || '../../../../assets/images/man.png'" alt="User avatar">
+                    </div>
+                    <div class="details">
+                        <span class="label">User</span>
+                        <span class="name">{{user.fullname || 'Anonymous User'}}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comments Section -->
+            <div *ngIf="work.comments" class="comments">
+                <p>{{work.comments}}</p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="actions">
+                <button *ngIf="work.finalFiles.length > 1" mat-button class="show-files-btn"
+                    (click)="toggleFilePreview()">
+                    <mat-icon>{{filePreviewState === 'collapsed' ? 'expand_more' : 'expand_less'}}</mat-icon>
+                    {{filePreviewState === 'collapsed' ? 'Show all files' : 'Hide files'}}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expandable Files Preview -->
+    <div [@filePreviewExpand]="filePreviewState" class="files-list-container">
+        <div class="files-list">
+            <div *ngFor="let file of work.finalFiles; let i = index" class="file-item"
+                [class.active]="i === activeFileIndex" (click)="changeActiveFile(i)">
+                <mat-icon>{{getFileIcon(file.mimeType)}}</mat-icon>
+                <span class="file-name">{{file.fileName}}</span>
+            </div>
+        </div>
+    </div>
+</div>

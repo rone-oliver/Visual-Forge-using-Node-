@@ -5,6 +5,7 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { RolesGuard } from 'src/auth/guards/role.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
+import { User } from './models/user.schema';
 
 @Controller('user')
 @UseGuards(AuthGuard, RolesGuard)
@@ -151,5 +152,18 @@ export class UsersController {
             return true
         }
         return false
+    }
+
+    @Get('works/public')
+    @Roles('User','Editor')
+    async getPublicWorks(@Req() req: Request, @Query('page') page: number, @Query('limit') limit: number){
+        const user = req['user'] as { userId: Types.ObjectId, role: string}
+        const works = await this.userService.getPublicWorks(page, limit);
+        return works;
+    }
+
+    @Get(':id')
+    async getEditor(@Param('id') id: string): Promise<User> {
+        return this.userService.getUser(id);
     }
 }

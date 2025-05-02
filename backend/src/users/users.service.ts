@@ -335,4 +335,29 @@ export class UsersService {
             throw error;
         }
     }
+
+    async getPublicWorks(page: number, limit: number): Promise<{ works: Works[], total: number }> {
+        try {
+            const works = await this.workModel.find({ isPublic: true }).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit);
+            const total = await this.workModel.countDocuments({ isPublic: true });
+            return { works, total };
+        } catch (error) {
+            this.logger.error(`Error getting public works: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async getUser(userId:string): Promise<User>{
+        try {
+            const user = await this.userModel.findById(new Types.ObjectId(userId));
+            if (!user) {
+                this.logger.log('User not found');
+                throw new Error('User not found');
+            }
+            return user;
+        } catch (error) {
+            this.logger.error(`Error getting user: ${error.message}`);
+            throw error;
+        }
+    }
 }

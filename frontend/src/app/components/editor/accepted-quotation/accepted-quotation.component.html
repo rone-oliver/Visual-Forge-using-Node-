@@ -180,7 +180,7 @@
                                 placeholder="Enter additional details about your work..."></textarea>
                         </mat-form-field>
 
-                        <button mat-raised-button color="primary" class="submit-btn" [disabled]="!responseText.trim()"
+                        <button mat-raised-button color="primary" class="submit-btn" [disabled]="!responseText.trim() || uploadedFiles.length === 0"
                             (click)="submitResponse()">
                             Submit Response
                         </button>

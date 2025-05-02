@@ -17,6 +17,7 @@ import { CreateQuotationComponent } from './components/user/create-quotation/cre
 import { QuotationComponent as EditorQuotationComponent } from './components/editor/quotation/quotation.component';
 import { AcceptedQuotationComponent } from './components/editor/accepted-quotation/accepted-quotation.component';
 import { WorksHistoryComponent } from './components/editor/works-history/works-history.component';
+import { PublicWorksComponent } from './components/user/public-works/public-works.component';
 
 export const routes: Routes = [
     {
@@ -69,6 +70,9 @@ export const routes: Routes = [
             },
             {
                 path:'create-quotation', component: CreateQuotationComponent
+            },
+            {
+                path:'works', component: PublicWorksComponent
             }
         ]
     },

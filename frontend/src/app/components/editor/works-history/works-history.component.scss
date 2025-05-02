@@ -53,6 +53,7 @@
         
         .mat-mdc-text-field-wrapper {
           padding: 0;
+          background-color: transparent !important;
         }
         
         .mdc-line-ripple {
@@ -76,6 +77,19 @@
         input.mat-mdc-input-element {
           margin-top: 0;
           margin-bottom: 0;
+        }
+
+        .mdc-text-field {
+          background-color: transparent !important;
+          border-radius: 28px;
+        }
+        
+        .mdc-text-field--filled:not(.mdc-text-field--disabled) {
+          background-color: transparent;
+        }
+        
+        .mat-mdc-form-field-subscript-wrapper {
+          display: none;
         }
       }
     }
