@@ -46,7 +46,7 @@ export class PublicWorksComponent implements OnInit {
   
   // Pagination
   currentPage = 1;
-  itemsPerPage = 1;
+  itemsPerPage = 6;
   totalItems = 0;
   
   constructor(
@@ -76,7 +76,7 @@ export class PublicWorksComponent implements OnInit {
           
           // Fetch editors and users data
           const editorRequests = editorIds.map(id => 
-            this.editorService.getEditor(id).pipe(
+            this.userService.getEditor(id).pipe(
               map(editor => ({ id, editor })),
               catchError(() => of({ id, editor: null }))
             )

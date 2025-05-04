@@ -47,10 +47,4 @@ export class EditorService {
       catchError(error => { throw error })
     );
   }
-
-  getEditor(id:string): Observable<any>{
-    return this.http.get<any>(`${this.editorApiUrl}/${id}`).pipe(
-      catchError(error => { throw error })
-    );
-  }
 }

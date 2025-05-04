@@ -6,12 +6,16 @@ import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { RolesGuard } from 'src/auth/guards/role.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { User } from './models/user.schema';
+import { EditorsService } from 'src/editors/editors.service';
 
 @Controller('user')
 @UseGuards(AuthGuard, RolesGuard)
 export class UsersController {
     private readonly logger = new Logger(UsersController.name);
-    constructor(private userService: UsersService){};
+    constructor(
+        private userService: UsersService,
+        private editorService: EditorsService
+    ){};
 
     @Get('profile')
     @Roles('User','Editor')
@@ -163,7 +167,12 @@ export class UsersController {
     }
 
     @Get(':id')
-    async getEditor(@Param('id') id: string): Promise<User> {
+    async getUser(@Param('id') id: string): Promise<User> {
         return this.userService.getUser(id);
+    }
+
+    @Get('getEditor/:id')
+    async getEditor(@Param('id') id: string): Promise<User & { editorDetails?: any } | null> {
+        return this.editorService.getEditor(id);
     }
 }

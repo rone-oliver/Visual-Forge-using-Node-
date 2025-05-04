@@ -140,4 +140,10 @@ export class UserService {
       catchError(error=>{throw error})
     )
   }
+
+  getEditor(id:string): Observable<any>{
+    return this.http.get<any>(`${this.apiUrl}/user/getEditor/${id}`).pipe(
+      catchError(error => { throw error })
+    );
+  }
 }

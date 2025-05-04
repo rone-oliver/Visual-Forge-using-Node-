@@ -63,8 +63,8 @@ export class EditorsController {
         return this.editorService.getCompletedWorks(editor.userId);
     }
 
-    @Get(':id')
-    async getEditor(@Param('id') id: string): Promise<User & { editorDetails?: any } | null> {
-        return this.editorService.getEditor(id);
-    }
+    // @Get(':id')
+    // async getEditor(@Param('id') id: string): Promise<User & { editorDetails?: any } | null> {
+    //     return this.editorService.getEditor(id);
+    // }
 }

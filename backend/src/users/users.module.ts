@@ -8,10 +8,11 @@ import { Editor, editorSchema } from 'src/editors/models/editor.schema';
 import { Quotation, QuotationSchema } from 'src/common/models/quotation.schema';
 import { CloudinaryService } from 'src/common/cloudinary/cloudinary.service';
 import { Works, workSchema } from 'src/common/models/works.schema';
+import { EditorsService } from 'src/editors/editors.service';
 
 @Module({
   controllers: [UsersController],
-  providers: [UsersService, CloudinaryService],
+  providers: [UsersService, CloudinaryService, EditorsService],
   imports:[
     MongooseModule.forFeature([
       { name:User.name, schema: userSchema},
