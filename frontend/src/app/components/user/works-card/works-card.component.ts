@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, AfterViewInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { Works } from '../../../interfaces/completed-word.interface';
@@ -6,10 +6,12 @@ import { User } from '../../../interfaces/user.interface';
 import { Editor } from '../../../interfaces/editor.interface';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
+import { AudioVisualizerComponent } from '../../shared/audio-visualizer/audio-visualizer.component';
 
 @Component({
   selector: 'app-works-card',
-  imports: [MatIconModule, CommonModule],
+  standalone: true,
+  imports: [MatIconModule, CommonModule, AudioVisualizerComponent],
   templateUrl: './works-card.component.html',
   styleUrl: './works-card.component.scss',
   animations: [
@@ -44,19 +46,49 @@ import { CommonModule } from '@angular/common';
     ])
   ]
 })
-export class WorksCardComponent implements OnInit {
+export class WorksCardComponent implements OnInit, AfterViewInit {
   @Input() work!: Works;
   @Input() user!: User;
   @Input() editor!: Editor;
 
+  @ViewChild('audioPlayer') audioPlayerRef!: ElementRef<HTMLAudioElement>;
+
   cardState = 'default';
   filePreviewState = 'collapsed';
   activeFileIndex = 0;
+  
+  // Track if current file is audio
+  isAudioFile = false;
+  audioElementReady = false;
 
-  constructor(private router: Router) { }
+  constructor(
+    private router: Router,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
-    console.log('public works:', this.work);
+    console.log('Works card initialized:', this.work);
+    
+    // Check if the initial active file is audio
+    if (this.work?.finalFiles?.length > 0) {
+      this.updateFileTypeState();
+    }
+  }
+  
+  ngAfterViewInit(): void {
+    // Only log and set audio element if we have an audio file
+    if (this.isAudioFile) {
+      console.log('Audio element reference:', this.audioPlayerRef?.nativeElement);
+      console.log('Audio source URL:', this.work.finalFiles[this.activeFileIndex].url);
+      console.log('Audio MIME type:', this.work.finalFiles[this.activeFileIndex].mimeType);
+      
+      // Wait for next cycle to avoid ExpressionChangedAfterItHasBeenCheckedError
+      setTimeout(() => {
+        this.audioElementReady = this.audioPlayerRef?.nativeElement ? true : false;
+        console.log('Audio element ready:', this.audioElementReady);
+        this.cdr.detectChanges();
+      });
+    }
   }
 
   onCardMouseEnter() {
@@ -119,13 +151,32 @@ export class WorksCardComponent implements OnInit {
 
   changeActiveFile(index: number) {
     this.activeFileIndex = index;
+    
+    // Reset audio state
+    this.audioElementReady = false;
+    
+    // Update file type and check for audio
+    this.updateFileTypeState();
+    
+    // If it's an audio file, we need to wait for the audio element to be created
+    if (this.isAudioFile) {
+      // Need to wait for the DOM to update with the new audio element
+      setTimeout(() => {
+        this.audioElementReady = this.audioPlayerRef?.nativeElement ? true : false;
+        this.cdr.detectChanges();
+      });
+    }
+  }
+  
+  updateFileTypeState() {
+    // Check if current file is audio
+    if (this.work?.finalFiles?.length > this.activeFileIndex) {
+      const currentMimeType = this.work.finalFiles[this.activeFileIndex].mimeType;
+      this.isAudioFile = this.getFileType(currentMimeType) === 'audio';
+    }
   }
 
   getRatingStars(): number[] {
     return Array(5).fill(0).map((_, i) => i < (this.work.rating || 0) ? 1 : 0);
   }
-
-  // getFileName(filePath: string): string {
-  //   return filePath.split('/').pop() || filePath;
-  // }
 }

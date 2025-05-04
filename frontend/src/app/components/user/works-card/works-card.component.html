@@ -12,10 +12,13 @@
                         <source [src]="work.finalFiles[activeFileIndex].url" [type]="work.finalFiles[activeFileIndex].mimeType">
                         Your browser does not support the video tag.
                     </video>
-                    <audio *ngSwitchCase="'audio'" controls class="preview-content">
-                        <source [src]="work.finalFiles[activeFileIndex].url" [type]="work.finalFiles[activeFileIndex].mimeType">
-                        Your browser does not support the audio element.
-                    </audio>
+                    <div *ngSwitchCase="'audio'" class="audio-container">
+                        <app-audio-visualizer *ngIf="audioElementReady" [audioElement]="audioPlayerRef.nativeElement"></app-audio-visualizer>
+                        <audio #audioPlayer controls crossorigin="anonymous" class="preview-content audio-player">
+                            <source [src]="work.finalFiles[activeFileIndex].url" [type]="work.finalFiles[activeFileIndex].mimeType">
+                            Your browser does not support the audio element.
+                        </audio>
+                    </div>
                     <div *ngSwitchDefault class="fallback-preview">
                         <mat-icon>{{getFileIcon(work.finalFiles[activeFileIndex].mimeType)}}</mat-icon>
                         <span>{{work.finalFiles[activeFileIndex].fileName}}</span>
