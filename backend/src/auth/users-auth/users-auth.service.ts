@@ -130,11 +130,23 @@ export class UsersAuthService {
                 }
               };
         } catch (error) {
+            if (error instanceof HttpException) {
+                const response = error.getResponse();
+                if(response && typeof response === 'object' && 'success' in response){
+                    throw error;
+                }
+                this.logger.error(response)
+                throw new HttpException({
+                    success: false,
+                    error: response
+                }, error.getStatus());
+            }
+
             this.logger.error(`Registration failed for user ${userData.username}: ${error.message}`);
             throw new HttpException({
                 success: false,
                 error: {
-                    message: 'Registration failed',
+                    message: error.message || 'An unexpected error occurred',
                     usernameExists: false,
                     emailExists: false
                 }

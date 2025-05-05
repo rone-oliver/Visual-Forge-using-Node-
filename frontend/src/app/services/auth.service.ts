@@ -183,7 +183,9 @@ export class AuthService {
           }
         }),
         catchError(error => {
-          console.error('Error in catchError:', error);
+          console.log('Raw error from server:', error);
+          console.log('Error status:', error.status);
+          console.log('Error response:', error.error);
           if (error instanceof HttpErrorResponse && error.error?.error) {
             console.log("response error propogated to the component");
             throw error.error.error;
