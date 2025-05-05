@@ -175,7 +175,7 @@ export class UsersService {
 
     async getQuotations(userId: Types.ObjectId): Promise<any[]> {
         try {
-            const quotations = await this.quotationModel.find({ userId });
+            const quotations = await this.quotationModel.find({ userId }).sort({ createdAt: -1 }).lean();
             return quotations;
         } catch (error) {
             this.logger.error(`Error fetching quotations: ${error}`);
