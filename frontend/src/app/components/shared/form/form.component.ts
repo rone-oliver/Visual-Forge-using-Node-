@@ -5,17 +5,20 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, FormControl, Validators, V
 import { AuthService } from '../../../services/auth.service';
 import { UserRegisterComponent } from '../../user/user-register/user-register.component';
 import { Router } from '@angular/router';
+import { MatIconModule } from '@angular/material/icon';
 
 interface FormControlConfig {
   name: string;
   label: string;
   type: string;
   validators?: ValidatorFn[];
+  showPassword?: boolean;
+  isPasswordField?: boolean;
 }
 
 @Component({
   selector: 'app-form',
-  imports: [FormsModule, CommonModule, ReactiveFormsModule],
+  imports: [FormsModule, CommonModule, ReactiveFormsModule, MatIconModule],
   templateUrl: './form.component.html',
   styleUrl: './form.component.scss'
 })
@@ -48,6 +51,9 @@ export class FormComponent implements OnInit {
   createForm(){
     const controls : { [key:string]: FormControl}={};
     this.formControls.forEach((control: FormControlConfig)=>{
+      if(control.type === 'password'){
+        control.isPasswordField = true;
+      }
       controls[control.name]= new FormControl('',control.validators || [])
     });
     this.myForm = this.fb.group(controls, {
@@ -75,5 +81,12 @@ export class FormComponent implements OnInit {
           default: return `${controlName} has an error.`;
         }
     });
+  }
+
+  togglePasswordVisibility(control: FormControlConfig) {
+    if (control.isPasswordField) {
+      control.showPassword = !control.showPassword;
+      control.type = control.showPassword ? 'text' : 'password';
+    }
   }
 }
