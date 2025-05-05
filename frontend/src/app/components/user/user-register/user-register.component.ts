@@ -1,4 +1,4 @@
-import { Component, NgZone, OnInit } from '@angular/core';
+import { Component, NgZone, OnInit, OnDestroy } from '@angular/core';
 import { FormComponent } from '../../shared/form/form.component';
 import { AbstractControl, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { AuthService } from '../../../services/auth.service';
@@ -7,6 +7,8 @@ import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { GoogleAuthService } from '../../../services/shared/google-auth.service';
 import { environment } from '../../../../environments/environment';
+import { interval, Subscription } from 'rxjs';
+import { takeWhile } from 'rxjs/operators';
 
 declare global {
   interface Window {
@@ -33,6 +35,12 @@ export class UserRegisterComponent implements OnInit {
   isVerifying = false;
   errorMessage: string = '';
   successMessage: string = '';
+  canResendOtp = false;
+  countdownValue = 0;
+  private countdownSubscription: Subscription | null = null;
+  private registrationEmail: string = '';
+  private readonly COUNTDOWN_STORAGE_KEY = 'otpCountdownEndTime';
+  private readonly EMAIL_STORAGE_KEY = 'registrationEmail';
 
   static confirmPasswordValidator(control: AbstractControl): ValidationErrors | null {
     const password = control.get('password');
@@ -84,6 +92,9 @@ export class UserRegisterComponent implements OnInit {
         this.isVerifying = true;
         this.errorMessage = '';
         this.registerControls = this.otpControls;
+        this.registrationEmail = formData.email;
+        localStorage.setItem(this.EMAIL_STORAGE_KEY, formData.email);
+        this.startCountdown(30);
       },
       error: (error) => {
         console.error('Error on registering the user: ', error);
@@ -103,10 +114,99 @@ export class UserRegisterComponent implements OnInit {
     })
   }
 
+  private startCountdown(seconds: number) {
+    // Clear any existing countdown
+    if (this.countdownSubscription) {
+      this.countdownSubscription.unsubscribe();
+      this.countdownSubscription = null;
+    }
+
+    // Set end time in localStorage
+    const endTime = new Date().getTime() + seconds * 1000;
+    localStorage.setItem(this.COUNTDOWN_STORAGE_KEY, endTime.toString());
+
+    // Start countdown
+    this.countdownValue = seconds;
+    this.canResendOtp = false;
+
+    this.countdownSubscription = interval(1000)
+      .pipe(takeWhile(() => this.countdownValue > 0))
+      .subscribe(() => {
+        this.countdownValue--;
+        if (this.countdownValue === 0) {
+          this.canResendOtp = true;
+          if (this.countdownSubscription) {
+            this.countdownSubscription.unsubscribe();
+            this.countdownSubscription = null;
+          }
+        }
+      });
+  }
+
+  resendOtp() {
+    if (!this.canResendOtp) return;
+
+    const email = this.registrationEmail || localStorage.getItem(this.EMAIL_STORAGE_KEY);
+    if (!email) {
+      this.showError('Email not found. Please register again.');
+      return;
+    }
+
+    this.authService.resendOtp(email).subscribe({
+      next: (response: boolean) => {
+        if (response === true) {
+          this.showSuccess('OTP has been resent to your email');
+          this.startCountdown(30);
+        } else {
+          this.showError('Failed to resend OTP. Please try again.');
+        }
+      },
+      error: (error) => {
+        console.error('Error resending OTP:', error);
+        this.showError('Failed to resend OTP. Please try again.');
+      }
+    });
+  }
+
+  goBackToRegistration() {
+    if (this.countdownSubscription) {
+      this.countdownSubscription.unsubscribe();
+      this.countdownSubscription = null;
+    }
+    
+    // Clear localStorage items
+    localStorage.removeItem(this.COUNTDOWN_STORAGE_KEY);
+    localStorage.removeItem(this.EMAIL_STORAGE_KEY);
+    
+    // Reset component state
+    this.isVerifying = false;
+    this.canResendOtp = false;
+    this.countdownValue = 0;
+    this.registrationEmail = '';
+    this.errorMessage = '';
+    this.successMessage = '';
+    
+    // Reset form controls to registration form
+    this.registerControls = [
+      { name: 'username', label: 'Username', type: 'text', validators: [Validators.required, Validators.minLength(4)] },
+      { name: 'email', label: 'Email', type: 'email', validators: [Validators.required, Validators.email] },
+      { name: 'fullname', label: 'Fullname', type: 'text', validators: [Validators.required, Validators.minLength(3)] },
+      { name: 'password', label: 'Password', type: 'password', validators: [Validators.required, Validators.minLength(8)] },
+      { name: 'confirmPassword', label: 'Confirm Password', type: 'password', validators: [Validators.required, Validators.minLength(8)] },
+    ];
+  }
+
   showError(message: string) {
     this.errorMessage = message;
     setTimeout(() => {
       this.errorMessage = '';
+    }, 3000);
+  }
+
+  showSuccess(message: string) {
+    this.successMessage = message;
+    setTimeout(() => {
+      this.successMessage = '';
     }, 3000);
   }
 
@@ -132,6 +232,33 @@ export class UserRegisterComponent implements OnInit {
 
   ngOnInit() {
     this.initializeGoogleSignIn();
+    this.checkExistingVerification();
+  }
+
+  private checkExistingVerification() {
+    const endTimeStr = localStorage.getItem(this.COUNTDOWN_STORAGE_KEY);
+    const email = localStorage.getItem(this.EMAIL_STORAGE_KEY);
+
+    if (endTimeStr && email) {
+      const endTime = parseInt(endTimeStr, 10);
+      const now = new Date().getTime();
+      const remainingTime = Math.floor((endTime - now) / 1000);
+
+      if (remainingTime > 0) {
+        // Still in countdown period
+        this.isVerifying = true;
+        this.registrationEmail = email;
+        this.registerControls = this.otpControls;
+        this.startCountdown(remainingTime);
+      } else {
+        // Countdown finished but user still in verification mode
+        this.isVerifying = true;
+        this.registrationEmail = email;
+        this.registerControls = this.otpControls;
+        this.canResendOtp = true;
+        this.countdownValue = 0;
+      }
+    }
   }
 
   private initializeGoogleSignIn() {
@@ -177,24 +304,30 @@ export class UserRegisterComponent implements OnInit {
     }
   }
 
-    //for google signup
-    private handleGoogleSignIn(credential: string) {
-      this.googleAuthService.verifyGoogleToken(credential).subscribe({
-        next: (response: any) => {
-          if (response) {
-            this.successMessage = 'Google sign-in successful';
-  
-            setTimeout(() => {
-              this.router.navigate(['/user']);
-            }, 1000);
-          } else {
-            this.showError('Login failed: Google sign-in failed');
-          }
-        },
-        error: (error) => {
-          console.error('Google signin error', error);
-          this.showError(error.error?.message || 'Google sign-in failed');
+  //for google signup
+  private handleGoogleSignIn(credential: string) {
+    this.googleAuthService.verifyGoogleToken(credential).subscribe({
+      next: (response: any) => {
+        if (response) {
+          this.successMessage = 'Google sign-in successful';
+
+          setTimeout(() => {
+            this.router.navigate(['/user']);
+          }, 1000);
+        } else {
+          this.showError('Login failed: Google sign-in failed');
         }
-      });
+      },
+      error: (error) => {
+        console.error('Google signin error', error);
+        this.showError(error.error?.message || 'Google sign-in failed');
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.countdownSubscription) {
+      this.countdownSubscription.unsubscribe();
     }
+  }
 }

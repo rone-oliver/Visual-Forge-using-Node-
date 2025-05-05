@@ -64,7 +64,7 @@ export class OtpService {
         )
         return updateResult.modifiedCount > 0;
     }
-    generateOtp(): string {
+    private generateOtp(): string {
         return otpGenerator.generate(6, {
             upperCaseAlphabets: false,
             specialChars: false,

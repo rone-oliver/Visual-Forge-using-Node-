@@ -153,6 +153,18 @@ export class UsersAuthService {
             }, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    async resendOtp(email:string): Promise<boolean>{
+        try {
+            const otp = await this.otpService.createOtp(email);
+            await this.otpService.sendOtpEmail(email, otp);
+            return true;
+        } catch (error) {
+            this.logger.error(`Failed to resend OTP for email ${email}: ${error.message}`);
+            throw new HttpException('Failed to resend OTP', HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     async verifyOtp(email: string, otp: string): Promise<any> {
         const isValid = await this.otpService.verifyOtp(email, otp);
         if (isValid) {

@@ -34,6 +34,11 @@ export class UsersAuthController {
         return await this.usersAuthService.register(userData);
     }
 
+    @Post('resend-otp')
+    async resendOtp(@Body() body:{email:string}){
+        return await this.usersAuthService.resendOtp(body.email);
+    }
+
     @Post('verify-email')
     async verifyOtp(
         @Body() verifyOtpDto: VerifyOtpDto,

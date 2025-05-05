@@ -52,37 +52,37 @@ export class AuthService {
   private adminIsAuthenticatedSubject = new BehaviorSubject<boolean>(false);
   adminIsAuthenticated$ = this.adminIsAuthenticatedSubject.asObservable();
 
-  constructor(private http: HttpClient,private tokenService: TokenService) {
+  constructor(private http: HttpClient, private tokenService: TokenService) {
     this.initializeAuth();
   };
 
-  private initializeAuth():void{
+  private initializeAuth(): void {
     const userToken = this.tokenService.getToken('User');
-    if(userToken){
+    if (userToken) {
       this.userIsAuthenticatedSubject.next(true);
-      this.setRole(userToken,'User');
+      this.setRole(userToken, 'User');
     }
 
     const adminToken = this.tokenService.getToken('Admin');
-    if(adminToken){
+    if (adminToken) {
       this.adminIsAuthenticatedSubject.next(true);
       // this.setRole(adminToken,'Admin');
     }
   }
 
-  private setRole(token:string,userType:'User' | 'Admin'){
+  private setRole(token: string, userType: 'User' | 'Admin') {
     try {
       const payload = jwtDecode<JwtPayload>(token);
       if (userType === 'User') {
-        console.log('User role: ',payload.role);
+        console.log('User role: ', payload.role);
         this.userRoleSubject.next(payload.role);
       }
     } catch (error) {
       console.error('Unable to decode token')
     }
   }
-  
-  getAccessToken(userType: 'User' | 'Admin'): string | null{
+
+  getAccessToken(userType: 'User' | 'Admin'): string | null {
     const token = this.tokenService.getToken(userType);
     if (token && this._isTokenValid(token)) {
       return token;
@@ -91,7 +91,7 @@ export class AuthService {
   }
 
   setAccessToken(token: string, userType: 'User' | 'Admin'): void {
-    this.tokenService.setToken(token,userType);
+    this.tokenService.setToken(token, userType);
     if (userType === 'User') {
       // this.userAccessTokenSubject.next(token);
       console.log('inside the userType User block in the setAccessToken method');
@@ -104,39 +104,39 @@ export class AuthService {
     }
   }
 
-  logout(userType: 'User' | 'Admin'):Observable<any>{
+  logout(userType: 'User' | 'Admin'): Observable<any> {
     const endpoint = userType === 'User' ? 'user/logout' : 'admin/logout';
-    return this.http.post(`${this.backendUrl}/auth/${endpoint}`,{}, {
+    return this.http.post(`${this.backendUrl}/auth/${endpoint}`, {}, {
       withCredentials: true
     })
-    .pipe(
-      tap(() => {
-        this.tokenService.clearToken(userType);
-        if (userType === 'User') {
-          // this.userAccessTokenSubject.next(null);
-          this.userIsAuthenticatedSubject.next(false);
-          this.userRoleSubject.next(null);
-        } else {
-          // this.adminAccessTokenSubject.next(null);
-          this.adminIsAuthenticatedSubject.next(false);
-          // this.adminRoleSubject.next(null);
-        }
-      }),
-      catchError(error => {
-        console.error('Logout failed:', error);
-        return throwError(() => error);
-      })
-    );
+      .pipe(
+        tap(() => {
+          this.tokenService.clearToken(userType);
+          if (userType === 'User') {
+            // this.userAccessTokenSubject.next(null);
+            this.userIsAuthenticatedSubject.next(false);
+            this.userRoleSubject.next(null);
+          } else {
+            // this.adminAccessTokenSubject.next(null);
+            this.adminIsAuthenticatedSubject.next(false);
+            // this.adminRoleSubject.next(null);
+          }
+        }),
+        catchError(error => {
+          console.error('Logout failed:', error);
+          return throwError(() => error);
+        })
+      );
   }
-  
-  refreshAccessToken(userType: 'User' | 'Admin'): Observable<{accessToken: string, userType:UserType}> {
-    return this.http.get<{ accessToken: string, userType:UserType }>(`${this.backendUrl}/auth/refresh`, {
+
+  refreshAccessToken(userType: 'User' | 'Admin'): Observable<{ accessToken: string, userType: UserType }> {
+    return this.http.get<{ accessToken: string, userType: UserType }>(`${this.backendUrl}/auth/refresh`, {
       withCredentials: true,
       params: new HttpParams().set('role', userType)
     }).pipe(
       map(response => {
         this.setAccessToken(response.accessToken, userType);
-        return {accessToken:response.accessToken,userType};
+        return { accessToken: response.accessToken, userType };
       }),
       catchError(error => {
         console.error('Token refresh failed:', error);
@@ -147,22 +147,22 @@ export class AuthService {
     );
   }
 
-  login(credentials: LoginCredentials,userType: UserType): Observable<LoginResponse>{
-    const loginEndpoint = userType === 'Admin' 
+  login(credentials: LoginCredentials, userType: UserType): Observable<LoginResponse> {
+    const loginEndpoint = userType === 'Admin'
       ? `${this.backendUrl}/auth/admin/login`
       : `${this.backendUrl}/auth/user/login`;
 
-    return this.http.post<LoginResponse>(loginEndpoint, credentials, {withCredentials:true})
-    .pipe(
-      tap(response => {
-        console.log('login success and setAccessToken called');
-        this.setAccessToken(response.accessToken,userType);
-      }),
-      catchError(error => {
-        this.tokenService.clearToken(userType);
-        return throwError(()=> error);
-      })
-    );
+    return this.http.post<LoginResponse>(loginEndpoint, credentials, { withCredentials: true })
+      .pipe(
+        tap(response => {
+          console.log('login success and setAccessToken called');
+          this.setAccessToken(response.accessToken, userType);
+        }),
+        catchError(error => {
+          this.tokenService.clearToken(userType);
+          return throwError(() => error);
+        })
+      );
   }
 
   register(credentials: RegisterCredentials): Observable<any> {
@@ -190,9 +190,24 @@ export class AuthService {
             console.log("response error propogated to the component");
             throw error.error.error;
           }
-        return throwError(() => error); 
+          return throwError(() => error);
         })
       );
+  }
+
+  resendOtp(email: string): Observable<boolean> {
+    return this.http.post<boolean>(`${this.backendUrl}/auth/user/resend-otp`, { email }).pipe(
+      map(response => {
+        console.log("email verification response: ", response);
+        if(response){
+          this.registrationEmail = email;
+        }
+        return response;
+      }),
+      catchError(error => {
+        throw error;
+      })
+    );
   }
 
   verifyEmail(otp: string): Observable<boolean> {
@@ -206,7 +221,7 @@ export class AuthService {
     }, { withCredentials: true })
       .pipe(
         map(response => {
-          console.log("email verification response: ",response);
+          console.log("email verification response: ", response);
           return response.success;
         }),
         tap(verified => {
@@ -223,11 +238,11 @@ export class AuthService {
       );
   }
 
-  private extractJwtPayload(token:string){
+  private extractJwtPayload(token: string) {
     try {
       return jwtDecode<JwtPayload>(token);
     } catch (error) {
-      console.error('Unable to decode the token',error);
+      console.error('Unable to decode the token', error);
       throw new Error;
     }
   }
@@ -248,11 +263,11 @@ export class AuthService {
     const token = this.tokenService.getToken(userType);
     return !!token && this._isTokenValid(token);
   }
-  
+
   hasRole(role: string, userType: 'User' | 'Admin'): boolean {
     const token = this.tokenService.getToken(userType);
     if (!token) return false;
-    
+
     try {
       const payload = this.extractJwtPayload(token);
       return payload.role === role;
