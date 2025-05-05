@@ -87,11 +87,75 @@ export class EditorsService {
                 finalFiles,
                 comments,
             });
-            await this.quotationModel.findByIdAndUpdate(quotation._id,{status:QuotationStatus.COMPLETED,worksId:work._id})
+            await this.quotationModel.findByIdAndUpdate(quotation._id,{status:QuotationStatus.COMPLETED,worksId:work._id});
+            await this.updateEditorScore(quotation.editorId);
             return true;
         } catch (error) {
             this.logger.error('Error submitting the quotation response', error);
             throw new Error('Error submitting the quotation response');
+        }
+    }
+
+    private async updateEditorScore(editorId: Types.ObjectId): Promise<void> {
+        try {
+            // Get the editor's profile
+            const editor = await this.editorModel.findOne({userId:new Types.ObjectId(editorId)}).lean();
+            if (!editor) {
+                this.logger.warn(`Editor with ID ${editorId} not found or not an editor`);
+                return;
+            }
+            
+            // Get the editor's most recent completed works
+            const recentWorks = await this.workModel
+                .find({ editorId })
+                .sort({ createdAt: -1 })
+                .limit(2)
+                .lean();
+                
+            // Initialize score variables
+            let scoreIncrement = 10; // Base score for completing a work
+            let currentStreak = editor.streak || 0;
+            let streakMultiplier = 1;
+            
+            // If this is not their first work
+            if (recentWorks.length > 1) {
+                const latestWork = recentWorks[0];
+                const previousWork = recentWorks[1];
+                
+                // Calculate time difference in days
+                const latestDate = new Date(latestWork.createdAt);
+                const previousDate = new Date(previousWork.createdAt);
+                const daysDifference = Math.floor((latestDate.getTime() - previousDate.getTime()) / (1000 * 60 * 60 * 24));
+                
+                // If completed within a week, increase streak
+                if (daysDifference < 7) {
+                    currentStreak++;
+                    // Increase multiplier based on streak length
+                    streakMultiplier = Math.min(3, 1 + (currentStreak * 0.1)); // Cap at 3x
+                } else {
+                    // Streak broken
+                    currentStreak = 1;
+                    streakMultiplier = 1;
+                }
+            } else {
+                // First work
+                currentStreak = 1;
+            }
+            
+            // Calculate final score
+            const finalScoreIncrement = Math.round(scoreIncrement * streakMultiplier);
+            const newScore = (editor.score || 0) + finalScoreIncrement;
+            
+            // Update editor profile
+            await this.editorModel.findOneAndUpdate({userId:new Types.ObjectId(editorId)}, {
+                score: newScore,
+                streak: currentStreak
+            });
+            
+            this.logger.log(`Updated editor ${editorId} score to ${newScore} (streak: ${currentStreak}, multiplier: ${streakMultiplier})`);
+        } catch (error) {
+            this.logger.error('Error updating editor score', error);
+            // Don't throw error to prevent disrupting the main workflow
         }
     }
 

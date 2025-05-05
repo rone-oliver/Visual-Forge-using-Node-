@@ -17,6 +17,9 @@ export class Editor {
   @Prop({ type: Number, default: 0 })
   score?: number;
 
+  @Prop({ type: Number, default: 0 })
+  streak?: number;
+
   @Prop({ type: Number, default: 0})
   avgTime?: number;
 

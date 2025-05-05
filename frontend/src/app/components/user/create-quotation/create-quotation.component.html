@@ -171,7 +171,7 @@
                 <div class="flex justify-end mt-6">
                     <button type="submit"
                         class="create-button w-full sm:w-auto font-bold py-3 px-6 rounded-lg text-white transition duration-300"
-                        [disabled]="!quotationForm.valid || isUploading">
+                        [disabled]="!quotationForm.valid || isUploading || selectedFiles.length > 0">
                         {{ isUploading ? 'Please wait...' : 'Publish Quotation' }}
                     </button>
                 </div>
