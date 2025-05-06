@@ -1,6 +1,6 @@
-import { Component, NgZone, OnInit } from '@angular/core';
+import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { FormComponent } from '../../../components/shared/form/form.component';
-import { Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../services/auth.service';
 import { Router, RouterModule } from '@angular/router';
 import { environment } from '../../../../environments/environment';
@@ -26,14 +26,27 @@ declare global {
 @Component({
   selector: 'app-user-login',
   standalone: true,
-  imports: [FormComponent, RouterModule, CommonModule, MatIconModule],
+  imports: [
+    FormComponent, 
+    RouterModule, 
+    CommonModule, 
+    MatIconModule, 
+    ReactiveFormsModule,
+  ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit, OnDestroy {
   errorMessage: string = '';
   successMessage: string = '';
   showPassword: boolean = false;
+
+  showForgotPassword: boolean = false;
+  forgotPasswordStep: 'email' | 'otp' | 'newPassword' = 'email';
+  isSubmittingForgotPassword: boolean = false;
+  otpCountdown: number = 0;
+  countdownInterval: any;
+  storedEmail: string = '';
 
   constructor(
     private authService: AuthService,
@@ -41,13 +54,142 @@ export class LoginComponent implements OnInit {
     private ngZone: NgZone,
     private googleAuthService: GoogleAuthService,
   ) { }
+
   loginControls = [
     { name: 'username', label: 'Username', type: 'text', validators: [Validators.required, Validators.minLength(4)] },
     { name: 'password', label: 'Password', type: 'password', validators: [Validators.required, Validators.minLength(8)] },
   ];
 
+  emailControls = [
+    { name: 'email', label: 'Email', type: 'email', validators: [Validators.required, Validators.email] }
+  ];
+
+  otpControls = [
+    { name: 'otp', label: 'OTP', type: 'text', validators: [Validators.required, Validators.minLength(6), Validators.maxLength(6)] }
+  ];
+
+  newPasswordControls = [
+    { name: 'newPassword', label: 'New Password', type: 'password', validators: [Validators.required, Validators.minLength(8)], isPasswordField: true }
+  ];
+
   ngOnInit() {
     this.initializeGoogleSignIn();
+  }
+  
+  toggleForgotPassword() {
+    this.showForgotPassword = !this.showForgotPassword;
+    this.forgotPasswordStep = 'email';
+    this.errorMessage = '';
+    this.successMessage = '';
+    
+    if (!this.showForgotPassword) {
+      this.stopCountdown();
+      this.storedEmail = '';
+    }
+  }
+
+  onEmailSubmit(formData: any) {
+    this.sendPasswordResetOtp(formData.email);
+  }
+
+  onOtpSubmit(formData: any) {
+    this.verifyPasswordResetOtp(formData.otp);
+  }
+
+  onNewPasswordSubmit(formData: any) {
+    this.resetPassword(formData.newPassword);
+  }
+
+  sendPasswordResetOtp(email: string) {
+    this.errorMessage = '';
+    this.successMessage = '';
+    
+    // If this is a resend request, use the stored email
+    if (email === 'resend') {
+      if (!this.storedEmail) {
+        this.errorMessage = 'Email not found. Please go back and enter your email again.';
+        return;
+      }
+      email = this.storedEmail;
+    } else {
+      // Store the email for future use (like resending OTP)
+      this.storedEmail = email;
+    }
+    
+    this.authService.sendPasswordResetOtp(email).subscribe({
+      next: () => {
+        this.successMessage = 'OTP sent to your email';
+        this.forgotPasswordStep = 'otp';
+        this.startCountdown();
+      },
+      error: (error) => {
+        this.errorMessage = error?.error?.message || 'Failed to send OTP. Please try again.';
+      }
+    });
+  }
+
+  // Verify OTP for password reset
+  verifyPasswordResetOtp(otp: string) {
+    this.errorMessage = '';
+    this.successMessage = '';
+    
+    this.authService.verifyPasswordResetOtp(otp).subscribe({
+      next: (success) => {
+        if (success) {
+          this.successMessage = 'OTP verified successfully';
+          this.forgotPasswordStep = 'newPassword';
+          this.stopCountdown();
+        } else {
+          this.errorMessage = 'Invalid OTP. Please try again.';
+        }
+      },
+      error: (error) => {
+        this.errorMessage = error?.error?.message || 'Failed to verify OTP. Please try again.';
+      }
+    });
+  }
+
+  // Reset password with new password
+  resetPassword(newPassword: string) {
+    this.errorMessage = '';
+    this.successMessage = '';
+    
+    this.authService.resetPassword(newPassword).subscribe({
+      next: (success) => {
+        if (success) {
+          this.successMessage = 'Password reset successfully. You can now login with your new password.';
+          this.showForgotPassword = false;
+          this.forgotPasswordStep = 'email';
+          this.storedEmail = '';
+        } else {
+          this.errorMessage = 'Failed to reset password. Please try again.';
+        }
+      },
+      error: (error) => {
+        this.errorMessage = error?.error?.message || 'Failed to reset password. Please try again.';
+      }
+    });
+  }
+
+  // Start countdown for OTP resend
+  startCountdown() {
+    this.otpCountdown = 60; // 60 seconds countdown
+    this.stopCountdown(); // Clear any existing interval
+    
+    this.countdownInterval = setInterval(() => {
+      this.otpCountdown--;
+      if (this.otpCountdown <= 0) {
+        this.stopCountdown();
+      }
+    }, 1000);
+  }
+
+  // Stop countdown timer
+  stopCountdown() {
+    if (this.countdownInterval) {
+      clearInterval(this.countdownInterval);
+      this.countdownInterval = null;
+    }
   }
 
   onFormSubmit(credentials: { username: string; password: string }) {
@@ -62,6 +204,11 @@ export class LoginComponent implements OnInit {
         console.error('Login failed:', error);
       }
     });
+  }
+
+  ngOnDestroy(){
+    this.stopCountdown();
+    this.storedEmail = '';
   }
 
   private showError(message: string) {

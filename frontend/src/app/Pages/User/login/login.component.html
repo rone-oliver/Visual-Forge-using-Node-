@@ -22,18 +22,75 @@
                 {{ errorMessage }}
             </div>
         </div>
-        <app-form [formControls]="loginControls" [submitButtonLabel]="'Login'"
-            (formSubmit)="onFormSubmit($event)"></app-form>
         
-        <div class="text-center mt-6">
-            <p class="text-sm text-gray-600">
-                Just joining? 
-                <a [routerLink]="['/auth/register']" class="font-medium text-indigo-600 hover:text-indigo-500">
-                    Register here
-                </a>
-            </p>
+        <!-- Normal Login Form -->
+        <div *ngIf="!showForgotPassword">
+            <app-form [formControls]="loginControls" [submitButtonLabel]="'Login'"
+                (formSubmit)="onFormSubmit($event)"></app-form>
+            
+            <div class="flex justify-between items-center mt-4">
+                <button (click)="toggleForgotPassword()" 
+                    class="text-sm text-indigo-600 hover:text-indigo-800 font-medium transition-colors">
+                    Forgot Password?
+                </button>
+                <p  class="text-sm text-gray-600">Just joining?
+                    <a [routerLink]="['/auth/register']" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium transition-colors">
+                        Register here
+                    </a>
+                </p>
+            </div>
         </div>
-        <div class="mt-6 w-full">
+        
+        <!-- Forgot Password Form -->
+        <div *ngIf="showForgotPassword" class="bg-white p-6 rounded-lg shadow-md">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-medium text-gray-900">Reset Password</h3>
+                <button (click)="toggleForgotPassword()" class="text-gray-500 hover:text-gray-700">
+                    <mat-icon>close</mat-icon>
+                </button>
+            </div>
+            
+            <!-- Email Step -->
+            <div *ngIf="forgotPasswordStep === 'email'">
+                <app-form [formControls]="emailControls" 
+                          [submitButtonLabel]="'Send OTP'"
+                          (formSubmit)="onEmailSubmit($event)"></app-form>
+            </div>
+            
+            <!-- OTP Step -->
+            <div *ngIf="forgotPasswordStep === 'otp'">
+                <app-form [formControls]="otpControls" 
+                          [submitButtonLabel]="'Verify OTP'"
+                          (formSubmit)="onOtpSubmit($event)"></app-form>
+                
+                <div class="flex justify-between items-center mt-2 mb-4">
+                    <div *ngIf="otpCountdown > 0" class="text-sm text-gray-500">
+                        Resend available in {{otpCountdown}} seconds
+                    </div>
+                    <button *ngIf="otpCountdown <= 0" type="button" 
+                            (click)="sendPasswordResetOtp('resend')" 
+                            class="text-sm text-indigo-600 hover:text-indigo-800">
+                        Resend OTP
+                    </button>
+                </div>
+            </div>
+            
+            <!-- New Password Step -->
+            <div *ngIf="forgotPasswordStep === 'newPassword'">
+                <app-form [formControls]="newPasswordControls" 
+                          [submitButtonLabel]="'Reset Password'"
+                          (formSubmit)="onNewPasswordSubmit($event)"></app-form>
+            </div>
+            
+            <div class="text-center mt-4">
+                <button type="button" (click)="toggleForgotPassword()" 
+                        class="text-sm text-gray-600 hover:text-gray-800">
+                    Back to Login
+                </button>
+            </div>
+        </div>
+        
+        <div *ngIf="!showForgotPassword" class="mt-6 w-full">
             <!-- Divider -->
             <div class="relative">
                 <div class="absolute inset-0 flex items-center">

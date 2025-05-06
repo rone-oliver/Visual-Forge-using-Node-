@@ -20,7 +20,7 @@ export class UsersAuthService {
 
     // Helper
     private async generateTokens(user: User, role: 'User' | 'Editor') {
-        console.log('user Role: ',role);
+        console.log('user Role: ', role);
         const [accessToken, refreshToken] = await Promise.all([
             this.jwtService.signAsync(
                 {
@@ -78,7 +78,7 @@ export class UsersAuthService {
             if (!isPasswordValid) {
                 throw new UnauthorizedException('Invalid password');
             }
-            if(user.isBlocked){
+            if (user.isBlocked) {
                 throw new UnauthorizedException('User is blocked');
             }
             const tokens = await this.generateTokens(user, user.isEditor ? 'Editor' : 'User');
@@ -99,11 +99,11 @@ export class UsersAuthService {
                 throw new HttpException({
                     success: false,
                     error: {
-                      message: 'Username already exists',
-                      usernameExists: true,
-                      emailExists: false
+                        message: 'Username already exists',
+                        usernameExists: true,
+                        emailExists: false
                     }
-                  }, HttpStatus.BAD_REQUEST);
+                }, HttpStatus.BAD_REQUEST);
             }
 
             const existingUserByEmail = await this.usersService.findByEmail(userData.email);
@@ -111,11 +111,11 @@ export class UsersAuthService {
                 throw new HttpException({
                     success: false,
                     error: {
-                      message: 'Email already registered',
-                      usernameExists: false,
-                      emailExists: true
+                        message: 'Email already registered',
+                        usernameExists: false,
+                        emailExists: true
                     }
-                  }, HttpStatus.BAD_REQUEST);
+                }, HttpStatus.BAD_REQUEST);
             }
 
             const user = await this.usersService.createUser(userData);
@@ -126,13 +126,13 @@ export class UsersAuthService {
             return {
                 success: true,
                 data: {
-                  user
+                    user
                 }
-              };
+            };
         } catch (error) {
             if (error instanceof HttpException) {
                 const response = error.getResponse();
-                if(response && typeof response === 'object' && 'success' in response){
+                if (response && typeof response === 'object' && 'success' in response) {
                     throw error;
                 }
                 this.logger.error(response)
@@ -154,7 +154,7 @@ export class UsersAuthService {
         }
     }
 
-    async resendOtp(email:string): Promise<boolean>{
+    async resendOtp(email: string): Promise<boolean> {
         try {
             const otp = await this.otpService.createOtp(email);
             await this.otpService.sendOtpEmail(email, otp);
@@ -181,9 +181,22 @@ export class UsersAuthService {
         return {
             success: false,
             error: {
-              message: 'Invalid OTP',
-              otpInvalid: true
+                message: 'Invalid OTP',
+                otpInvalid: true
             }
         };
+    }
+
+    async resetPassword(email: string, newPassword: string): Promise<boolean> {
+        try {
+            const user = await this.usersService.findByEmail(email);
+            if (!user) throw new Error('User not found');
+            const hashedPassword = await bcrypt.hash(newPassword, 10);
+            const status = await this.usersService.updatePassword(user._id, hashedPassword);
+            return status ? true : false
+        } catch (error) {
+            this.logger.error(`Error resetting password: ${error.message}`);
+            throw error;
+        }
     }
 }

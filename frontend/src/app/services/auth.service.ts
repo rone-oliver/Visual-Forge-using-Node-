@@ -238,6 +238,61 @@ export class AuthService {
       );
   }
 
+  sendPasswordResetOtp(email: string): Observable<boolean> {
+    return this.http.post<boolean>(`${this.backendUrl}/auth/user/forgot-password`, { email }).pipe(
+      map(response => {
+        console.log("Password reset OTP sent response: ", response);
+        this.registrationEmail = email; // Store email for verification
+        return true;
+      }),
+      catchError(error => {
+        console.error('Error sending password reset OTP:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  verifyPasswordResetOtp(otp: string): Observable<boolean> {
+    if (!this.registrationEmail) {
+      return throwError(() => new Error('No email found for password reset'));
+    }
+
+    return this.http.post<{ success: boolean }>(`${this.backendUrl}/auth/user/verify-reset-otp`, {
+      email: this.registrationEmail,
+      otp: otp
+    }).pipe(
+      map(response => {
+        console.log("Password reset OTP verification response: ", response);
+        return response.success;
+      }),
+      catchError(error => {
+        console.error('Error verifying password reset OTP:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  resetPassword(newPassword: string): Observable<boolean> {
+    if (!this.registrationEmail) {
+      return throwError(() => new Error('No email found for password reset'));
+    }
+
+    return this.http.post<boolean>(`${this.backendUrl}/auth/user/reset-password`, {
+      email: this.registrationEmail,
+      newPassword: newPassword
+    }).pipe(
+      map(response => {
+        console.log("Password reset response: ", response);
+        this.registrationEmail = null; // Clear email after reset
+        return response;
+      }),
+      catchError(error => {
+        console.error('Error resetting password:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
   private extractJwtPayload(token: string) {
     try {
       return jwtDecode<JwtPayload>(token);

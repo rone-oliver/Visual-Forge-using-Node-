@@ -103,6 +103,18 @@ export class UsersService {
         }
     }
 
+    async updatePassword(userId: Types.ObjectId, password: string): Promise<boolean>{
+        try {
+            this.logger.log(userId,password)
+            await this.userModel.updateOne({_id: userId}, {$set: {password}});
+            this.logger.log("Password updated successfully");
+            return true;
+        } catch (error) {
+            this.logger.error(`Error updating password: ${error.message}`);
+            throw error;
+        }
+    }
+
     async getUserDetails(userId: Types.ObjectId): Promise<User & { editorDetails?: any } | null> {
         try {
             this.logger.log(`Fetching user details for ID: ${userId}`);

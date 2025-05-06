@@ -67,4 +67,20 @@ export class UsersAuthController {
             };
         }
     }
+
+    @Post('forgot-password')
+    async sendPasswordResetOtp(@Body() body:{email:string}){
+        return await this.usersAuthService.resendOtp(body.email);
+    }
+
+    @Post('verify-reset-otp')
+    async verifyPasswordResetOtp(@Body() body:{email:string, otp:string}){
+        return await this.usersAuthService.verifyOtp(body.email,body.otp);
+    }
+
+    @Post('reset-password')
+    async resetPassword(@Body() body:{email:string, newPassword:string}){
+        const result = await this.usersAuthService.resetPassword(body.email,body.newPassword);
+        return result;
+    }
 }
