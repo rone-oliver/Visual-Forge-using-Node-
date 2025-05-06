@@ -64,10 +64,10 @@
                           (formSubmit)="onOtpSubmit($event)"></app-form>
                 
                 <div class="flex justify-between items-center mt-2 mb-4">
-                    <div *ngIf="otpCountdown > 0" class="text-sm text-gray-500">
+                    <div *ngIf="!canResendOtp" class="text-sm text-gray-500">
                         Resend available in {{otpCountdown}} seconds
                     </div>
-                    <button *ngIf="otpCountdown <= 0" type="button" 
+                    <button *ngIf="canResendOtp" type="button" 
                             (click)="sendPasswordResetOtp('resend')" 
                             class="text-sm text-indigo-600 hover:text-indigo-800">
                         Resend OTP

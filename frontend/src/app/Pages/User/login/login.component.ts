@@ -7,6 +7,7 @@ import { environment } from '../../../../environments/environment';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { GoogleAuthService } from '../../../services/shared/google-auth.service';
+import { interval, Subscription, takeWhile } from 'rxjs';
 
 declare global {
   interface Window {
@@ -48,6 +49,12 @@ export class LoginComponent implements OnInit, OnDestroy {
   countdownInterval: any;
   storedEmail: string = '';
 
+  private readonly COUNTDOWN_STORAGE_KEY = 'forgotPasswordCountdown';
+  private readonly EMAIL_STORAGE_KEY = 'forgotPasswordEmail';
+  private readonly STEP_STORAGE_KEY = 'forgotPasswordStep';
+  private countdownSubscription: Subscription | null = null;
+  canResendOtp: boolean = true;
+
   constructor(
     private authService: AuthService,
     private router: Router,
@@ -74,6 +81,38 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.initializeGoogleSignIn();
+    this.checkExistingCountdown();
+    this.checkForgotPasswordState();
+  }
+
+  private checkForgotPasswordState() {
+    const storedStep = localStorage.getItem(this.STEP_STORAGE_KEY);
+    const storedEmail = localStorage.getItem(this.EMAIL_STORAGE_KEY);
+    
+    if (storedStep && storedEmail) {
+      this.showForgotPassword = true;
+      this.forgotPasswordStep = storedStep as 'email' | 'otp' | 'newPassword';
+      this.storedEmail = storedEmail;
+    }
+  }
+
+  private checkExistingCountdown() {
+    const storedEndTime = localStorage.getItem(this.COUNTDOWN_STORAGE_KEY);
+    if (storedEndTime) {
+      const endTime = parseInt(storedEndTime, 10);
+      const now = new Date().getTime();
+      const remainingTime = Math.floor((endTime - now) / 1000);
+      
+      if (remainingTime > 0) {
+        this.startCountdown(remainingTime);
+      } else {
+        // Clear expired countdown
+        localStorage.removeItem(this.COUNTDOWN_STORAGE_KEY);
+        this.canResendOtp = true;
+      }
+    } else {
+      this.canResendOtp = true;
+    }
   }
   
   toggleForgotPassword() {
@@ -82,9 +121,15 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.errorMessage = '';
     this.successMessage = '';
     
-    if (!this.showForgotPassword) {
+    if (this.showForgotPassword) {
+      localStorage.setItem(this.STEP_STORAGE_KEY, this.forgotPasswordStep);
+    } else {
+      // Clear the form when closing
       this.stopCountdown();
       this.storedEmail = '';
+      localStorage.removeItem(this.STEP_STORAGE_KEY);
+      localStorage.removeItem(this.EMAIL_STORAGE_KEY);
+      localStorage.removeItem(this.COUNTDOWN_STORAGE_KEY);
     }
   }
 
@@ -114,12 +159,14 @@ export class LoginComponent implements OnInit, OnDestroy {
     } else {
       // Store the email for future use (like resending OTP)
       this.storedEmail = email;
+      localStorage.setItem(this.EMAIL_STORAGE_KEY, email);
     }
     
     this.authService.sendPasswordResetOtp(email).subscribe({
       next: () => {
-        this.successMessage = 'OTP sent to your email';
+        this.showSuccess('OTP sent to your email');
         this.forgotPasswordStep = 'otp';
+        localStorage.setItem(this.STEP_STORAGE_KEY, this.forgotPasswordStep);
         this.startCountdown();
       },
       error: (error) => {
@@ -136,8 +183,9 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.authService.verifyPasswordResetOtp(otp).subscribe({
       next: (success) => {
         if (success) {
-          this.successMessage = 'OTP verified successfully';
+          this.showSuccess('OTP verified successfully');
           this.forgotPasswordStep = 'newPassword';
+          localStorage.setItem(this.STEP_STORAGE_KEY, this.forgotPasswordStep);
           this.stopCountdown();
         } else {
           this.errorMessage = 'Invalid OTP. Please try again.';
@@ -157,10 +205,14 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.authService.resetPassword(newPassword).subscribe({
       next: (success) => {
         if (success) {
-          this.successMessage = 'Password reset successfully. You can now login with your new password.';
+          this.showSuccess('Password reset successfully. You can now login with your new password.');
           this.showForgotPassword = false;
           this.forgotPasswordStep = 'email';
           this.storedEmail = '';
+
+          localStorage.removeItem(this.STEP_STORAGE_KEY);
+          localStorage.removeItem(this.EMAIL_STORAGE_KEY);
+          localStorage.removeItem(this.COUNTDOWN_STORAGE_KEY);
         } else {
           this.errorMessage = 'Failed to reset password. Please try again.';
         }
@@ -171,24 +223,34 @@ export class LoginComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Start countdown for OTP resend
-  startCountdown() {
-    this.otpCountdown = 60; // 60 seconds countdown
-    this.stopCountdown(); // Clear any existing interval
+  startCountdown(seconds: number = 30) {
+    // Clear any existing countdown
+    this.stopCountdown();
     
-    this.countdownInterval = setInterval(() => {
-      this.otpCountdown--;
-      if (this.otpCountdown <= 0) {
-        this.stopCountdown();
-      }
-    }, 1000);
+    // Set end time in localStorage
+    const endTime = new Date().getTime() + seconds * 1000;
+    localStorage.setItem(this.COUNTDOWN_STORAGE_KEY, endTime.toString());
+    
+    // Start countdown
+    this.otpCountdown = seconds;
+    this.canResendOtp = false;
+    
+    this.countdownSubscription = interval(1000)
+      .pipe(takeWhile(() => this.otpCountdown > 0))
+      .subscribe(() => {
+        this.otpCountdown--;
+        if (this.otpCountdown === 0) {
+          this.canResendOtp = true;
+          this.stopCountdown();
+        }
+      });
   }
-
-  // Stop countdown timer
+  
+  // Stop countdown and clean up
   stopCountdown() {
-    if (this.countdownInterval) {
-      clearInterval(this.countdownInterval);
-      this.countdownInterval = null;
+    if (this.countdownSubscription) {
+      this.countdownSubscription.unsubscribe();
+      this.countdownSubscription = null;
     }
   }
 
@@ -215,6 +277,13 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.errorMessage = message;
     setTimeout(() => {
       this.errorMessage = '';
+    }, 3000);
+  }
+
+  private showSuccess(message:string){
+    this.successMessage = message;
+    setTimeout(() => {
+      this.successMessage = '';
     }, 3000);
   }
 
