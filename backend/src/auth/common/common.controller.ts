@@ -8,12 +8,13 @@ export class AuthController {
   constructor(private commonService: CommonService){}
   @Post('user/logout')
   async userLogout(@Req() req: Request, @Res() res: Response) {
-    this.commonService.logoutHandler(res,'User');
+    console.log('user logout called');
+    await this.commonService.logoutHandler(res,'User');
   }
 
   @Post('admin/logout')
   async adminLogout(@Req() req: Request, @Res() res: Response) {
-    this.commonService.logoutHandler(res,'Admin');
+    await this.commonService.logoutHandler(res,'Admin');
   }
 
   @Post('admin/theme-preference')

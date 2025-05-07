@@ -37,6 +37,7 @@ export const userLoginGuard: CanActivateFn = (route,state)=>{
 
   const token = tokenService.getToken('User');
   if(token){
+    console.log('token exisiting in userLoginGuard',token);
     router.navigate(['/user'])
     return false;
   }

@@ -45,6 +45,16 @@ export const userAuthInterceptor: HttpInterceptorFn = (req, next) => {
 
     return next(clonedRequest).pipe(
       catchError((error) => {
+        console.error('Error occurred in UserAuthInterceptor:', error);
+        if (error.status === 403 && error.error.isBlocked && accessToken) {
+          console.error('User account is blocked. Logging out and redirecting.');
+          authService.logout('User');
+          router.navigate(['/auth/login'], {
+            queryParams: { blocked: 'true' } // Ensure query param is a string
+          });
+          return EMPTY; // Stop further processing
+        }
+
         if (error.status === 401 && accessToken) {
           return authService.refreshAccessToken('User').pipe(
             tap((response) => console.log('New user token generated', response)),

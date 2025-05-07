@@ -1,4 +1,4 @@
-import { ExceptionFilter, Catch, ArgumentsHost, HttpException, Logger } from '@nestjs/common';
+import { ExceptionFilter, Catch, ArgumentsHost, HttpException, Logger, HttpStatus } from '@nestjs/common';
 import { Response } from 'express';
 
 @Catch(HttpException)
@@ -14,8 +14,20 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     this.logger.error(`HTTP Exception: ${status} - ${message}`);
 
-    if (typeof exceptionResponse === 'object' && 'success' in exceptionResponse) {
-      response.status(status).json(exceptionResponse);
+    if (typeof exceptionResponse === 'object') {
+      if ('success' in exceptionResponse) {
+        response.status(status).json(exceptionResponse);
+        return;
+      }
+
+      // Handle blocked user case specifically
+      if (status === HttpStatus.FORBIDDEN && 'isBlocked' in exceptionResponse) {
+        response.status(status).json({
+          ...exceptionResponse,
+          timestamp: new Date().toISOString(),
+        });
+        return;
+      }
     } else {
       response
         .status(status)

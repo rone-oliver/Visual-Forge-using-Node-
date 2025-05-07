@@ -106,27 +106,28 @@ export class AuthService {
 
   logout(userType: 'User' | 'Admin'): Observable<any> {
     const endpoint = userType === 'User' ? 'user/logout' : 'admin/logout';
+    this.tokenService.clearToken(userType);
+    if (userType === 'User') {
+      // this.userAccessTokenSubject.next(null);
+      this.userIsAuthenticatedSubject.next(false);
+      this.userRoleSubject.next(null);
+    } else {
+      // this.adminAccessTokenSubject.next(null);
+      this.adminIsAuthenticatedSubject.next(false);
+      // this.adminRoleSubject.next(null);
+    }
     return this.http.post(`${this.backendUrl}/auth/${endpoint}`, {}, {
       withCredentials: true
-    })
-      .pipe(
-        tap(() => {
-          this.tokenService.clearToken(userType);
-          if (userType === 'User') {
-            // this.userAccessTokenSubject.next(null);
-            this.userIsAuthenticatedSubject.next(false);
-            this.userRoleSubject.next(null);
-          } else {
-            // this.adminAccessTokenSubject.next(null);
-            this.adminIsAuthenticatedSubject.next(false);
-            // this.adminRoleSubject.next(null);
-          }
-        }),
-        catchError(error => {
-          console.error('Logout failed:', error);
-          return throwError(() => error);
-        })
-      );
+    }).pipe(
+      map(response => {
+        console.log('Logout response:', response);
+        return response;
+      }),
+      catchError(error => {
+        console.error('Logout failed:', error);
+        return throwError(() => error);
+      })
+    );
   }
 
   refreshAccessToken(userType: 'User' | 'Admin'): Observable<{ accessToken: string, userType: UserType }> {

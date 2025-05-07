@@ -21,7 +21,7 @@ export class CommonService {
   ) {
     this.googleClient = new OAuth2Client(this.configService.get<string>('GOOGLE_CLIENT_ID'));
   };
-  logoutHandler(response: Response, userType: 'User' | 'Admin') {
+  async logoutHandler(response: Response, userType: 'User' | 'Admin') {
     const tokenName = userType.toLowerCase();
     try {
       response.clearCookie(`${tokenName}RefreshToken`, {
@@ -30,7 +30,7 @@ export class CommonService {
         sameSite: 'strict',
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
-      console.log('logout controller called');
+      console.log('logout service called');
       response.status(200).json({ message: 'Successfully logged out' });
     } catch (error) {
       console.error('Logout error:', error);

@@ -6,11 +6,13 @@ import { Admin, adminSchema } from './models/admin.schema';
 import { User, userSchema } from 'src/users/models/user.schema';
 import { EditorRequest, EditorRequestSchema } from 'src/common/models/editorRequest.schema';
 import { Editor, editorSchema } from 'src/editors/models/editor.schema';
+import { UsersModule } from 'src/users/users.module';
 
 @Module({
   providers: [AdminsService],
   controllers: [AdminsController],
   imports:[
+    UsersModule,
     MongooseModule.forFeature([
       { name: Admin.name, schema: adminSchema },
       { name: User.name, schema: userSchema},
