@@ -259,11 +259,13 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.authService.login(credentials, 'User').subscribe({
       next: (response) => {
         this.authService.setAccessToken(response.accessToken, 'User');
+        this.showSuccess('Login successful! Redirecting...');
         this.router.navigate(['/user']);
       },
       error: (error) => {
         // needs to handle error
         console.error('Login failed:', error);
+        this.showError(error.error?.message || 'Login failed. Please try again.');
       }
     });
   }
