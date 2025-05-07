@@ -111,6 +111,7 @@ export class EditorSectionComponent implements OnInit {
   }
 
   get getEditors(): Editor[] {
+    // console.log('editors:', this.editors);
     return this.editors;
   }
 
@@ -121,6 +122,7 @@ export class EditorSectionComponent implements OnInit {
     { key: 'username', header: 'Username'},
     { key: 'category', header: 'Categories' },
     { key: 'score', header: 'Score', sortable: true },
+    { key: 'averageRating', header: 'Rating', sortable: true },
     { key: 'createdAt', header: 'Joined', type: 'date' },
     { key: 'isVerified', header: 'Verified', type: 'boolean' },
     { key: 'type', header: 'Actions', type: 'actions' }

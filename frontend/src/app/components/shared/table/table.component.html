@@ -73,10 +73,10 @@
                     <!-- Actions content -->
                     <ng-container *ngIf="column.type === 'actions'">
                         <div class="action-buttons">
-                            <button *ngIf="getNestedProperty(item, 'canEdit') !== false" class="action-btn edit"
+                            <!-- <button *ngIf="getNestedProperty(item, 'canEdit') !== false" class="action-btn edit"
                                 (click)="onActionClick('edit', item, $event)">
                                 <lucide-icon [name]="icons.edit"></lucide-icon>
-                            </button>
+                            </button> -->
                             <!-- <button *ngIf="getNestedProperty(item, 'canDelete') !== false" class="action-btn delete"
                                 (click)="onActionClick('delete', item, $event)">
                                 <lucide-icon [name]="icons.delete"></lucide-icon>
