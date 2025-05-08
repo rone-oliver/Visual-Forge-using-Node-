@@ -28,10 +28,10 @@ declare global {
   selector: 'app-user-login',
   standalone: true,
   imports: [
-    FormComponent, 
-    RouterModule, 
-    CommonModule, 
-    MatIconModule, 
+    FormComponent,
+    RouterModule,
+    CommonModule,
+    MatIconModule,
     ReactiveFormsModule,
   ],
   templateUrl: './login.component.html',
@@ -88,7 +88,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   private checkForgotPasswordState() {
     const storedStep = localStorage.getItem(this.STEP_STORAGE_KEY);
     const storedEmail = localStorage.getItem(this.EMAIL_STORAGE_KEY);
-    
+
     if (storedStep && storedEmail) {
       this.showForgotPassword = true;
       this.forgotPasswordStep = storedStep as 'email' | 'otp' | 'newPassword';
@@ -102,7 +102,7 @@ export class LoginComponent implements OnInit, OnDestroy {
       const endTime = parseInt(storedEndTime, 10);
       const now = new Date().getTime();
       const remainingTime = Math.floor((endTime - now) / 1000);
-      
+
       if (remainingTime > 0) {
         this.startCountdown(remainingTime);
       } else {
@@ -114,13 +114,13 @@ export class LoginComponent implements OnInit, OnDestroy {
       this.canResendOtp = true;
     }
   }
-  
+
   toggleForgotPassword() {
     this.showForgotPassword = !this.showForgotPassword;
     this.forgotPasswordStep = 'email';
     this.errorMessage = '';
     this.successMessage = '';
-    
+
     if (this.showForgotPassword) {
       localStorage.setItem(this.STEP_STORAGE_KEY, this.forgotPasswordStep);
     } else {
@@ -148,7 +148,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   sendPasswordResetOtp(email: string) {
     this.errorMessage = '';
     this.successMessage = '';
-    
+
     // If this is a resend request, use the stored email
     if (email === 'resend') {
       if (!this.storedEmail) {
@@ -161,7 +161,7 @@ export class LoginComponent implements OnInit, OnDestroy {
       this.storedEmail = email;
       localStorage.setItem(this.EMAIL_STORAGE_KEY, email);
     }
-    
+
     this.authService.sendPasswordResetOtp(email).subscribe({
       next: () => {
         this.showSuccess('OTP sent to your email');
@@ -179,7 +179,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   verifyPasswordResetOtp(otp: string) {
     this.errorMessage = '';
     this.successMessage = '';
-    
+
     this.authService.verifyPasswordResetOtp(otp).subscribe({
       next: (success) => {
         if (success) {
@@ -201,7 +201,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   resetPassword(newPassword: string) {
     this.errorMessage = '';
     this.successMessage = '';
-    
+
     this.authService.resetPassword(newPassword).subscribe({
       next: (success) => {
         if (success) {
@@ -226,15 +226,15 @@ export class LoginComponent implements OnInit, OnDestroy {
   startCountdown(seconds: number = 30) {
     // Clear any existing countdown
     this.stopCountdown();
-    
+
     // Set end time in localStorage
     const endTime = new Date().getTime() + seconds * 1000;
     localStorage.setItem(this.COUNTDOWN_STORAGE_KEY, endTime.toString());
-    
+
     // Start countdown
     this.otpCountdown = seconds;
     this.canResendOtp = false;
-    
+
     this.countdownSubscription = interval(1000)
       .pipe(takeWhile(() => this.otpCountdown > 0))
       .subscribe(() => {
@@ -245,7 +245,7 @@ export class LoginComponent implements OnInit, OnDestroy {
         }
       });
   }
-  
+
   // Stop countdown and clean up
   stopCountdown() {
     if (this.countdownSubscription) {
@@ -270,7 +270,11 @@ export class LoginComponent implements OnInit, OnDestroy {
     });
   }
 
-  ngOnDestroy(){
+  ngOnDestroy() {
+    const scriptElement = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
+    if (scriptElement) {
+      scriptElement.remove();
+    }
     this.stopCountdown();
     this.storedEmail = '';
   }
@@ -282,7 +286,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     }, 3000);
   }
 
-  private showSuccess(message:string){
+  private showSuccess(message: string) {
     this.successMessage = message;
     setTimeout(() => {
       this.successMessage = '';
