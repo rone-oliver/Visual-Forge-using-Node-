@@ -11,11 +11,32 @@
         </div>
         <div *ngFor="let file of data.files" class="file-card">
             <div class="file-info">
-                <div class="file-name">{{ file.fileName }}</div>
-                <div class="file-details">
-                    <span>Size: {{ formatFileSize(file.size) }}</span>
-                    <span>Type: {{ file.mimeType }}</span>
-                    <span>Uploaded: {{ file.uploadedAt | date }}</span>
+                <div class="info">
+                    <div class="file-name">{{ file.fileName }}</div>
+                    <div class="file-details">
+                        <span>Size: {{ formatFileSize(file.size) }}</span>
+                        <span>Type: {{ file.mimeType }}</span>
+                        <span>Uploaded: {{ file.uploadedAt | date }}</span>
+                    </div>
+                </div>
+                <!-- Download button for all file types -->
+                <div class="download-section">
+                    <button class="download-btn" 
+                            (click)="downloadFile(file)" 
+                            [disabled]="isDownloading[file.fileName]">
+                        <ng-container *ngIf="!isDownloading[file.fileName]">
+                            <mat-icon>download</mat-icon>
+                            <span>Download</span>
+                        </ng-container>
+                        <ng-container *ngIf="isDownloading[file.fileName]">
+                            <mat-progress-spinner
+                                mode="determinate"
+                                [value]="downloadProgress[file.fileName]"
+                                diameter="20">
+                            </mat-progress-spinner>
+                            <span>{{ downloadProgress[file.fileName] }}%</span>
+                        </ng-container>
+                    </button>
                 </div>
             </div>
             <div class="file-preview">

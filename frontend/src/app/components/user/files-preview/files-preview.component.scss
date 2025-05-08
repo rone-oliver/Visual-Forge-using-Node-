@@ -53,6 +53,8 @@
 
 .file-info {
     margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
 }
 
 .file-name {
@@ -131,4 +133,42 @@
     color: var(--color-text);
     opacity: 0.7;
     font-style: italic;
+}
+
+.download-section {
+    margin-top: 12px;
+    display: flex;
+    justify-content: center;
+}
+
+.download-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: none;
+    background-color: var(--color-primary);
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background-color: var(--color-primary-dark);
+    }
+
+    mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+    }
+
+    &:disabled {
+        background-color: var(--color-primary-light);
+        cursor: not-allowed;
+    }
+
+    mat-progress-spinner {
+        margin-right: 8px;
+    }
 }

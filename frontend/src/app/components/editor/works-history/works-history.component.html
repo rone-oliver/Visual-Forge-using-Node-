@@ -41,9 +41,9 @@
                     <!-- User's Attached Files -->
                     <div class="work-files user-files" *ngIf="work.attachedFiles && work.attachedFiles.length > 0">
                         <h4>Client Files</h4>
+                        <div class="file-badges">
                         <ng-container
                             *ngFor="let fileType of [FileType.IMAGE, FileType.VIDEO, FileType.DOCUMENT, FileType.AUDIO]">
-                            <div class="file-badges">
                                 <div class="file-badge" *ngIf="countAttachedFilesByType(work, fileType) > 0"
                                     (click)="openAttachedFileModal(work, fileType)">
                                     <mat-icon>
@@ -53,8 +53,8 @@
                                     </mat-icon>
                                     <span>{{ countAttachedFilesByType(work, fileType) }}</span>
                                 </div>
-                            </div>
-                        </ng-container>
+                            </ng-container>
+                        </div>
                     </div>
 
                     <div class="work-response" *ngIf="work.comments">
@@ -65,9 +65,9 @@
                     <!-- Editor's Final Files -->
                     <div class="work-files editor-files" *ngIf="work.finalFiles && work.finalFiles.length > 0">
                         <h4>Your Submitted Files</h4>
+                        <div class="file-badges">
                         <ng-container
                             *ngFor="let fileType of [FileType.IMAGE, FileType.VIDEO, FileType.DOCUMENT, FileType.AUDIO]">
-                            <div class="file-badges">
                                 <div class="file-badge" *ngIf="countFilesByType(work, fileType) > 0"
                                     (click)="openFileModal(work, fileType)">
                                     <mat-icon>
@@ -77,8 +77,8 @@
                                     </mat-icon>
                                     <span>{{ countFilesByType(work, fileType) }}</span>
                                 </div>
-                            </div>
-                        </ng-container>
+                            </ng-container>
+                        </div>
                     </div>
                 </div>
             </div>
