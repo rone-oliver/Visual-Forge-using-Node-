@@ -7,10 +7,18 @@ import { routes } from './app.routes';
 import { userAuthInterceptor } from './interceptor/user.interceptor';
 import { adminAuthInterceptor } from './interceptor/admin.interceptor';
 import { editorAuthInterceptor } from './interceptor/editor.interceptor';
+import { commonInterceptor } from './interceptor/common.interceptor';
+import { tokenInterceptor } from './interceptor/token.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideHttpClient(withInterceptors([userAuthInterceptor, adminAuthInterceptor, editorAuthInterceptor])),
+    provideHttpClient(withInterceptors([
+      commonInterceptor,
+      tokenInterceptor,
+      adminAuthInterceptor,
+      editorAuthInterceptor,
+      userAuthInterceptor,
+    ])),
     provideAnimations(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes)

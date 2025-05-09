@@ -124,6 +124,16 @@ export class AuthService {
       }),
       catchError(error => {
         console.error('Logout failed:', error);
+        this.tokenService.clearToken(userType);
+        if (userType === 'User') {
+          // this.userAccessTokenSubject.next(null);
+          this.userIsAuthenticatedSubject.next(false);
+          this.userRoleSubject.next(null);
+        } else {
+          // this.adminAccessTokenSubject.next(null);
+          this.adminIsAuthenticatedSubject.next(false);
+          // this.adminRoleSubject.next(null);
+        }
         return throwError(() => error);
       })
     );
