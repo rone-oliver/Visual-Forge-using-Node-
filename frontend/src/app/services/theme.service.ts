@@ -47,7 +47,7 @@ export class ThemeService {
     try {
       console.log('load saved theme called');
       const response = await firstValueFrom(
-        this.http.get<{ isDark: boolean }>(`${this.backendUrl}/auth/${role.toLowerCase()}/theme-preference?userType=${role}`, {
+        this.http.get<{ isDark: boolean }>(`${this.backendUrl}/auth/theme-preference?userType=${role}`, {
           withCredentials: true, observe:'response' as const
         })
       );
@@ -89,7 +89,7 @@ export class ThemeService {
   private async saveThemePreference(isDark:boolean,role: 'User' | 'Admin'):Promise<void>{
     try {
       await firstValueFrom(
-        this.http.post(`${this.backendUrl}/auth/${role.toLowerCase()}/theme-preference`, {
+        this.http.put(`${this.backendUrl}/auth/theme-preference`, {
           userType:role,
           isDark
         }, {

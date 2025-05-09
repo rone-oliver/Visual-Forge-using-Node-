@@ -23,8 +23,8 @@ export const userAuthInterceptor: HttpInterceptorFn = (req, next) => {
 
   if (
     req.url.startsWith(`${environment.apiUrl}/user`) ||
-    req.url.includes('/auth/user/logout') ||
-    req.url.includes('/auth/user/theme-preference')
+    req.url.includes('/auth/logout') ||
+    req.url.includes('/auth/theme-preference')
   ) {
     console.log('UserAuthInterceptor - Applying to:', req.url);
     const accessToken = authService.getAccessToken('User');

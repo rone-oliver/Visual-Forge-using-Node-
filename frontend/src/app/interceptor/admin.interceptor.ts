@@ -20,8 +20,8 @@ export const adminAuthInterceptor: HttpInterceptorFn = (req, next) => {
   }
 
   if (req.url.startsWith(`${environment.apiUrl}/admin`) ||
-    req.url.includes('/auth/admin/logout') ||
-    req.url.includes('/auth/admin/theme-preference')
+    req.url.includes('/auth/admin/logout')
+    // req.url.includes('/auth/theme-preference')
   ) {
     console.log('AdminAuthInterceptor - Applying to:', req.url);
     const accessToken = authService.getAccessToken('Admin');
