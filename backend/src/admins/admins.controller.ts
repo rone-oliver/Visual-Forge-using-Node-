@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Query, Req, UseGuards } from '@nestjs/common';
 import { AdminsService } from './admins.service';
 import { Types } from 'mongoose';
 import { RolesGuard } from 'src/auth/guards/role.guard';
@@ -16,24 +16,23 @@ export class AdminsController {
         return await this.adminService.getAllUsers(query);
     }
 
-    @Get('editor-requests')
+    @Get('requests/editor')
     @Roles('Admin')
     async getEditorRequests() {
         return await this.adminService.getEditorRequests();
     }
 
-    @Patch('editor-request/approve')
+    @Patch('requests/editor/:reqId/approve')
     @Roles('Admin')
-    async approveRequest(@Req() req: Request, @Body() body: { requestId: string }): Promise<boolean> {
+    async approveRequest(@Req() req: Request, @Param('reqId') reqId: string): Promise<boolean> {
         const admin = req['user'] as { userId: Types.ObjectId, role: string }
-        if(admin.role !== 'Admin')return false;
-        return await this.adminService.approveRequest(new Types.ObjectId(body.requestId), admin.userId);
+        return await this.adminService.approveRequest(new Types.ObjectId(reqId), admin.userId);
     }
 
-    @Patch('editor-request/reject')
+    @Patch('requests/editor/:reqId/reject')
     @Roles('Admin')
-    async rejectRequest(@Body() body: { requestId: string, reason: string }): Promise<boolean> {
-        return await this.adminService.rejectRequest(new Types.ObjectId(body.requestId), body.reason);
+    async rejectRequest(@Param('reqId') reqId: string, @Body() body: { reason: string }): Promise<boolean> {
+        return await this.adminService.rejectRequest(new Types.ObjectId(reqId), body.reason);
     }
 
     @Get('editors')
@@ -42,9 +41,9 @@ export class AdminsController {
         return await this.adminService.getEditors(query);
     }
 
-    @Patch('users/block')
+    @Patch('users/:userId/block')
     @Roles('Admin')
-    async blockUser(@Body() body: { userId: string }): Promise<boolean> {
-        return await this.adminService.blockUser(new Types.ObjectId(body.userId));
+    async blockUser(@Param('userId') userId: string): Promise<boolean> {
+        return await this.adminService.blockUser(new Types.ObjectId(userId));
     }
 }

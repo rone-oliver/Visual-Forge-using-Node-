@@ -43,6 +43,6 @@ export class UserManagementService {
   }
 
   blockUser(userId: string): Observable<boolean> {
-    return this.http.patch<boolean>(`${this.apiUrl}/block`,{userId});
+    return this.http.patch<boolean>(`${this.apiUrl}/${userId}/block`,{});
   }
 }

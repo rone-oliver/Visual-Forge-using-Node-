@@ -8,22 +8,22 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class EditorManagementService {
-  private readonly apiUrl = `${environment.apiUrl}`
+  private readonly adminUrl = `${environment.apiUrl}/admin`;
 
   constructor(
     private http: HttpClient,
   ) { }
 
   getEditorRequests(): Observable<EditorRequest[]>{
-    return this.http.get<EditorRequest[]>(`${this.apiUrl}/admin/editor-requests`);
+    return this.http.get<EditorRequest[]>(`${this.adminUrl}/requests/editor`);
   }
 
   approveRequest(requestId: string): Observable<boolean>{
-    return this.http.patch<boolean>(`${this.apiUrl}/admin/editor-request/approve`,{requestId});
+    return this.http.patch<boolean>(`${this.adminUrl}/requests/editor/${requestId}/approve`,{});
   }
 
   rejectRequest(requestId: string, reason: string): Observable<boolean>{
-    return this.http.patch<boolean>(`${this.apiUrl}/admin/editor-request/reject`,{requestId, reason});
+    return this.http.patch<boolean>(`${this.adminUrl}/requests/editor/${requestId}/reject`,{ reason });
   }
 
   getEditors(params?:{[key:string]:any}): Observable<[]>{
@@ -36,6 +36,6 @@ export class EditorManagementService {
         }
       });
     }
-    return this.http.get<[]>(`${this.apiUrl}/admin/editors`,{params:httpParams});
+    return this.http.get<[]>(`${this.adminUrl}/editors`,{params:httpParams});
   }
 }
