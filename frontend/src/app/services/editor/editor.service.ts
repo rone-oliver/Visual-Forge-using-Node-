@@ -16,19 +16,19 @@ export class EditorService {
   constructor(private http: HttpClient) { };
 
   getPublishedQuotations(): Observable<IQuotation[]>{
-    return this.http.get<IQuotation[]>(`${this.editorApiUrl}/quotations/published`);
+    return this.http.get<IQuotation[]>(`${this.editorApiUrl}/quotations?status=published`);
   }
 
   acceptQuotation(quotationId: string): Observable<boolean> {
-    return this.http.post<boolean>(`${this.editorApiUrl}/accept-quotation`,{quotationId});
+    return this.http.post<boolean>(`${this.editorApiUrl}/quotations/${quotationId}/accept`,{});
   }
 
   getAcceptedQuotations(): Observable<IQuotation[]>{
-    return this.http.get<IQuotation[]>(`${this.editorApiUrl}/quotations/accepted`);
+    return this.http.get<IQuotation[]>(`${this.editorApiUrl}/quotations?status=accepted`);
   }
 
   submitQuotationResponse(workData: any): Observable<boolean>{
-    return this.http.post<boolean>(`${this.editorApiUrl}/quotation/submit-response`, workData);
+    return this.http.post<boolean>(`${this.editorApiUrl}/quotations/response`, workData);
   }
 
   uploadWorkFiles(files: File[]): Observable<FileAttachmentResponse[]>{
@@ -37,13 +37,13 @@ export class EditorService {
       formData.append('files', file);
     });
     formData.append('folder','Visual Forge/Work Files');
-    return this.http.post<FileAttachmentResponse[]>(`${this.editorApiUrl}/works/files-upload`, formData,{ reportProgress: true}).pipe(
+    return this.http.post<FileAttachmentResponse[]>(`${this.editorApiUrl}/uploads/work`, formData,{ reportProgress: true}).pipe(
       catchError(error => { throw error})
     );
   }
 
   getCompletedWorks(): Observable<CompletedWork[]> {
-    return this.http.get<CompletedWork[]>(`${this.editorApiUrl}/works/completed`).pipe(
+    return this.http.get<CompletedWork[]>(`${this.editorApiUrl}/works`).pipe(
       catchError(error => { throw error })
     );
   }

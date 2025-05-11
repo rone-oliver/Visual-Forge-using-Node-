@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Logger, Param, Post, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Param, Post, Query, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { IQuotation } from 'src/users/interface/Quotation.interface';
 import { EditorsService } from './editors.service';
 import { Types } from 'mongoose';
@@ -17,28 +17,34 @@ export class EditorsController {
         private editorService: EditorsService,
     ){};
 
-    @Get('quotations/published')
+    @Get('quotations')
     @Roles('Editor')
-    async getPublishedQuotations(@Req() req: Request): Promise<IQuotation[]>{
+    async getPublishedQuotations(@Req() req: Request, @Query('status') status:string){
         const editor = req['user'] as { userId: Types.ObjectId, role: string};
         return this.editorService.getPublishedQuotations(editor.userId);
     }
     
-    @Post('accept-quotation')
+    @Post('quotations/:quotationId/accept')
     @Roles('Editor')
-    async acceptQuotation(@Body() body:{quotationId: string}, @Req() req: Request){
+    async acceptQuotation(@Param('quotationId') quotationId:string, @Req() req: Request){
         const user = req['user'] as { userId: Types.ObjectId, role: string};
-        return this.editorService.acceptQuotation(body.quotationId, user.userId);
+        return this.editorService.acceptQuotation(quotationId, user.userId);
     }
 
-    @Get('quotations/accepted')
+    @Get('quotations')
     @Roles('Editor')
-    async getAcceptedQuotations(@Req() req: Request): Promise<IQuotation[]>{
+    async getAcceptedQuotations(@Req() req: Request, @Query('status') status:string){
         const editor = req['user'] as { userId: Types.ObjectId, role: string};
         return this.editorService.getAcceptedQuotations(editor.userId);
     }
 
-    @Post('works/files-upload')
+    @Post('quotations/response')
+    @Roles('Editor')
+    async submitQuotationResponse(@Body() workData: any): Promise<boolean> {
+        return this.editorService.submitQuotationResponse(workData);
+    }
+
+    @Post('uploads/work')
     @Roles('Editor')
     @UseInterceptors(FilesInterceptor('files',3))
     async uploadWorkFiles(
@@ -50,13 +56,7 @@ export class EditorsController {
         return this.editorService.uploadWorkFiles(files,folder);
     }
 
-    @Post('quotation/submit-response')
-    @Roles('Editor')
-    async submitQuotationResponse(@Body() workData: any): Promise<boolean> {
-        return this.editorService.submitQuotationResponse(workData);
-    }
-
-    @Get('works/completed')
+    @Get('works')
     @Roles('Editor')
     async getCompletedWorks(@Req() req: Request): Promise<any[]> {
         const editor = req['user'] as { userId: Types.ObjectId, role: string};

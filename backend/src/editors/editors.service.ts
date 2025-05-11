@@ -24,10 +24,29 @@ export class EditorsService {
     async createEditor(editor: Partial<Editor>): Promise<Editor> {
         return this.editorModel.create(editor);
     }
-
-    async getPublishedQuotations(userId:Types.ObjectId): Promise<IQuotation[]> {
+    private async getQuotations(userId: Types.ObjectId,status: QuotationStatus): Promise<IQuotation[] | undefined> {
         try {
-            return await this.quotationModel.find({ status: QuotationStatus.PUBLISHED, userId:{$ne:userId}}).sort({ createdAt: -1}).lean() as unknown as IQuotation[];
+            if(status === QuotationStatus.PUBLISHED){
+                return await this.quotationModel
+                .find({ status: QuotationStatus.PUBLISHED, userId:{$ne:userId}})
+                .sort({ createdAt: -1})
+                .lean() as unknown as IQuotation[];
+            }
+            else if(status === QuotationStatus.ACCEPTED){
+                return await this.quotationModel
+                .find({ status: QuotationStatus.ACCEPTED, editorId: userId })
+                .sort({ createdAt: 1})
+                .lean() as unknown as IQuotation[];
+            }
+        } catch (error) {
+            this.logger.error('Error getting the quotations', error);
+            throw new Error('Error getting the quotations');
+        }
+    }
+
+    async getPublishedQuotations(userId:Types.ObjectId) {
+        try {
+            return await this.getQuotations(userId, QuotationStatus.PUBLISHED);
         } catch (error) {
             this.logger.error('Error getting the published quotations', error);
             throw new Error('Error getting the published quotations');
@@ -52,11 +71,9 @@ export class EditorsService {
         }
     }
 
-    async getAcceptedQuotations(editorId: Types.ObjectId): Promise<IQuotation[]> {
+    async getAcceptedQuotations(editorId: Types.ObjectId) {
         try {
-            return await this.quotationModel.find({ editorId, status: QuotationStatus.ACCEPTED })
-            .sort({ status: 1, createdAt: 1})
-            .lean() as unknown as IQuotation[];
+            return await this.getQuotations(editorId, QuotationStatus.ACCEPTED);
         } catch (error) {
             this.logger.error('Error getting the accepted quotations', error);
             throw new Error('Error getting the accepted quotations');
