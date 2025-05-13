@@ -13,11 +13,14 @@ export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
 
     if (req.url.startsWith(`${environment.apiUrl}/auth`) &&
         !req.url.includes('/logout') &&
-        !req.url.includes('/refresh') &&
+        // !req.url.includes('/refresh') &&         I think there is no need to check for refresh token
         !req.url.includes('/theme-preference')) {
         return next(req);
     }
     console.log('TokenAuthInterceptor - Applying to:', req.url);
+    // if (authService.isRefreshInProgress() && req.url.includes('/refresh')) {
+    //     return next(req);
+    // }
 
     if (req.url.startsWith(environment.apiUrl)) {
         // Get the path after the API URL

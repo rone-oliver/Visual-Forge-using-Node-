@@ -1,7 +1,7 @@
 import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { jwtDecode } from 'jwt-decode';
-import { BehaviorSubject, catchError, firstValueFrom, map, Observable, of, tap, throwError } from 'rxjs';
+import { BehaviorSubject, catchError, EMPTY, finalize, firstValueFrom, map, Observable, of, tap, throwError } from 'rxjs';
 import { TokenService } from './token.service';
 import { environment } from '../../environments/environment';
 
@@ -42,6 +42,7 @@ interface RegisterCredentials {
 export class AuthService {
   private backendUrl = environment.apiUrl;
   private registrationEmail: string | null = null;
+  private refreshTokenInProgress = false;
 
   private userIsAuthenticatedSubject = new BehaviorSubject<boolean>(false);
   userIsAuthenticated$ = this.userIsAuthenticatedSubject.asObservable();
@@ -139,7 +140,21 @@ export class AuthService {
     );
   }
 
+  private setRefreshInProgress(value: boolean) {
+    this.refreshTokenInProgress = value;
+  }
+
+  isRefreshInProgress(): boolean {
+    return this.refreshTokenInProgress;
+  }
+
   refreshAccessToken(userType: 'User' | 'Admin'): Observable<{ accessToken: string, userType: UserType }> {
+    if (this.refreshTokenInProgress) {
+      return EMPTY;
+    }
+
+    this.setRefreshInProgress(true);
+
     return this.http.get<{ accessToken: string, userType: UserType }>(`${this.backendUrl}/auth/refresh`, {
       withCredentials: true,
       params: new HttpParams().set('role', userType)
@@ -153,6 +168,9 @@ export class AuthService {
         this.tokenService.clearToken(userType);
         // this.clearToken();
         return throwError(() => error);
+      }),
+      finalize(() => {
+        this.setRefreshInProgress(false);
       })
     );
   }
@@ -320,7 +338,7 @@ export class AuthService {
     const jwtPayload = this.extractJwtPayload(token);
     const currentTime = Math.floor(Date.now() / 1000);
     // alert(`is jwt expired? ${jwtPayload.exp<currentTime}`)
-    return jwtPayload.exp > currentTime;
+    return jwtPayload.exp > (currentTime+30);
   }
 
   isAuthenticated(userType: 'User' | 'Admin'): boolean {
