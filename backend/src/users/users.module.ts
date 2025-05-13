@@ -9,6 +9,8 @@ import { Quotation, QuotationSchema } from 'src/common/models/quotation.schema';
 import { CloudinaryService } from 'src/common/cloudinary/cloudinary.service';
 import { Works, workSchema } from 'src/common/models/works.schema';
 import { EditorsService } from 'src/editors/editors.service';
+import { PaymentModule } from 'src/common/payment/payment.module';
+import { Transaction, TransactionSchema } from 'src/common/models/transaction.schema';
 
 @Module({
   controllers: [UsersController],
@@ -19,8 +21,10 @@ import { EditorsService } from 'src/editors/editors.service';
       { name: 'EditorRequest', schema: EditorRequestSchema},
       { name: Editor.name, schema: editorSchema},
       { name: Quotation.name , schema: QuotationSchema},
-      { name: Works.name, schema: workSchema}
-    ])
+      { name: Works.name, schema: workSchema},
+      { name: Transaction.name, schema: TransactionSchema}
+    ]),
+    PaymentModule
   ],
   exports: [UsersService]
 })

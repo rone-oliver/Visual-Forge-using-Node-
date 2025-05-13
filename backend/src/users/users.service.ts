@@ -10,6 +10,7 @@ import { CloudinaryService, FileUploadResult } from 'src/common/cloudinary/cloud
 import { CompletedWork } from 'src/common/interfaces/completed-word.interface';
 import { Observable } from 'rxjs';
 import { Works, WorksDocument } from 'src/common/models/works.schema';
+import { PaymentStatus, PaymentType, Transaction, TransactionDocument } from 'src/common/models/transaction.schema';
 
 @Injectable()
 export class UsersService {
@@ -20,6 +21,7 @@ export class UsersService {
         @InjectModel(EditorRequest.name) private editorRequestModel: Model<EditorRequestDocument>,
         @InjectModel(Quotation.name) private quotationModel: Model<QuotationDocument>,
         @InjectModel(Works.name) private workModel: Model<WorksDocument>,
+        @InjectModel(Transaction.name) private transactionModel: Model<TransactionDocument>,
         private cloudinaryService: CloudinaryService,
     ) { }
 
@@ -103,10 +105,10 @@ export class UsersService {
         }
     }
 
-    async updatePassword(userId: Types.ObjectId, password: string): Promise<boolean>{
+    async updatePassword(userId: Types.ObjectId, password: string): Promise<boolean> {
         try {
-            this.logger.log(userId,password)
-            await this.userModel.updateOne({_id: userId}, {$set: {password}});
+            this.logger.log(userId, password)
+            await this.userModel.updateOne({ _id: userId }, { $set: { password } });
             this.logger.log("Password updated successfully");
             return true;
         } catch (error) {
@@ -195,10 +197,15 @@ export class UsersService {
         }
     }
 
-    async createQuotation(quotation: Partial<Quotation>,userId: Types.ObjectId): Promise<Quotation> {
+    async createQuotation(quotation: Partial<Quotation>, userId: Types.ObjectId): Promise<Quotation> {
         try {
             this.logger.log(quotation)
             if (!quotation.dueDate) throw new Error('Due date is required');
+            const advancePercentage = 0.4;
+            const advanceAmount = Math.round((quotation.estimatedBudget || 0) * advancePercentage);
+            const balanceAmount = (quotation.estimatedBudget || 0) - advanceAmount;
+            quotation.advanceAmount = advanceAmount;
+            quotation.balanceAmount = balanceAmount;
             quotation.userId = userId;
             return this.quotationModel.create(quotation);
         } catch (error) {
@@ -207,9 +214,9 @@ export class UsersService {
         }
     }
 
-    async updateProfileImage(url:string,userId:Types.ObjectId){
+    async updateProfileImage(url: string, userId: Types.ObjectId) {
         try {
-            await this.userModel.updateOne({_id: userId}, { profileImage: url});
+            await this.userModel.updateOne({ _id: userId }, { profileImage: url });
             return true;
         } catch (error) {
             this.logger.error(`Error updating profile image: ${error.message}`);
@@ -217,7 +224,7 @@ export class UsersService {
         }
     }
 
-    async uploadFiles(files:Express.Multer.File[], folder?:string): Promise<FileUploadResult[]> {
+    async uploadFiles(files: Express.Multer.File[], folder?: string): Promise<FileUploadResult[]> {
         try {
             const uploadPromises = await this.cloudinaryService.uploadFiles(files, folder);
             return Promise.all(uploadPromises);
@@ -227,9 +234,9 @@ export class UsersService {
         }
     }
 
-    async updateProfile(editedData:any,userId:Types.ObjectId): Promise<boolean>{
+    async updateProfile(editedData: any, userId: Types.ObjectId): Promise<boolean> {
         try {
-            await this.userModel.updateOne({_id: userId},{$set:editedData})
+            await this.userModel.updateOne({ _id: userId }, { $set: editedData })
             return true;
         } catch (error) {
             this.logger.error(`Error updating profile: ${error.message}`);
@@ -237,14 +244,14 @@ export class UsersService {
         }
     }
 
-    async resetPassword(body:{currentPassword: string, newPassword: string}, userId: Types.ObjectId): Promise<boolean> {
+    async resetPassword(body: { currentPassword: string, newPassword: string }, userId: Types.ObjectId): Promise<boolean> {
         try {
             const user = await this.userModel.findById(userId);
             if (!user) throw new Error('User not found');
             const isPasswordValid = await bcrypt.compare(body.currentPassword, user.password);
             if (!isPasswordValid) throw new Error('Current password is incorrect');
             const hashedPassword = await bcrypt.hash(body.newPassword, 10);
-            await this.userModel.updateOne({_id: userId},{$set:{password: hashedPassword}});
+            await this.userModel.updateOne({ _id: userId }, { $set: { password: hashedPassword } });
             return true;
         } catch (error) {
             this.logger.error(`Error resetting password: ${error.message}`);
@@ -252,17 +259,17 @@ export class UsersService {
         }
     }
 
-    async getCompletedWorks(userId: Types.ObjectId): Promise<CompletedWork[]>{
+    async getCompletedWorks(userId: Types.ObjectId): Promise<CompletedWork[]> {
         try {
             const completedQuotations = await this.quotationModel
-            .find({ userId, status: QuotationStatus.COMPLETED})
-            .populate('worksId')
-            .sort({ createdAt: -1})
-            .lean();
+                .find({ userId, status: QuotationStatus.COMPLETED })
+                .populate('worksId')
+                .sort({ createdAt: -1 })
+                .lean();
 
             return completedQuotations.map(quotation => {
                 const worksData = quotation.worksId as any || {};
-                const { worksId,...quotationData } = quotation;
+                const { worksId, ...quotationData } = quotation;
                 return {
                     ...quotationData,
                     ...worksData,
@@ -280,10 +287,10 @@ export class UsersService {
         }
     }
 
-    async rateWork(workId:string,rating:number,feedback: string):Promise<boolean>{
+    async rateWork(workId: string, rating: number, feedback: string): Promise<boolean> {
         try {
-            this.logger.log('rating work:',workId,rating,feedback);
-            const result = await this.workModel.updateOne({_id: new Types.ObjectId(workId)},{$set:{rating,feedback}});
+            this.logger.log('rating work:', workId, rating, feedback);
+            const result = await this.workModel.updateOne({ _id: new Types.ObjectId(workId) }, { $set: { rating, feedback } });
             console.log('rating work success');
             if (result.matchedCount > 0 && result.modifiedCount > 0) {
                 return true;
@@ -296,10 +303,10 @@ export class UsersService {
         }
     }
 
-    async rateEditor(editorId:string,rating:number,feedback: string,userId: Types.ObjectId):Promise<boolean>{
+    async rateEditor(editorId: string, rating: number, feedback: string, userId: Types.ObjectId): Promise<boolean> {
         try {
-            this.logger.log('rating editor dto from service:',editorId,rating,feedback,userId);
-            const result = await this.editorModel.updateOne({userId: new Types.ObjectId(editorId)},{$push:{ratings:{rating,feedback,userId}}});
+            this.logger.log('rating editor dto from service:', editorId, rating, feedback, userId);
+            const result = await this.editorModel.updateOne({ userId: new Types.ObjectId(editorId) }, { $push: { ratings: { rating, feedback, userId } } });
             if (result.matchedCount > 0 && result.modifiedCount > 0) {
                 this.logger.log('rating editor success');
                 return true;
@@ -313,9 +320,9 @@ export class UsersService {
         }
     }
 
-    async getCurrentEditorRating(editorId:string, userId: Types.ObjectId) {
+    async getCurrentEditorRating(editorId: string, userId: Types.ObjectId) {
         try {
-            const editor = await this.editorModel.findOne({userId: new Types.ObjectId(editorId)}).select('ratings');
+            const editor = await this.editorModel.findOne({ userId: new Types.ObjectId(editorId) }).select('ratings');
             if (editor?.ratings) {
                 this.logger.log(`Editor ratings for user ${editorId}: ${editor.ratings}`);
                 const rating = editor.ratings.find((rating: any) => rating.userId.equals(userId));
@@ -332,9 +339,9 @@ export class UsersService {
         }
     }
 
-    async updateWorkPublicStatus(worksId:string,isPublic:boolean){
+    async updateWorkPublicStatus(worksId: string, isPublic: boolean) {
         try {
-            const result = await this.workModel.updateOne({_id: new Types.ObjectId(worksId)}, {$set: {isPublic}});
+            const result = await this.workModel.updateOne({ _id: new Types.ObjectId(worksId) }, { $set: { isPublic } });
             if (result.matchedCount > 0 && result.modifiedCount > 0) {
                 this.logger.log('Work public status updated successfully');
                 return true;
@@ -359,7 +366,7 @@ export class UsersService {
         }
     }
 
-    async getUser(userId:string): Promise<User>{
+    async getUser(userId: string): Promise<User> {
         try {
             const user = await this.userModel.findById(new Types.ObjectId(userId));
             if (!user) {
@@ -371,5 +378,44 @@ export class UsersService {
             this.logger.error(`Error getting user: ${error.message}`);
             throw error;
         }
+    }
+
+    async createTransaction(userId: Types.ObjectId, quotationId: Types.ObjectId, paymentDetails: {
+        paymentId: string;
+        orderId: string;
+        amount: number;
+        paymentType: PaymentType
+    }) {
+        try {
+            const transaction = await this.transactionModel.create({
+                userId,
+                quotationId,
+                ...paymentDetails,
+                status: PaymentStatus.COMPLETED,
+            });
+
+            if (paymentDetails.paymentType === PaymentType.ADVANCE) {
+                await this.quotationModel.updateOne(
+                    { _id: quotationId },
+                    { $set: { isAdvancePaid: true } }
+                );
+            } else {
+                await this.quotationModel.updateOne(
+                    { _id: quotationId },
+                    { $set: { isFullyPaid: true } }
+                );
+            }
+
+            return transaction;
+        } catch (error) {
+            this.logger.error(`Error updating quotation payment: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async getQuotationTransactions(quotationId: Types.ObjectId) {
+        return this.transactionModel.find({ quotationId })
+            .sort({ createdAt: -1 })
+            .exec();
     }
 }

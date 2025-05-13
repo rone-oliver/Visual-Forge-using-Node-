@@ -1,5 +1,3 @@
-// quotations.component.scss
-
 .quotations-container {
     max-width: 1280px;
     margin: 0 auto;
@@ -227,6 +225,31 @@
             text-align: center;
         }
     }
+
+    .payment-section {
+        margin-top: 16px;
+        padding: 12px;
+        border-top: 1px solid #eee;
+        text-align: center;
+    }
+
+    .payment-button {
+        background-color: #080F25 !important; // Matches your theme
+        color: white !important;
+        padding: 8px 24px !important;
+        border-radius: 8px !important;
+        transition: transform 0.2s ease;
+
+        mat-icon {
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+    }
 }
 
 .file-attachments {
@@ -369,7 +392,7 @@
             color: var(--color-primary, #3b82f6);
             margin: 0;
         }
-    
+
         .work-date {
             font-size: 0.98rem;
             color: #7c8ba1;
@@ -495,6 +518,68 @@
     }
 }
 
+.work-files.disabled {
+    opacity: 0.7;
+    pointer-events: none;
+    position: relative;
+    
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+    }
+
+    h4 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+
+    .lock-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.85em;
+      color: #f44336;
+      background-color: rgba(244, 67, 54, 0.1);
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin-left: auto;
+
+      mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
+    }
+  }
+}
+
+.payment-button {
+    background-color: #080F25 !important;
+    color: white !important;
+    padding: 8px 24px !important;
+    border-radius: 8px !important;
+    transition: transform 0.2s ease;
+    width: 100%;
+    margin-top: 16px;
+
+    mat-icon {
+        margin-right: 8px;
+        vertical-align: middle;
+    }
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+}
+
 .file-badges {
     display: flex;
     gap: 8px;
@@ -527,10 +612,10 @@
     justify-content: flex-end;
     gap: 0.75rem;
     margin-top: 1rem;
-  }
-  
-  /* Base button styling */
-  .rate-btn {
+}
+
+/* Base button styling */
+.rate-btn {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
@@ -542,39 +627,41 @@
     cursor: pointer;
     transition: all 0.2s ease;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    
+
     &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
     }
-    
+
     mat-icon {
-      font-size: 1.125rem;
-      height: 1.125rem;
-      width: 1.125rem;
-      line-height: 1;
+        font-size: 1.125rem;
+        height: 1.125rem;
+        width: 1.125rem;
+        line-height: 1;
     }
-    
+
     /* Editor Rating Button */
     &.editor-rate {
-      background-color: #9333ea; /* Purple */
-      color: white;
-      
-      &:hover {
-        background-color: #7e22ce;
-      }
+        background-color: #9333ea;
+        /* Purple */
+        color: white;
+
+        &:hover {
+            background-color: #7e22ce;
+        }
     }
-    
+
     /* Work Rating Button */
     &.work-rate {
-      background-color: #0ea5e9; /* Blue */
-      color: white;
-      
-      &:hover {
-        background-color: #0284c7;
-      }
+        background-color: #0ea5e9;
+        /* Blue */
+        color: white;
+
+        &:hover {
+            background-color: #0284c7;
+        }
     }
-  }
+}
 
 .work-response {
     background-color: var(--color-surface-variant, rgba(0, 0, 0, 0.02));
@@ -624,59 +711,64 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    
+
     /* Move rating buttons to the end (bottom) of the flex container */
     .rating-buttons-container {
-      margin-top: auto;
-      padding-top: 0.75rem;
+        margin-top: auto;
+        padding-top: 0.75rem;
     }
-  }
+}
 
-  .work-rating-display {
+.work-rating-display {
     margin-bottom: 1rem;
     background: var(--color-background);
     border-radius: 6px;
     padding: 0.75rem 1rem;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-  
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+
     .work-rating-stars {
-      display: flex;
-      align-items: center;
-      margin-bottom: 0.25rem;
-  
-      mat-icon {
-        color: #FDB52A;
-        font-size: 22px;
-        &.filled {
-          color: #FDB52A;
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.25rem;
+
+        mat-icon {
+            color: #FDB52A;
+            font-size: 22px;
+
+            &.filled {
+                color: #FDB52A;
+            }
+
+            &:not(.filled) {
+                color: #e0e0e0;
+            }
         }
-        &:not(.filled) {
-          color: #e0e0e0;
+
+        .work-rating-value {
+            margin-left: 0.5rem;
+            font-weight: 600;
+            color: var(--color-secondary-500);
         }
-      }
-      .work-rating-value {
-        margin-left: 0.5rem;
-        font-weight: 600;
-        color: var(--color-secondary-500);
-      }
     }
-  
+
     .work-rating-feedback {
-      display: flex;
-      align-items: center;
-      mat-icon {
-        margin-right: 0.3em;
-        color: var(--color-secondary-400);
-      }
-      span {
-        color: var(--color-text);
-        font-style: italic;
-      }
+        display: flex;
+        align-items: center;
+
+        mat-icon {
+            margin-right: 0.3em;
+            color: var(--color-secondary-400);
+        }
+
+        span {
+            color: var(--color-text);
+            font-style: italic;
+        }
     }
-  }
-  
-  .rating-buttons-container .rate-btn.modify-rating {
+}
+
+.rating-buttons-container .rate-btn.modify-rating {
     background: var(--color-secondary-100, #fffbe6);
     color: #FDB52A;
     border: 1px solid #FDB52A;
-  }
+}

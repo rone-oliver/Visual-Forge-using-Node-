@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { User } from '../../interfaces/user.interface';
 import { catchError, map, Observable, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { FileAttachmentResponse } from '../../interfaces/quotation.interface';
+import { FileAttachmentResponse, IPaymentVerification } from '../../interfaces/quotation.interface';
 import { CompletedWork, Works } from '../../interfaces/completed-word.interface';
 
 @Injectable({
@@ -144,6 +144,26 @@ export class UserService {
 
   getEditor(id: string): Observable<any> {
     return this.http.get<any>(`${this.userApiUrl}/editors/${id}`).pipe(
+      catchError(error => { throw error })
+    );
+  }
+
+  createPaymentOrder(amount: number): Observable<any> {
+    return this.http.post<any>(`${this.userApiUrl}/payment`, { amount }).pipe(
+      map(response => response),
+      catchError(error => { throw error })
+    );
+  }
+
+  updateQuotationPayment(isAdvance: boolean, quotationId: string, amount: number, paymentDetails: IPaymentVerification): Observable<boolean> {
+    console.log('paymentDetails:', paymentDetails);
+    return this.http.patch<boolean>(`${this.userApiUrl}/quotations/${quotationId}/payment`, {
+      isAdvancePaid: !isAdvance,
+      orderId: paymentDetails.orderId,
+      paymentId: paymentDetails.paymentId,
+      amount
+    }).pipe(
+      map(response => response),
       catchError(error => { throw error })
     );
   }

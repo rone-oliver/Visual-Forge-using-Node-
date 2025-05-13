@@ -70,6 +70,13 @@ export class Quotation {
 
     @Prop({ type: Number })
     advanceAmount: number;
+    @Prop({ type: Number })
+    balanceAmount: number;
+
+    @Prop({ type: Boolean, default: false})
+    isAdvancePaid: boolean;
+    @Prop({ type: Boolean, default: false})
+    isFullyPaid: boolean;
 
     @Prop({ type: Date})
     dueDate: Date;

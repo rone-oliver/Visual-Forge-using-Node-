@@ -7,6 +7,8 @@ import { RolesGuard } from 'src/auth/guards/role.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { User } from './models/user.schema';
 import { EditorsService } from 'src/editors/editors.service';
+import { PaymentService } from 'src/common/payment/payment.service';
+import { PaymentType } from 'src/common/models/transaction.schema';
 
 @Controller('user')
 @UseGuards(AuthGuard, RolesGuard)
@@ -14,7 +16,8 @@ export class UsersController {
     private readonly logger = new Logger(UsersController.name);
     constructor(
         private userService: UsersService,
-        private editorService: EditorsService
+        private editorService: EditorsService,
+        private paymentService: PaymentService,
     ) { };
 
     @Get('profile')
@@ -175,5 +178,42 @@ export class UsersController {
     @Get('editors/:id')
     async getEditor(@Param('id') id: string): Promise<User & { editorDetails?: any } | null> {
         return this.editorService.getEditor(id);
+    }
+
+    @Post('payment')
+    @Roles('User', 'Editor')
+    async createPayment(@Req() req: Request, @Body() body: { amount: number, currency?: string }) {
+        const user = req['user'] as { userId: Types.ObjectId, role: string }
+        const payment = await this.paymentService.createRazorpayOrder(body.amount, body.currency);
+        return payment;
+    }
+
+    @Post('payment/verify')
+    @Roles('User', 'Editor')
+    async verifyPayment(@Req() req: Request, @Body() body: { razorpay_order_id: string, razorpay_payment_id: string, razorpay_signature: string }) {
+        const user = req['user'] as { userId: Types.ObjectId, role: string }
+        const payment = await this.paymentService.verifyPayment(body.razorpay_order_id, body.razorpay_payment_id, body.razorpay_signature);
+        return payment;
+    }
+
+    @Patch('quotations/:quotationId/payment')
+    @Roles('User', 'Editor')
+    async updateQuotationPayment(@Req() req: Request, @Param('quotationId') quotationId: string, @Body() body: { isAdvancePaid: boolean, orderId: string, paymentId: string, amount: number }) {
+        const user = req['user'] as { userId: Types.ObjectId, role: string };
+        const paymentType = body.isAdvancePaid ? PaymentType.BALANCE : PaymentType.ADVANCE;
+
+        const paymentDetails = {
+            paymentId: body.paymentId,
+            orderId: body.orderId,
+            amount: body.amount,
+            paymentType: paymentType
+        };
+        console.log('paymentDEtails: ',paymentDetails);
+
+        const success = await this.userService.createTransaction(user.userId, new Types.ObjectId(quotationId), paymentDetails);
+        if (success) {
+            return true;
+        }
+        return false;
     }
 }

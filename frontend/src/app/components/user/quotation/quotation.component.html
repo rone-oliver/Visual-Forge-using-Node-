@@ -1,4 +1,3 @@
-<!-- quotations.component.html -->
 <div class="quotations-container">
     <div class="header">
         <div class="title-section">
@@ -101,6 +100,15 @@
                             <mat-icon>error</mat-icon>
                             <span>Adv. payment pending</span>
                         </div>
+                        <!-- Payment Button Section -->
+                        <div class="payment-section"
+                            *ngIf="quotation.status === 'Accepted' && !quotation.isAdvancePaid">
+                            <button mat-raised-button color="primary" class="payment-button"
+                                (click)="initiateAdvancePayment(quotation)">
+                                <mat-icon>payment</mat-icon>
+                                Pay Advance Amount (₹{{ quotation.advanceAmount }})
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -130,9 +138,8 @@
                             <span class="work-date">{{ work.completedAt || null | localDate }}</span>
                         </div>
                         <div class="work-actions">
-                            <button mat-button 
-                                    [color]="work.isPublic ? 'primary' : 'accent'" 
-                                    (click)="togglePublicStatus(work)">
+                            <button mat-button [color]="work.isPublic ? 'primary' : 'accent'"
+                                (click)="togglePublicStatus(work)">
                                 <mat-icon>{{ work.isPublic ? 'public' : 'lock' }}</mat-icon>
                                 <span class="action-label">{{ work.isPublic ? 'Public' : 'Private' }}</span>
                             </button>
@@ -171,14 +178,28 @@
                             </button>
                         </div>
 
+                        <div class="payment-section" *ngIf="(work.isAdvancePaid && !work.isFullyPaid) || (!work.isFullyPaid)">
+                            <button mat-raised-button color="primary" class="payment-button"
+                                (click)="initiateBalancePayment(work)">
+                                <mat-icon>payment</mat-icon>
+                                Pay Balance Amount (₹{{ work.balanceAmount }})
+                            </button>
+                        </div>
+
                         <!-- Editor's Final Files -->
-                        <div class="work-files editor-files" *ngIf="work.finalFiles && work.finalFiles.length > 0">
-                            <h4>Final Edited Files</h4>
-                            <div class="file-badges">
+                        <div class="work-files editor-files" *ngIf="work.finalFiles && work.finalFiles.length > 0"
+                            [class.disabled]="!work.isFullyPaid">
+                            <h4>Final Edited Files
+                                <span *ngIf="!work.isFullyPaid" class="lock-indicator">
+                                    <mat-icon>lock</mat-icon>
+                                    Pay balance amount to access files
+                                </span>
+                            </h4>
+                            <div class="file-badges" [class.disabled]="!work.isFullyPaid">
                                 <ng-container
                                     *ngFor="let fileType of [FileType.IMAGE, FileType.VIDEO, FileType.DOCUMENT, FileType.AUDIO]">
                                     <div class="file-badge" *ngIf="countFinalFilesByType(work, fileType) > 0"
-                                        (click)="openFinalFilesModal(work, fileType)">
+                                        (click)="work.isFullyPaid && openFinalFilesModal(work, fileType)">
                                         <mat-icon>
                                             {{ fileType === FileType.IMAGE ? 'image' :
                                             fileType === FileType.VIDEO ? 'videocam' :

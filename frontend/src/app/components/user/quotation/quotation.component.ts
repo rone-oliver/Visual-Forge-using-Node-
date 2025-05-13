@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { UserService } from '../../../services/user/user.service';
 import { RouterModule } from '@angular/router';
-import { FileAttachment, FileType, IQuotation } from '../../../interfaces/quotation.interface';
+import { FileAttachment, FileType, IPaymentVerification, IQuotation } from '../../../interfaces/quotation.interface';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { FilesPreviewComponent } from '../files-preview/files-preview.component';
 import { CompletedWork } from '../../../interfaces/completed-word.interface';
@@ -11,6 +11,8 @@ import { DatePipe, LocalDatePipe } from '../../../pipes/date.pipe';
 import { RatingModalComponent } from '../../mat-dialogs/rating-modal/rating-modal.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatButton } from '@angular/material/button';
+import { PaymentService } from '../../../services/payment.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-quotation',
@@ -30,7 +32,7 @@ export class QuotationComponent implements OnInit {
     private userService: UserService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-
+    private paymentService: PaymentService,
   ) { }
 
   ngOnInit(): void {
@@ -268,5 +270,67 @@ export class QuotationComponent implements OnInit {
         });
       }
     });
+  }
+
+  async initiateAdvancePayment(quotation: IQuotation) {
+    try {
+      const order = await firstValueFrom(
+        this.paymentService.createOrder(quotation.estimatedBudget, 'INR')
+      );
+
+      const paymentResult = await this.paymentService.openRazorpayCheckout(order);
+      console.log('paymentResult from component: ', paymentResult);
+
+      // After successful payment and verification
+      await firstValueFrom(
+        this.userService.updateQuotationPayment(true,quotation._id,quotation.estimatedBudget, paymentResult)
+      );
+
+      this.snackBar.open('Payment successful!', 'Close', {
+        duration: 3000,
+        panelClass: 'success-snack'
+      });
+
+      // Refresh quotations list
+      this.loadQuotations();
+
+    } catch (error) {
+      console.error('Payment or update failed:', error);
+      this.snackBar.open('Payment process failed', 'Dismiss', {
+        duration: 3000,
+        panelClass: 'error-snack'
+      });
+    }
+  }
+
+  async initiateBalancePayment(work: CompletedWork) {
+    try {
+      const order = await firstValueFrom(
+        this.paymentService.createOrder(work.estimatedBudget, 'INR')
+      );
+
+      const paymentResult = await this.paymentService.openRazorpayCheckout(order);
+      console.log('paymentResult from component: ', paymentResult);
+
+      // After successful payment and verification
+      await firstValueFrom(
+        this.userService.updateQuotationPayment(false,work.quotationId,work.estimatedBudget, paymentResult)
+      );
+
+      this.snackBar.open('Payment successful!', 'Close', {
+        duration: 3000,
+        panelClass: 'success-snack'
+      });
+
+      // Refresh completed quotations list
+      this.loadCompletedWorks();
+
+    } catch (error) {
+      console.error('Payment or update failed:', error);
+      this.snackBar.open('Payment process failed', 'Dismiss', {
+        duration: 3000,
+        panelClass: 'error-snack'
+      });
+    }
   }
 }

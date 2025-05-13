@@ -48,13 +48,14 @@ export interface FileUploadProgress {
 }
 
 export interface IQuotation {
-    _id?: string;
+    _id: string;
     userId?: string;
     title: string;
     description: string;
     theme?: string;
     estimatedBudget: number;
     advanceAmount?: number;
+    isAdvancePaid?: boolean;
     dueDate?: Date | string;
     status: QuotationStatus | string;
     outputType: OutputType | string;
@@ -65,4 +66,11 @@ export interface IQuotation {
     imageUrl?: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+}
+
+export interface IPaymentVerification {
+    success: boolean;
+    orderId: string;
+    paymentId: string;
+    signature: string;
 }

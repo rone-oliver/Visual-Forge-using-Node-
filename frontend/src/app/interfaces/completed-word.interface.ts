@@ -12,7 +12,12 @@ export interface CompletedWork {
     description: string;
     theme?: string;
     estimatedBudget: number;
+
+    isAdvancePaid?: boolean;
+    isFullyPaid?: boolean;
     advanceAmount?: number;
+    balanceAmount?: number;
+
     dueDate?: Date | string;
     status: QuotationStatus | string;
     outputType: OutputType | string;

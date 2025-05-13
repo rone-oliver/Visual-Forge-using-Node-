@@ -18,6 +18,7 @@ import { TokenRefreshController } from './auth/token-refresh/token-refresh.contr
 import { JwtConfigModule } from './common/config/jwt.module';
 import { AuthModule } from './auth/auth.module';
 import { CloudinaryService } from './common/cloudinary/cloudinary.service';
+import { PaymentModule } from './common/payment/payment.module';
 
 @Module({
   imports: [
@@ -51,7 +52,7 @@ import { CloudinaryService } from './common/cloudinary/cloudinary.service';
       inject: [ConfigService],
     }),
     // MongooseModule.forRoot(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/visualForge'),
-    AuthModule,UsersModule, DatabaseModule, AdminsModule, EditorsModule, UsersAuthModule, EditorsAuthModule, AdminsAuthModule, JwtConfigModule
+    AuthModule,UsersModule, DatabaseModule, AdminsModule, EditorsModule, UsersAuthModule, EditorsAuthModule, AdminsAuthModule, JwtConfigModule, PaymentModule
   ],
   controllers: [AppController, UsersAuthController, TokenRefreshController],
   providers: [AppService, JwtService, TokenRefreshService, CloudinaryService],
