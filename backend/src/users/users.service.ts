@@ -148,6 +148,24 @@ export class UsersService {
         }
     }
 
+    async getUsers(currentUserId: Types.ObjectId): Promise<User[]> {
+        try {
+            return await this.userModel.find({ _id: { $ne: currentUserId } });
+        } catch (error) {
+            this.logger.error(`Error fetching users: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async getUserInfoForChatList(userId: Types.ObjectId) {
+        try {
+            return await this.userModel.findById(userId, { username: 1, profileImage: 1, isOnline: 1 });
+        } catch (error) {
+            this.logger.error(`Error fetching user info for chat list: ${error.message}`);
+            throw error;
+        }
+    }
+
     private calculateAverageRating(ratings: any[] | undefined): number {
         if (!ratings || ratings.length === 0) return 0;
 
@@ -366,9 +384,9 @@ export class UsersService {
         }
     }
 
-    async getUser(userId: string): Promise<User> {
+    async getUser(userId: Types.ObjectId): Promise<User> {
         try {
-            const user = await this.userModel.findById(new Types.ObjectId(userId));
+            const user = await this.userModel.findById(userId);
             if (!user) {
                 this.logger.log('User not found');
                 throw new Error('User not found');

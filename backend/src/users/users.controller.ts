@@ -170,9 +170,16 @@ export class UsersController {
         return works;
     }
 
-    @Get(':id')
-    async getUser(@Param('id') id: string): Promise<User> {
-        return this.userService.getUser(id);
+    @Get('')
+    async getUser(@Query('id') id: string): Promise<User> {
+        console.log('getUser controller hit. id: ',id);
+        return this.userService.getUser(new Types.ObjectId(id));
+    }
+
+    @Get('users')
+    async getUsers(@Req() req: Request): Promise<User[]> {
+        const user = req['user'] as { userId: Types.ObjectId, role: string }
+        return this.userService.getUsers(new Types.ObjectId(user.userId));
     }
 
     @Get('editors/:id')

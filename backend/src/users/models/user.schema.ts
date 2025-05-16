@@ -69,6 +69,9 @@ export class User {
     @Prop({ type: Boolean, default: false})
     isBlocked: boolean;
 
+    @Prop({ type: Boolean, default: false })
+    isOnline: boolean;
+
     @Prop({ type: String, enum: Gender })
     gender?: Gender;
 

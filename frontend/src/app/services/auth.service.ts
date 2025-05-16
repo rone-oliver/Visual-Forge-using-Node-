@@ -11,7 +11,7 @@ const httpOptions = {
   })
 }
 
-interface JwtPayload {
+export interface JwtPayload {
   userId: string;
   username: string;
   email: string;
@@ -337,6 +337,7 @@ export class AuthService {
     // if (!this.jwtPayload) return false;
     const jwtPayload = this.extractJwtPayload(token);
     const currentTime = Math.floor(Date.now() / 1000);
+    // console.log('jwtPayload', jwtPayload);
     // alert(`is jwt expired? ${jwtPayload.exp<currentTime}`)
     return jwtPayload.exp > (currentTime+30);
   }

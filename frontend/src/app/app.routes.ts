@@ -18,6 +18,7 @@ import { QuotationComponent as EditorQuotationComponent } from './components/edi
 import { AcceptedQuotationComponent } from './components/editor/accepted-quotation/accepted-quotation.component';
 import { WorksHistoryComponent } from './components/editor/works-history/works-history.component';
 import { PublicWorksComponent } from './components/user/public-works/public-works.component';
+import { ChatComponent } from './components/user/chat/chat.component';
 
 export const routes: Routes = [
     {
@@ -73,6 +74,9 @@ export const routes: Routes = [
             },
             {
                 path:'works', component: PublicWorksComponent
+            },
+            {
+                path:'messaging', component: ChatComponent
             }
         ]
     },

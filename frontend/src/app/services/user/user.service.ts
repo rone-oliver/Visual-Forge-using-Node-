@@ -136,10 +136,14 @@ export class UserService {
   }
 
   getUser(id: string): Observable<User> {
-    return this.http.get<User>(`${this.userApiUrl}/${id}`).pipe(
+    return this.http.get<User>(`${this.userApiUrl}?id=${id}`).pipe(
       map(response => response),
       catchError(error => { throw error })
     )
+  }
+
+  getUsers(): Observable<User[]> {
+    return this.http.get<User[]>(`${this.userApiUrl}/users`);
   }
 
   getEditor(id: string): Observable<any> {
