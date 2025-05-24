@@ -169,7 +169,7 @@ export class PublicWorksComponent implements OnInit {
     return this.usersMap.get(userId.toString()) as User;
   }
   
-  trackByWorkId(index: number, work: Works): string {
+  trackByWorkId(work: Works): string {
     return work._id.toString();
   }
 }
