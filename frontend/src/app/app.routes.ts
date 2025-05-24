@@ -2,23 +2,9 @@ import { Routes } from '@angular/router';
 import { AdminLayoutComponent } from './Layouts/admin-layout/admin-layout.component';
 import { UserLayoutComponent } from './Layouts/user-layout/user-layout.component';
 import { LandingPageComponent } from './Pages/User/landing-page/landing-page.component';
-import { UserRegisterComponent } from './components/user/user-register/user-register.component';
-import { LoginComponent } from './Pages/User/login/login.component';
-import { LoginComponent as AdminLoginComponent } from './Pages/Admin/login/login.component';
 import { AuthLayoutComponent } from './Layouts/auth-layout/auth-layout.component';
 import { userGuard, adminGuard, userLoginGuard, adminLoginGuard, editorGuard } from './guards/auth.guard';
-import { HomeComponent as UserHomeComponent } from './components/user/home/home.component';
-import { HomeComponent as AdminHomeComponent } from './components/admin/home/home.component';
-import { UserSectionComponent } from './components/admin/user-section/user-section.component';
-import { ProfileComponent } from './components/user/profile/profile.component';
-import { EditorSectionComponent } from './components/admin/editor-section/editor-section.component';
-import { QuotationComponent as UserQuotationComponent } from './components/user/quotation/quotation.component';
-import { CreateQuotationComponent } from './components/user/create-quotation/create-quotation.component';
-import { QuotationComponent as EditorQuotationComponent } from './components/editor/quotation/quotation.component';
-import { AcceptedQuotationComponent } from './components/editor/accepted-quotation/accepted-quotation.component';
-import { WorksHistoryComponent } from './components/editor/works-history/works-history.component';
-import { PublicWorksComponent } from './components/user/public-works/public-works.component';
-import { ChatComponent } from './components/user/chat/chat.component';
+import { AUTH_ROUTES, USER_ROUTES, ADMIN_ROUTES, EDITOR_ROUTES } from './routes/routes';
 
 export const routes: Routes = [
     {
@@ -29,13 +15,18 @@ export const routes: Routes = [
         path:'auth',component: AuthLayoutComponent,
         children: [
             {
-                path: 'login', component: LoginComponent, canActivate:[userLoginGuard]
+                path: 'login', 
+                loadComponent: AUTH_ROUTES.LOGIN,
+                canActivate: [userLoginGuard]
             },
             {
-                path: 'register', component: UserRegisterComponent
+                path: 'register',
+                loadComponent: AUTH_ROUTES.REGISTER
             },
             {
-                path: 'admin/login', component: AdminLoginComponent, canActivate:[adminLoginGuard]
+                path: 'admin/login',
+                loadComponent: AUTH_ROUTES.ADMIN_LOGIN,
+                canActivate: [adminLoginGuard]
             }
         ]
     },
@@ -45,13 +36,16 @@ export const routes: Routes = [
         canActivateChild: [adminGuard],
         children: [
             {
-                path:'dashboard', component: AdminHomeComponent,
+                path:'dashboard', 
+                loadComponent: ADMIN_ROUTES.DASHBOARD
             },
             {
-                path:'users', component: UserSectionComponent,
+                path:'users', 
+                loadComponent: ADMIN_ROUTES.USERS
             },
             {
-                path:'editors', component: EditorSectionComponent,
+                path:'editors', 
+                loadComponent: ADMIN_ROUTES.EDITORS
             }
         ]
     },
@@ -61,22 +55,28 @@ export const routes: Routes = [
         canActivateChild: [userGuard],
         children: [
             {
-                path:'', component: UserHomeComponent,
+                path:'', 
+                loadComponent: USER_ROUTES.HOME
             },
             {
-                path:'profile', component: ProfileComponent
+                path:'profile', 
+                loadComponent: USER_ROUTES.PROFILE
             },
             {
-                path:'quotations', component: UserQuotationComponent
+                path:'quotations', 
+                loadComponent: USER_ROUTES.QUOTATIONS
             },
             {
-                path:'create-quotation', component: CreateQuotationComponent
+                path:'create-quotation', 
+                loadComponent: USER_ROUTES.CREATE_QUOTATION
             },
             {
-                path:'works', component: PublicWorksComponent
+                path:'works', 
+                loadComponent: USER_ROUTES.PUBLIC_WORKS
             },
             {
-                path:'messaging', component: ChatComponent
+                path:'messaging', 
+                loadComponent: USER_ROUTES.CHAT
             }
         ]
     },
@@ -86,13 +86,16 @@ export const routes: Routes = [
         canActivateChild: [editorGuard],
         children: [
             {
-                path:'published-quotations',component: EditorQuotationComponent
+                path:'published-quotations',
+                loadComponent: EDITOR_ROUTES.PUBLISHED_QUOTATIONS
             },
             {
-                path:'accepted-quotations', component: AcceptedQuotationComponent
+                path:'accepted-quotations', 
+                loadComponent: EDITOR_ROUTES.ACCEPTED_QUOTATIONS
             },
             {
-                path:'works/history', component: WorksHistoryComponent
+                path:'works/history', 
+                loadComponent: EDITOR_ROUTES.WORKS_HISTORY
             }
         ]
     }
