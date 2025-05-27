@@ -9,6 +9,8 @@ import { CloudinaryService, FileUploadResult } from 'src/common/cloudinary/cloud
 import { Works, WorksDocument } from 'src/common/models/works.schema';
 import { CompletedWork } from 'src/common/interfaces/completed-word.interface';
 import { User, UserDocument } from 'src/users/models/user.schema';
+import { NotificationService } from 'src/notification/notification.service';
+import { NotificationType } from 'src/notification/models/notification.schema';
 
 @Injectable()
 export class EditorsService {
@@ -19,6 +21,7 @@ export class EditorsService {
         @InjectModel(Works.name) private workModel: Model<WorksDocument>,
         @InjectModel(User.name) private userModel: Model<UserDocument>,
         private cloudinaryService: CloudinaryService,
+        private readonly notificationService: NotificationService,
     ) { };
 
     async createEditor(editor: Partial<Editor>): Promise<Editor> {
@@ -105,6 +108,22 @@ export class EditorsService {
                 comments,
             });
             await this.quotationModel.findByIdAndUpdate(quotation._id,{status:QuotationStatus.COMPLETED,worksId:work._id});
+
+            try {
+                await this.notificationService.createNotification({
+                    userId: quotation.userId,
+                    type: NotificationType.WORK,
+                    message: `Your work "${quotation.title}" has been completed`,
+                    data: { title: quotation.title },
+                    quotationId: quotation._id,
+                    worksId: work._id
+                });
+                this.logger.log(`Notification sent to user ${quotation.userId} for completed work`);
+            } catch (notificationError) {
+                this.logger.error(`Failed to send notification: ${notificationError.message}`, notificationError.stack);
+                // Continue execution even if notification fails
+            }
+
             await this.updateEditorScore(quotation.editorId);
             return true;
         } catch (error) {

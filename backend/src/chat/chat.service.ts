@@ -82,8 +82,9 @@ export class ChatService {
         { sender: currentUserId, recipient: recipientId },
         { sender: recipientId, recipient: currentUserId }
       ]
-    }).sort({ createdAt: 1 })
-      .exec();
+    })
+    .sort({ createdAt: 1 })
+    .exec();
   }
 
   async updateMessageStatus(messageId: string, status: 'delivered' | 'read') {

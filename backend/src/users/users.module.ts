@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -11,6 +11,7 @@ import { Works, workSchema } from 'src/common/models/works.schema';
 import { EditorsService } from 'src/editors/editors.service';
 import { PaymentModule } from 'src/common/payment/payment.module';
 import { Transaction, TransactionSchema } from 'src/common/models/transaction.schema';
+import { NotificationModule } from 'src/notification/notification.module';
 
 @Module({
   controllers: [UsersController],
@@ -24,7 +25,8 @@ import { Transaction, TransactionSchema } from 'src/common/models/transaction.sc
       { name: Works.name, schema: workSchema},
       { name: Transaction.name, schema: TransactionSchema}
     ]),
-    PaymentModule
+    PaymentModule,
+    forwardRef(()=> NotificationModule)
   ],
   exports: [UsersService]
 })

@@ -68,7 +68,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
                 );
             }
             
-            this.logger.log(`Client disconnected: ${client.id}`);
+            this.logger.warn(`Client disconnected: ${client.id}`);
         } catch (error) {
             this.logger.error('Error in handleDisconnect:', error);
         }

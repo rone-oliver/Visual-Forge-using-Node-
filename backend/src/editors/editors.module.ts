@@ -8,12 +8,13 @@ import { CloudinaryService } from 'src/common/cloudinary/cloudinary.service';
 import { Works, workSchema } from 'src/common/models/works.schema';
 import { User, userSchema } from 'src/users/models/user.schema';
 import { UsersModule } from 'src/users/users.module';
+import { NotificationModule } from 'src/notification/notification.module';
 
 @Module({
   providers: [EditorsService, CloudinaryService],
   controllers: [EditorsController],
   imports:[
-    UsersModule,
+    UsersModule, NotificationModule,
     MongooseModule.forFeature([
       { name: Editor.name, schema: editorSchema},
       { name: Quotation.name, schema: QuotationSchema},

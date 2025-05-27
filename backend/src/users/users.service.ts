@@ -11,6 +11,8 @@ import { CompletedWork } from 'src/common/interfaces/completed-word.interface';
 import { Observable } from 'rxjs';
 import { Works, WorksDocument } from 'src/common/models/works.schema';
 import { PaymentStatus, PaymentType, Transaction, TransactionDocument } from 'src/common/models/transaction.schema';
+import { NotificationService } from 'src/notification/notification.service';
+import { NotificationType } from 'src/notification/models/notification.schema';
 
 @Injectable()
 export class UsersService {
@@ -23,6 +25,7 @@ export class UsersService {
         @InjectModel(Works.name) private workModel: Model<WorksDocument>,
         @InjectModel(Transaction.name) private transactionModel: Model<TransactionDocument>,
         private cloudinaryService: CloudinaryService,
+        private notificationService: NotificationService,
     ) { }
 
     async findOne(filter: Partial<User>): Promise<User | null> {
@@ -225,7 +228,15 @@ export class UsersService {
             quotation.advanceAmount = advanceAmount;
             quotation.balanceAmount = balanceAmount;
             quotation.userId = userId;
-            return this.quotationModel.create(quotation);
+            const savedQuotation = await this.quotationModel.create(quotation);
+            await this.notificationService.createNotification({
+                userId,
+                type: NotificationType.WORK,
+                message: 'New quotation created',
+                data: { title: savedQuotation.title },
+                quotationId: savedQuotation._id
+            });
+            return savedQuotation;
         } catch (error) {
             this.logger.error(`Error creating quotation: ${error.message}`);
             throw error;
