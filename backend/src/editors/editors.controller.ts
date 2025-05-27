@@ -19,9 +19,14 @@ export class EditorsController {
 
     @Get('quotations')
     @Roles('Editor')
-    async getPublishedQuotations(@Req() req: Request, @Query('status') status:string){
-        const editor = req['user'] as { userId: Types.ObjectId, role: string};
-        return this.editorService.getPublishedQuotations(editor.userId);
+    async getQuotations(@Req() req: Request, @Query('status') status: string) {
+        const editor = req['user'] as { userId: Types.ObjectId, role: string };
+        
+        if (status === 'accepted') {
+            return this.editorService.getAcceptedQuotations(editor.userId);
+        } else {
+            return this.editorService.getPublishedQuotations(editor.userId);
+        }
     }
     
     @Post('quotations/:quotationId/accept')
@@ -29,13 +34,6 @@ export class EditorsController {
     async acceptQuotation(@Param('quotationId') quotationId:string, @Req() req: Request){
         const user = req['user'] as { userId: Types.ObjectId, role: string};
         return this.editorService.acceptQuotation(quotationId, user.userId);
-    }
-
-    @Get('quotations')
-    @Roles('Editor')
-    async getAcceptedQuotations(@Req() req: Request, @Query('status') status:string){
-        const editor = req['user'] as { userId: Types.ObjectId, role: string};
-        return this.editorService.getAcceptedQuotations(editor.userId);
     }
 
     @Post('quotations/response')

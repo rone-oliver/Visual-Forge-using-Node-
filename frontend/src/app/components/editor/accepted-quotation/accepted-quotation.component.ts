@@ -120,11 +120,17 @@ export class AcceptedQuotationComponent {
       next: (response) => {
         console.log('Quotation response submitted:', response);
         this.showMessage('Your edit has been submitted successfully');
+
         this.selectedQuotation = null;
+        this.selectedFiles = [];
+        this.uploadedFiles = [];
+        this.responseText = '';
+
         this.loadAcceptedQuotations();
       },
       error: (error) => {
         console.error('Error submitting quotation response:', error);
+        this.showMessage('Error submitting response. Please try again.');
       }
     });
   }
