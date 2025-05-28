@@ -291,6 +291,26 @@
     }
 }
 
+.bids-button-container {
+    margin-top: 1rem;
+}
+
+.view-bids-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    transition: transform 0.2s ease;
+  
+    &:hover {
+        transform: translateY(-2px);
+    }
+  
+    .bid-count {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+}
 
 /* Completed Works Section Styles - adapted from works-history.component.scss */
 

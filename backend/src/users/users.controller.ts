@@ -164,9 +164,14 @@ export class UsersController {
 
     @Get('works/public')
     @Roles('User', 'Editor')
-    async getPublicWorks(@Req() req: Request, @Query('page') page: number, @Query('limit') limit: number) {
-        const user = req['user'] as { userId: Types.ObjectId, role: string }
-        const works = await this.userService.getPublicWorks(page, limit);
+    async getPublicWorks(
+        @Req() req: Request,
+        @Query('page') page: number,
+        @Query('limit') limit: number,
+        @Query('search') search?: string,
+        @Query('rating') rating?: number,
+    ) {
+        const works = await this.userService.getPublicWorks(page, limit, rating, search);
         return works;
     }
 
@@ -222,5 +227,36 @@ export class UsersController {
             return true;
         }
         return false;
+    }
+
+    @Get('quotations/:quotationId/bids')
+    @Roles('User')
+    async getBidsByQuotation(@Param('quotationId') quotationId: string, @Req() req: Request) {
+        const user = req['user'] as { userId: Types.ObjectId; role: string };
+        
+        if (!Types.ObjectId.isValid(quotationId)) {
+            throw new BadRequestException('Invalid quotation ID');
+        }
+        
+        return this.userService.getBidsByQuotation(new Types.ObjectId(quotationId), user.userId);
+    }
+
+    @Get('quotations/bid-counts')
+    @Roles('User')
+    async getBidCountsForUserQuotations(@Req() req: Request) {
+        const user = req['user'] as { userId: Types.ObjectId; role: string };
+        return this.userService.getBidCountsForUserQuotations(user.userId);
+    }
+
+    @Post('bids/:bidId/accept')
+    @Roles('User')
+    async acceptBid(@Param('bidId') bidId: string, @Req() req: Request) {
+        const user = req['user'] as { userId: Types.ObjectId; role: string };
+        
+        if (!Types.ObjectId.isValid(bidId)) {
+            throw new BadRequestException('Invalid bid ID');
+        }
+        
+        return this.userService.acceptBid(new Types.ObjectId(bidId), user.userId);
     }
 }

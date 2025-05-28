@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Editor, EditorDocument } from './models/editor.schema';
 import { Model, Types } from 'mongoose';
@@ -11,6 +11,8 @@ import { CompletedWork } from 'src/common/interfaces/completed-word.interface';
 import { User, UserDocument } from 'src/users/models/user.schema';
 import { NotificationService } from 'src/notification/notification.service';
 import { NotificationType } from 'src/notification/models/notification.schema';
+import { Bid, BidDocument, BidStatus } from 'src/common/models/bids.schema';
+import { BidsService } from 'src/common/bids/bids.service';
 
 @Injectable()
 export class EditorsService {
@@ -20,26 +22,28 @@ export class EditorsService {
         @InjectModel(Quotation.name) private quotationModel: Model<QuotationDocument>,
         @InjectModel(Works.name) private workModel: Model<WorksDocument>,
         @InjectModel(User.name) private userModel: Model<UserDocument>,
+        @InjectModel(Bid.name) private bidModel: Model<BidDocument>,
         private cloudinaryService: CloudinaryService,
         private readonly notificationService: NotificationService,
+        private readonly bidsService: BidsService,
     ) { };
 
     async createEditor(editor: Partial<Editor>): Promise<Editor> {
         return this.editorModel.create(editor);
     }
-    private async getQuotations(userId: Types.ObjectId,status: QuotationStatus): Promise<IQuotation[] | undefined> {
+    private async getQuotations(userId: Types.ObjectId, status: QuotationStatus): Promise<IQuotation[] | undefined> {
         try {
-            if(status === QuotationStatus.PUBLISHED){
+            if (status === QuotationStatus.PUBLISHED) {
                 return await this.quotationModel
-                .find({ status: QuotationStatus.PUBLISHED, userId:{$ne:userId}})
-                .sort({ createdAt: -1})
-                .lean() as unknown as IQuotation[];
+                    .find({ status: QuotationStatus.PUBLISHED, userId: { $ne: userId } })
+                    .sort({ createdAt: -1 })
+                    .lean() as unknown as IQuotation[];
             }
-            else if(status === QuotationStatus.ACCEPTED){
+            else if (status === QuotationStatus.ACCEPTED) {
                 return await this.quotationModel
-                .find({ status: QuotationStatus.ACCEPTED, editorId: userId })
-                .sort({ createdAt: 1})
-                .lean() as unknown as IQuotation[];
+                    .find({ status: QuotationStatus.ACCEPTED, editorId: userId })
+                    .sort({ createdAt: 1 })
+                    .lean() as unknown as IQuotation[];
             }
         } catch (error) {
             this.logger.error('Error getting the quotations', error);
@@ -47,7 +51,7 @@ export class EditorsService {
         }
     }
 
-    async getPublishedQuotations(userId:Types.ObjectId) {
+    async getPublishedQuotations(userId: Types.ObjectId) {
         try {
             return await this.getQuotations(userId, QuotationStatus.PUBLISHED);
         } catch (error) {
@@ -83,7 +87,7 @@ export class EditorsService {
         }
     }
 
-    async uploadWorkFiles(files: Express.Multer.File[],folder?:string):Promise<FileUploadResult[]>{
+    async uploadWorkFiles(files: Express.Multer.File[], folder?: string): Promise<FileUploadResult[]> {
         try {
             const uploadPromises = await this.cloudinaryService.uploadFiles(files, folder);
             return Promise.all(uploadPromises);
@@ -93,7 +97,7 @@ export class EditorsService {
         }
     }
 
-    async submitQuotationResponse(workData: any){
+    async submitQuotationResponse(workData: any) {
         try {
             const { userId, quotationId, finalFiles, comments } = workData;
             const quotation = await this.quotationModel.findById(new Types.ObjectId(quotationId));
@@ -107,7 +111,7 @@ export class EditorsService {
                 finalFiles,
                 comments,
             });
-            await this.quotationModel.findByIdAndUpdate(quotation._id,{status:QuotationStatus.COMPLETED,worksId:work._id});
+            await this.quotationModel.findByIdAndUpdate(quotation._id, { status: QuotationStatus.COMPLETED, worksId: work._id });
 
             try {
                 await this.notificationService.createNotification({
@@ -135,34 +139,34 @@ export class EditorsService {
     private async updateEditorScore(editorId: Types.ObjectId): Promise<void> {
         try {
             // Get the editor's profile
-            const editor = await this.editorModel.findOne({userId:new Types.ObjectId(editorId)}).lean();
+            const editor = await this.editorModel.findOne({ userId: new Types.ObjectId(editorId) }).lean();
             if (!editor) {
                 this.logger.warn(`Editor with ID ${editorId} not found or not an editor`);
                 return;
             }
-            
+
             // Get the editor's most recent completed works
             const recentWorks = await this.workModel
                 .find({ editorId })
                 .sort({ createdAt: -1 })
                 .limit(2)
                 .lean();
-                
+
             // Initialize score variables
             let scoreIncrement = 10; // Base score for completing a work
             let currentStreak = editor.streak || 0;
             let streakMultiplier = 1;
-            
+
             // If this is not their first work
             if (recentWorks.length > 1) {
                 const latestWork = recentWorks[0];
                 const previousWork = recentWorks[1];
-                
+
                 // Calculate time difference in days
                 const latestDate = new Date(latestWork.createdAt);
                 const previousDate = new Date(previousWork.createdAt);
                 const daysDifference = Math.floor((latestDate.getTime() - previousDate.getTime()) / (1000 * 60 * 60 * 24));
-                
+
                 // If completed within a week, increase streak
                 if (daysDifference < 7) {
                     currentStreak++;
@@ -177,17 +181,17 @@ export class EditorsService {
                 // First work
                 currentStreak = 1;
             }
-            
+
             // Calculate final score
             const finalScoreIncrement = Math.round(scoreIncrement * streakMultiplier);
             const newScore = (editor.score || 0) + finalScoreIncrement;
-            
+
             // Update editor profile
-            await this.editorModel.findOneAndUpdate({userId:new Types.ObjectId(editorId)}, {
+            await this.editorModel.findOneAndUpdate({ userId: new Types.ObjectId(editorId) }, {
                 score: newScore,
                 streak: currentStreak
             });
-            
+
             this.logger.log(`Updated editor ${editorId} score to ${newScore} (streak: ${currentStreak}, multiplier: ${streakMultiplier})`);
         } catch (error) {
             this.logger.error('Error updating editor score', error);
@@ -195,17 +199,17 @@ export class EditorsService {
         }
     }
 
-    async getCompletedWorks(editorId: Types.ObjectId):Promise<CompletedWork[]>{
+    async getCompletedWorks(editorId: Types.ObjectId): Promise<CompletedWork[]> {
         try {
             const completedQuotations = await this.quotationModel
-            .find({ editorId, status: QuotationStatus.COMPLETED})
-            .populate('worksId')
-            .sort({ createdAt: -1})
-            .lean();
+                .find({ editorId, status: QuotationStatus.COMPLETED })
+                .populate('worksId')
+                .sort({ createdAt: -1 })
+                .lean();
 
             return completedQuotations.map(quotation => {
                 const worksData = quotation.worksId as any || {};
-                const { worksId,...quotationData } = quotation;
+                const { worksId, ...quotationData } = quotation;
                 return {
                     ...quotationData,
                     ...worksData,
@@ -230,7 +234,7 @@ export class EditorsService {
         return parseFloat((sum / ratings.length).toFixed(1));
     }
 
-    async getEditor(editorId: string):Promise<User & { editorDetails?: any } | null>{
+    async getEditor(editorId: string): Promise<User & { editorDetails?: any } | null> {
         try {
             const user = await this.userModel.findById(new Types.ObjectId(editorId));
             if (user && user.isEditor) {
@@ -258,5 +262,31 @@ export class EditorsService {
             this.logger.error('Error getting the editor', error);
             throw new Error('Error getting the editor');
         }
+    }
+
+    async createBid(
+        quotationId: Types.ObjectId,
+        editorId: Types.ObjectId,
+        bidAmount: number,
+        notes?: string
+    ): Promise<Bid> {
+        // Check if quotation exists and is in Published status
+        const bidData = {
+            quotationId,
+            editorId,
+            bidAmount,
+            notes,
+            status: BidStatus.PENDING
+        } as Bid;
+
+        return this.bidsService.create(bidData, editorId.toString());
+    }
+
+    async getEditorBids(editorId: Types.ObjectId): Promise<Bid[]> {
+        return this.bidsService.findAllByEditor(editorId.toString());
+    }
+
+    async deleteBid(bidId: Types.ObjectId, editorId: Types.ObjectId): Promise<void> {
+        return this.bidsService.deleteBid(bidId.toString(), editorId.toString());
     }
 }

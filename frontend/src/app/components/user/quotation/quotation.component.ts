@@ -13,6 +13,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatButton } from '@angular/material/button';
 import { PaymentService } from '../../../services/payment.service';
 import { firstValueFrom } from 'rxjs';
+import { IBid } from '../../../interfaces/bid.interface';
+import { BidDialogComponent } from '../../mat-dialogs/bid-dialog/bid-dialog.component';
 
 @Component({
   selector: 'app-quotation',
@@ -21,12 +23,16 @@ import { firstValueFrom } from 'rxjs';
   styleUrl: './quotation.component.scss'
 })
 export class QuotationComponent implements OnInit {
+  loading: boolean = true;
   quotations: IQuotation[] = [];
   completedWorks: CompletedWork[] = [];
   completedWorksSearch: string = '';
   completedWorksLoading: boolean = false;
   FileType = FileType;
   activeFilter: 'All' | 'Accepted' | 'Published' | 'Completed' | 'Expired' | 'Cancelled' = 'All';
+  bids: IBid[] = [];
+  error: string | null = null;
+  quotationBidCounts: { [key: string]: number } = {};
 
   constructor(
     private userService: UserService,
@@ -37,17 +43,51 @@ export class QuotationComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadQuotations();
+    this.loadAllBidCounts();
   }
 
   loadQuotations(): void {
     this.userService.getQuotations().subscribe({
       next: (quotations) => {
         this.quotations = quotations;
+        this.loading = false;
+        this.loadAllBidCounts();
       },
       error: (err) => {
         console.error('error getting quotations', err);
+        this.loading = false;
       }
     })
+  }
+
+  loadAllBidCounts(): void {
+    const publishedQuotations = this.quotations.filter(q => q.status === 'Published');
+    
+    publishedQuotations.forEach(quotation => {
+      this.userService.getBidCountsForUserQuotations().subscribe({
+        next: (bidCounts) => {
+          this.quotationBidCounts = bidCounts;
+        },
+        error: (error) => {
+          console.error(`Error loading bids for quotation ${quotation._id}:`, error);
+        }
+      });
+    });
+  }
+
+  viewBids(quotation: IQuotation): void {
+    const dialogRef = this.dialog.open(BidDialogComponent, {
+      width: '800px',
+      maxHeight: '90vh',
+      data: { quotation }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && result.success) {
+        // Refresh quotations and bid counts if a bid was accepted
+        this.loadQuotations();
+      }
+    });
   }
 
   setFilter(filter: 'All' | 'Accepted' | 'Published' | 'Expired' | 'Cancelled'): void {

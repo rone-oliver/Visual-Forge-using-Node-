@@ -62,6 +62,16 @@
                             <span>Output Type: {{ quotation.outputType }}</span>
                         </div>
 
+                        <div class="detail-item bids-button-container" *ngIf="quotation.status === 'Published'">
+                            <button mat-raised-button color="accent" class="view-bids-button" (click)="viewBids(quotation)">
+                                <mat-icon>gavel</mat-icon>
+                                View Bids
+                                <span class="bid-count" *ngIf="quotationBidCounts[quotation._id]">
+                                    ({{ quotationBidCounts[quotation._id] }})
+                                </span>
+                            </button>
+                        </div>
+
                         <!-- File Attachments Section -->
                         <div class="file-attachments"
                             *ngIf="quotation.attachedFiles && quotation.attachedFiles.length > 0">

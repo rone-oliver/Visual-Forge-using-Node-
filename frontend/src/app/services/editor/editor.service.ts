@@ -5,6 +5,7 @@ import { catchError, Observable } from 'rxjs';
 import { FileAttachmentResponse, IQuotation } from '../../interfaces/quotation.interface';
 import { CompletedWork } from '../../interfaces/completed-word.interface';
 import { Editor } from '../../interfaces/editor.interface';
+import { IBid } from '../../interfaces/bid.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -46,5 +47,21 @@ export class EditorService {
     return this.http.get<CompletedWork[]>(`${this.editorApiUrl}/works`).pipe(
       catchError(error => { throw error })
     );
+  }
+
+  createBid(quotationId: string, bidAmount: number, notes?: string): Observable<IBid> {
+    return this.http.post<IBid>(`${this.editorApiUrl}/bids`, {
+      quotationId,
+      bidAmount,
+      notes
+    });
+  }
+
+  getEditorBids(): Observable<IBid[]> {
+    return this.http.get<IBid[]>(`${this.editorApiUrl}/bids`);
+  }
+
+  deleteBid(bidId: string): Observable<void> {
+    return this.http.delete<void>(`${this.editorApiUrl}/bids/${bidId}`);
   }
 }

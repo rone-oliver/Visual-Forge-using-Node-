@@ -7,7 +7,7 @@
         <div class="filters-bar">
             <div class="search-container">
                 <mat-icon>search</mat-icon>
-                <input type="text" placeholder="Search works, editors or users..." (input)="onSearch($event)"
+                <input type="text" placeholder="Search by editor or user name" (input)="onSearch($event)"
                     [value]="searchTerm">
             </div>
 
@@ -52,7 +52,7 @@
         <div class="empty-state">
             <mat-icon>sentiment_dissatisfied</mat-icon>
             <p>No works found matching your criteria</p>
-            <button mat-button (click)="setRatingFilter(null); searchTerm = ''; applyFilters()">Clear filters</button>
+            <button mat-button (click)="setRatingFilter(null); searchTerms.next('');">Clear filters</button>
         </div>
     }
 

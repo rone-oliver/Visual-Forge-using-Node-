@@ -9,17 +9,20 @@ import { Works, workSchema } from 'src/common/models/works.schema';
 import { User, userSchema } from 'src/users/models/user.schema';
 import { UsersModule } from 'src/users/users.module';
 import { NotificationModule } from 'src/notification/notification.module';
+import { Bid, BidSchema } from 'src/common/models/bids.schema';
+import { BidsModule } from 'src/common/bids/bids.module';
 
 @Module({
   providers: [EditorsService, CloudinaryService],
   controllers: [EditorsController],
   imports:[
-    UsersModule, NotificationModule,
+    UsersModule, NotificationModule, BidsModule,
     MongooseModule.forFeature([
       { name: Editor.name, schema: editorSchema},
       { name: Quotation.name, schema: QuotationSchema},
       { name: Works.name, schema: workSchema},
-      { name: User.name, schema: userSchema}
+      { name: User.name, schema: userSchema},
+      { name: Bid.name, schema: BidSchema}
     ])
   ]
 })

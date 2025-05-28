@@ -1,4 +1,4 @@
-import { Injectable, Inject, Logger, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, Inject, Logger, HttpException, HttpStatus, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { User, UserDocument } from './models/user.schema';
@@ -13,6 +13,8 @@ import { Works, WorksDocument } from 'src/common/models/works.schema';
 import { PaymentStatus, PaymentType, Transaction, TransactionDocument } from 'src/common/models/transaction.schema';
 import { NotificationService } from 'src/notification/notification.service';
 import { NotificationType } from 'src/notification/models/notification.schema';
+import { Bid, BidDocument, BidStatus } from 'src/common/models/bids.schema';
+import { BidsService } from 'src/common/bids/bids.service';
 
 @Injectable()
 export class UsersService {
@@ -24,8 +26,10 @@ export class UsersService {
         @InjectModel(Quotation.name) private quotationModel: Model<QuotationDocument>,
         @InjectModel(Works.name) private workModel: Model<WorksDocument>,
         @InjectModel(Transaction.name) private transactionModel: Model<TransactionDocument>,
+        @InjectModel(Bid.name) private bidModel: Model<BidDocument>,
         private cloudinaryService: CloudinaryService,
         private notificationService: NotificationService,
+        private bidsService: BidsService,
     ) { }
 
     async findOne(filter: Partial<User>): Promise<User | null> {
@@ -384,10 +388,71 @@ export class UsersService {
         }
     }
 
-    async getPublicWorks(page: number, limit: number): Promise<{ works: Works[], total: number }> {
+    async getPublicWorks(
+        page: number,
+        limit: number,
+        rating?: number,
+        search?: string,
+    ): Promise<{ works: Works[], total: number }> {
         try {
-            const works = await this.workModel.find({ isPublic: true }).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit);
-            const total = await this.workModel.countDocuments({ isPublic: true });
+            this.logger.log(`getPublicWorks called with: page=${page}, limit=${limit}, rating=${rating}, search="${search}"`);
+            
+            const filter:any = { isPublic:true };
+            
+            if(rating !== undefined && rating !== null){
+                filter.rating = rating;
+            }
+            
+            if (search && search.trim()) {
+                const searchTerm = search.trim().toLowerCase();
+                this.logger.log(`Searching for term: "${searchTerm}"`);
+                
+                // Find users and editors that match the search term
+                const [matchingUsers, matchingEditors] = await Promise.all([
+                    this.userModel.find({ 
+                        fullname: { $regex: searchTerm, $options: 'i' } 
+                    }).select('_id').lean(),
+                    
+                    this.editorModel.find({ 
+                        fullname: { $regex: searchTerm, $options: 'i' } 
+                    }).select('_id').lean()
+                ]);
+                
+                this.logger.log(`Found ${matchingUsers.length} matching users and ${matchingEditors.length} matching editors`);
+                
+                const userIds = matchingUsers.map(user => user._id.toString());
+                const editorIds = matchingEditors.map(editor => editor._id.toString());
+                
+                // If we found matching users or editors, add them to the filter
+                if (userIds.length > 0 || editorIds.length > 0) {
+                    filter.$or = [];
+                    
+                    if (userIds.length > 0) {
+                        filter.$or.push({ userId: { $in: userIds } });
+                    }
+                    
+                    if (editorIds.length > 0) {
+                        filter.$or.push({ editorId: { $in: editorIds } });
+                    }
+                } else if (search.trim()) {
+                    // If search term was provided but no matches found, return empty results
+                    this.logger.log(`No matching users or editors found for "${searchTerm}", returning empty results`);
+                    return { works: [], total: 0 };
+                }
+            }
+            
+            this.logger.log(`Final filter: ${JSON.stringify(filter)}`);
+            
+            // Execute the query with pagination
+            const [works, total] = await Promise.all([
+                this.workModel.find(filter)
+                    .sort({ createdAt: -1 })
+                    .skip((page - 1) * limit)
+                    .limit(limit),
+                this.workModel.countDocuments(filter)
+            ]);
+            
+            this.logger.log(`Found ${works.length} works out of ${total} total`);
             return { works, total };
         } catch (error) {
             this.logger.error(`Error getting public works: ${error.message}`);
@@ -447,4 +512,80 @@ export class UsersService {
             .sort({ createdAt: -1 })
             .exec();
     }
+
+    async getBidsByQuotation(quotationId: Types.ObjectId, userId: Types.ObjectId): Promise<Bid[]> {
+        const quotation = await this.quotationModel.findOne({ _id: quotationId, userId });
+        
+        if (!quotation) {
+          throw new NotFoundException('Quotation not found or does not belong to you');
+        }
+        
+        // Use the centralized BidsService to get bids for the quotation
+        return this.bidsService.findAllByQuotation(quotationId.toString());
+      }
+    
+      async getBidCountsForUserQuotations(userId: Types.ObjectId): Promise<{ [quotationId: string]: number }> {
+        const quotations = await this.quotationModel.find({ 
+            userId, 
+            status: QuotationStatus.PUBLISHED 
+          });
+          
+          const quotationIds = quotations.map(q => q._id);
+          
+          // Use aggregation to get bid counts for each quotation
+          const bidCounts = await this.bidModel.aggregate([
+            {
+              $match: {
+                quotationId: { $in: quotationIds },
+                status: BidStatus.PENDING
+              }
+            },
+            {
+              $group: {
+                _id: '$quotationId',
+                count: { $sum: 1 }
+              }
+            }
+          ]);
+          
+          // Convert to the expected format
+          const result: { [quotationId: string]: number } = {};
+          bidCounts.forEach(item => {
+            result[item._id.toString()] = item.count;
+          });
+          
+          // Ensure all quotations have an entry (even if 0)
+          quotations.forEach(quotation => {
+            const id = quotation._id.toString();
+            if (!result[id]) {
+              result[id] = 0;
+            }
+          });
+          
+          return result;
+      }
+    
+      async acceptBid(bidId: Types.ObjectId, userId: Types.ObjectId): Promise<Bid> {
+        const bid = await this.bidsService.acceptBid(bidId.toString(), userId.toString());
+        
+        // Get the quotation to send notification
+        const quotation = await this.quotationModel.findById(bid.quotationId);
+        
+        if(!quotation){
+          throw new NotFoundException('Quotation not found');
+        }
+        // Send notification to the editor
+        await this.notificationService.createNotification({
+          userId: bid.editorId,
+          type: NotificationType.WORK,
+          message: `Your bid on "${quotation.title}" has been accepted!`,
+          data: {
+            quotationId: quotation._id,
+            bidId: bid._id,
+            bidAmount: bid.bidAmount
+          }
+        });
+        
+        return bid;
+      }
 }

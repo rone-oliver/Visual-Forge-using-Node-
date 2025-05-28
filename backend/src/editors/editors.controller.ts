@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Logger, Param, Post, Query, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Logger, Param, Post, Query, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { IQuotation } from 'src/users/interface/Quotation.interface';
 import { EditorsService } from './editors.service';
 import { Types } from 'mongoose';
@@ -60,4 +60,44 @@ export class EditorsController {
         const editor = req['user'] as { userId: Types.ObjectId, role: string};
         return this.editorService.getCompletedWorks(editor.userId);
     }
+
+    @Post('bids')
+  @Roles('Editor')
+  async createBid(@Body() bidData: { quotationId: string, bidAmount: number, notes?: string }, @Req() req: Request) {
+    const editor = req['user'] as { userId: Types.ObjectId; role: string };
+    
+    if (!Types.ObjectId.isValid(bidData.quotationId)) {
+      throw new BadRequestException('Invalid quotation ID');
+    }
+    
+    if (bidData.bidAmount <= 0) {
+      throw new BadRequestException('Bid amount must be greater than 0');
+    }
+    
+    return this.editorService.createBid(
+      new Types.ObjectId(bidData.quotationId),
+      editor.userId,
+      bidData.bidAmount,
+      bidData.notes
+    );
+  }
+
+  @Get('bids')
+  @Roles('Editor')
+  async getEditorBids(@Req() req: Request) {
+    const editor = req['user'] as { userId: Types.ObjectId; role: string };
+    return this.editorService.getEditorBids(editor.userId);
+  }
+
+  @Delete('bids/:bidId')
+  @Roles('Editor')
+  async deleteBid(@Param('bidId') bidId: string, @Req() req: Request) {
+    const editor = req['user'] as { userId: Types.ObjectId; role: string };
+    
+    if (!Types.ObjectId.isValid(bidId)) {
+      throw new BadRequestException('Invalid bid ID');
+    }
+    
+    return this.editorService.deleteBid(new Types.ObjectId(bidId), editor.userId);
+  }
 }

@@ -5,28 +5,29 @@ import { LocalDatePipe } from '../../../pipes/date.pipe';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { FilesPreviewComponent } from '../../user/files-preview/files-preview.component';
+import { FormsModule } from '@angular/forms';
+import { EditorService } from '../../../services/editor/editor.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-quotation-card',
-  imports: [CommonModule, LocalDatePipe, MatIconModule, MatDialogModule],
+  imports: [CommonModule, FormsModule, LocalDatePipe, MatIconModule, MatDialogModule],
   templateUrl: './quotation-card.component.html',
   styleUrl: './quotation-card.component.scss'
 })
 export class QuotationCardComponent {
   @Input() quotation!: IQuotation;
-  @Output() quotationAccepted = new EventEmitter<IQuotation["_id"]>();
+  // @Output() quotationAccepted = new EventEmitter<IQuotation["_id"]>();
+  @Output() bidSubmitted = new EventEmitter<string>();
   FileType = FileType;
+  bidAmount: number | null = null;
+  bidNotes: string = '';
   
-  constructor(private dialog: MatDialog){};
-
-  acceptQuotation(quotation: IQuotation){
-    if (!quotation._id) {
-      console.error('Cannot accept quotation: Missing ID');
-      return;
-    }
-    console.log('Accepting quotation', quotation._id);
-    this.quotationAccepted.emit(quotation._id);
-  }
+  constructor(
+    private dialog: MatDialog,
+    private editorService: EditorService,
+    private snackBar: MatSnackBar,
+  ){};
 
   countFilesByType(fileType: FileType): number {
     if (!this.quotation.attachedFiles || this.quotation.attachedFiles.length === 0) {
@@ -56,4 +57,35 @@ export class QuotationCardComponent {
       }
     });
   }
+
+  submitBid(quotation: IQuotation){
+    if (!quotation._id || !this.bidAmount) {
+      this.snackBar.open('Please enter a valid bid amount', 'Close', { duration: 3000 });
+      return;
+    }
+    
+    this.editorService.createBid(
+      quotation._id, 
+      this.bidAmount, 
+      this.bidNotes
+    ).subscribe({
+      next: (response) => {
+        this.snackBar.open('Bid submitted successfully!', 'Close', { duration: 3000 });
+        this.bidSubmitted.emit(quotation._id);
+        // Reset form
+        this.bidAmount = null;
+        this.bidNotes = '';
+      },
+      error: (error) => {
+        console.error('Error submitting bid:', error);
+        this.snackBar.open(
+          error.error?.message || 'Failed to submit bid. Please try again.',
+          'Close',
+          { duration: 5000 }
+        );
+      }
+    });
+  }
+
+  // delete bid pending
 }

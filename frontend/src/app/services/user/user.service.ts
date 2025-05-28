@@ -5,6 +5,7 @@ import { catchError, map, Observable, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { FileAttachmentResponse, IPaymentVerification } from '../../interfaces/quotation.interface';
 import { CompletedWork, Works } from '../../interfaces/completed-word.interface';
+import { IBid } from '../../interfaces/bid.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -123,12 +124,24 @@ export class UserService {
     );
   }
 
-  getPublicWorks(page: number, limit: number): Observable<{ works: Works[], total: number }> {
+  getPublicWorks(
+    page: number,
+    limit: number,
+    rating?: number | null,
+    search?: string
+  ): Observable<{ works: Works[], total: number }> {
+    let params: any = {
+      page: page.toString(),
+      limit: limit.toString()
+    }
+    if (rating !== undefined && rating !== null) {
+      params.rating = rating.toString();
+    }
+    if (search && search.trim()) {
+      params.search = search.trim();
+    }
     return this.http.get<{ works: Works[], total: number }>(`${this.apiUrl}/user/works/public`, {
-      params: {
-        page: page.toString(),
-        limit: limit.toString()
-      }
+      params
     }).pipe(
       map(response => response),
       catchError(error => { throw error })
@@ -170,5 +183,17 @@ export class UserService {
       map(response => response),
       catchError(error => { throw error })
     );
+  }
+
+  getBidsByQuotation(quotationId: string): Observable<IBid[]> {
+    return this.http.get<IBid[]>(`${this.userApiUrl}/quotations/${quotationId}/bids`);
+  }
+
+  getBidCountsForUserQuotations(): Observable<{[quotationId: string]: number}> {
+    return this.http.get<{[quotationId: string]: number}>(`${this.userApiUrl}/quotations/bid-counts`);
+  }
+
+  acceptBid(bidId: string): Observable<IBid> {
+    return this.http.post<IBid>(`${this.userApiUrl}/bids/${bidId}/accept`, {});
   }
 }

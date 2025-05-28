@@ -68,9 +68,27 @@
             </div>
         </div>
 
-        <button class="btn-accept" (click)="acceptQuotation(quotation)" [disabled]="!quotation._id">
-            Accept
-            <span class="check-mark">✓</span>
-        </button>
+        <div class="bid-section">
+            <div class="bid-input-container">
+                <input 
+                    type="number" 
+                    class="bid-amount-input" 
+                    placeholder="Your bid amount ($)" 
+                    [(ngModel)]="bidAmount"
+                    [min]="1"
+                    [disabled]="!quotation._id"
+                >
+                <textarea 
+                    class="bid-notes" 
+                    placeholder="Add notes about your bid (optional)" 
+                    [(ngModel)]="bidNotes"
+                    [disabled]="!quotation._id"
+                ></textarea>
+            </div>
+            <button class="btn-bid" (click)="submitBid(quotation)" [disabled]="!quotation._id || !bidAmount">
+                Submit Bid
+                <span class="check-mark">✓</span>
+            </button>
+        </div>
     </div>
 </article>
