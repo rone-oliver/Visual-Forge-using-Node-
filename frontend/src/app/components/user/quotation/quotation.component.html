@@ -36,7 +36,7 @@
             <div class="quotation-card" *ngFor="let quotation of filteredQuotations">
                 <div class="card-image-container">
                     <img [src]="quotation.imageUrl || 'https://placehold.co/600x400'" [alt]="quotation.title">
-                    <div class="amount-badge">${{ quotation.estimatedBudget }}</div>
+                    <div class="amount-badge">₹{{ quotation.estimatedBudget }}</div>
                     <div class="status-badge" [ngClass]="getStatusClass(quotation.status)">
                         {{ quotation.status | titlecase }}
                     </div>

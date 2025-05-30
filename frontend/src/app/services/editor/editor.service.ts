@@ -49,6 +49,7 @@ export class EditorService {
     );
   }
 
+  // Bids Services
   createBid(quotationId: string, bidAmount: number, notes?: string): Observable<IBid> {
     return this.http.post<IBid>(`${this.editorApiUrl}/bids`, {
       quotationId,
@@ -59,6 +60,15 @@ export class EditorService {
 
   getEditorBids(): Observable<IBid[]> {
     return this.http.get<IBid[]>(`${this.editorApiUrl}/bids`);
+  }
+
+  updateBid(
+    bidId: string, amount: number, notes?: string,
+  ): Observable<IBid> {
+    return this.http.patch<IBid>(`${this.editorApiUrl}/bids/${bidId}`, {
+      bidAmount: amount,
+      notes
+    });
   }
 
   deleteBid(bidId: string): Observable<void> {

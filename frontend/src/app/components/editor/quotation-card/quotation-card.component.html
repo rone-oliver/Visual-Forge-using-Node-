@@ -2,7 +2,7 @@
     <!-- Card Media Section -->
     <div class="card-media">
         <img [src]="quotation.imageUrl || 'https://placehold.co/600x400'" [alt]="quotation.title" class="media-image" loading="lazy">
-        <div class="price-badge">${{ quotation.estimatedBudget }}</div>
+        <div class="price-badge">₹{{ quotation.estimatedBudget }}</div>
     </div>
 
     <!-- Card Content Section -->
@@ -31,64 +31,109 @@
             </div>
 
             <!-- File Attachments Section -->
-            <div class="file-attachments" *ngIf="quotation.attachedFiles && quotation.attachedFiles.length > 0">
-                <div class="file-type-badges">
-                    <!-- Image Files -->
-                    <div class="file-badge" 
-                         *ngIf="countFilesByType(FileType.IMAGE) > 0"
-                         (click)="openFileModal(FileType.IMAGE)">
-                        <mat-icon>image</mat-icon>
-                        <span>{{ countFilesByType(FileType.IMAGE) }}</span>
-                    </div>
-                    
-                    <!-- Video Files -->
-                    <div class="file-badge" 
-                         *ngIf="countFilesByType(FileType.VIDEO) > 0"
-                         (click)="openFileModal(FileType.VIDEO)">
-                        <mat-icon>videocam</mat-icon>
-                        <span>{{ countFilesByType(FileType.VIDEO) }}</span>
-                    </div>
-                    
-                    <!-- Audio Files -->
-                    <div class="file-badge" 
-                         *ngIf="countFilesByType(FileType.AUDIO) > 0"
-                         (click)="openFileModal(FileType.AUDIO)">
-                        <mat-icon>audiotrack</mat-icon>
-                        <span>{{ countFilesByType(FileType.AUDIO) }}</span>
-                    </div>
-                    
-                    <!-- Document Files -->
-                    <div class="file-badge" 
-                         *ngIf="countFilesByType(FileType.DOCUMENT) > 0"
-                         (click)="openFileModal(FileType.DOCUMENT)">
-                        <mat-icon>description</mat-icon>
-                        <span>{{ countFilesByType(FileType.DOCUMENT) }}</span>
+            @if(quotation.attachedFiles && quotation.attachedFiles.length > 0){
+                <div class="file-attachments">
+                    <div class="file-type-badges">
+                        <!-- Image Files -->
+                        <div class="file-badge" 
+                             *ngIf="countFilesByType(FileType.IMAGE) > 0"
+                             (click)="openFileModal(FileType.IMAGE)">
+                            <mat-icon>image</mat-icon>
+                            <span>{{ countFilesByType(FileType.IMAGE) }}</span>
+                        </div>
+                        
+                        <!-- Video Files -->
+                        <div class="file-badge" 
+                             *ngIf="countFilesByType(FileType.VIDEO) > 0"
+                             (click)="openFileModal(FileType.VIDEO)">
+                            <mat-icon>videocam</mat-icon>
+                            <span>{{ countFilesByType(FileType.VIDEO) }}</span>
+                        </div>
+                        
+                        <!-- Audio Files -->
+                        <div class="file-badge" 
+                             *ngIf="countFilesByType(FileType.AUDIO) > 0"
+                             (click)="openFileModal(FileType.AUDIO)">
+                            <mat-icon>audiotrack</mat-icon>
+                            <span>{{ countFilesByType(FileType.AUDIO) }}</span>
+                        </div>
+                        
+                        <!-- Document Files -->
+                        <div class="file-badge" 
+                             *ngIf="countFilesByType(FileType.DOCUMENT) > 0"
+                             (click)="openFileModal(FileType.DOCUMENT)">
+                            <mat-icon>description</mat-icon>
+                            <span>{{ countFilesByType(FileType.DOCUMENT) }}</span>
+                        </div>
                     </div>
                 </div>
-            </div>
+            }
         </div>
 
         <div class="bid-section">
+            <h3 class="bid-section-title">Place Your Bid</h3>
             <div class="bid-input-container">
-                <input 
-                    type="number" 
-                    class="bid-amount-input" 
-                    placeholder="Your bid amount ($)" 
-                    [(ngModel)]="bidAmount"
-                    [min]="1"
-                    [disabled]="!quotation._id"
-                >
-                <textarea 
-                    class="bid-notes" 
-                    placeholder="Add notes about your bid (optional)" 
-                    [(ngModel)]="bidNotes"
-                    [disabled]="!quotation._id"
-                ></textarea>
+                <div class="input-group">
+                    <div class="currency-input-wrapper">
+                        <span class="currency-symbol">₹</span>
+                        <input 
+                            type="number" 
+                            class="bid-amount-input" 
+                            placeholder="Enter bid amount" 
+                            [(ngModel)]="bidAmount"
+                            [min]="1"
+                            [disabled]="!quotation._id || hasBidForQuotation"
+                        >
+                    </div>
+                    <textarea 
+                        class="bid-notes" 
+                        placeholder="Add notes about your bid (optional)" 
+                        [(ngModel)]="bidNotes"
+                        [disabled]="!quotation._id || hasBidForQuotation"
+                    ></textarea>
+                </div>
             </div>
-            <button class="btn-bid" (click)="submitBid(quotation)" [disabled]="!quotation._id || !bidAmount">
-                Submit Bid
-                <span class="check-mark">✓</span>
-            </button>
+            
+            <div class="bid-actions">
+                <button 
+                    class="btn-bid" 
+                    (click)="submitBid(quotation)" 
+                    [disabled]="!quotation._id || !bidAmount || hasBidForQuotation"
+                    *ngIf="!hasBidForQuotation">
+                    <mat-icon>send</mat-icon>
+                    Submit Bid
+                </button>
+                
+                <!-- Existing bid section -->
+                @if(hasBidForQuotation && existingBid!==null){
+                    <div class="existing-bid">
+                        <div class="existing-bid-header">
+                            <h4>Your Current Bid</h4>
+                            <span class="bid-status" [ngClass]="getBidStatusClass(existingBid.status)">
+                                {{ existingBid.status }}
+                            </span>
+                        </div>
+                        
+                        <div class="bid-amount-display">
+                            <span class="amount">₹{{ existingBid.bidAmount }}</span>
+                            <span class="date">Placed on {{ existingBid.createdAt ? (existingBid.createdAt | localDate:'medium') : 'N/A' }}</span>
+                        </div>
+                        
+                        <p class="bid-notes-display" *ngIf="existingBid.notes">{{ existingBid.notes }}</p>
+                        
+                        <div class="bid-actions" *ngIf="existingBid.status === 'Pending'">
+                            <button class="btn-edit" (click)="editBid()">
+                                <mat-icon>edit</mat-icon>
+                                Edit
+                            </button>
+                            <button class="btn-delete" (click)="deleteBid(existingBid._id)">
+                                <mat-icon>delete</mat-icon>
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
         </div>
     </div>
 </article>

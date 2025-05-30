@@ -279,14 +279,18 @@ export class EditorsService {
             status: BidStatus.PENDING
         } as Bid;
 
-        return this.bidsService.create(bidData, editorId.toString());
+        return this.bidsService.create(bidData, editorId);
     }
 
     async getEditorBids(editorId: Types.ObjectId): Promise<Bid[]> {
-        return this.bidsService.findAllByEditor(editorId.toString());
+        return this.bidsService.findAllByEditor(editorId);
+    }
+
+    async updateBid(bidId: Types.ObjectId, editorId: Types.ObjectId, bidAmount: number, notes?: string): Promise<Bid> {
+        return this.bidsService.updateBid(bidId, editorId, bidAmount, notes);
     }
 
     async deleteBid(bidId: Types.ObjectId, editorId: Types.ObjectId): Promise<void> {
-        return this.bidsService.deleteBid(bidId.toString(), editorId.toString());
+        return this.bidsService.deleteBid(bidId, editorId);
     }
 }

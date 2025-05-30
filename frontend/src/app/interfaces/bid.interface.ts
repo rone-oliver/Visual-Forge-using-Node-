@@ -19,9 +19,9 @@ export interface IBid {
   // Populated fields
   editor?: {
     _id: string;
-    name: string;
+    fullname: string;
     email: string;
-    profilePicture?: string;
+    profileImage?: string;
   };
   quotation?: any; // This will be populated with IQuotation data when needed
 }

@@ -230,7 +230,7 @@ export class UsersController {
     }
 
     @Get('quotations/:quotationId/bids')
-    @Roles('User')
+    @Roles('User','Editor')
     async getBidsByQuotation(@Param('quotationId') quotationId: string, @Req() req: Request) {
         const user = req['user'] as { userId: Types.ObjectId; role: string };
         
@@ -238,18 +238,18 @@ export class UsersController {
             throw new BadRequestException('Invalid quotation ID');
         }
         
-        return this.userService.getBidsByQuotation(new Types.ObjectId(quotationId), user.userId);
+        return this.userService.getBidsByQuotation(new Types.ObjectId(quotationId), new Types.ObjectId(user.userId));
     }
 
     @Get('quotations/bid-counts')
-    @Roles('User')
+    @Roles('User','Editor')
     async getBidCountsForUserQuotations(@Req() req: Request) {
         const user = req['user'] as { userId: Types.ObjectId; role: string };
         return this.userService.getBidCountsForUserQuotations(user.userId);
     }
 
     @Post('bids/:bidId/accept')
-    @Roles('User')
+    @Roles('User','Editor')
     async acceptBid(@Param('bidId') bidId: string, @Req() req: Request) {
         const user = req['user'] as { userId: Types.ObjectId; role: string };
         

@@ -1,0 +1,142 @@
+.confirmation-dialog-container {
+  min-width: 320px;
+  max-width: 450px;
+  border-radius: 16px;
+  overflow: hidden;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  position: relative;
+  border-bottom: 1px solid rgba(var(--color-surface), 0.12);
+
+  &.type-warning {
+    background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%);
+    color: white;
+  }
+
+  &.type-danger {
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+    color: white;
+  }
+
+  &.type-info {
+    background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+    color: white;
+  }
+
+  &.type-success {
+    background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
+    color: white;
+  }
+
+  .icon-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    
+    mat-icon {
+      font-size: 24px;
+      height: 24px;
+      width: 24px;
+    }
+  }
+
+  .dialog-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 500;
+    flex-grow: 1;
+  }
+
+  .close-button {
+    position: absolute;
+    right: 8px;
+    top: 8px;
+    color: inherit;
+    opacity: 0.8;
+    
+    &:hover {
+      opacity: 1;
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+  }
+}
+
+.dialog-content {
+  padding: 20px;
+  
+  .dialog-message {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 20px 20px;
+  gap: 12px;
+  
+  .cancel-button {
+    color: var(--color-text);
+    
+    &:hover {
+      background-color: rgba(var(--color-surface), 0.08);
+    }
+  }
+  
+  .confirm-warning {
+    background-color: #ff9800;
+    color: white;
+    
+    &:hover {
+      background-color: #f57c00;
+    }
+  }
+  
+  .confirm-danger {
+    background-color: var(--color-danger);
+    color: white;
+    
+    &:hover {
+      background-color: #c62828;
+    }
+  }
+  
+  .confirm-info {
+    background-color: #2196f3;
+    color: white;
+    
+    &:hover {
+      background-color: #1976d2;
+    }
+  }
+  
+  .confirm-success {
+    background-color: var(--color-success);
+    color: white;
+    
+    &:hover {
+      background-color: #2e7d32;
+    }
+  }
+}
+
+// Animation for dialog appearance
+:host {
+  display: block;
+  
+  ::ng-deep .mat-dialog-container {
+    padding: 0;
+    border-radius: 16px;
+    overflow: hidden;
+  }
+}

@@ -34,7 +34,6 @@ export class UsersService {
 
     async findOne(filter: Partial<User>): Promise<User | null> {
         try {
-            this.logger.log(`Finding the user: ${filter.email}`);
             return this.userModel.findOne(filter).exec();
         } catch (error) {
             this.logger.error(`Error finding user: ${error.message}`);
@@ -396,41 +395,41 @@ export class UsersService {
     ): Promise<{ works: Works[], total: number }> {
         try {
             this.logger.log(`getPublicWorks called with: page=${page}, limit=${limit}, rating=${rating}, search="${search}"`);
-            
-            const filter:any = { isPublic:true };
-            
-            if(rating !== undefined && rating !== null){
+
+            const filter: any = { isPublic: true };
+
+            if (rating !== undefined && rating !== null) {
                 filter.rating = rating;
             }
-            
+
             if (search && search.trim()) {
                 const searchTerm = search.trim().toLowerCase();
                 this.logger.log(`Searching for term: "${searchTerm}"`);
-                
+
                 // Find users and editors that match the search term
                 const [matchingUsers, matchingEditors] = await Promise.all([
-                    this.userModel.find({ 
-                        fullname: { $regex: searchTerm, $options: 'i' } 
+                    this.userModel.find({
+                        fullname: { $regex: searchTerm, $options: 'i' }
                     }).select('_id').lean(),
-                    
-                    this.editorModel.find({ 
-                        fullname: { $regex: searchTerm, $options: 'i' } 
+
+                    this.editorModel.find({
+                        fullname: { $regex: searchTerm, $options: 'i' }
                     }).select('_id').lean()
                 ]);
-                
+
                 this.logger.log(`Found ${matchingUsers.length} matching users and ${matchingEditors.length} matching editors`);
-                
+
                 const userIds = matchingUsers.map(user => user._id.toString());
                 const editorIds = matchingEditors.map(editor => editor._id.toString());
-                
+
                 // If we found matching users or editors, add them to the filter
                 if (userIds.length > 0 || editorIds.length > 0) {
                     filter.$or = [];
-                    
+
                     if (userIds.length > 0) {
                         filter.$or.push({ userId: { $in: userIds } });
                     }
-                    
+
                     if (editorIds.length > 0) {
                         filter.$or.push({ editorId: { $in: editorIds } });
                     }
@@ -440,9 +439,9 @@ export class UsersService {
                     return { works: [], total: 0 };
                 }
             }
-            
+
             this.logger.log(`Final filter: ${JSON.stringify(filter)}`);
-            
+
             // Execute the query with pagination
             const [works, total] = await Promise.all([
                 this.workModel.find(filter)
@@ -451,7 +450,7 @@ export class UsersService {
                     .limit(limit),
                 this.workModel.countDocuments(filter)
             ]);
-            
+
             this.logger.log(`Found ${works.length} works out of ${total} total`);
             return { works, total };
         } catch (error) {
@@ -513,79 +512,78 @@ export class UsersService {
             .exec();
     }
 
-    async getBidsByQuotation(quotationId: Types.ObjectId, userId: Types.ObjectId): Promise<Bid[]> {
-        const quotation = await this.quotationModel.findOne({ _id: quotationId, userId });
-        
+    async getBidsByQuotation(quotationId: Types.ObjectId, userId: Types.ObjectId){
+        const quotation = await this.quotationModel.findOne({ _id: quotationId, userId: userId.toString() });
         if (!quotation) {
-          throw new NotFoundException('Quotation not found or does not belong to you');
+            throw new NotFoundException('Quotation not found or does not belong to you');
         }
-        
-        // Use the centralized BidsService to get bids for the quotation
-        return this.bidsService.findAllByQuotation(quotationId.toString());
-      }
-    
-      async getBidCountsForUserQuotations(userId: Types.ObjectId): Promise<{ [quotationId: string]: number }> {
-        const quotations = await this.quotationModel.find({ 
-            userId, 
-            status: QuotationStatus.PUBLISHED 
-          });
-          
-          const quotationIds = quotations.map(q => q._id);
-          
-          // Use aggregation to get bid counts for each quotation
-          const bidCounts = await this.bidModel.aggregate([
+
+        const bids = await this.bidsService.findAllByQuotation(quotation._id);
+        return bids;
+    }
+
+    async getBidCountsForUserQuotations(userId: Types.ObjectId): Promise<{ [quotationId: string]: number }> {
+        const quotations = await this.quotationModel.find({
+            userId,
+            status: QuotationStatus.PUBLISHED
+        });
+
+        const quotationIds = quotations.map(q => q._id);
+
+        // Use aggregation to get bid counts for each quotation
+        const bidCounts = await this.bidModel.aggregate([
             {
-              $match: {
-                quotationId: { $in: quotationIds },
-                status: BidStatus.PENDING
-              }
+                $match: {
+                    quotationId: { $in: quotationIds },
+                    status: BidStatus.PENDING
+                }
             },
             {
-              $group: {
-                _id: '$quotationId',
-                count: { $sum: 1 }
-              }
+                $group: {
+                    _id: '$quotationId',
+                    count: { $sum: 1 }
+                }
             }
-          ]);
-          
-          // Convert to the expected format
-          const result: { [quotationId: string]: number } = {};
-          bidCounts.forEach(item => {
+        ]);
+
+        // Convert to the expected format
+        const result: { [quotationId: string]: number } = {};
+        bidCounts.forEach(item => {
             result[item._id.toString()] = item.count;
-          });
-          
-          // Ensure all quotations have an entry (even if 0)
-          quotations.forEach(quotation => {
+        });
+
+        // Ensure all quotations have an entry (even if 0)
+        quotations.forEach(quotation => {
             const id = quotation._id.toString();
             if (!result[id]) {
-              result[id] = 0;
+                result[id] = 0;
             }
-          });
-          
-          return result;
-      }
-    
-      async acceptBid(bidId: Types.ObjectId, userId: Types.ObjectId): Promise<Bid> {
+        });
+
+        return result;
+    }
+
+    async acceptBid(bidId: Types.ObjectId, userId: Types.ObjectId): Promise<Bid> {
         const bid = await this.bidsService.acceptBid(bidId.toString(), userId.toString());
-        
+
         // Get the quotation to send notification
         const quotation = await this.quotationModel.findById(bid.quotationId);
-        
-        if(!quotation){
-          throw new NotFoundException('Quotation not found');
+
+        if (!quotation) {
+            throw new NotFoundException('Quotation not found');
         }
         // Send notification to the editor
         await this.notificationService.createNotification({
-          userId: bid.editorId,
-          type: NotificationType.WORK,
-          message: `Your bid on "${quotation.title}" has been accepted!`,
-          data: {
-            quotationId: quotation._id,
-            bidId: bid._id,
-            bidAmount: bid.bidAmount
-          }
+            userId: bid.editorId,
+            type: NotificationType.WORK,
+            message: `Your bid on "${quotation.title}" has been accepted!`,
+            data: {
+                quotationId: quotation._id,
+                bidId: bid._id,
+                bidAmount: bid.bidAmount
+            }
         });
-        
+
         return bid;
-      }
+    }
 }
