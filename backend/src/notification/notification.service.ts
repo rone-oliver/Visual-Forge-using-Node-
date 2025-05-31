@@ -3,6 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Notification, NotificationType } from './models/notification.schema';
 import { NotificationGateway } from './notification.gateway';
+import { OnEvent } from '@nestjs/event-emitter';
+import { EventTypes } from 'src/common/constants/events.constants';
 
 export interface CreateNotificationParams {
     userId: string | Types.ObjectId;
@@ -67,6 +69,46 @@ export class NotificationService {
         } catch (error) {
             this.logger.error(`Failed to get notifications for user ${userId}: ${error.message}`, error.stack);
             return [];
+        }
+    }
+
+    @OnEvent(EventTypes.BID_ACCEPTED)
+    async handleBidAcceptedEvent(payload: {
+        bidId: Types.ObjectId,
+        quotationId: Types.ObjectId,
+        editorId: Types.ObjectId,
+        userId: Types.ObjectId,
+        title: string, 
+        bidAmount: number
+    }) {
+        this.logger.log(`Handling bid accepted event for bid ${payload.bidId}`);
+        
+        try {
+            // Notify the user who accepted the bid
+            await this.createNotification({
+                userId: payload.userId,
+                message: 'You have successfully accepted a bid',
+                type: NotificationType.WORK,
+                quotationId: payload.quotationId,
+                data: {
+                    bidId: payload.bidId,
+                    editorId: payload.editorId
+                }
+            });
+            
+            // Notify the editor whose bid was accepted
+                    await this.createNotification({
+                        userId: payload.editorId,
+                        type: NotificationType.WORK,
+                        message: `Your bid on "${payload.title}" has been accepted!`,
+                        data: {
+                            quotationId: payload.quotationId,
+                            bidId: payload.bidId,
+                            bidAmount: payload.bidAmount
+                        }
+                    });
+        } catch (error) {
+            this.logger.error(`Failed to process bid accepted event: ${error.message}`, error.stack);
         }
     }
 

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { BidStatus } from 'src/common/models/bids.schema';
+import { BidStatus } from 'src/common/bids/models/bids.schema';
 
 class EditorDto {
   @ApiProperty({ description: 'Unique identifier of the editor' })

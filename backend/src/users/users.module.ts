@@ -12,7 +12,7 @@ import { EditorsService } from 'src/editors/editors.service';
 import { PaymentModule } from 'src/common/payment/payment.module';
 import { Transaction, TransactionSchema } from 'src/common/models/transaction.schema';
 import { NotificationModule } from 'src/notification/notification.module';
-import { Bid, BidSchema } from 'src/common/models/bids.schema';
+import { Bid, BidSchema } from 'src/common/bids/models/bids.schema';
 import { BidsModule } from 'src/common/bids/bids.module';
 
 @Module({

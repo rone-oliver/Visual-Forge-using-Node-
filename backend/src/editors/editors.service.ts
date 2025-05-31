@@ -11,8 +11,9 @@ import { CompletedWork } from 'src/common/interfaces/completed-word.interface';
 import { User, UserDocument } from 'src/users/models/user.schema';
 import { NotificationService } from 'src/notification/notification.service';
 import { NotificationType } from 'src/notification/models/notification.schema';
-import { Bid, BidDocument, BidStatus } from 'src/common/models/bids.schema';
+import { Bid, BidDocument, BidStatus } from 'src/common/bids/models/bids.schema';
 import { BidsService } from 'src/common/bids/bids.service';
+import { CreateBidDto } from 'src/common/bids/dto/create-bid.dto';
 
 @Injectable()
 export class EditorsService {
@@ -273,11 +274,10 @@ export class EditorsService {
         // Check if quotation exists and is in Published status
         const bidData = {
             quotationId,
-            editorId,
             bidAmount,
             notes,
             status: BidStatus.PENDING
-        } as Bid;
+        } as unknown as CreateBidDto;
 
         return this.bidsService.create(bidData, editorId);
     }

@@ -13,7 +13,7 @@ import { Works, WorksDocument } from 'src/common/models/works.schema';
 import { PaymentStatus, PaymentType, Transaction, TransactionDocument } from 'src/common/models/transaction.schema';
 import { NotificationService } from 'src/notification/notification.service';
 import { NotificationType } from 'src/notification/models/notification.schema';
-import { Bid, BidDocument, BidStatus } from 'src/common/models/bids.schema';
+import { Bid, BidDocument, BidStatus } from 'src/common/bids/models/bids.schema';
 import { BidsService } from 'src/common/bids/bids.service';
 
 @Injectable()
@@ -564,7 +564,7 @@ export class UsersService {
     }
 
     async acceptBid(bidId: Types.ObjectId, userId: Types.ObjectId): Promise<Bid> {
-        const bid = await this.bidsService.acceptBid(bidId.toString(), userId.toString());
+        const bid = await this.bidsService.acceptBid(bidId, userId);
 
         // Get the quotation to send notification
         const quotation = await this.quotationModel.findById(bid.quotationId);
@@ -572,17 +572,6 @@ export class UsersService {
         if (!quotation) {
             throw new NotFoundException('Quotation not found');
         }
-        // Send notification to the editor
-        await this.notificationService.createNotification({
-            userId: bid.editorId,
-            type: NotificationType.WORK,
-            message: `Your bid on "${quotation.title}" has been accepted!`,
-            data: {
-                quotationId: quotation._id,
-                bidId: bid._id,
-                bidAmount: bid.bidAmount
-            }
-        });
 
         return bid;
     }
