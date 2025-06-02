@@ -89,55 +89,33 @@ export class PublicWorksComponent implements OnInit {
       this.searchTerm
     )
       .pipe(
-        switchMap(response => {
-          this.works = response.works;
-          this.totalItems = response.total;
-          
-          // Collect unique editor and user IDs
-          const editorIds = [...new Set(this.works.map(work => work.editorId.toString()))];
-          const userIds = [...new Set(this.works
-            .filter(work => work.userId)
-            .map(work => work.userId.toString()))];
-          
-          // Fetch editors and users data
-          const editorRequests = editorIds.map(id => 
-            this.userService.getEditor(id).pipe(
-              map(editor => ({ id, editor })),
-              catchError(() => of({ id, editor: null }))
-            )
-          );
-          
-          const userRequests = userIds.map(id => 
-            this.userService.getUser(id).pipe(
-              map(user => ({ id, user })),
-              catchError(() => of({ id, user: null }))
-            )
-          );
-          
-          return forkJoin({
-            editors: editorRequests.length ? forkJoin(editorRequests) : of([]),
-            users: userRequests.length ? forkJoin(userRequests) : of([])
-          });
-        }),
         finalize(() => {
           this.isLoading = false;
         })
       )
       .subscribe({
-        next: ({ editors, users }) => {
-          // Process editors
-          this.editorsMap.clear();
-          editors.forEach(({ id, editor }) => {
-            if (editor) {
-              this.editorsMap.set(id, editor);
-            }
-          });
+        next: (response) => {
+          this.works = response.works;
+          this.totalItems = response.total;
           
-          // Process users
+          // Process editors and users data if they're included in the response
+          this.editorsMap.clear();
           this.usersMap.clear();
-          users.forEach(({ id, user }) => {
-            if (user) {
-              this.usersMap.set(id, user);
+          
+          this.works.forEach(work => {
+            // If the backend returns populated editor and user objects
+            if (work.editorId && typeof work.editorId === 'object') {
+              const editor = work.editorId as unknown as Editor;
+              this.editorsMap.set(editor._id.toString(), editor);
+              // Update the editorId to be just the ID string for consistency
+              work.editorId = editor._id;
+            }
+            
+            if (work.userId && typeof work.userId === 'object') {
+              const user = work.userId as unknown as User;
+              this.usersMap.set(user._id.toString(), user);
+              // Update the userId to be just the ID string for consistency
+              work.userId = user._id;
             }
           });
         },
@@ -150,6 +128,7 @@ export class PublicWorksComponent implements OnInit {
   
   onSearch(event: Event): void {
     const term = (event.target as HTMLInputElement).value;
+    console.log('search value', term);
     this.searchTerms.next(term);
   }
   

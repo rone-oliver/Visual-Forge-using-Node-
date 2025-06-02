@@ -1,4 +1,6 @@
+import { Editor } from "./editor.interface";
 import { FileAttachmentResponse, OutputType, QuotationStatus } from "./quotation.interface";
+import { User } from "./user.interface";
 
 export interface CompletedWork {
     // Original quotation ID (preserved)
@@ -42,15 +44,15 @@ export interface CompletedWork {
 }
 
 export interface Works {
-    _id:string;
-    editorId:string;
-    userId:string;
-    finalFiles:FileAttachmentResponse[];
-    isPublic:boolean;
-    comments?:string;
-    rating?:number;
-    feedback?:string;
+    _id: string;
+    editorId: string | Editor;
+    userId: string | User;
+    finalFiles: FileAttachmentResponse[];
+    isPublic: boolean;
+    comments?: string;
+    rating?: number;
+    feedback?: string;
 
-    createdAt?:Date|string;
-    updatedAt?:Date|string;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
 }

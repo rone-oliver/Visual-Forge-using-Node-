@@ -165,7 +165,6 @@ export class UsersController {
     @Get('works/public')
     @Roles('User', 'Editor')
     async getPublicWorks(
-        @Req() req: Request,
         @Query('page') page: number,
         @Query('limit') limit: number,
         @Query('search') search?: string,

@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { User } from '../../interfaces/user.interface';
 import { catchError, map, Observable, of } from 'rxjs';
@@ -125,20 +125,19 @@ export class UserService {
   }
 
   getPublicWorks(
-    page: number,
-    limit: number,
-    rating?: number | null,
-    search?: string
+    page: number = 1,
+    limit: number = 10,
+    rating: number | null = null,
+    search: string = ''
   ): Observable<{ works: Works[], total: number }> {
-    let params: any = {
-      page: page.toString(),
-      limit: limit.toString()
-    }
-    if (rating !== undefined && rating !== null) {
-      params.rating = rating.toString();
+    let params = new HttpParams()
+      .set('page',page.toString())
+      .set('limit',limit.toString());
+    if (rating !== null) {
+      params = params.set('rating', rating.toString());
     }
     if (search && search.trim()) {
-      params.search = search.trim();
+      params = params.set('search', search.trim());
     }
     return this.http.get<{ works: Works[], total: number }>(`${this.apiUrl}/user/works/public`, {
       params

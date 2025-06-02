@@ -447,9 +447,20 @@ export class UsersService {
                 this.workModel.find(filter)
                     .sort({ createdAt: -1 })
                     .skip((page - 1) * limit)
-                    .limit(limit),
+                    .limit(limit)
+                    .populate({
+                        path:'editorId',
+                        select:'fullname email profileImage',
+                        model: this.userModel
+                    })
+                    .populate({
+                        path:'userId',
+                        select:'fullname email profileImage',
+                        model: this.userModel
+                    }),
                 this.workModel.countDocuments(filter)
             ]);
+            this.logger.log(`public works: `,works);
 
             this.logger.log(`Found ${works.length} works out of ${total} total`);
             return { works, total };
