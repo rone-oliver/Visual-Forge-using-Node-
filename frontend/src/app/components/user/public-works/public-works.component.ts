@@ -7,7 +7,6 @@ import { Editor } from '../../../interfaces/editor.interface';
 import { forkJoin, Observable, of, Subject } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, finalize, map, switchMap, takeUntil } from 'rxjs/operators';
 import { trigger, transition, style, animate, query, stagger } from '@angular/animations';
-import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { WorksCardComponent } from '../works-card/works-card.component';

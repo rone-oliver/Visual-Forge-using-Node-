@@ -13,7 +13,7 @@ export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
 
     if (req.url.startsWith(`${environment.apiUrl}/auth`) &&
         !req.url.includes('/logout') &&
-        // !req.url.includes('/refresh') &&         I think there is no need to check for refresh token
+        !req.url.includes('/refresh') &&
         !req.url.includes('/theme-preference')) {
         return next(req);
     }

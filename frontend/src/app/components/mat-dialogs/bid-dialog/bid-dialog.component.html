@@ -41,9 +41,13 @@
 
     <!-- No Bids State -->
     <div class="no-bids-container" *ngIf="bids.length === 0 && !loading && !error">
-        <mat-icon class="no-bids-icon">info_outline</mat-icon>
+        <mat-icon class="no-bids-icon">search_off</mat-icon>
         <p>No bids have been placed on this quotation yet.</p>
         <p class="hint-text">Check back later or adjust your quotation details to attract more editors.</p>
+        <button mat-stroked-button color="primary" (click)="loadBids()">
+            <mat-icon>refresh</mat-icon>
+            Refresh
+        </button>
     </div>
 
     <!-- Bids List -->

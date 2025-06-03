@@ -85,7 +85,9 @@
                     <select formControlName="outputType"
                         class="w-full p-2 border rounded input-field focus:outline-none focus:ring-2 focus:ring-primary transition duration-300">
                         <option value="" disabled>Select the type of output you want</option>
-                        <option *ngFor="let type of outputTypes" [value]="type">{{ type }}</option>
+                        @for(type of outputTypes; track type){
+                            <option [value]="type">{{type}}</option>
+                        }
                     </select>
                     <p class="text-xs mt-1 text-gray-500">Select the type of output you expect from the editor</p>
                 </div>
@@ -110,31 +112,34 @@
                                 <p class="text-xs">Image, Audio, or Video files</p>
                             </div>
                             <input type="file" class="hidden" (change)="onFileSelected($event)"
-                                accept="image/*, audio/*, video/*" multiple
+                                accept="image/*, audio/*, video/*" multiple #fileInput
                                 [disabled]="selectedFiles.length >= maxFiles || isUploading" />
                         </label>
                     </div>
 
                     <!-- Selected files list -->
-                    <div *ngIf="selectedFiles.length > 0" class="mt-4">
-                        <div class="flex justify-between items-center mb-2">
-                            <h4 class="font-semibold text-text">Selected Files ({{ selectedFiles.length }}/{{ maxFiles }})</h4>
-                            <button type="button" class="create-button text-white px-4 py-2 rounded"
-                                (click)="uploadFiles()" [disabled]="isUploading">
-                                <span *ngIf="!isUploading">Upload Files</span>
-                                <span *ngIf="isUploading">Uploading...</span>
-                            </button>
-                        </div>
-                        <div class="flex flex-wrap gap-2">
-                            <div *ngFor="let file of selectedFiles; let i = index"
-                                class="file-item-pending rounded p-2 flex items-center">
-                                <span class="truncate max-w-xs text-text">{{ file.name }}</span>
-                                <button type="button" class="ml-2 text-red-500" (click)="removeFile(i)">
-                                    <mat-icon>close</mat-icon>
+                    @if(selectedFiles.length > 0){
+                        <div class="mt-4">
+                            <div class="flex justify-between items-center mb-2">
+                                <h4 class="font-semibold text-text">Selected Files ({{ selectedFiles.length }}/{{ maxFiles }})</h4>
+                                <button type="button" class="create-button text-white px-4 py-2 rounded"
+                                    (click)="uploadFiles()" [disabled]="isUploading">
+                                    @if(!isUploading){<span>Upload Files</span>}
+                                    @else if(isUploading){<span>Uploading...</span>}
                                 </button>
                             </div>
+                            <div class="flex flex-wrap gap-2">
+                                @for(file of selectedFiles; track file; let i = $index){
+                                    <div class="file-item-pending rounded p-2 flex items-center">
+                                        <span class="truncate max-w-xs text-text">{{ file.name }}</span>
+                                        <button type="button" class="ml-2 text-red-500 flex items-center justify-center w-5 h-5" (click)="removeFile(i)">
+                                            <mat-icon class="flex items-center justify-center text-base">close</mat-icon>
+                                        </button>
+                                    </div>
+                                }
+                            </div>
                         </div>
-                    </div>
+                    }
 
                     <!-- <mat-progress-bar mode="determinate" [value]="uploadProgress"></mat-progress-bar>
                     <div *ngIf="uploadProgress === 100">Upload Complete!</div> -->
@@ -142,30 +147,35 @@
                     <!-- Upload progress -->
                     <!-- <div *ngIf="isUploading" class="mt-4">
                         <h4 class="font-semibold mb-2">Upload Progress</h4>
-                        <div *ngFor="let progress of cloudinaryService.uploadProgress$ | async" class="mb-2">
-                            <div class="flex justify-between mb-1">
-                                <span>{{ progress.file.name }}</span>
-                                <span>{{ progress.progress }}%</span>
+                        @for(progress of cloudinaryService.uploadProgress$ | async){
+                            <div class="mb-2">
+                                <div class="flex justify-between mb-1">
+                                    <span>{{ progress.file.name }}</span>
+                                    <span>{{ progress.progress }}%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                    <div class="bg-primary h-2.5 rounded-full" [style.width.%]="progress.progress"></div>
+                                </div>
                             </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2.5">
-                                <div class="bg-primary h-2.5 rounded-full" [style.width.%]="progress.progress"></div>
-                            </div>
-                        </div>
+                        }
                     </div> -->
 
                     <!-- Uploaded files -->
-                    <div *ngIf="uploadedFiles.length > 0" class="mt-4">
-                        <h4 class="font-semibold mb-2 text-text">Uploaded Files ({{ uploadedFiles.length }})</h4>
-                        <div class="flex flex-wrap gap-2">
-                            <div *ngFor="let file of uploadedFiles" 
-                                class="file-item-uploaded rounded p-2 flex items-center">
-                                <span class="truncate max-w-xs text-text">{{ file.fileName }}</span>
-                                <a [href]="file.url" target="_blank" class="ml-2 file-link">
-                                    <mat-icon>open_in_new</mat-icon>
-                                </a>
+                    @if(uploadedFiles.length > 0){
+                        <div class="mt-4">
+                            <h4 class="font-semibold mb-2 text-text">Uploaded Files ({{ uploadedFiles.length }})</h4>
+                            <div class="flex flex-wrap gap-2">
+                                @for(file of uploadedFiles; track file){
+                                    <div class="file-item-uploaded rounded p-2 flex items-center">
+                                        <span class="truncate max-w-xs text-text">{{ file.fileName }}</span>
+                                        <a [href]="file.url" target="_blank" class="ml-2 file-link flex items-center justify-center w-5 h-5">
+                                            <mat-icon class="flex items-center justify-center text-base">open_in_new</mat-icon>
+                                        </a>
+                                    </div>
+                                }
                             </div>
                         </div>
-                    </div>
+                    }
                 </div>
 
                 <div class="flex justify-end mt-6">

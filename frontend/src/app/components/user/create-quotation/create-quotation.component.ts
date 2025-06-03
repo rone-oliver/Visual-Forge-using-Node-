@@ -1,11 +1,9 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { LocalDatePipe } from '../../../pipes/date.pipe';
 import { MatIconModule } from '@angular/material/icon';
 import { UserService } from '../../../services/user/user.service';
 import { Router } from '@angular/router';
-import { FileAttachmentResponse, FileType, OutputType } from '../../../interfaces/quotation.interface';
+import { FileAttachmentResponse, OutputType } from '../../../interfaces/quotation.interface';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 interface FileWithProgress {
@@ -15,7 +13,7 @@ interface FileWithProgress {
 
 @Component({
   selector: 'app-create-quotation',
-  imports: [CommonModule, ReactiveFormsModule, MatIconModule, MatSnackBarModule],
+  imports: [ReactiveFormsModule, MatIconModule, MatSnackBarModule],
   templateUrl: './create-quotation.component.html',
   styleUrl: './create-quotation.component.scss'
 })
@@ -28,6 +26,8 @@ export class CreateQuotationComponent {
   maxFiles = 5;
   // uploadProgress = 0;
   // uploadProgress: { [key: string]: number } = {};
+
+  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
   constructor(
     private fb: FormBuilder,
@@ -92,7 +92,10 @@ export class CreateQuotationComponent {
   }
 
   removeFile(index: number) {
-    this.selectedFiles = this.selectedFiles.filter((_, i) => i !== index);
+    this.selectedFiles.splice(index, 1);
+    if(this.fileInput){
+      this.fileInput.nativeElement.value = '';
+    }
   }
 
   uploadFiles() {
@@ -105,11 +108,11 @@ export class CreateQuotationComponent {
 
     this.userService.uploadQuotationFiles(this.selectedFiles).subscribe({
       next: (results) => {
-        this.uploadedFiles = results;
+        this.uploadedFiles = [...this.uploadedFiles, ...results];
         // Add the uploaded files to the form
         const attachedFilesControl = this.quotationForm.get('attachedFiles');
         if (attachedFilesControl) {
-            attachedFilesControl.setValue(results);
+            attachedFilesControl.setValue(this.uploadedFiles);
         }
         this.selectedFiles = []; // Clear selected files
         this.isUploading = false;
