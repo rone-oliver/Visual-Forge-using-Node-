@@ -19,6 +19,7 @@ export interface IQuotation {
     imageUrl?: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+    bidCount?: number;
 }
 
 export enum FileType {

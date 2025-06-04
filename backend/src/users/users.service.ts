@@ -15,6 +15,7 @@ import { NotificationService } from 'src/notification/notification.service';
 import { NotificationType } from 'src/notification/models/notification.schema';
 import { Bid, BidDocument, BidStatus } from 'src/common/bids/models/bids.schema';
 import { BidsService } from 'src/common/bids/bids.service';
+import { GetQuotationsParams, PaginatedQuotationsResponse, QuotationWithBidCount } from './users.controller';
 
 @Injectable()
 export class UsersService {
@@ -211,10 +212,61 @@ export class UsersService {
         }
     }
 
-    async getQuotations(userId: Types.ObjectId): Promise<any[]> {
+    async getQuotations(userId: Types.ObjectId, params: GetQuotationsParams): Promise<PaginatedQuotationsResponse> {
         try {
-            const quotations = await this.quotationModel.find({ userId }).sort({ createdAt: -1 }).lean();
-            return quotations;
+            const page = params.page || 1;
+            const limit = params.limit || 10;
+            const skip = (page - 1) * limit;
+            const matchQuery: any = { userId };
+
+            if (params.status && params.status !== 'All') {
+                matchQuery.status = params.status;
+            }
+            if (params.searchTerm) {
+                const searchRegex = { $regex: params.searchTerm, $options: 'i' };
+                matchQuery.$or = [
+                    { title: searchRegex },
+                    { description: searchRegex },
+                ]
+            }
+
+            const totalItems = await this.quotationModel.countDocuments(matchQuery);
+            const totalPages = Math.ceil(totalItems / limit);
+
+            const aggregationPipeline: any[] = [
+                { $match: matchQuery },
+                { $sort: { createdAt: -1 } },
+                {
+                    $lookup: {
+                        from: 'bids',
+                        localField: '_id',
+                        foreignField: 'quotationId',
+                        as: 'bidsInfo',
+                    },
+                },
+                {
+                    $addFields: {
+                        bidCount: { $size: '$bidsInfo' },
+                    },
+                },
+                {
+                    $project: {
+                        bidsInfo: 0,
+                    },
+                },
+                { $skip: skip },
+                { $limit: limit },
+            ]
+
+            const quotations = await this.quotationModel.aggregate(aggregationPipeline).exec();
+            
+            return {
+                quotations: quotations as QuotationWithBidCount[],
+                totalItems,
+                totalPages,
+                currentPage: page,
+                itemsPerPage: limit
+            }
         } catch (error) {
             this.logger.error(`Error fetching quotations: ${error}`);
             throw error;
@@ -491,18 +543,18 @@ export class UsersService {
                     .skip((page - 1) * limit)
                     .limit(limit)
                     .populate({
-                        path:'editorId',
-                        select:'fullname email profileImage',
+                        path: 'editorId',
+                        select: 'fullname email profileImage',
                         model: this.userModel
                     })
                     .populate({
-                        path:'userId',
-                        select:'fullname email profileImage',
+                        path: 'userId',
+                        select: 'fullname email profileImage',
                         model: this.userModel
                     }),
                 this.workModel.countDocuments(filter)
             ]);
-            this.logger.log(`public works: `,works);
+            this.logger.log(`public works: `, works);
 
             this.logger.log(`Found ${works.length} works out of ${total} total`);
             return { works, total };
@@ -565,7 +617,7 @@ export class UsersService {
             .exec();
     }
 
-    async getBidsByQuotation(quotationId: Types.ObjectId, userId: Types.ObjectId){
+    async getBidsByQuotation(quotationId: Types.ObjectId, userId: Types.ObjectId) {
         const quotation = await this.quotationModel.findOne({ _id: quotationId, userId: userId.toString() });
         if (!quotation) {
             throw new NotFoundException('Quotation not found or does not belong to you');
@@ -573,47 +625,6 @@ export class UsersService {
 
         const bids = await this.bidsService.findAllByQuotation(quotation._id);
         return bids;
-    }
-
-    async getBidCountsForUserQuotations(userId: Types.ObjectId): Promise<{ [quotationId: string]: number }> {
-        const quotations = await this.quotationModel.find({
-            userId,
-            status: QuotationStatus.PUBLISHED
-        });
-
-        const quotationIds = quotations.map(q => q._id);
-
-        // Use aggregation to get bid counts for each quotation
-        const bidCounts = await this.bidModel.aggregate([
-            {
-                $match: {
-                    quotationId: { $in: quotationIds },
-                    status: BidStatus.PENDING
-                }
-            },
-            {
-                $group: {
-                    _id: '$quotationId',
-                    count: { $sum: 1 }
-                }
-            }
-        ]);
-
-        // Convert to the expected format
-        const result: { [quotationId: string]: number } = {};
-        bidCounts.forEach(item => {
-            result[item._id.toString()] = item.count;
-        });
-
-        // Ensure all quotations have an entry (even if 0)
-        quotations.forEach(quotation => {
-            const id = quotation._id.toString();
-            if (!result[id]) {
-                result[id] = 0;
-            }
-        });
-
-        return result;
     }
 
     async acceptBid(bidId: Types.ObjectId, userId: Types.ObjectId): Promise<Bid> {

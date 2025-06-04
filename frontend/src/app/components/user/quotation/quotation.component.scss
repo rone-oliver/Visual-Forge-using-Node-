@@ -57,6 +57,48 @@
     }
 }
 
+.search-bar-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-neutral-300); // Using a neutral for border
+    border-radius: 8px;
+    padding: 8px 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03); // Softer shadow
+  
+    .dark & { // Styles specific to dark mode for the search bar container
+      border-color: var(--color-neutral-700); // Darker border for dark mode
+    }
+  
+    .search-input {
+      flex-grow: 1;
+      border: none;
+      outline: none;
+      background-color: transparent;
+      color: var(--color-text);
+      font-size: 1rem;
+      padding: 4px 0; // Added some padding for better text alignment
+  
+      &::placeholder {
+        color: var(--color-neutral-500);
+      }
+  
+      .dark &::placeholder {
+        color: var(--color-neutral-400);
+      }
+    }
+  
+    mat-icon {
+      color: var(--color-neutral-500); // Icon color
+      margin-left: 8px;
+      
+      .dark & {
+        color: var(--color-neutral-400);
+      }
+    }
+}
+
 .filter-tabs {
     display: flex;
     gap: 0.75rem;
@@ -361,6 +403,82 @@
     .bid-count {
         font-size: 0.9rem;
         opacity: 0.9;
+    }
+}
+
+// Paginator
+.app-paginator {
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    border-top: 1px solid var(--color-neutral-200);
+    padding-top: 8px; // Add some space above the paginator content
+    margin-top: 24px; // Space above the paginator itself
+  
+    .dark & {
+      border-top-color: var(--color-neutral-700);
+    }
+  
+    // Style the text elements within the paginator
+    .mat-mdc-paginator-page-size-label,
+    .mat-mdc-paginator-range-label {
+      color: var(--color-text); // Main text color
+      font-size: 0.875rem; // Slightly smaller font for these labels
+    }
+  
+    // Style the dropdown for items per page
+    .mat-mdc-select-value {
+      color: var(--color-primary); // Use primary color for the selected value
+    }
+    .mat-mdc-select-arrow {
+      color: var(--color-primary); // Arrow color
+    }
+  
+    // Style the navigation buttons (next, previous, first, last)
+    .mat-mdc-icon-button {
+      background-color: transparent;
+      color: var(--color-primary); // Primary color for icons
+  
+      &:hover:not([disabled]) {
+        background-color: var(--color-neutral-100); // Subtle hover
+      }
+      
+      .dark &:hover:not([disabled]) {
+        background-color: var(--color-neutral-700); // Darker subtle hover
+      }
+  
+      &.mat-mdc-paginator-navigation-disabled {
+        color: var(--color-neutral-400); // Disabled state color
+        .dark & {
+          color: var(--color-neutral-500);
+        }
+      }
+    }
+}
+
+::ng-deep {
+    .mat-mdc-select-panel.custom-paginator-dropdown { // Add a custom class to target specifically if needed
+      background-color: var(--color-surface) !important;
+      border-radius: 8px !important;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+  
+      .mat-mdc-option {
+        color: var(--color-text) !important;
+        &:hover:not(.mdc-list-item--disabled),
+        &.mat-mdc-option-active {
+          background-color: var(--color-neutral-100) !important;
+          .dark & {
+            background-color: var(--color-neutral-700) !important;
+          }
+        }
+        &.mat-selected:not(.mat-mdc-option-multiple) {
+          background-color: var(--color-secondary-100) !important; // A subtle selection color
+          color: var(--color-primary) !important;
+          .dark & {
+            background-color: var(--color-secondary-500) !important; // Adjust dark theme selection
+            color: var(--color-primary) !important;
+          }
+        }
+      }
     }
 }
 

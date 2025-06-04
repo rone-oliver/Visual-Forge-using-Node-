@@ -38,6 +38,21 @@ export interface FileAttachmentResponse {
     uploadedAt: Date;
 }
 
+export interface GetQuotationsParams {
+    page?: number;
+    limit?: number;
+    status?: QuotationStatus | 'All';
+    searchTerm?: string;
+  }
+  
+  export interface PaginatedQuotationsResponse {
+    quotations: IQuotation[];
+    totalItems: number;
+    totalPages: number;
+    currentPage: number;
+    itemsPerPage: number;
+}
+
 export interface FileUploadProgress {
     file: File;
     progress: number;
@@ -63,6 +78,7 @@ export interface IQuotation {
     editorId?: string;
     paymentPending?: boolean;
     attachedFiles?: FileAttachment[];
+    bidCount?: number;
     imageUrl?: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;

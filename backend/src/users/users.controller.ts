@@ -9,7 +9,26 @@ import { User } from './models/user.schema';
 import { EditorsService } from 'src/editors/editors.service';
 import { PaymentService } from 'src/common/payment/payment.service';
 import { PaymentType } from 'src/common/models/transaction.schema';
-import { Quotation } from 'src/common/models/quotation.schema';
+import { Quotation, QuotationStatus } from 'src/common/models/quotation.schema';
+
+export interface GetQuotationsParams {
+    page?: number;
+    limit?: number;
+    status?: QuotationStatus | 'All';
+    searchTerm?: string;
+}
+
+export interface QuotationWithBidCount extends Quotation {
+    bidCount?: number;
+}
+
+export interface PaginatedQuotationsResponse {
+    quotations: QuotationWithBidCount[];
+    totalItems: number;
+    totalPages: number;
+    currentPage: number;
+    itemsPerPage: number;
+}
 
 @Controller('user')
 @UseGuards(AuthGuard, RolesGuard)
@@ -49,10 +68,48 @@ export class UsersController {
 
     @Get('quotations')
     @Roles('User', 'Editor')
-    async getQuotations(@Req() req: Request) {
+    async getQuotations(
+        @Req() req: Request,
+        @Query('page') page?: string,
+        @Query('limit') limit?: string,
+        @Query('status') status?: QuotationStatus | 'All',
+        @Query('searchTerm') searchTerm?: string,
+    ): Promise<PaginatedQuotationsResponse>{
         const user = req['user'] as { userId: Types.ObjectId; role: string };
-        const quotations = await this.userService.getQuotations(user.userId);
+        const params: GetQuotationsParams = {
+            page: page ? parseInt(page,10) : undefined,
+            limit: limit ? parseInt(limit,10) : undefined,
+            status: status,
+            searchTerm: searchTerm,
+        }
+        return this.userService.getQuotations(user.userId, params);
+    }
+
+    @Get('quotations/completed')
+    // GET /quotations?status=completed
+    @Roles('User', 'Editor')
+    async getCompletedWorks(@Req() req: Request) {
+        const user = req['user'] as { userId: Types.ObjectId, role: string }
+        const quotations = await this.userService.getCompletedWorks(user.userId);
         return quotations;
+    }
+    
+    @Get('quotations/:quotationId')
+    @Roles('User','Editor')
+    async getQuotation(@Param('quotationId') quotationId: string){
+        return await this.userService.getQuotation(new Types.ObjectId(quotationId));
+    }
+
+    @Get('quotations/:quotationId/bids')
+    @Roles('User','Editor')
+    async getBidsByQuotation(@Param('quotationId') quotationId: string, @Req() req: Request) {
+        const user = req['user'] as { userId: Types.ObjectId; role: string };
+        
+        if (!Types.ObjectId.isValid(quotationId)) {
+            throw new BadRequestException('Invalid quotation ID');
+        }
+        
+        return this.userService.getBidsByQuotation(new Types.ObjectId(quotationId), new Types.ObjectId(user.userId));
     }
 
     @Post('quotations')
@@ -64,12 +121,6 @@ export class UsersController {
             return true;
         }
         return false;
-    }
-
-    @Get('quotations/:quotationId')
-    @Roles('User','Editor')
-    async getQuotation(@Param('quotationId') quotationId: string){
-        return await this.userService.getQuotation(new Types.ObjectId(quotationId));
     }
 
     @Patch('quotations/:quotationId')
@@ -129,15 +180,6 @@ export class UsersController {
         this.logger.log(`Uploading ${files.length} files`);
         const result = await this.userService.uploadFiles(files, folder);
         return result;
-    }
-
-    @Get('quotations/completed')
-    // GET /quotations?status=completed
-    @Roles('User', 'Editor')
-    async getCompletedWorks(@Req() req: Request) {
-        const user = req['user'] as { userId: Types.ObjectId, role: string }
-        const quotations = await this.userService.getCompletedWorks(user.userId);
-        return quotations;
     }
 
     @Put('quotations/:workId/rating')
@@ -245,25 +287,6 @@ export class UsersController {
             return true;
         }
         return false;
-    }
-
-    @Get('quotations/:quotationId/bids')
-    @Roles('User','Editor')
-    async getBidsByQuotation(@Param('quotationId') quotationId: string, @Req() req: Request) {
-        const user = req['user'] as { userId: Types.ObjectId; role: string };
-        
-        if (!Types.ObjectId.isValid(quotationId)) {
-            throw new BadRequestException('Invalid quotation ID');
-        }
-        
-        return this.userService.getBidsByQuotation(new Types.ObjectId(quotationId), new Types.ObjectId(user.userId));
-    }
-
-    @Get('quotations/bid-counts')
-    @Roles('User','Editor')
-    async getBidCountsForUserQuotations(@Req() req: Request) {
-        const user = req['user'] as { userId: Types.ObjectId; role: string };
-        return this.userService.getBidCountsForUserQuotations(user.userId);
     }
 
     @Post('bids/:bidId/accept')

@@ -2,38 +2,66 @@
     <div class="header">
         <div class="title-section">
             <h1>Your Quotations</h1>
-            <i class="fas fa-angle-double-right"></i>
+            <mat-icon>keyboard_double_arrow_right</mat-icon>
         </div>
         <button class="create-button" [routerLink]="['/user/create-quotation']">
-            <i class="fas fa-plus"></i>
+            <mat-icon>add</mat-icon>
             Create new
         </button>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-bar-container">
+        <input type="search" placeholder="Search by title or description..." class="search-input" [ngModel]="searchTerm"
+            (ngModelChange)="onSearchTermChange($event)" />
+        <mat-icon>search</mat-icon>
     </div>
 
     <div class="filter-tabs">
         <button [class.active]="activeFilter === 'All'" (click)="setFilter('All')">
             All
         </button>
-        <button [class.active]="activeFilter === 'Accepted'" (click)="setFilter('Accepted')">
+        <button [class.active]="activeFilter === QuotationStatus.ACCEPTED"
+            (click)="setFilter(QuotationStatus.ACCEPTED)">
             Accepted
         </button>
-        <button [class.active]="activeFilter === 'Published'" (click)="setFilter('Published')">
+        <button [class.active]="activeFilter === QuotationStatus.PUBLISHED"
+            (click)="setFilter(QuotationStatus.PUBLISHED)">
             Published
         </button>
-        <button [class.active]="activeFilter === 'Completed'" (click)="showCompletedWorks()">
+        <button [class.active]="activeFilter === QuotationStatus.COMPLETED" (click)="showCompletedWorks()">
             Completed
         </button>
-        <button [class.active]="activeFilter === 'Expired'" (click)="setFilter('Expired')">
+        <button [class.active]="activeFilter === QuotationStatus.EXPIRED" (click)="setFilter(QuotationStatus.EXPIRED)">
             Expired
         </button>
-        <button [class.active]="activeFilter === 'Cancelled'" (click)="setFilter('Cancelled')">
+        <button [class.active]="activeFilter === QuotationStatus.CANCELLED"
+            (click)="setFilter(QuotationStatus.CANCELLED)">
             Cancelled
         </button>
     </div>
 
     <div class="quotations-grid">
-        <ng-container *ngIf="activeFilter !== 'Completed' else completedWorksContainer">
-            <div class="quotation-card" *ngFor="let quotation of filteredQuotations">
+        <ng-container *ngIf="activeFilter !== QuotationStatus.COMPLETED else completedWorksContainer">
+            <!-- Loading State for Quotations -->
+            <div *ngIf="loading" class="loading-indicator full-width-message">
+                <mat-icon class="spin">refresh</mat-icon>
+                <p>Loading quotations...</p>
+            </div>
+
+            <!-- Error State for Quotations -->
+            <div *ngIf="!loading && error" class="error-message full-width-message">
+                <mat-icon>error_outline</mat-icon>
+                <p>{{ error }}</p>
+            </div>
+
+            <!-- Empty State for Quotations -->
+            <div *ngIf="!loading && !error && quotations.length === 0" class="empty-state-message full-width-message">
+                <mat-icon>search_off</mat-icon>
+                <p>No quotations found matching your criteria.</p>
+            </div>
+
+            <div class="quotation-card" *ngFor="let quotation of quotations">
                 <div class="card-image-container">
                     <img [src]="quotation.imageUrl || 'https://placehold.co/600x400'" [alt]="quotation.title">
                     <div class="amount-badge">₹{{ quotation.estimatedBudget }}</div>
@@ -71,11 +99,12 @@
                         </div>
 
                         <div class="detail-item bids-button-container" *ngIf="quotation.status === 'Published'">
-                            <button mat-raised-button color="accent" class="view-bids-button" (click)="viewBids(quotation)">
+                            <button mat-raised-button color="accent" class="view-bids-button"
+                                (click)="viewBids(quotation)">
                                 <mat-icon>gavel</mat-icon>
                                 View Bids
-                                <span class="bid-count" *ngIf="quotationBidCounts[quotation._id]">
-                                    ({{ quotationBidCounts[quotation._id] }})
+                                <span class="bid-count" *ngIf="quotation.bidCount">
+                                    ({{ quotation.bidCount }})
                                 </span>
                             </button>
                         </div>
@@ -134,7 +163,7 @@
 
         <ng-template #completedWorksContainer>
             <!-- Loading State -->
-            <div *ngIf="completedWorksLoading" class="loading-container">
+            <div *ngIf="completedWorksLoading" class="loading-container full-width-message">
                 <mat-icon class="spin">refresh</mat-icon>
                 <p>Loading your completed works...</p>
             </div>
@@ -196,7 +225,8 @@
                             </button>
                         </div>
 
-                        <div class="payment-section" *ngIf="(work.isAdvancePaid && !work.isFullyPaid) || (!work.isFullyPaid)">
+                        <div class="payment-section"
+                            *ngIf="(work.isAdvancePaid && !work.isFullyPaid) || (!work.isFullyPaid)">
                             <button mat-raised-button color="primary" class="payment-button"
                                 (click)="initiateBalancePayment(work)">
                                 <mat-icon>payment</mat-icon>
@@ -255,4 +285,14 @@
             </div>
         </ng-template>
     </div>
+
+    <!-- Paginator for Quotations (only when not loading, no error, and items exist) -->
+    <mat-paginator
+        *ngIf="activeFilter !== QuotationStatus.COMPLETED && !loading && !error && quotations.length > 0 && totalItems > 0"
+        [length]="totalItems" [pageSize]="itemsPerPage" [pageIndex]="currentPage - 1"
+        [pageSizeOptions]="[5, 10, 15, 20]" (page)="handlePageEvent($event)" aria-label="Select page of quotations"
+        class="app-paginator"
+        panelClass="custom-paginator-dropdown">
+    </mat-paginator>
+
 </div>

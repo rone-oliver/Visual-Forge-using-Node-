@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { UserService } from '../../../services/user/user.service';
 import { Router, RouterModule } from '@angular/router';
-import { FileAttachment, FileType, IPaymentVerification, IQuotation } from '../../../interfaces/quotation.interface';
+import { FileAttachment, FileType, IPaymentVerification, IQuotation, PaginatedQuotationsResponse, QuotationStatus } from '../../../interfaces/quotation.interface';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { FilesPreviewComponent } from '../files-preview/files-preview.component';
 import { CompletedWork } from '../../../interfaces/completed-word.interface';
@@ -16,10 +16,12 @@ import { firstValueFrom } from 'rxjs';
 import { IBid } from '../../../interfaces/bid.interface';
 import { BidDialogComponent } from '../../mat-dialogs/bid-dialog/bid-dialog.component';
 import { ConfirmationDialogComponent } from '../../mat-dialogs/confirmation-dialog/confirmation-dialog.component';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-quotation',
-  imports: [CommonModule, MatIconModule, RouterModule, MatDialogModule, LocalDatePipe, MatButton],
+  imports: [CommonModule, FormsModule, MatIconModule, RouterModule, MatDialogModule, LocalDatePipe, MatButton, MatPaginatorModule],
   templateUrl: './quotation.component.html',
   styleUrl: './quotation.component.scss'
 })
@@ -30,10 +32,17 @@ export class QuotationComponent implements OnInit {
   completedWorksSearch: string = '';
   completedWorksLoading: boolean = false;
   FileType = FileType;
-  activeFilter: 'All' | 'Accepted' | 'Published' | 'Completed' | 'Expired' | 'Cancelled' = 'All';
+  activeFilter: QuotationStatus | 'All' = 'All';
+  searchTerm: string = '';
+  protected QuotationStatus = QuotationStatus;
+
+  // Pagination
+  currentPage: number = 1;
+  itemsPerPage: number = 10; // Default items per page
+  totalItems: number = 0;
+
   bids: IBid[] = [];
   error: string | null = null;
-  quotationBidCounts: { [key: string]: number } = {};
 
   constructor(
     private userService: UserService,
@@ -45,36 +54,31 @@ export class QuotationComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadQuotations();
-    this.loadAllBidCounts();
   }
 
   loadQuotations(): void {
-    this.userService.getQuotations().subscribe({
-      next: (quotations) => {
-        this.quotations = quotations;
+    this.loading = true;
+    const params = {
+      page: this.currentPage,
+      limit: this.itemsPerPage,
+      status: this.activeFilter,
+      searchTerm: this.searchTerm.trim()
+    }
+    this.userService.getQuotations(params).subscribe({
+      next: (response: PaginatedQuotationsResponse) => {
+        this.quotations = response.quotations;
+        this.totalItems = response.totalItems;
+        this.currentPage = response.currentPage;
+        this.itemsPerPage = response.itemsPerPage;
         this.loading = false;
-        this.loadAllBidCounts();
+        // this.loadAllBidCounts();
       },
       error: (err) => {
         console.error('error getting quotations', err);
+        this.error = 'Failed to load quotations. Please try again.';
         this.loading = false;
       }
     })
-  }
-
-  loadAllBidCounts(): void {
-    const publishedQuotations = this.quotations.filter(q => q.status === 'Published');
-
-    publishedQuotations.forEach(quotation => {
-      this.userService.getBidCountsForUserQuotations().subscribe({
-        next: (bidCounts) => {
-          this.quotationBidCounts = bidCounts;
-        },
-        error: (error) => {
-          console.error(`Error loading bids for quotation ${quotation._id}:`, error);
-        }
-      });
-    });
   }
 
   viewBids(quotation: IQuotation): void {
@@ -92,15 +96,22 @@ export class QuotationComponent implements OnInit {
     });
   }
 
-  setFilter(filter: 'All' | 'Accepted' | 'Published' | 'Expired' | 'Cancelled'): void {
+  setFilter(filter: QuotationStatus | 'All'): void {
     this.activeFilter = filter;
+    this.currentPage = 1;
+    this.loadQuotations();
   }
 
-  get filteredQuotations(): IQuotation[] {
-    if (this.activeFilter === 'All') {
-      return this.quotations;
-    }
-    return this.quotations.filter(q => q.status === this.activeFilter);
+  onSearchTermChange(term: string): void {
+    this.searchTerm = term;
+    this.currentPage = 1;
+    this.loadQuotations();
+  }
+
+  handlePageEvent(event: PageEvent): void {
+    this.currentPage = event.pageIndex + 1;
+    this.itemsPerPage = event.pageSize;
+    this.loadQuotations();
   }
 
   getStatusClass(status: string): string {
@@ -142,7 +153,7 @@ export class QuotationComponent implements OnInit {
   }
 
   showCompletedWorks() {
-    this.activeFilter = 'Completed';
+    this.activeFilter = QuotationStatus.COMPLETED;
     this.completedWorksLoading = true;
     this.loadCompletedWorks();
   }

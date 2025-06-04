@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { User } from '../../interfaces/user.interface';
 import { catchError, map, Observable, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { FileAttachmentResponse, IPaymentVerification } from '../../interfaces/quotation.interface';
+import { FileAttachmentResponse, GetQuotationsParams, IPaymentVerification, PaginatedQuotationsResponse } from '../../interfaces/quotation.interface';
 import { CompletedWork, Works } from '../../interfaces/completed-word.interface';
 import { IBid } from '../../interfaces/bid.interface';
 
@@ -42,10 +42,28 @@ export class UserService {
     );
   }
 
-  getQuotations(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.userApiUrl}/quotations`).pipe(
+  getQuotations(params?: GetQuotationsParams): Observable<PaginatedQuotationsResponse> {
+    let httpParams = new HttpParams();
+    if (params) {
+      if (params.page) {
+        httpParams = httpParams.set('page', params.page.toString());
+      }
+      if (params.limit) {
+        httpParams = httpParams.set('limit', params.limit.toString());
+      }
+      if (params.status) {
+        httpParams = httpParams.set('status', params.status);
+      }
+      if (params.searchTerm) {
+        httpParams = httpParams.set('searchTerm', params.searchTerm);
+      }
+    }
+    return this.http.get<PaginatedQuotationsResponse>(`${this.userApiUrl}/quotations`, { params: httpParams }).pipe(
       map((response) => response),
-      catchError((error) => { throw error })
+      catchError((error) => {
+        console.error('Error fetching quotations with params:', error)
+        throw error
+      })
     )
   }
 
@@ -207,10 +225,6 @@ export class UserService {
 
   getBidsByQuotation(quotationId: string): Observable<IBid[]> {
     return this.http.get<IBid[]>(`${this.userApiUrl}/quotations/${quotationId}/bids`);
-  }
-
-  getBidCountsForUserQuotations(): Observable<{[quotationId: string]: number}> {
-    return this.http.get<{[quotationId: string]: number}>(`${this.userApiUrl}/quotations/bid-counts`);
   }
 
   acceptBid(bidId: string): Observable<IBid> {
