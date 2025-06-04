@@ -71,6 +71,10 @@ export const routes: Routes = [
                 loadComponent: USER_ROUTES.CREATE_QUOTATION
             },
             {
+                path:'edit-quotation/:id', 
+                loadComponent: USER_ROUTES.CREATE_QUOTATION
+            },
+            {
                 path:'works', 
                 loadComponent: USER_ROUTES.PUBLIC_WORKS
             },

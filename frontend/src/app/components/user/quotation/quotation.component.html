@@ -40,6 +40,14 @@
                     <div class="status-badge" [ngClass]="getStatusClass(quotation.status)">
                         {{ quotation.status | titlecase }}
                     </div>
+                    <div class="action-icons">
+                        <button class="icon-button edit" (click)="editQuotation(quotation, $event)">
+                            <mat-icon>edit</mat-icon>
+                        </button>
+                        <button class="icon-button delete" (click)="deleteQuotation(quotation, $event)">
+                            <mat-icon>delete</mat-icon>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="card-content">

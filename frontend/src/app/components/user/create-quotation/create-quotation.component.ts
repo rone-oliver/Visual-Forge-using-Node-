@@ -1,9 +1,9 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { UserService } from '../../../services/user/user.service';
-import { Router } from '@angular/router';
-import { FileAttachmentResponse, OutputType } from '../../../interfaces/quotation.interface';
+import { ActivatedRoute, Router } from '@angular/router';
+import { FileAttachmentResponse, IQuotation, OutputType } from '../../../interfaces/quotation.interface';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 interface FileWithProgress {
@@ -17,7 +17,7 @@ interface FileWithProgress {
   templateUrl: './create-quotation.component.html',
   styleUrl: './create-quotation.component.scss'
 })
-export class CreateQuotationComponent {
+export class CreateQuotationComponent implements OnInit{
   quotationForm: FormGroup;
   outputTypes = Object.values(OutputType);
   selectedFiles: File[] = [];
@@ -33,6 +33,7 @@ export class CreateQuotationComponent {
     private fb: FormBuilder,
     private userService: UserService,
     private router: Router,
+    private route: ActivatedRoute,
     private snackBar: MatSnackBar,
   ) {
     const tomorrow = new Date();
@@ -49,6 +50,61 @@ export class CreateQuotationComponent {
     });
   }
 
+  ngOnInit(): void {
+    this.route.paramMap.subscribe(params => {
+      const quotationId = params.get('id');
+      if (quotationId) {
+        // We're in edit mode, fetch the quotation data
+        this.userService.getQuotationById(quotationId).subscribe({
+          next: (quotation) => {
+            // Populate the form with existing data
+            this.populateForm(quotation);
+          },
+          error: (error) => {
+            console.error('Error fetching quotation:', error);
+            this.showMessage('Error loading quotation data');
+            // Navigate back to quotations list if we can't load the data
+            this.router.navigate(['/user/quotations']);
+          }
+        });
+      }
+    });
+  }
+
+  private populateForm(quotation: IQuotation): void {
+    // Format the date properly for the form
+    let dueDate = '';
+    if (quotation.dueDate) {
+      const date = new Date(quotation.dueDate);
+      // Format to YYYY-MM-DDThh:mm
+      dueDate = date.toISOString().slice(0, 16);
+    }
+    
+    // Set form values from the quotation
+    this.quotationForm.patchValue({
+      title: quotation.title,
+      description: quotation.description,
+      theme: quotation.theme || '',
+      dueDate: dueDate,
+      estimatedBudget: quotation.estimatedBudget,
+      outputType: quotation.outputType,
+    });
+
+    // Handle attached files if they exist
+    if (quotation.attachedFiles && quotation.attachedFiles.length > 0) {
+      this.uploadedFiles = [...quotation.attachedFiles as FileAttachmentResponse[]];
+      this.quotationForm.get('attachedFiles')?.setValue(this.uploadedFiles);
+    }
+  }
+
+  protected isEditMode(): boolean {
+    return this.route.snapshot.paramMap.has('id');
+  }
+
+  private getQuotationId(): string | null {
+    return this.route.snapshot.paramMap.get('id');
+  }
+
   onSubmit() {
     if(this.isUploading){
       this.showMessage('Please wait for file uploads to complete');
@@ -63,17 +119,39 @@ export class CreateQuotationComponent {
         formData.dueDate = new Date(formData.dueDate).toISOString();
       }
 
-      this.userService.createQuotation(formData).subscribe({
-        next: (response) => {
-          console.log('Quotation created successfully');
-          this.showMessage('Quotation created successfully');
-          this.router.navigate(['/user/quotations']);
-        },
-        error: (error) => {
-          console.error(error);
-          this.showMessage('Error creating quotation');
+      if (this.isEditMode()) {
+        // Update existing quotation
+        const quotationId = this.getQuotationId();
+        if (!quotationId) {
+          this.showMessage('Error: Quotation ID not found');
+          return;
         }
-      })
+
+        this.userService.updateQuotation(quotationId, formData).subscribe({
+          next: (response) => {
+            console.log('Quotation updated successfully');
+            this.showMessage('Quotation updated successfully');
+            this.router.navigate(['/user/quotations']);
+          },
+          error: (error) => {
+            console.error(error);
+            this.showMessage('Error updating quotation');
+          }
+        });
+      } else {
+        // Create new quotation
+        this.userService.createQuotation(formData).subscribe({
+          next: (response) => {
+            console.log('Quotation created successfully');
+            this.showMessage('Quotation created successfully');
+            this.router.navigate(['/user/quotations']);
+          },
+          error: (error) => {
+            console.error(error);
+            this.showMessage('Error creating quotation');
+          }
+        });
+      }
     } else {
       this.markFormGroupTouched(this.quotationForm);
       this.showMessage('Please fill all required fields');

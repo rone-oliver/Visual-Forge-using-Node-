@@ -49,8 +49,29 @@ export class UserService {
     )
   }
 
+  getQuotationById(id: string): Observable<any> {
+    return this.http.get<any>(`${this.userApiUrl}/quotations/${id}`).pipe(
+      map((response) => response),
+      catchError((error) => { throw error })
+    )
+  }
+
   createQuotation(quotation: any): Observable<boolean> {
     return this.http.post<boolean>(`${this.userApiUrl}/quotations`, { quotation }).pipe(
+      map(response => response),
+      catchError(err => { throw err })
+    )
+  }
+
+  updateQuotation(id: string, quotation: any): Observable<boolean> {
+    return this.http.patch<boolean>(`${this.userApiUrl}/quotations/${id}`, { quotation }).pipe(
+      map(response => response),
+      catchError(err => { throw err })
+    )
+  }
+
+  deleteQuotation(id: string): Observable<boolean> {
+    return this.http.delete<boolean>(`${this.userApiUrl}/quotations/${id}`).pipe(
       map(response => response),
       catchError(err => { throw err })
     )

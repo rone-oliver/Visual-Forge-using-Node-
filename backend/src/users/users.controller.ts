@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Logger, Param, Patch, Post, Put, Query, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Logger, Param, Patch, Post, Put, Query, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { UsersService } from './users.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -9,6 +9,7 @@ import { User } from './models/user.schema';
 import { EditorsService } from 'src/editors/editors.service';
 import { PaymentService } from 'src/common/payment/payment.service';
 import { PaymentType } from 'src/common/models/transaction.schema';
+import { Quotation } from 'src/common/models/quotation.schema';
 
 @Controller('user')
 @UseGuards(AuthGuard, RolesGuard)
@@ -63,6 +64,24 @@ export class UsersController {
             return true;
         }
         return false;
+    }
+
+    @Get('quotations/:quotationId')
+    @Roles('User','Editor')
+    async getQuotation(@Param('quotationId') quotationId: string){
+        return await this.userService.getQuotation(new Types.ObjectId(quotationId));
+    }
+
+    @Patch('quotations/:quotationId')
+    @Roles('User','Editor')
+    async updateQuotation(@Param('quotationId') quotationId: string, @Body() body: { quotation: Partial<Quotation> }) {
+        return await this.userService.updateQuotation(new Types.ObjectId(quotationId), body.quotation);
+    }
+
+    @Delete('quotations/:quotationId')
+    @Roles('User','Editor')
+    async deleteQuotation(@Param('quotationId') quotationId: string){
+        return await this.userService.deleteQuotation(new Types.ObjectId(quotationId));
     }
 
     @Patch('profile/image')
@@ -219,7 +238,7 @@ export class UsersController {
             amount: body.amount,
             paymentType: paymentType
         };
-        console.log('paymentDEtails: ',paymentDetails);
+        console.log('paymentDetails: ',paymentDetails);
 
         const success = await this.userService.createTransaction(user.userId, new Types.ObjectId(quotationId), paymentDetails);
         if (success) {

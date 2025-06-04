@@ -13,7 +13,7 @@ export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
 
     if (req.url.startsWith(`${environment.apiUrl}/auth`) &&
         !req.url.includes('/logout') &&
-        !req.url.includes('/refresh') &&
+        // !req.url.includes('/refresh') &&             Infinite loop condition when not commented
         !req.url.includes('/theme-preference')) {
         return next(req);
     }

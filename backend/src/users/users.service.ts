@@ -221,15 +221,22 @@ export class UsersService {
         }
     }
 
+    private calculateQuotationAmounts(estimatedBudget: number): { advanceAmount: number, balanceAmount: number } {
+        const advancePercentage = 0.4;
+        const advanceAmount = Math.round(estimatedBudget * advancePercentage);
+        const balanceAmount = estimatedBudget - advanceAmount;
+        return { advanceAmount, balanceAmount };
+    }
+
     async createQuotation(quotation: Partial<Quotation>, userId: Types.ObjectId): Promise<Quotation> {
         try {
             this.logger.log(quotation)
             if (!quotation.dueDate) throw new Error('Due date is required');
-            const advancePercentage = 0.4;
-            const advanceAmount = Math.round((quotation.estimatedBudget || 0) * advancePercentage);
-            const balanceAmount = (quotation.estimatedBudget || 0) - advanceAmount;
-            quotation.advanceAmount = advanceAmount;
-            quotation.balanceAmount = balanceAmount;
+            if (quotation.estimatedBudget) {
+                const { advanceAmount, balanceAmount } = this.calculateQuotationAmounts(quotation.estimatedBudget);
+                quotation.advanceAmount = advanceAmount;
+                quotation.balanceAmount = balanceAmount;
+            }
             quotation.userId = userId;
             const savedQuotation = await this.quotationModel.create(quotation);
             await this.notificationService.createNotification({
@@ -242,6 +249,41 @@ export class UsersService {
             return savedQuotation;
         } catch (error) {
             this.logger.error(`Error creating quotation: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async getQuotation(quotationId: Types.ObjectId) {
+        try {
+            const quotation = await this.quotationModel.findById(quotationId);
+            return quotation;
+        } catch (error) {
+            this.logger.error(`Error fetching quotation: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async updateQuotation(quotationId: Types.ObjectId, quotation: Partial<Quotation>) {
+        try {
+            if (quotation.estimatedBudget) {
+                const { advanceAmount, balanceAmount } = this.calculateQuotationAmounts(quotation.estimatedBudget);
+                quotation.advanceAmount = advanceAmount;
+                quotation.balanceAmount = balanceAmount;
+            }
+            const updatedQuotation = await this.quotationModel.findByIdAndUpdate(quotationId, quotation, { new: true });
+            return updatedQuotation;
+        } catch (error) {
+            this.logger.error(`Error updating quotation: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async deleteQuotation(quotationId: Types.ObjectId) {
+        try {
+            await this.quotationModel.deleteOne({ _id: quotationId });
+            return true;
+        } catch (error) {
+            this.logger.error(`Error deleting quotation: ${error.message}`);
             throw error;
         }
     }

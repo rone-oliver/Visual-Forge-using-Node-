@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { UserService } from '../../../services/user/user.service';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { FileAttachment, FileType, IPaymentVerification, IQuotation } from '../../../interfaces/quotation.interface';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { FilesPreviewComponent } from '../files-preview/files-preview.component';
@@ -15,6 +15,7 @@ import { PaymentService } from '../../../services/payment.service';
 import { firstValueFrom } from 'rxjs';
 import { IBid } from '../../../interfaces/bid.interface';
 import { BidDialogComponent } from '../../mat-dialogs/bid-dialog/bid-dialog.component';
+import { ConfirmationDialogComponent } from '../../mat-dialogs/confirmation-dialog/confirmation-dialog.component';
 
 @Component({
   selector: 'app-quotation',
@@ -39,6 +40,7 @@ export class QuotationComponent implements OnInit {
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private paymentService: PaymentService,
+    private router: Router,
   ) { }
 
   ngOnInit(): void {
@@ -62,7 +64,7 @@ export class QuotationComponent implements OnInit {
 
   loadAllBidCounts(): void {
     const publishedQuotations = this.quotations.filter(q => q.status === 'Published');
-    
+
     publishedQuotations.forEach(quotation => {
       this.userService.getBidCountsForUserQuotations().subscribe({
         next: (bidCounts) => {
@@ -299,14 +301,14 @@ export class QuotationComponent implements OnInit {
         work.isPublic = isPublic;
         this.snackBar.open(isPublic ? 'Work made public' : 'Work set to private', 'Dismiss', {
           duration: 3000,
-          panelClass: isPublic ? 'custom-snack' : 'info-snack'
+          panelClass: isPublic ? 'success-snackbar' : 'custom-snackbar'
         });
       },
       error: (err) => {
         console.error('Error updating public status:', err);
         this.snackBar.open('Failed to update public status', 'Dismiss', {
           duration: 3000,
-          panelClass: 'error-snack'
+          panelClass: 'custom-snackbar'
         });
       }
     });
@@ -323,7 +325,7 @@ export class QuotationComponent implements OnInit {
 
       // After successful payment and verification
       await firstValueFrom(
-        this.userService.updateQuotationPayment(true,quotation._id,quotation.estimatedBudget, paymentResult)
+        this.userService.updateQuotationPayment(true, quotation._id, quotation.estimatedBudget, paymentResult)
       );
 
       this.snackBar.open('Payment successful!', 'Close', {
@@ -354,7 +356,7 @@ export class QuotationComponent implements OnInit {
 
       // After successful payment and verification
       await firstValueFrom(
-        this.userService.updateQuotationPayment(false,work.quotationId,work.estimatedBudget, paymentResult)
+        this.userService.updateQuotationPayment(false, work.quotationId, work.estimatedBudget, paymentResult)
       );
 
       this.snackBar.open('Payment successful!', 'Close', {
@@ -370,6 +372,68 @@ export class QuotationComponent implements OnInit {
       this.snackBar.open('Payment process failed', 'Dismiss', {
         duration: 3000,
         panelClass: 'error-snack'
+      });
+    }
+  }
+
+  editQuotation(quotation: IQuotation, event?: MouseEvent) {
+    event?.stopPropagation();
+
+    // Navigate to edit page with the quotation ID
+    // Only allow editing for quotations that are not yet accepted or in progress
+    
+    if (quotation.status === 'Published' || quotation.status === 'Cancelled') {
+      this.router.navigate(['/user/edit-quotation', quotation._id]);
+    } else {
+      this.snackBar.open('Cannot edit quotations that are already accepted or in progress', 'Dismiss', {
+        duration: 3000,
+        panelClass: 'warning-snack'
+      });
+    }
+  }
+
+  deleteQuotation(quotation: IQuotation, event?: MouseEvent): void {
+    event?.stopPropagation();
+
+    // Only allow deleting quotations that are not accepted or in progress
+    if (quotation.status === 'Published' || quotation.status === 'Cancelled' || quotation.status === 'Expired') {
+      // Show confirmation dialog
+      const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+        width: '400px',
+        data: {
+          title: 'Confirm Deletion',
+          message: 'Are you sure you want to delete this quotation?',
+          confirmText: 'Delete',
+          cancelText: 'Cancel'
+        }
+      });
+
+      dialogRef.afterClosed().subscribe(result => {
+        if (result) {
+          // Call API to delete quotation
+          this.userService.deleteQuotation(quotation._id).subscribe({
+            next: () => {
+              this.snackBar.open('Quotation deleted successfully', 'Dismiss', {
+                duration: 3000,
+                panelClass: 'success-snack'
+              });
+              // Refresh quotations list
+              this.loadQuotations();
+            },
+            error: (err) => {
+              console.error('Error deleting quotation:', err);
+              this.snackBar.open('Failed to delete quotation', 'Dismiss', {
+                duration: 3000,
+                panelClass: 'error-snack'
+              });
+            }
+          });
+        }
+      });
+    } else {
+      this.snackBar.open('Cannot delete quotations that are already accepted or in progress', 'Dismiss', {
+        duration: 3000,
+        panelClass: 'warning-snack'
       });
     }
   }
