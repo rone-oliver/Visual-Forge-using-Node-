@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { UserService } from '../../../services/user/user.service';
 import { Router, RouterModule } from '@angular/router';
@@ -12,7 +12,8 @@ import { RatingModalComponent } from '../../mat-dialogs/rating-modal/rating-moda
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatButton } from '@angular/material/button';
 import { PaymentService } from '../../../services/payment.service';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { IBid } from '../../../interfaces/bid.interface';
 import { BidDialogComponent } from '../../mat-dialogs/bid-dialog/bid-dialog.component';
 import { ConfirmationDialogComponent } from '../../mat-dialogs/confirmation-dialog/confirmation-dialog.component';
@@ -25,7 +26,7 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './quotation.component.html',
   styleUrl: './quotation.component.scss'
 })
-export class QuotationComponent implements OnInit {
+export class QuotationComponent implements OnInit, OnDestroy {
   loading: boolean = true;
   quotations: IQuotation[] = [];
   completedWorks: CompletedWork[] = [];
@@ -41,6 +42,9 @@ export class QuotationComponent implements OnInit {
   itemsPerPage: number = 10; // Default items per page
   totalItems: number = 0;
 
+  private searchSubject = new Subject<string>();
+  private searchSubscription!: Subscription;
+
   bids: IBid[] = [];
   error: string | null = null;
 
@@ -54,6 +58,15 @@ export class QuotationComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadQuotations();
+
+    this.searchSubscription = this.searchSubject.pipe(
+      debounceTime(400),
+      distinctUntilChanged()
+    ).subscribe(searchTerm => {
+      this.searchTerm = searchTerm;
+      this.currentPage = 1;
+      this.loadQuotations();
+    });
   }
 
   loadQuotations(): void {
@@ -103,9 +116,7 @@ export class QuotationComponent implements OnInit {
   }
 
   onSearchTermChange(term: string): void {
-    this.searchTerm = term;
-    this.currentPage = 1;
-    this.loadQuotations();
+    this.searchSubject.next(term);
   }
 
   handlePageEvent(event: PageEvent): void {
@@ -446,6 +457,12 @@ export class QuotationComponent implements OnInit {
         duration: 3000,
         panelClass: 'warning-snack'
       });
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.searchSubscription) {
+      this.searchSubscription.unsubscribe();
     }
   }
 }
