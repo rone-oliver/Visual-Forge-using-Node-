@@ -112,6 +112,7 @@
     display: grid;
     grid-template-columns: 1fr;
     gap: 1.5rem;
+    margin-bottom: 25px;
 
     @media (min-width: 768px) {
         grid-template-columns: repeat(2, 1fr);
@@ -120,4 +121,161 @@
     @media (min-width: 1024px) {
         grid-template-columns: repeat(3, 1fr);
     }
+}
+
+/* Custom Search Bar Styles */
+.custom-search-bar-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 25px;
+}
+
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 500px; 
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 8px;
+  padding: 0 10px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+
+  &:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(var(--color-primary-rgb, 63, 81, 181), 0.2); 
+  }
+}
+
+.custom-search-input {
+  flex-grow: 1;
+  padding: 12px 0;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+  background-color: transparent;
+  color: var(--color-text);
+
+  &::placeholder {
+    color: var(--color-neutral-400);
+  }
+}
+
+.clear-search-button {
+  color: var(--color-neutral-500);
+  &:hover {
+    color: var(--color-primary);
+  }
+}
+
+/* Loading Spinner Container Styles */
+.loading-spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 50px 0; 
+  width: 100%;
+
+  mat-progress-spinner circle {
+    stroke: var(--color-primary);
+  }
+}
+
+.error-message-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 20px;
+  text-align: center;
+  background-color: var(--color-surface);
+  border-radius: 8px;
+  border: 1px solid var(--color-danger);
+  margin: 20px auto;
+  max-width: 500px;
+
+  p {
+    color: var(--color-danger);
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+  }
+
+  button {
+    background-color: transparent;
+    border: 1px solid var(--color-danger);
+    color: var(--color-danger);
+    padding: 8px 16px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+
+    &:hover {
+      background-color: var(--color-danger);
+      color: white; 
+    }
+  }
+}
+
+.no-quotations-message {
+  text-align: center;
+  padding: 50px 20px;
+  color: var(--color-neutral-500);
+  font-size: 1.1rem;
+  background-color: var(--color-surface);
+  border-radius: 8px;
+  margin: 20px auto;
+  max-width: 500px;
+}
+
+/* Mat Paginator Custom Styles */
+:host ::ng-deep mat-paginator {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border-radius: 8px;
+  margin-top: 20px;
+  padding: 0 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+
+  .mat-mdc-paginator-container {
+    padding: 0 8px;
+  }
+
+  .mat-mdc-paginator-page-size-label,
+  .mat-mdc-paginator-range-label {
+    color: var(--color-text);
+    font-size: 0.9rem;
+  }
+
+  .mat-mdc-select-value {
+    color: var(--color-primary);
+  }
+  
+  .mat-mdc-select-arrow {
+    color: var(--color-text);
+  }
+
+  .mat-mdc-icon-button {
+    color: var(--color-text);
+    &:hover:not([disabled]) {
+      background-color: var(--color-neutral-200);
+    }
+    &[disabled] {
+      color: var(--color-neutral-400);
+    }
+  }
+  
+  // Style for the items per page dropdown panel
+  .mat-mdc-select-panel {
+    background-color: var(--color-surface) !important;
+    .mat-mdc-option {
+      color: var(--color-text) !important;
+      &:hover:not(.mdc-list-item--selected) {
+        background-color: var(--color-neutral-100) !important;
+      }
+      &.mdc-list-item--selected {
+        background-color: var(--color-primary) !important;
+        color: white !important; 
+      }
+    }
+  }
 }

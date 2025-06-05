@@ -1,3 +1,5 @@
+import { IEditorBidDetails } from "./bid.interface";
+
 export enum QuotationStatus {
     PUBLISHED = 'Published',
     ACCEPTED = 'Accepted',
@@ -43,14 +45,29 @@ export interface GetQuotationsParams {
     limit?: number;
     status?: QuotationStatus | 'All';
     searchTerm?: string;
-  }
+}
+
+export interface GetEditorQuotationsParams {
+    page?: number;
+    limit?: number;
+    mediaType?: OutputType | string; // 'All' or 'Mixed' can be strings
+    searchTerm?: string;
+}
   
-  export interface PaginatedQuotationsResponse {
+export interface PaginatedQuotationsResponse {
     quotations: IQuotation[];
     totalItems: number;
     totalPages: number;
     currentPage: number;
     itemsPerPage: number;
+}
+
+export interface PaginatedEditorQuotationsResponse {
+    quotations: IQuotationWithEditorBid[];
+    totalItems: number;
+    currentPage: number;
+    itemsPerPage: number;
+    // totalPages might not be directly provided by the new backend response, calculate if needed
 }
 
 export interface FileUploadProgress {
@@ -82,6 +99,11 @@ export interface IQuotation {
     imageUrl?: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+}
+
+export interface IQuotationWithEditorBid extends IQuotation {
+    editorBid?: IEditorBidDetails | null;
+    userFullName?: string;
 }
 
 export interface IPaymentVerification {

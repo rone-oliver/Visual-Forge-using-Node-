@@ -14,6 +14,10 @@
 
         <div class="metadata-grid">
             <div class="metadata-item">
+                <span class="metadata-label">Client:</span>
+                <span class="metadata-value">{{ quotation.userFullName || 'N/A' }}</span>
+            </div>
+            <div class="metadata-item">
                 <span class="metadata-label">Theme:</span>
                 <span class="metadata-value">{{ quotation.theme }}</span>
             </div>
@@ -35,105 +39,130 @@
                 <div class="file-attachments">
                     <div class="file-type-badges">
                         <!-- Image Files -->
-                        <div class="file-badge" 
-                             *ngIf="countFilesByType(FileType.IMAGE) > 0"
-                             (click)="openFileModal(FileType.IMAGE)">
-                            <mat-icon>image</mat-icon>
-                            <span>{{ countFilesByType(FileType.IMAGE) }}</span>
-                        </div>
+                        @if(countFilesByType(FileType.IMAGE) > 0){
+                            <div class="file-badge" 
+                                 (click)="openFileModal(FileType.IMAGE)">
+                                <mat-icon>image</mat-icon>
+                                <span>{{ countFilesByType(FileType.IMAGE) }}</span>
+                            </div>
+                        }
                         
                         <!-- Video Files -->
-                        <div class="file-badge" 
-                             *ngIf="countFilesByType(FileType.VIDEO) > 0"
-                             (click)="openFileModal(FileType.VIDEO)">
-                            <mat-icon>videocam</mat-icon>
-                            <span>{{ countFilesByType(FileType.VIDEO) }}</span>
-                        </div>
+                        @if(countFilesByType(FileType.VIDEO) > 0){
+                            <div class="file-badge" 
+                                 (click)="openFileModal(FileType.VIDEO)">
+                                <mat-icon>videocam</mat-icon>
+                                <span>{{ countFilesByType(FileType.VIDEO) }}</span>
+                            </div>
+                        }
                         
                         <!-- Audio Files -->
-                        <div class="file-badge" 
-                             *ngIf="countFilesByType(FileType.AUDIO) > 0"
-                             (click)="openFileModal(FileType.AUDIO)">
-                            <mat-icon>audiotrack</mat-icon>
-                            <span>{{ countFilesByType(FileType.AUDIO) }}</span>
-                        </div>
+                        @if(countFilesByType(FileType.AUDIO) > 0){
+                            <div class="file-badge" 
+                                 (click)="openFileModal(FileType.AUDIO)">
+                                <mat-icon>audiotrack</mat-icon>
+                                <span>{{ countFilesByType(FileType.AUDIO) }}</span>
+                            </div>
+                        }
                         
                         <!-- Document Files -->
-                        <div class="file-badge" 
-                             *ngIf="countFilesByType(FileType.DOCUMENT) > 0"
-                             (click)="openFileModal(FileType.DOCUMENT)">
-                            <mat-icon>description</mat-icon>
-                            <span>{{ countFilesByType(FileType.DOCUMENT) }}</span>
-                        </div>
+                        @if(countFilesByType(FileType.DOCUMENT) > 0){
+                            <div class="file-badge" 
+                                 (click)="openFileModal(FileType.DOCUMENT)">
+                                <mat-icon>description</mat-icon>
+                                <span>{{ countFilesByType(FileType.DOCUMENT) }}</span>
+                            </div>
+                        }
                     </div>
                 </div>
             }
         </div>
 
         <div class="bid-section">
-            <h3 class="bid-section-title">Place Your Bid</h3>
-            <div class="bid-input-container">
-                <div class="input-group">
-                    <div class="currency-input-wrapper">
-                        <span class="currency-symbol">₹</span>
-                        <input 
-                            type="number" 
-                            class="bid-amount-input" 
-                            placeholder="Enter bid amount" 
-                            [(ngModel)]="bidAmount"
-                            [min]="1"
-                            [disabled]="!quotation._id || hasBidForQuotation"
-                        >
+            <!-- Show bid form if no active bid OR if in edit mode -->
+            @if(!hasActiveBid || isEditMode){
+                <h3 class="bid-section-title">{{ isEditMode ? 'Edit Your Bid' : 'Place Your Bid' }}</h3>
+                <div class="bid-input-container">
+                    <div class="input-group">
+                        <div class="currency-input-wrapper">
+                            <span class="currency-symbol">₹</span>
+                            <input 
+                                type="number" 
+                                class="bid-amount-input" 
+                                placeholder="Enter bid amount" 
+                                [(ngModel)]="bidAmount"
+                                [min]="1"
+                                [disabled]="!quotation._id" 
+                            >
+                        </div>
+                        <textarea 
+                            class="bid-notes" 
+                            placeholder="Add notes about your bid (optional)" 
+                            [(ngModel)]="bidNotes"
+                            [disabled]="!quotation._id"
+                        ></textarea>
                     </div>
-                    <textarea 
-                        class="bid-notes" 
-                        placeholder="Add notes about your bid (optional)" 
-                        [(ngModel)]="bidNotes"
-                        [disabled]="!quotation._id || hasBidForQuotation"
-                    ></textarea>
                 </div>
-            </div>
+                <div class="bid-actions form-actions">
+                    @if(!isEditMode){
+                        <button 
+                            class="btn-bid btn-primary" 
+                            (click)="submitNewBid()" 
+                            [disabled]="!quotation._id || !bidAmount">
+                            <mat-icon>send</mat-icon>
+                            Submit Bid
+                        </button>
+                    }
+                    @if(isEditMode){
+                        <button 
+                            class="btn-bid btn-success" 
+                            (click)="updateBid()" 
+                            [disabled]="!quotation._id || !bidAmount">
+                            <mat-icon>save</mat-icon>
+                            Save Changes
+                        </button>
+                        <button 
+                            class="btn-bid btn-secondary" 
+                            (click)="cancelEditMode()">
+                            <mat-icon>cancel</mat-icon>
+                            Cancel
+                        </button>
+                    }
+                </div>
+            }
             
-            <div class="bid-actions">
-                <button 
-                    class="btn-bid" 
-                    (click)="submitBid(quotation)" 
-                    [disabled]="!quotation._id || !bidAmount || hasBidForQuotation"
-                    *ngIf="!hasBidForQuotation">
-                    <mat-icon>send</mat-icon>
-                    Submit Bid
-                </button>
-                
-                <!-- Existing bid section -->
-                @if(hasBidForQuotation && existingBid!==null){
-                    <div class="existing-bid">
-                        <div class="existing-bid-header">
-                            <h4>Your Current Bid</h4>
-                            <span class="bid-status" [ngClass]="getBidStatusClass(existingBid.status)">
-                                {{ existingBid.status }}
-                            </span>
-                        </div>
-                        
-                        <div class="bid-amount-display">
-                            <span class="amount">₹{{ existingBid.bidAmount }}</span>
-                            <span class="date">Placed on {{ existingBid.createdAt ? (existingBid.createdAt | localDate:'medium') : 'N/A' }}</span>
-                        </div>
-                        
-                        <p class="bid-notes-display" *ngIf="existingBid.notes">{{ existingBid.notes }}</p>
-                        
-                        <div class="bid-actions" *ngIf="existingBid.status === 'Pending'">
-                            <button class="btn-edit" (click)="editBid()">
-                                <mat-icon>edit</mat-icon>
-                                Edit
-                            </button>
-                            <button class="btn-delete" (click)="deleteBid(existingBid._id)">
-                                <mat-icon>delete</mat-icon>
-                                Delete
-                            </button>
-                        </div>
+            <!-- Existing bid display section (shown if there's an active bid AND not in edit mode) -->
+            @if(hasActiveBid && !isEditMode && currentEditorBid){
+                <div class="existing-bid">
+                    <div class="existing-bid-header">
+                        <h4>Your Current Bid</h4>
+                        <span class="bid-status" [ngClass]="getBidStatusClass(currentEditorBid.bidStatus)">
+                            {{ currentEditorBid.bidStatus }}
+                        </span>
                     </div>
-                }
-            </div>
+                    
+                    <div class="bid-amount-display">
+                        <span class="amount">₹{{ currentEditorBid.bidAmount }}</span>
+                        <span class="date">Placed on {{ currentEditorBid.bidCreatedAt ? (currentEditorBid.bidCreatedAt | localDate:'medium') : 'N/A' }}</span>
+                    </div>
+                    
+                    <p class="bid-notes-display" @if(currentEditorBid.bidNotes)>{{ currentEditorBid.bidNotes }}</p>
+                    
+                    <!-- Actions for an existing bid (Edit/Delete), only if status is Pending -->
+                    @if(currentEditorBid.bidStatus === 'Pending'){
+                        <div class="bid-actions existing-bid-actions">
+                            <button class="btn-edit btn-outline" (click)="enterEditMode()">
+                                <mat-icon>edit</mat-icon>
+                                Edit Bid
+                            </button>
+                            <button class="btn-delete btn-danger-outline" (click)="deleteUserBid()">
+                                <mat-icon>delete</mat-icon>
+                                Delete Bid
+                            </button>
+                        </div>
+                    }
+                </div>
+            }
         </div>
     </div>
 </article>

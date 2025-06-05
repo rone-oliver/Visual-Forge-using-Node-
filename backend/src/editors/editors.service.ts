@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Editor, EditorDocument } from './models/editor.schema';
 import { Model, Types } from 'mongoose';
 import { IQuotation } from 'src/users/interface/Quotation.interface';
-import { Quotation, QuotationDocument, QuotationStatus } from 'src/common/models/quotation.schema';
+import { OutputType, Quotation, QuotationDocument, QuotationStatus } from 'src/common/models/quotation.schema';
 import { Observable } from 'rxjs';
 import { CloudinaryService, FileUploadResult } from 'src/common/cloudinary/cloudinary.service';
 import { Works, WorksDocument } from 'src/common/models/works.schema';
@@ -14,6 +14,7 @@ import { NotificationType } from 'src/notification/models/notification.schema';
 import { Bid, BidDocument, BidStatus } from 'src/common/bids/models/bids.schema';
 import { BidsService } from 'src/common/bids/bids.service';
 import { CreateBidDto } from 'src/common/bids/dto/create-bid.dto';
+import { GetEditorQuotationsParams, IQuotationWithEditorBid, PaginatedEditorQuotationsResponse } from './interfaces/common.interface';
 
 @Injectable()
 export class EditorsService {
@@ -52,30 +53,136 @@ export class EditorsService {
         }
     }
 
-    async getPublishedQuotations(userId: Types.ObjectId) {
-        try {
-            return await this.getQuotations(userId, QuotationStatus.PUBLISHED);
-        } catch (error) {
-            this.logger.error('Error getting the published quotations', error);
-            throw new Error('Error getting the published quotations');
+    async getPublishedQuotations(
+        editorId: Types.ObjectId,
+        params: GetEditorQuotationsParams
+    ): Promise<PaginatedEditorQuotationsResponse> {
+        const { page = 1, limit = 10, mediaType, searchTerm } = params;
+        const skip = (page - 1) * limit;
+
+        const matchStage: any = {
+            status: QuotationStatus.PUBLISHED,
+            userId: { $ne: editorId },
+        };
+
+        if (mediaType && mediaType !== OutputType.MIXED && mediaType !== 'All') {
+            matchStage.outputType = mediaType as OutputType;
         }
-    }
 
-    async acceptQuotation(quotationId: string, editorId: Types.ObjectId): Promise<boolean> {
-        try {
-            const quotation = await this.quotationModel.findByIdAndUpdate(new Types.ObjectId(quotationId), { status: QuotationStatus.ACCEPTED, editorId },
-                { new: true, runValidators: true }
-            );
-            if (!quotation) {
-                this.logger.warn(`Quotation with ID ${quotationId} not found`);
-                return false;
+        const pipeline: any[] = [
+            { $match: matchStage },
+            {
+                $addFields: {
+                    convertedUserId: { $toObjectId: '$userId' }
+                }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'convertedUserId',
+                    foreignField: '_id',
+                    as: 'userDetails'
+                }
+            },
+            {
+                $unwind: { path: '$userDetails', preserveNullAndEmptyArrays: true }
+            },
+            {
+                $addFields: {
+                    userFullName: '$userDetails.fullname',
+                }
+            },
+        ];
+
+        // Search stage (only if searchTerm is provided)
+        if (searchTerm) {
+            pipeline.push({
+                $match: {
+                    $or: [
+                        { title: { $regex: searchTerm, $options: 'i' } },
+                        { description: { $regex: searchTerm, $options: 'i' } },
+                        { userFullName: { $regex: searchTerm, $options: 'i' } }
+                    ]
+                }
+            });
+        }
+
+        // Lookup for editor's bid
+        pipeline.push(
+            {
+                $lookup: {
+                    from: 'bids',
+                    let: { quotation_id: '$_id' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ['$quotationId', '$$quotation_id'] },
+                                        { $eq: ['$editorId', new Types.ObjectId(editorId)] } // Ensure editorId is a Types.ObjectId
+                                    ]
+                                }
+                            }
+                        },
+                        { $sort: { createdAt: -1 } },
+                        { $limit: 1 },
+                        {
+                            $project: {
+                                _id: 0,
+                                bidId: '$_id',
+                                bidAmount: '$bidAmount',
+                                bidStatus: '$status',
+                                bidNotes: '$notes',
+                                bidCreatedAt: '$createdAt'
+                            }
+                        }
+                    ],
+                    as: 'editorBidDetails'
+                }
+            },
+            {
+                $addFields: {
+                    editorBid: { $arrayElemAt: ['$editorBidDetails', 0] }
+                }
             }
+        );
 
-            this.logger.log(`Quotation ${quotationId} accepted by editor ${editorId}`);
-            return true;
+        // Facet for pagination and total count
+        pipeline.push({
+            $facet: {
+                paginatedResults: [
+                    { $sort: { createdAt: -1 } },
+                    { $skip: skip },
+                    { $limit: limit }
+                ],
+                totalCount: [
+                    { $count: 'count' }
+                ]
+            }
+        });
+
+        try {
+            const results = await this.quotationModel.aggregate(pipeline).exec();
+
+            const quotations = results[0].paginatedResults.map(q => ({
+                ...q,
+                _id: q._id.toString(),
+                userId: q.userId?.toString(),
+                editorId: q.editorId?.toString(),
+                editorBid: q.editorBid ? { ...q.editorBid, bidId: q.editorBid.bidId?.toString() } : null,
+            })) as IQuotationWithEditorBid[];
+
+            const totalItems = results[0].totalCount.length > 0 ? results[0].totalCount[0].count : 0;
+            this.logger.log('Quotations fetched successfully', quotations);
+            return {
+                quotations,
+                totalItems,
+                currentPage: page,
+                itemsPerPage: limit,
+            };
         } catch (error) {
-            this.logger.error('Error accepting the quotation ', error);
-            throw new Error('Error accepting the quotation');
+            this.logger.error(`Error fetching published quotations for editor ${editorId}: ${error.message}`, error.stack);
+            throw new Error('Failed to fetch published quotations.');
         }
     }
 

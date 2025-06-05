@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { catchError, Observable } from 'rxjs';
-import { FileAttachmentResponse, IQuotation } from '../../interfaces/quotation.interface';
+import { FileAttachmentResponse, GetEditorQuotationsParams, IQuotation, OutputType, PaginatedEditorQuotationsResponse, QuotationStatus } from '../../interfaces/quotation.interface';
 import { CompletedWork } from '../../interfaces/completed-word.interface';
 import { Editor } from '../../interfaces/editor.interface';
 import { IBid } from '../../interfaces/bid.interface';
@@ -16,16 +16,26 @@ export class EditorService {
 
   constructor(private http: HttpClient) { };
 
-  getPublishedQuotations(): Observable<IQuotation[]>{
-    return this.http.get<IQuotation[]>(`${this.editorApiUrl}/quotations?status=published`);
-  }
-
-  acceptQuotation(quotationId: string): Observable<boolean> {
-    return this.http.post<boolean>(`${this.editorApiUrl}/quotations/${quotationId}/accept`,{});
+  getPublishedQuotations(params: GetEditorQuotationsParams): Observable<PaginatedEditorQuotationsResponse>{
+    let httpParams = new HttpParams();
+    if(params.page){
+      httpParams = httpParams.set('page', params.page.toString());
+    }
+    if (params.limit) {
+      httpParams = httpParams.set('limit', params.limit.toString());
+    }
+    if (params.mediaType && params.mediaType !== 'All' && params.mediaType !== OutputType.MIXED) {
+      httpParams = httpParams.set('mediaType', params.mediaType);
+    }
+    if (params.searchTerm) {
+      httpParams = httpParams.set('searchTerm', params.searchTerm);
+    }
+    httpParams = httpParams.set('status',QuotationStatus.PUBLISHED);
+    return this.http.get<PaginatedEditorQuotationsResponse>(`${this.editorApiUrl}/quotations`, { params: httpParams });
   }
 
   getAcceptedQuotations(): Observable<IQuotation[]>{
-    return this.http.get<IQuotation[]>(`${this.editorApiUrl}/quotations?status=accepted`);
+    return this.http.get<IQuotation[]>(`${this.editorApiUrl}/quotations?status=${QuotationStatus.ACCEPTED}`);
   }
 
   submitQuotationResponse(workData: any): Observable<boolean>{

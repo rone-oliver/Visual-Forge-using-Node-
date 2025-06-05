@@ -2,15 +2,29 @@
     <!-- Page Header -->
     <header class="page-header">
         <div class="header-content">
-            <h1 class="page-title">Recent Quotations</h1>
+            <h1 class="page-title">Browse Published Quotations</h1>
             <button class="btn-primary" (click)="navigateToAccepted()">
-                <span>Go to Accepted Quotations</span>
-                <i class="fas fa-chevron-right"></i>
+                <span>View Accepted Quotations</span>
+                <mat-icon>keyboard_double_arrow_right</mat-icon>
             </button>
         </div>
     </header>
 
-    <!-- Media Type Filter Tabs -->
+    <!-- Custom Search Bar -->
+    <div class="custom-search-bar-container">
+        <div class="search-input-wrapper">
+            <input type="text" 
+                   class="custom-search-input" 
+                   [(ngModel)]="searchTerm" 
+                   (ngModelChange)="onSearchTermChange($event)" 
+                   placeholder="Search by title, description, or user name...">
+            <button mat-icon-button *ngIf="searchTerm" (click)="searchTerm = ''; onSearchTermChange('')" aria-label="Clear search" class="clear-search-button">
+                <mat-icon>close</mat-icon>
+            </button>
+        </div>
+    </div>
+
+    <!-- Custom Media Type Filter Tabs -->
     <nav class="media-filter" aria-label="Quotation media types" role="tablist">
         <button class="tab-button" [ngClass]="{'active': selectedMediaType === OutputType.MIXED}" (click)="setMediaType(OutputType.MIXED)"
             role="tab" [attr.aria-selected]="selectedMediaType === OutputType.MIXED">
@@ -30,9 +44,51 @@
         </button>
     </nav>
 
+    <!-- Loading Indicator -->
+    @if (isLoading) {
+        <div class="loading-spinner-container">
+            <mat-progress-spinner 
+                mode="indeterminate" 
+                diameter="50">
+            </mat-progress-spinner>
+        </div>
+    }
+
+    <!-- Error Message -->
+    @if (error && !isLoading) {
+        <div class="error-message-container">
+            <p>{{ error }}</p>
+            <button mat-stroked-button color="warn" (click)="loadQuotations()">Try Again</button>
+        </div>
+    }
+
     <!-- Quotation Cards Grid -->
-    <section class="quotations-grid">
-        <app-quotation-card *ngFor="let quotation of filteredQuotations; trackBy: trackByQuotationId" [quotation]="quotation" (quotationAccepted)="quotationAcceptedHandler(quotation._id!)">
-        </app-quotation-card>
-    </section>
+    @if (!isLoading && !error) {
+        @if (quotations.length > 0) {
+            <section class="quotations-grid">
+                @for (quotation of quotations; track trackByQuotationId($index, quotation)) {
+                    <app-quotation-card 
+                        [quotation]="quotation" 
+                        (bidActionCompleted)="handleBidActionCompletion()">
+                    </app-quotation-card>
+                }
+            </section>
+        } @else {
+            <div class="no-quotations-message">
+                <p>No quotations found matching your criteria.</p>
+            </div>
+        }
+    }
+
+    <!-- Paginator -->
+    @if (!isLoading && !error && totalItems > 0) {
+        <mat-paginator 
+            [length]="totalItems"
+            [pageSize]="itemsPerPage"
+            [pageIndex]="currentPage - 1"
+            [pageSizeOptions]="[2, 5, 10, 20]"
+            (page)="handlePageEvent($event)"
+            aria-label="Select page of quotations">
+        </mat-paginator>
+    }
 </div>

@@ -8,6 +8,7 @@ import { RolesGuard } from 'src/auth/guards/role.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Editor } from './models/editor.schema';
 import { User } from 'src/users/models/user.schema';
+import { OutputType, QuotationStatus } from 'src/common/models/quotation.schema';
 
 @Controller('editor')
 @UseGuards(AuthGuard, RolesGuard)
@@ -19,21 +20,28 @@ export class EditorsController {
 
   @Get('quotations')
   @Roles('Editor')
-  async getQuotations(@Req() req: Request, @Query('status') status: string) {
+  async getQuotations(
+    @Req() req: Request,
+    @Query('status') status?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('mediaType') mediaType?: OutputType,
+    @Query('searchTerm') searchTerm?: string,
+  ) {
     const editor = req['user'] as { userId: Types.ObjectId, role: string };
 
-    if (status === 'accepted') {
+    if (status === QuotationStatus.ACCEPTED) {
       return this.editorService.getAcceptedQuotations(editor.userId);
-    } else {
-      return this.editorService.getPublishedQuotations(editor.userId);
+    } else if(status === QuotationStatus.PUBLISHED){
+      const pageNumber = parseInt(page ? page : '1', 10);
+      const limitNumber = parseInt(limit ? limit : '10', 10);
+      return this.editorService.getPublishedQuotations(editor.userId, {
+        page: pageNumber,
+        limit: limitNumber,
+        mediaType,
+        searchTerm,
+      });
     }
-  }
-
-  @Post('quotations/:quotationId/accept')
-  @Roles('Editor')
-  async acceptQuotation(@Param('quotationId') quotationId: string, @Req() req: Request) {
-    const user = req['user'] as { userId: Types.ObjectId, role: string };
-    return this.editorService.acceptQuotation(quotationId, user.userId);
   }
 
   @Post('quotations/response')

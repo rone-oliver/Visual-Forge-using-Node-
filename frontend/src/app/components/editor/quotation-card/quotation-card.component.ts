@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
-import { FileType, IQuotation } from '../../../interfaces/quotation.interface';
+import { FileType, IQuotation, IQuotationWithEditorBid } from '../../../interfaces/quotation.interface';
 import { CommonModule } from '@angular/common';
 import { LocalDatePipe } from '../../../pipes/date.pipe';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -8,7 +8,7 @@ import { FilesPreviewComponent } from '../../user/files-preview/files-preview.co
 import { FormsModule } from '@angular/forms';
 import { EditorService } from '../../../services/editor/editor.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { IBid, BidStatus } from '../../../interfaces/bid.interface';
+import { IBid, BidStatus, IEditorBidDetails } from '../../../interfaces/bid.interface';
 import { ConfirmationDialogComponent, DialogType } from '../../mat-dialogs/confirmation-dialog/confirmation-dialog.component';
 
 @Component({
@@ -18,46 +18,31 @@ import { ConfirmationDialogComponent, DialogType } from '../../mat-dialogs/confi
   styleUrl: './quotation-card.component.scss'
 })
 export class QuotationCardComponent implements OnInit {
-  @Input() quotation!: IQuotation;
-  @Output() bidSubmitted = new EventEmitter<string>();
-  @Output() bidDeleted = new EventEmitter<string>();
-  
+  @Input() quotation!: IQuotationWithEditorBid;
+  @Output() bidActionCompleted = new EventEmitter<void>();
+
   FileType = FileType;
   bidAmount: number | null = null;
   bidNotes: string = '';
-  
-  hasBidForQuotation: boolean = false;
-  existingBid: IBid | null = null;
+
   isEditMode: boolean = false;
-  
+
   constructor(
     private dialog: MatDialog,
     private editorService: EditorService,
     private snackBar: MatSnackBar,
-  ){}
-  
-  ngOnInit(): void {
-    if (this.quotation._id) {
-      this.checkExistingBid();
-    }
+  ) { }
+
+  get currentEditorBid(): IEditorBidDetails | undefined {
+    return this.quotation?.editorBid ? this.quotation.editorBid : undefined;
   }
-  
-  checkExistingBid(): void {
-    this.editorService.getEditorBids().subscribe({
-      next: (bids) => {
-        const existingBid = bids.find(bid => bid.quotationId === this.quotation._id);
-        if (existingBid) {
-          this.hasBidForQuotation = true;
-          this.existingBid = existingBid;
-        }
-        console.log('bids: ',bids);
-        console.log('quotation Id: ',this.quotation._id);
-        console.log(`has existing bid for quotation ${this.quotation.title}`,existingBid);
-      },
-      error: (error) => {
-        console.error('Error checking existing bids:', error);
-      }
-    });
+
+  get hasActiveBid(): boolean {
+    return !!this.quotation?.editorBid?.bidId;
+  }
+
+  ngOnInit(): void {
+    this.isEditMode = false;
   }
 
   countFilesByType(fileType: FileType): number {
@@ -71,13 +56,13 @@ export class QuotationCardComponent implements OnInit {
     if (!this.quotation.attachedFiles || this.quotation.attachedFiles.length === 0) {
       return;
     }
-    
+
     const files = this.quotation.attachedFiles.filter(file => file.fileType === fileType);
-    
+
     if (files.length === 0) {
       return;
     }
-    
+
     this.dialog.open(FilesPreviewComponent, {
       width: '800px',
       maxHeight: '80vh',
@@ -89,23 +74,18 @@ export class QuotationCardComponent implements OnInit {
     });
   }
 
-  submitBid(quotation: IQuotation): void {
-    if (!quotation._id || !this.bidAmount) {
+  submitNewBid(): void {
+    if (!this.quotation._id || !this.bidAmount) {
       this.snackBar.open('Please enter a valid bid amount', 'Close', {
         duration: 3000,
         panelClass: ['custom-snackbar']
       });
       return;
     }
-    
-    if (this.isEditMode && this.existingBid) {
-      this.updateBid();
-      return;
-    }
-    
+
     this.editorService.createBid(
-      quotation._id, 
-      this.bidAmount, 
+      this.quotation._id,
+      this.bidAmount,
       this.bidNotes
     ).subscribe({
       next: (response) => {
@@ -113,12 +93,10 @@ export class QuotationCardComponent implements OnInit {
           duration: 3000,
           panelClass: ['success-snackbar']
         });
-        this.bidSubmitted.emit(quotation._id);
-        // Reset form
+        this.bidActionCompleted.emit();
         this.bidAmount = null;
         this.bidNotes = '';
-        // Refresh bid status
-        this.checkExistingBid();
+        this.isEditMode = false;
       },
       error: (error) => {
         console.error('Error submitting bid:', error);
@@ -130,28 +108,41 @@ export class QuotationCardComponent implements OnInit {
       }
     });
   }
-  
-  editBid(): void {
-    if (!this.existingBid) return;
-    
-    this.isEditMode = true;
-    this.bidAmount = this.existingBid.bidAmount;
-    this.bidNotes = this.existingBid.notes || '';
-    
-    // Temporarily set hasBidForQuotation to false to enable the form
-    this.hasBidForQuotation = false;
 
-    this.snackBar.open('You can now edit your bid', 'Close', { 
+  enterEditMode(): void {
+    if (!this.currentEditorBid?.bidId) return;
+
+    this.isEditMode = true;
+    this.bidAmount = this.currentEditorBid.bidAmount || null;
+    this.bidNotes = this.currentEditorBid.bidNotes || '';
+
+    this.snackBar.open('You can now edit your bid', 'Close', {
       duration: 3000,
-      panelClass: ['custom-snackbar']
+      panelClass: ['info-snackbar']
     });
   }
-  
+
+  cancelEditMode(): void {
+    this.isEditMode = false;
+    this.bidAmount = null;
+    this.bidNotes = '';
+    this.snackBar.open('Bid editing cancelled.', 'Close', {
+      duration: 2000,
+      panelClass: ['info-snackbar']
+    });
+  }
+
   updateBid(): void {
-    if (!this.existingBid || !this.bidAmount) return;
-    
+    if (!this.currentEditorBid?.bidId || !this.bidAmount) {
+      this.snackBar.open('Bid amount cannot be empty for an update.', 'Close', {
+        duration: 3000,
+        panelClass: ['custom-snackbar']
+      });
+      return;
+    }
+
     this.editorService.updateBid(
-      this.existingBid._id,
+      this.currentEditorBid.bidId,
       this.bidAmount,
       this.bidNotes
     ).subscribe({
@@ -165,7 +156,7 @@ export class QuotationCardComponent implements OnInit {
         this.bidAmount = null;
         this.bidNotes = '';
         // Refresh bid status
-        this.checkExistingBid();
+        this.bidActionCompleted.emit();
       },
       error: (error) => {
         console.error('Error updating bid:', error);
@@ -177,8 +168,15 @@ export class QuotationCardComponent implements OnInit {
       }
     });
   }
-  
-  deleteBid(bidId: string): void {
+
+  deleteUserBid(): void {
+    if (!this.currentEditorBid?.bidId) {
+      console.error('No bid to delete or bidId is missing.');
+      this.snackBar.open('Could not identify the bid to delete.', 'Close', { duration: 3000, panelClass: ['custom-snackbar'] });
+      return;
+    }
+    const bidIdToDelete = this.currentEditorBid.bidId;
+
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       width: '400px',
       data: {
@@ -190,18 +188,19 @@ export class QuotationCardComponent implements OnInit {
         icon: 'delete_forever'
       }
     });
-    
+
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.editorService.deleteBid(bidId).subscribe({
+        this.editorService.deleteBid(bidIdToDelete).subscribe({
           next: () => {
             this.snackBar.open('Bid deleted successfully!', 'Close', {
               duration: 3000,
               panelClass: ['success-snackbar']
             });
-            this.hasBidForQuotation = false;
-            this.existingBid = null;
-            this.bidDeleted.emit(this.quotation._id);
+            this.isEditMode = false;
+            this.bidAmount = null;
+            this.bidNotes = '';
+            this.bidActionCompleted.emit();
           },
           error: (error) => {
             console.error('Error deleting bid:', error);
@@ -215,8 +214,9 @@ export class QuotationCardComponent implements OnInit {
       }
     });
   }
-  
-  getBidStatusClass(status: BidStatus): string {
+
+  getBidStatusClass(status: BidStatus | undefined): string {
+    if (status === undefined) return 'status-unknown';
     switch (status) {
       case BidStatus.ACCEPTED:
         return 'status-accepted';

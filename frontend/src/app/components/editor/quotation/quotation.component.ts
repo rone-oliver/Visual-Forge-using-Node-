@@ -1,37 +1,103 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { QuotationCardComponent } from '../quotation-card/quotation-card.component';
-import { IQuotation, OutputType } from '../../../interfaces/quotation.interface';
+import { GetEditorQuotationsParams, IQuotation, IQuotationWithEditorBid, OutputType, PaginatedEditorQuotationsResponse } from '../../../interfaces/quotation.interface';
 import { EditorService } from '../../../services/editor/editor.service';
 import { Router } from '@angular/router';
+import { debounceTime, distinctUntilChanged, Subject, Subscription } from 'rxjs';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatIconModule } from '@angular/material/icon';
+import { FormsModule } from '@angular/forms';
+import { MatInputModule } from '@angular/material/input';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-quotation',
-  imports: [CommonModule,QuotationCardComponent],
+  imports: [
+    CommonModule,
+    QuotationCardComponent,
+    MatIconModule,
+    FormsModule,
+    MatPaginatorModule,
+    MatInputModule,
+    MatProgressSpinnerModule,
+  ],
   templateUrl: './quotation.component.html',
   styleUrl: './quotation.component.scss'
 })
-export class QuotationComponent implements OnInit {
-  quotations: IQuotation[] = [];
-  OutputType = OutputType;
+export class QuotationComponent implements OnInit, OnDestroy {
+  quotations: IQuotationWithEditorBid[] = [];
+  protected OutputType = OutputType;
+  protected activeFilter: OutputType | 'All' = 'All';
   selectedMediaType: OutputType = OutputType.MIXED;
+
+  // Pagination
+  currentPage: number =1;
+  itemsPerPage: number = 10;
+  totalItems: number = 0;
+
+  // Search
+  searchTerm: string = '';
+  private searchSubject = new Subject<string>();
+  private searchSubscription!: Subscription;
+
+  // Loading and error
+  isLoading: boolean = false;
+  error: string | null = null;    
+
   constructor(
     private router: Router,
     private editorService:EditorService,
   ){};
   ngOnInit():void{
-    this.getPublishedQuotations();
+    this.loadQuotations();
+    this.searchSubscription = this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(searchValue => {
+      this.currentPage = 1;
+      this.searchTerm = searchValue;
+      this.loadQuotations();
+    })
   };
 
-  getPublishedQuotations(): void{
-    this.editorService.getPublishedQuotations().subscribe({
-      next: (quotations) => {
-        this.quotations = quotations;
+  loadQuotations(): void{
+    this.isLoading = true;
+    this.error = null;
+    const params: GetEditorQuotationsParams = {
+      page: this.currentPage,
+      limit: this.itemsPerPage,
+      mediaType: this.selectedMediaType === OutputType.MIXED ? undefined : this.selectedMediaType,
+      searchTerm: this.searchTerm.trim() || undefined,
+    }
+
+    this.editorService.getPublishedQuotations(params).subscribe({
+      next: (response: PaginatedEditorQuotationsResponse) => {
+        this.quotations = response.quotations;
+        this.totalItems = response.totalItems;
+        this.isLoading = false;
+
+        console.log('Component State After Load:');
+        console.log('totalItems:', this.totalItems);
+        console.log('currentPage:', this.currentPage);
+        console.log('itemsPerPage:', this.itemsPerPage);
       },
-      error: (error) =>{
-        console.error('error getting quotations', error);
+      error: (err) => {
+        console.error('Error fetching published quotations:', err);
+        this.error = 'Failed to load quotations. Please try again later.';
+        this.isLoading = false;
       }
     })
+  }
+
+  onSearchTermChange(term: string): void {
+    this.searchSubject.next(term);
+  }
+
+  handlePageEvent(event: PageEvent): void {
+    this.currentPage = event.pageIndex + 1;
+    this.itemsPerPage = event.pageSize;
+    this.loadQuotations();
   }
 
   navigateToAccepted(){
@@ -39,31 +105,30 @@ export class QuotationComponent implements OnInit {
     this.router.navigate(['/editor/accepted-quotations']);
   }
 
-  setMediaType(type: OutputType){
-    this.selectedMediaType = type;
-  }
+  setMediaType(mediaType: OutputType){
+    this.selectedMediaType = mediaType;
 
-  get filteredQuotations(): IQuotation[] {
-    if (this.selectedMediaType === OutputType.MIXED) {
-      return this.quotations;
+    if (mediaType === OutputType.MIXED) {
+      this.activeFilter = 'All';
+    } else {
+      this.activeFilter = mediaType;
     }
-    return this.quotations.filter(quotation => quotation.outputType === this.selectedMediaType);
+    this.currentPage = 1;
+    this.loadQuotations();
   }
 
-  quotationAcceptedHandler(quotationId: string): void {
-    console.log('Quotation accepted:', quotationId);
-    this.editorService.acceptQuotation(quotationId).subscribe({
-      next: (response) => {
-        console.log('Quotation accepted response:', response);
-        this.getPublishedQuotations();
-      },
-      error: (error) => {
-        console.error('Error accepting quotation:', error);
-      }
-    })
-  }
-
-  trackByQuotationId(index: number, quotation: IQuotation): string {
+  trackByQuotationId(index: number, quotation: IQuotationWithEditorBid): string {
     return quotation._id || String(index);
+  }
+
+  handleBidActionCompletion(): void {
+    console.log('Bid action completed, reloading quotations...');
+    this.loadQuotations();
+  }
+
+  ngOnDestroy(): void {
+    if(this.searchSubscription){
+      this.searchSubscription.unsubscribe();
+    }
   }
 }

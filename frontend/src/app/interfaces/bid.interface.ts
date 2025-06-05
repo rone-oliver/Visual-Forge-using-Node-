@@ -25,3 +25,11 @@ export interface IBid {
   };
   quotation?: any; // This will be populated with IQuotation data when needed
 }
+
+export interface IEditorBidDetails {
+  bidId?: string;
+  bidAmount?: number;
+  bidStatus?: BidStatus;
+  bidNotes?: string;
+  bidCreatedAt?: Date | string;
+}
