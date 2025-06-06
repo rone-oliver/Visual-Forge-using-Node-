@@ -6,9 +6,11 @@ import { Model, Types } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { EditorRequest, EditorRequestDocument, EditorRequestStatus } from 'src/common/models/editorRequest.schema';
 import { Editor, EditorDocument } from 'src/editors/models/editor.schema';
+import { IAdminsService } from './interfaces/admins.service.interface';
+import { FormattedEditor, FormattedEditorRequest, GetAllUsersQueryDto, GetEditorsQueryDto } from './dto/admins.controller.dto';
 
 @Injectable()
-export class AdminsService {
+export class AdminsService implements IAdminsService {
     private readonly logger = new Logger(AdminsService.name);
 
     constructor(
@@ -26,12 +28,12 @@ export class AdminsService {
         }
     }
 
-    async createAdmin(adminData: any) {
+    async createAdmin(adminData: any): Promise<Admin> {
         adminData.password = await bcrypt.hash(adminData.password, 10);
         return this.adminModel.create(adminData);
     }
 
-    async getAllUsers(query: any): Promise<User[]> {
+    async getAllUsers(query: GetAllUsersQueryDto): Promise<User[]> {
         try {
             this.logger.log('Fetching users with query:', query);
             const filter: any = {};
@@ -46,7 +48,7 @@ export class AdminsService {
         }
     }
 
-    async getEditorRequests() {
+    async getEditorRequests(): Promise<FormattedEditorRequest[]> {
         try {
             const requests = await this.editorRequestModel.find({ status: EditorRequestStatus.PENDING }).populate('userId');
 
@@ -85,7 +87,7 @@ export class AdminsService {
         }
     }
 
-    async rejectRequest(requestId: Types.ObjectId, reason: string) {
+    async rejectRequest(requestId: Types.ObjectId, reason: string): Promise<boolean> {
         try {
             const request = await this.editorRequestModel.findOneAndUpdate({ _id: requestId }, { status: EditorRequestStatus.REJECTED, reason });
             return request !== null;
@@ -95,17 +97,14 @@ export class AdminsService {
         }
     }
 
-    async getEditors(query: any) {
+    async getEditors(query: GetEditorsQueryDto): Promise<FormattedEditor[]> {
         try {
             this.logger.log('Fetching editor with these query:', query);
 
-            // Start with a pipeline for more complex filtering
             const pipeline:any[] = [];
 
-            // Match stage for basic filtering
             const matchStage: any = {};
 
-            // Category filtering
             const categoryFilters:string[] = [];
             if (query.video === 'true') categoryFilters.push('Video');
             if (query.image === 'true') categoryFilters.push('Image');
@@ -115,12 +114,10 @@ export class AdminsService {
                 matchStage['category'] = { $all: categoryFilters };
             }
 
-            // Add match stage if we have filters
             if (Object.keys(matchStage).length > 0) {
                 pipeline.push({ $match: matchStage });
             }
 
-            // Add a stage to calculate average rating
             pipeline.push({
                 $addFields: {
                     averageRating: {
@@ -187,7 +184,7 @@ export class AdminsService {
             });
 
             const editors = await this.editorModel.aggregate(pipeline);
-            return editors;
+            return editors as FormattedEditor[];
         } catch (error) {
             this.logger.error(`Error fetching editors: ${error.message}`);
             throw new HttpException('No editors found', HttpStatus.NOT_FOUND);

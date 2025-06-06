@@ -1,15 +1,16 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { AdminsService } from 'src/admins/admins.service';
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 import * as bcrypt from 'bcrypt';
 import { Admin } from 'src/admins/models/admin.schema';
 import { ConfigService } from '@nestjs/config';
+import { IAdminsService, IAdminsServiceToken } from 'src/admins/interfaces/admins.service.interface';
 
 @Injectable()
 export class AdminsAuthService {
     constructor(
-        private adminsService: AdminsService,
+        @Inject(IAdminsServiceToken) private adminsService: IAdminsService,
         private jwtService: JwtService,
         private configService: ConfigService,
     ) { };

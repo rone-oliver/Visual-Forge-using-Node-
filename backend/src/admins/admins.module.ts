@@ -7,9 +7,15 @@ import { User, userSchema } from 'src/users/models/user.schema';
 import { EditorRequest, EditorRequestSchema } from 'src/common/models/editorRequest.schema';
 import { Editor, editorSchema } from 'src/editors/models/editor.schema';
 import { UsersModule } from 'src/users/users.module';
+import { IAdminsServiceToken } from './interfaces/admins.service.interface';
 
 @Module({
-  providers: [AdminsService],
+  providers: [
+    {
+      provide: IAdminsServiceToken,
+      useClass: AdminsService,
+    },
+  ],
   controllers: [AdminsController],
   imports:[
     UsersModule,
@@ -20,6 +26,9 @@ import { UsersModule } from 'src/users/users.module';
       { name: Editor.name, schema: editorSchema}
     ])
   ],
-  exports: [AdminsService, MongooseModule]
+  exports: [
+    IAdminsServiceToken,
+    MongooseModule
+  ]
 })
 export class AdminsModule {}
