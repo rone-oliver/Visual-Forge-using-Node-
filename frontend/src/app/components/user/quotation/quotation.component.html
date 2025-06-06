@@ -41,258 +41,297 @@
         </button>
     </div>
 
-    <div class="quotations-grid">
-        <ng-container *ngIf="activeFilter !== QuotationStatus.COMPLETED else completedWorksContainer">
-            <!-- Loading State for Quotations -->
-            <div *ngIf="loading" class="loading-indicator full-width-message">
-                <mat-icon class="spin">refresh</mat-icon>
-                <p>Loading quotations...</p>
-            </div>
+    @if (loading) {
+        <div class="loading-indicator full-width-message">
+            <mat-icon class="spin">refresh</mat-icon>
+            <p>Loading quotations...</p>
+        </div>
+    }
 
-            <!-- Error State for Quotations -->
-            <div *ngIf="!loading && error" class="error-message full-width-message">
-                <mat-icon>error_outline</mat-icon>
-                <p>{{ error }}</p>
-            </div>
+    @if (!loading && error) {
+        <div class="error-message full-width-message">
+            <mat-icon>error_outline</mat-icon>
+            <p>{{ error }}</p>
+        </div>
+    }
 
-            <!-- Empty State for Quotations -->
-            <div *ngIf="!loading && !error && quotations.length === 0" class="empty-state-message full-width-message">
+    @if (activeFilter !== QuotationStatus.COMPLETED && !loading && !error && quotations.length === 0) {
+        @if (searchTerm || activeFilter === 'All') {
+            <div class="empty-state-message full-width-message">
                 <mat-icon>search_off</mat-icon>
                 <p>No quotations found matching your criteria.</p>
             </div>
-
-            <div class="quotation-card" *ngFor="let quotation of quotations">
-                <div class="card-image-container">
-                    <img [src]="quotation.imageUrl || 'https://placehold.co/600x400'" [alt]="quotation.title">
-                    <div class="amount-badge">₹{{ quotation.estimatedBudget }}</div>
-                    <div class="status-badge" [ngClass]="getStatusClass(quotation.status)">
-                        {{ quotation.status | titlecase }}
-                    </div>
-                    <div class="action-icons">
-                        <button class="icon-button edit" (click)="editQuotation(quotation, $event)">
-                            <mat-icon>edit</mat-icon>
-                        </button>
-                        <button class="icon-button delete" (click)="deleteQuotation(quotation, $event)">
-                            <mat-icon>delete</mat-icon>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="card-content">
-                    <h3>{{ quotation.title }}</h3>
-                    <p class="description">{{ quotation.description }}</p>
-
-                    <div class="details">
-                        <div class="detail-item">
-                            <mat-icon>edit</mat-icon>
-                            <span>Editor: {{ quotation.editor || 'Not assigned' }}</span>
-                        </div>
-
-                        <div class="detail-item">
-                            <mat-icon>label</mat-icon>
-                            <span>Theme: {{ quotation.theme }}</span>
-                        </div>
-
-                        <div class="detail-item">
-                            <mat-icon>category</mat-icon>
-                            <span>Output Type: {{ quotation.outputType }}</span>
-                        </div>
-
-                        <div class="detail-item bids-button-container" *ngIf="quotation.status === 'Published'">
-                            <button mat-raised-button color="accent" class="view-bids-button"
-                                (click)="viewBids(quotation)">
-                                <mat-icon>gavel</mat-icon>
-                                View Bids
-                                <span class="bid-count" *ngIf="quotation.bidCount">
-                                    ({{ quotation.bidCount }})
-                                </span>
-                            </button>
-                        </div>
-
-                        <!-- File Attachments Section -->
-                        <div class="file-attachments"
-                            *ngIf="quotation.attachedFiles && quotation.attachedFiles.length > 0">
-                            <div class="file-type-badges">
-                                <!-- Image Files -->
-                                <div class="file-badge" *ngIf="countFilesByType(quotation, FileType.IMAGE) > 0"
-                                    (click)="openFileModal(quotation, FileType.IMAGE)">
-                                    <mat-icon>image</mat-icon>
-                                    <span>Images: {{ countFilesByType(quotation, FileType.IMAGE) }}</span>
-                                </div>
-
-                                <!-- Video Files -->
-                                <div class="file-badge" *ngIf="countFilesByType(quotation, FileType.VIDEO) > 0"
-                                    (click)="openFileModal(quotation, FileType.VIDEO)">
-                                    <mat-icon>videocam</mat-icon>
-                                    <span>Videos: {{ countFilesByType(quotation, FileType.VIDEO) }}</span>
-                                </div>
-
-                                <!-- Audio Files -->
-                                <div class="file-badge" *ngIf="countFilesByType(quotation, FileType.AUDIO) > 0"
-                                    (click)="openFileModal(quotation, FileType.AUDIO)">
-                                    <mat-icon>audiotrack</mat-icon>
-                                    <span>Audio: {{ countFilesByType(quotation, FileType.AUDIO) }}</span>
-                                </div>
-
-                                <!-- Document Files -->
-                                <div class="file-badge" *ngIf="countFilesByType(quotation, FileType.DOCUMENT) > 0"
-                                    (click)="openFileModal(quotation, FileType.DOCUMENT)">
-                                    <mat-icon>description</mat-icon>
-                                    <span>Documents: {{ countFilesByType(quotation, FileType.DOCUMENT) }}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="payment-warning" *ngIf="quotation.paymentPending">
-                            <mat-icon>error</mat-icon>
-                            <span>Adv. payment pending</span>
-                        </div>
-                        <!-- Payment Button Section -->
-                        <div class="payment-section"
-                            *ngIf="quotation.status === 'Accepted' && !quotation.isAdvancePaid">
-                            <button mat-raised-button color="primary" class="payment-button"
-                                (click)="initiateAdvancePayment(quotation)">
-                                <mat-icon>payment</mat-icon>
-                                Pay Advance Amount (₹{{ quotation.advanceAmount }})
-                            </button>
-                        </div>
-                    </div>
-                </div>
+        } @else {
+            <div class="empty-state-message full-width-message">
+                <mat-icon>playlist_remove</mat-icon> <!-- Or another appropriate icon -->
+                <p>No quotations found with status '{{ activeFilter | titlecase }}'.</p>
             </div>
-        </ng-container>
+        }
+    }
 
-        <ng-template #completedWorksContainer>
-            <!-- Loading State -->
-            <div *ngIf="completedWorksLoading" class="loading-container full-width-message">
+    @if (activeFilter === QuotationStatus.COMPLETED) {
+        @if (completedWorksLoading) {
+            <div class="loading-container full-width-message">
                 <mat-icon class="spin">refresh</mat-icon>
                 <p>Loading your completed works...</p>
             </div>
+        }
 
-            <!-- Empty State -->
-            <div *ngIf="!completedWorksLoading && completedWorks.length === 0" class="empty-state">
+        @if (!loading && !completedWorksLoading && completedWorks.length === 0) {
+            <div class="empty-state full-width-message">
                 <mat-icon>work_off</mat-icon>
                 <h2>No completed works found</h2>
-                <p *ngIf="completedWorksSearch">Try adjusting your search criteria</p>
-                <p *ngIf="!completedWorksSearch">You haven't completed any works yet</p>
+                @if (completedWorksSearch) {
+                    <p>Try adjusting your search criteria</p>
+                } @else {
+                    <p>You haven't completed any works yet</p>
+                }
             </div>
+        }
+    }
 
-            <!-- Works Grid -->
-            <div *ngFor="let work of completedWorks" class="work-card-wrapper">
-                <div class="work-card">
-                    <div class="work-card-header">
-                        <div class="work-header-content">
-                            <h3 class="work-title">{{ work.title }}</h3>
-                            <span class="work-date">{{ work.completedAt || null | localDate }}</span>
+    <div class="quotations-grid">
+        @if (activeFilter !== QuotationStatus.COMPLETED) {
+            @for (quotation of quotations; track quotation._id) {
+                <div class="quotation-card">
+                    <div class="card-image-container">
+                        <img [src]="quotation.imageUrl || 'https://placehold.co/600x400'" [alt]="quotation.title">
+                        <div class="amount-badge">₹{{ quotation.estimatedBudget }}</div>
+                        <div class="status-badge" [ngClass]="getStatusClass(quotation.status)">
+                            {{ quotation.status | titlecase }}
                         </div>
-                        <div class="work-actions">
-                            <button mat-button [color]="work.isPublic ? 'primary' : 'accent'"
-                                (click)="togglePublicStatus(work)">
-                                <mat-icon>{{ work.isPublic ? 'public' : 'lock' }}</mat-icon>
-                                <span class="action-label">{{ work.isPublic ? 'Public' : 'Private' }}</span>
+                        <div class="action-icons">
+                            <button class="icon-button edit" (click)="editQuotation(quotation, $event)">
+                                <mat-icon>edit</mat-icon>
+                            </button>
+                            <button class="icon-button delete" (click)="deleteQuotation(quotation, $event)">
+                                <mat-icon>delete</mat-icon>
                             </button>
                         </div>
                     </div>
-                    <div class="work-card-content">
-                        <p class="work-description">{{ work.description }}</p>
 
-                        <!-- User's Attached Files -->
-                        <div class="work-files user-files" *ngIf="work.attachedFiles && work.attachedFiles.length > 0">
-                            <h4>Uploaded Files</h4>
-                            <div class="file-badges">
-                                <ng-container
-                                    *ngFor="let fileType of [FileType.IMAGE, FileType.VIDEO, FileType.DOCUMENT, FileType.AUDIO]">
-                                    <div class="file-badge" *ngIf="countAttachedFilesByType(work, fileType) > 0"
-                                        (click)="openAttachedFileModal(work, fileType)">
-                                        <mat-icon>
-                                            {{ fileType === FileType.IMAGE ? 'image' :
-                                            fileType === FileType.VIDEO ? 'videocam' :
-                                            fileType === FileType.AUDIO ? 'audiotrack' : 'description' }}
-                                        </mat-icon>
-                                        <span>{{ countAttachedFilesByType(work, fileType) }}</span>
+                    <div class="card-content">
+                        <h3>{{ quotation.title }}</h3>
+                        <p class="description">{{ quotation.description }}</p>
+
+                        <div class="details">
+                            <div class="detail-item">
+                                <mat-icon>edit</mat-icon>
+                                <span>Editor: {{ quotation.editor || 'Not assigned' }}</span>
+                            </div>
+
+                            <div class="detail-item">
+                                <mat-icon>label</mat-icon>
+                                <span>Theme: {{ quotation.theme }}</span>
+                            </div>
+
+                            <div class="detail-item">
+                                <mat-icon>category</mat-icon>
+                                <span>Output Type: {{ quotation.outputType }}</span>
+                            </div>
+
+                            @if (quotation.status === 'Published') {
+                                <div class="detail-item bids-button-container">
+                                    <button mat-raised-button color="accent" class="view-bids-button"
+                                        (click)="viewBids(quotation)">
+                                        <mat-icon>gavel</mat-icon>
+                                        View Bids
+                                        @if (quotation.bidCount) {
+                                            <span class="bid-count">
+                                                ({{ quotation.bidCount }})
+                                            </span>
+                                        }
+                                    </button>
+                                </div>
+                            }
+
+                            @if (quotation.attachedFiles && quotation.attachedFiles.length > 0) {
+                                <div class="file-attachments">
+                                    <div class="file-type-badges">
+                                        @if (countFilesByType(quotation, FileType.IMAGE) > 0) {
+                                            <div class="file-badge"
+                                                (click)="openFileModal(quotation, FileType.IMAGE)">
+                                                <mat-icon>image</mat-icon>
+                                                <span>Images: {{ countFilesByType(quotation, FileType.IMAGE) }}</span>
+                                            </div>
+                                        }
+
+                                        @if (countFilesByType(quotation, FileType.VIDEO) > 0) {
+                                            <div class="file-badge"
+                                                (click)="openFileModal(quotation, FileType.VIDEO)">
+                                                <mat-icon>videocam</mat-icon>
+                                                <span>Videos: {{ countFilesByType(quotation, FileType.VIDEO) }}</span>
+                                            </div>
+                                        }
+
+                                        @if (countFilesByType(quotation, FileType.AUDIO) > 0) {
+                                            <div class="file-badge"
+                                                (click)="openFileModal(quotation, FileType.AUDIO)">
+                                                <mat-icon>audiotrack</mat-icon>
+                                                <span>Audio: {{ countFilesByType(quotation, FileType.AUDIO) }}</span>
+                                            </div>
+                                        }
+
+                                        @if (countFilesByType(quotation, FileType.DOCUMENT) > 0) {
+                                            <div class="file-badge"
+                                                (click)="openFileModal(quotation, FileType.DOCUMENT)">
+                                                <mat-icon>description</mat-icon>
+                                                <span>Documents: {{ countFilesByType(quotation, FileType.DOCUMENT) }}</span>
+                                            </div>
+                                        }
                                     </div>
-                                </ng-container>
-                            </div>
-                        </div>
+                                </div>
+                            }
 
-                        <div class="work-response" *ngIf="work.comments">
-                            <h4>Editor comments</h4>
-                            <p>{{ work.comments }}</p>
+                            @if (quotation.status === 'Accepted' && !quotation.isAdvancePaid) {
+                                <div class="payment-warning">
+                                    <mat-icon>error</mat-icon>
+                                    <span>Adv. payment pending</span>
+                                </div>
 
-                            <button class="rate-btn editor-rate editor-rating-btn"
-                                (click)="openEditorRatingModal(work)">
-                                <mat-icon>supervisor_account</mat-icon>
-                                Rate Editor
-                            </button>
-                        </div>
-
-                        <div class="payment-section"
-                            *ngIf="(work.isAdvancePaid && !work.isFullyPaid) || (!work.isFullyPaid)">
-                            <button mat-raised-button color="primary" class="payment-button"
-                                (click)="initiateBalancePayment(work)">
-                                <mat-icon>payment</mat-icon>
-                                Pay Balance Amount (₹{{ work.balanceAmount }})
-                            </button>
-                        </div>
-
-                        <!-- Editor's Final Files -->
-                        <div class="work-files editor-files" *ngIf="work.finalFiles && work.finalFiles.length > 0"
-                            [class.disabled]="!work.isFullyPaid">
-                            <h4>Final Edited Files
-                                <span *ngIf="!work.isFullyPaid" class="lock-indicator">
-                                    <mat-icon>lock</mat-icon>
-                                    Pay balance amount to access files
-                                </span>
-                            </h4>
-                            <div class="file-badges" [class.disabled]="!work.isFullyPaid">
-                                <ng-container
-                                    *ngFor="let fileType of [FileType.IMAGE, FileType.VIDEO, FileType.DOCUMENT, FileType.AUDIO]">
-                                    <div class="file-badge" *ngIf="countFinalFilesByType(work, fileType) > 0"
-                                        (click)="work.isFullyPaid && openFinalFilesModal(work, fileType)">
-                                        <mat-icon>
-                                            {{ fileType === FileType.IMAGE ? 'image' :
-                                            fileType === FileType.VIDEO ? 'videocam' :
-                                            fileType === FileType.AUDIO ? 'audiotrack' : 'description' }}
-                                        </mat-icon>
-                                        <span>{{ countFinalFilesByType(work, fileType) }}</span>
-                                    </div>
-                                </ng-container>
-                            </div>
-                        </div>
-
-                        <!-- Quotation Rating Display -->
-                        <div *ngIf="work.rating || work.feedback" class="work-rating-display">
-                            <div class="work-rating-stars" *ngIf="work.rating">
-                                <mat-icon *ngFor="let star of [].constructor(5); let i = index"
-                                    [ngClass]="{'filled': i < work.rating}">
-                                    star
-                                </mat-icon>
-                                <span class="work-rating-value">{{ work.rating }}/5</span>
-                            </div>
-                            <div class="work-rating-feedback" *ngIf="work.feedback">
-                                <mat-icon>comment</mat-icon>
-                                <span>{{ work.feedback }}</span>
-                            </div>
-                        </div>
-
-                        <div class="rating-buttons-container">
-                            <button class="rate-btn work-rate" (click)="openWorkRatingModal(work)">
-                                <mat-icon>star</mat-icon>
-                                {{ work.rating || work.feedback ? 'Update Work Rating' : 'Rate their Work' }}
-                            </button>
+                                <div class="payment-section">
+                                    <button mat-raised-button color="primary" class="payment-button"
+                                        (click)="initiateAdvancePayment(quotation)">
+                                        <mat-icon>payment</mat-icon>
+                                        Pay Advance Amount (₹{{ quotation.advanceAmount }})
+                                    </button>
+                                </div>
+                            }
                         </div>
                     </div>
                 </div>
-            </div>
-        </ng-template>
+            }
+        } @else {
+            @for (work of completedWorks; track work) {
+                <div class="work-card-wrapper">
+                    <div class="work-card">
+                        <div class="work-card-header">
+                            <div class="work-header-content">
+                                <h3 class="work-title">{{ work.title }}</h3>
+                                <span class="work-date">{{ work.completedAt || null | localDate }}</span>
+                            </div>
+                            <div class="work-actions">
+                                <button mat-button [color]="work.isPublic ? 'primary' : 'accent'"
+                                    (click)="togglePublicStatus(work)">
+                                    <mat-icon>{{ work.isPublic ? 'public' : 'lock' }}</mat-icon>
+                                    <span class="action-label">{{ work.isPublic ? 'Public' : 'Private' }}</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="work-card-content">
+                            <p class="work-description">{{ work.description }}</p>
+
+                            @if (work.attachedFiles && work.attachedFiles.length > 0) {
+                                <div class="work-files user-files">
+                                    <h4>Uploaded Files</h4>
+                                    <div class="file-badges">
+                                        @for (fileType of [FileType.IMAGE, FileType.VIDEO, FileType.DOCUMENT, FileType.AUDIO]; track fileType) {
+                                            @if (countAttachedFilesByType(work, fileType) > 0) {
+                                                <div class="file-badge"
+                                                    (click)="openAttachedFileModal(work, fileType)">
+                                                    <mat-icon>
+                                                        {{ fileType === FileType.IMAGE ? 'image' :
+                                                        fileType === FileType.VIDEO ? 'videocam' :
+                                                        fileType === FileType.AUDIO ? 'audiotrack' : 'description' }}
+                                                    </mat-icon>
+                                                    <span>{{ countAttachedFilesByType(work, fileType) }}</span>
+                                                </div>
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                            }
+
+                            @if (work.comments) {
+                                <div class="work-response">
+                                    <h4>Editor comments</h4>
+                                    <p>{{ work.comments }}</p>
+
+                                    <button class="rate-btn editor-rate editor-rating-btn"
+                                        (click)="openEditorRatingModal(work)">
+                                        <mat-icon>supervisor_account</mat-icon>
+                                        Rate Editor
+                                    </button>
+                                </div>
+                            }
+
+                            @if ((work.isAdvancePaid && !work.isFullyPaid) || (!work.isFullyPaid)) {
+                                <div class="payment-section">
+                                    <button mat-raised-button color="primary" class="payment-button"
+                                        (click)="initiateBalancePayment(work)">
+                                        <mat-icon>payment</mat-icon>
+                                        Pay Balance Amount (₹{{ work.balanceAmount }})
+                                    </button>
+                                </div>
+                            }
+
+                            @if (work.finalFiles && work.finalFiles.length > 0) {
+                                <div class="work-files editor-files" [class.disabled]="!work.isFullyPaid">
+                                    <h4>Final Edited Files
+                                        @if (!work.isFullyPaid) {
+                                            <span class="lock-indicator">
+                                                <mat-icon>lock</mat-icon>
+                                                Pay balance amount to access files
+                                            </span>
+                                        }
+                                    </h4>
+                                    <div class="file-badges" [class.disabled]="!work.isFullyPaid">
+                                        @for (fileType of [FileType.IMAGE, FileType.VIDEO, FileType.DOCUMENT, FileType.AUDIO]; track fileType) {
+                                            @if (countFinalFilesByType(work, fileType) > 0) {
+                                                <div class="file-badge"
+                                                    (click)="work.isFullyPaid && openFinalFilesModal(work, fileType)">
+                                                    <mat-icon>
+                                                        {{ fileType === FileType.IMAGE ? 'image' :
+                                                        fileType === FileType.VIDEO ? 'videocam' :
+                                                        fileType === FileType.AUDIO ? 'audiotrack' : 'description' }}
+                                                    </mat-icon>
+                                                    <span>{{ countFinalFilesByType(work, fileType) }}</span>
+                                                </div>
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                            }
+
+                            @if (work.rating || work.feedback) {
+                                <div class="work-rating-display">
+                                    @if (work.rating) {
+                                        <div class="work-rating-stars">
+                                            @for (star of [].constructor(5); track $index; let i = $index) {
+                                                <mat-icon [ngClass]="{'filled': i < work.rating}">
+                                                    star
+                                                </mat-icon>
+                                            }
+                                            <span class="work-rating-value">{{ work.rating }}/5</span>
+                                        </div>
+                                    }
+                                    @if (work.feedback) {
+                                        <div class="work-rating-feedback">
+                                            <mat-icon>comment</mat-icon>
+                                            <span>{{ work.feedback }}</span>
+                                        </div>
+                                    }
+                                </div>
+                            }
+
+                            <div class="rating-buttons-container">
+                                <button class="rate-btn work-rate" (click)="openWorkRatingModal(work)">
+                                    <mat-icon>star</mat-icon>
+                                    {{ work.rating || work.feedback ? 'Update Work Rating' : 'Rate their Work' }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
     </div>
 
-    <!-- Paginator for Quotations (only when not loading, no error, and items exist) -->
-    <mat-paginator
-        *ngIf="activeFilter !== QuotationStatus.COMPLETED && !loading && !error && quotations.length > 0 && totalItems > 0"
-        [length]="totalItems" [pageSize]="itemsPerPage" [pageIndex]="currentPage - 1"
-        [pageSizeOptions]="[5, 10, 15, 20]" (page)="handlePageEvent($event)" aria-label="Select page of quotations"
-        class="app-paginator"
-        panelClass="custom-paginator-dropdown">
-    </mat-paginator>
-
+    @if (activeFilter !== QuotationStatus.COMPLETED && !loading && !error && quotations.length > 0 && totalItems > 0) {
+        <mat-paginator
+            [length]="totalItems" [pageSize]="itemsPerPage" [pageIndex]="currentPage - 1"
+            [pageSizeOptions]="[5, 10, 15, 20]" (page)="handlePageEvent($event)" aria-label="Select page of quotations"
+            class="app-paginator" panelClass="custom-paginator-dropdown">
+        </mat-paginator>
+    }
 </div>

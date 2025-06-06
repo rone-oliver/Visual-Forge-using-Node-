@@ -71,6 +71,7 @@ export class QuotationComponent implements OnInit, OnDestroy {
 
   loadQuotations(): void {
     this.loading = true;
+    this.error = null;
     const params = {
       page: this.currentPage,
       limit: this.itemsPerPage,
@@ -103,13 +104,16 @@ export class QuotationComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result && result.success) {
-        // Refresh quotations and bid counts if a bid was accepted
         this.loadQuotations();
       }
     });
   }
 
   setFilter(filter: QuotationStatus | 'All'): void {
+    this.completedWorksLoading = false;
+    this.completedWorks.length = 0;
+    this.quotations.length = 0;
+    this.error = null;
     this.activeFilter = filter;
     this.currentPage = 1;
     this.loadQuotations();
@@ -165,7 +169,10 @@ export class QuotationComponent implements OnInit, OnDestroy {
 
   showCompletedWorks() {
     this.activeFilter = QuotationStatus.COMPLETED;
+    this.loading = false;
+    this.error = null;
     this.completedWorksLoading = true;
+    this.currentPage = 1;
     this.loadCompletedWorks();
   }
 
