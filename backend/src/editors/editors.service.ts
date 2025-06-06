@@ -15,6 +15,7 @@ import { Bid, BidDocument, BidStatus } from 'src/common/bids/models/bids.schema'
 import { BidsService } from 'src/common/bids/bids.service';
 import { CreateBidDto } from 'src/common/bids/dto/create-bid.dto';
 import { GetEditorQuotationsParams, IQuotationWithEditorBid, PaginatedEditorQuotationsResponse } from './interfaces/common.interface';
+import { title } from 'process';
 
 @Injectable()
 export class EditorsService {
@@ -32,25 +33,6 @@ export class EditorsService {
 
     async createEditor(editor: Partial<Editor>): Promise<Editor> {
         return this.editorModel.create(editor);
-    }
-    private async getQuotations(userId: Types.ObjectId, status: QuotationStatus): Promise<IQuotation[] | undefined> {
-        try {
-            if (status === QuotationStatus.PUBLISHED) {
-                return await this.quotationModel
-                    .find({ status: QuotationStatus.PUBLISHED, userId: { $ne: userId } })
-                    .sort({ createdAt: -1 })
-                    .lean() as unknown as IQuotation[];
-            }
-            else if (status === QuotationStatus.ACCEPTED) {
-                return await this.quotationModel
-                    .find({ status: QuotationStatus.ACCEPTED, editorId: userId })
-                    .sort({ createdAt: 1 })
-                    .lean() as unknown as IQuotation[];
-            }
-        } catch (error) {
-            this.logger.error('Error getting the quotations', error);
-            throw new Error('Error getting the quotations');
-        }
     }
 
     async getPublishedQuotations(
@@ -186,9 +168,88 @@ export class EditorsService {
         }
     }
 
-    async getAcceptedQuotations(editorId: Types.ObjectId) {
+    async getAcceptedQuotations(editorId: Types.ObjectId, params: GetEditorQuotationsParams) {
+        const { page = 1, limit = 20, searchTerm } = params;
+        const skip = (page - 1) * limit;
+
+        const matchStage: any = {
+            editorId,
+            status: QuotationStatus.ACCEPTED,
+        }
+
+        if (searchTerm) {
+            matchStage.$or = [
+                { title: { $regex: searchTerm, $options: 'i' } },
+                { description: { $regex: searchTerm, $options: 'i' } },
+            ]
+        }
+
+        const countPipeline = [
+            {
+                $match: matchStage
+            },
+            {
+                $count: 'totalItems'
+            }
+        ]
+
+        const dataPipeline: any[] = [
+            { $match: matchStage },
+            { $sort: { dueDate: -1 } },
+            { $skip: skip },
+            { $limit: limit },
+            {
+                $addFields: {
+                    convertedUserId: { $toObjectId: '$userId' },
+                },
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'convertedUserId',
+                    foreignField: '_id',
+                    as: 'clientDetails',
+                },
+            },
+            {
+                $unwind: { path: '$clientDetails', preserveNullAndEmptyArrays: true },
+            },
+            {
+                $addFields: {
+                    userFullName: '$clientDetails.fullname',
+                },
+            },
+            {
+                $project: {
+                    title: 1,
+                    description: 1,
+                    estimatedBudget: 1,
+                    theme: 1,
+                    outputType: 1,
+                    dueDate: 1,
+                    status: 1,
+                    userId: 1,
+                    editorId: 1,
+                    userFullName: 1,
+                    imageUrl: 1,
+                    attachedFiles: 1,
+                    createdAt: 1,
+                    updatedAt: 1,
+                },
+            },
+        ]
+
         try {
-            return await this.getQuotations(editorId, QuotationStatus.ACCEPTED);
+            const totalItemsResult = await this.quotationModel.aggregate(countPipeline).exec();
+            const totalItems = totalItemsResult.length > 0 ? totalItemsResult[0].totalItems : 0;
+            const quotations = await this.quotationModel.aggregate(dataPipeline).exec();
+
+            return {
+                quotations,
+                totalItems,
+                currentPage: Number(page),
+                itemsPerPage: Number(limit),
+            };
         } catch (error) {
             this.logger.error('Error getting the accepted quotations', error);
             throw new Error('Error getting the accepted quotations');

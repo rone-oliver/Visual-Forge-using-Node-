@@ -13,7 +13,7 @@
             </div>
             <mat-form-field appearance="fill" class="search-field">
                 <mat-icon matPrefix>search</mat-icon>
-                <input matInput type="text" placeholder="Search Quotations" [(ngModel)]="searchQuery">
+                <input matInput type="text" placeholder="Search Quotations" [ngModel]="searchQuery" (ngModelChange)="onSearchChange($event)">
             </mat-form-field>
         </div>
 
@@ -23,12 +23,12 @@
                 <span>Loading quotations...</span>
             </div>
 
-            <div *ngIf="!isLoading && filteredQuotations.length === 0" class="empty-state">
+            <div *ngIf="!isLoading && acceptedQuotations.length === 0" class="empty-state">
                 <mat-icon>inbox</mat-icon>
                 <p>No quotations found</p>
             </div>
 
-            <div *ngFor="let quotation of filteredQuotations" class="quotation-item"
+            <div *ngFor="let quotation of acceptedQuotations" class="quotation-item"
                 [class.selected]="selectedQuotation?._id === quotation._id" (click)="selectQuotation(quotation)"
                 matRipple>
                 <div class="quotation-thumbnail">
@@ -37,6 +37,13 @@
                 <div class="quotation-info">
                     <h3 class="quotation-title">{{ quotation.title }}</h3>
                 </div>
+            </div>
+
+            <div *ngIf="hasMore && !isLoading" class="load-more-container">
+                <button mat-flat-button color="accent" (click)="loadMore()" [disabled]="isLoadingMore">
+                    <span *ngIf="!isLoadingMore">Load More</span>
+                    <mat-spinner *ngIf="isLoadingMore" diameter="20"></mat-spinner>
+                </button>
             </div>
         </div>
     </div>

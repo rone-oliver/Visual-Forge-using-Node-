@@ -29,12 +29,16 @@ export class EditorsController {
     @Query('searchTerm') searchTerm?: string,
   ) {
     const editor = req['user'] as { userId: Types.ObjectId, role: string };
+    const pageNumber = parseInt(page ? page : '1', 10);
+    const limitNumber = parseInt(limit ? limit : '15', 10);
 
     if (status === QuotationStatus.ACCEPTED) {
-      return this.editorService.getAcceptedQuotations(editor.userId);
+      return this.editorService.getAcceptedQuotations(editor.userId,{
+        page: pageNumber,
+        limit: limitNumber,
+        searchTerm,
+      });
     } else if(status === QuotationStatus.PUBLISHED){
-      const pageNumber = parseInt(page ? page : '1', 10);
-      const limitNumber = parseInt(limit ? limit : '10', 10);
       return this.editorService.getPublishedQuotations(editor.userId, {
         page: pageNumber,
         limit: limitNumber,
@@ -42,6 +46,7 @@ export class EditorsController {
         searchTerm,
       });
     }
+    throw new BadRequestException('Invalid quotation status provided.');
   }
 
   @Post('quotations/response')

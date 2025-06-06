@@ -3,7 +3,7 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { LocalDatePipe } from '../../../pipes/date.pipe';
-import { FileAttachmentResponse, FileType, IQuotation } from '../../../interfaces/quotation.interface';
+import { FileAttachmentResponse, FileType, IQuotation, PaginatedEditorQuotationsResponse } from '../../../interfaces/quotation.interface';
 import { EditorService } from '../../../services/editor/editor.service';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
@@ -13,11 +13,23 @@ import { FilesPreviewComponent } from '../../user/files-preview/files-preview.co
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
+import { debounceTime, distinctUntilChanged, Subject, Subscription } from 'rxjs';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 
 @Component({
   selector: 'app-accepted-quotation',
-  imports: [CommonModule,FormsModule,MatIconModule,LocalDatePipe,MatFormFieldModule,MatButtonModule,MatInputModule,MatRippleModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatIconModule,
+    LocalDatePipe,
+    MatFormFieldModule,
+    MatButtonModule,
+    MatInputModule,
+    MatRippleModule,
+    MatProgressSpinnerModule
+  ],
   templateUrl: './accepted-quotation.component.html',
   styleUrl: './accepted-quotation.component.scss'
 })
@@ -33,6 +45,17 @@ export class AcceptedQuotationComponent {
   isUploading: boolean = false;
   maxFiles = 3;
 
+  // Pagination
+  itemsPerPage: number = 15;
+  currentPage: number = 1;
+  totalItems: number = 0;
+  hasMore: boolean = false;
+  isLoadingMore: boolean = false;
+
+  // Search
+  private searchSubject = new Subject<string>();
+  private searchSubscription!: Subscription;
+
   constructor(
     private editorService: EditorService,
     private dialog: MatDialog,
@@ -42,14 +65,39 @@ export class AcceptedQuotationComponent {
 
   ngOnInit(): void{
     this.loadAcceptedQuotations();
+    this.searchSubscription = this.searchSubject.pipe(
+      debounceTime(500),
+      distinctUntilChanged(),
+    ).subscribe( searchValue => {
+      this.searchQuery = searchValue;
+      this.loadAcceptedQuotations();
+    })
   }
   
-  loadAcceptedQuotations(): void{
-    this.isLoading = true;
-    this.editorService.getAcceptedQuotations().subscribe({
-      next: (quotations) => {
-        this.acceptedQuotations = quotations;
+  loadAcceptedQuotations(loadMore = false): void{
+    if(loadMore){
+      this.isLoadingMore = true;
+      this.currentPage++;
+    }else{
+      this.isLoading = true;
+      this.currentPage = 1;
+      this.acceptedQuotations.length = 0;
+    }
+    this.editorService.getAcceptedQuotations({
+      page: this.currentPage,
+      limit: this.itemsPerPage,
+      searchTerm: this.searchQuery.trim() || undefined,
+    }).subscribe({
+      next: (response: PaginatedEditorQuotationsResponse) => {
+        if(loadMore){
+          this.acceptedQuotations.push(...response.quotations);
+        } else{
+          this.acceptedQuotations = response.quotations;
+        }
+        this.totalItems = response.totalItems;
+        this.hasMore = this.acceptedQuotations.length < this.totalItems;
         this.isLoading = false;
+        this.isLoadingMore = false;
 
         if(this.acceptedQuotations.length > 0 && !this.selectedQuotation){
           this.selectedQuotation = this.acceptedQuotations[0];
@@ -57,9 +105,19 @@ export class AcceptedQuotationComponent {
       },
       error: (error) => {
         console.error('Error loading accepted quotations', error);
-        this.isLoading = false;
+        if (loadMore) {
+          this.currentPage--;
+          this.isLoadingMore = false;
+        } else {
+          this.isLoading = false;
+        }
+        this.showMessage('Failed to load accepted quotations');
       }
     })
+  }
+
+  loadMore():void{
+    this.loadAcceptedQuotations(true);
   }
 
   selectQuotation(quotation: IQuotation): void {
@@ -67,15 +125,8 @@ export class AcceptedQuotationComponent {
     this.responseText = '';
   }
 
-  get filteredQuotations(): IQuotation[]{
-    if(!this.searchQuery.trim()){
-      return this.acceptedQuotations;
-    }
-    const query = this.searchQuery.toLowerCase().trim();
-    return this.acceptedQuotations.filter(q =>
-      q.title?.toLowerCase().includes(query) || 
-      q.description?.toLowerCase().includes(query)
-    );
+  onSearchChange(term: string){
+    this.searchSubject.next(term);
   }
 
   countFilesByType(fileType: FileType): number {

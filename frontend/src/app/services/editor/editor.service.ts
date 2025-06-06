@@ -34,8 +34,20 @@ export class EditorService {
     return this.http.get<PaginatedEditorQuotationsResponse>(`${this.editorApiUrl}/quotations`, { params: httpParams });
   }
 
-  getAcceptedQuotations(): Observable<IQuotation[]>{
-    return this.http.get<IQuotation[]>(`${this.editorApiUrl}/quotations?status=${QuotationStatus.ACCEPTED}`);
+  getAcceptedQuotations(params: {
+    page: number;
+    limit: number;
+    searchTerm?: string;
+  }): Observable<PaginatedEditorQuotationsResponse>{
+    let httpParams = new HttpParams()
+      .set('status',QuotationStatus.ACCEPTED)
+      .set('page',params.page.toString())
+      .set('limit',params.limit.toString());
+    
+    if(params.searchTerm){
+      httpParams = httpParams.set('searchTerm', params.searchTerm.trim());
+    }
+    return this.http.get<PaginatedEditorQuotationsResponse>(`${this.editorApiUrl}/quotations`, { params: httpParams });
   }
 
   submitQuotationResponse(workData: any): Observable<boolean>{
