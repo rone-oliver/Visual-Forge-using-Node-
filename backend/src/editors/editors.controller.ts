@@ -1,127 +1,170 @@
-import { BadRequestException, Body, Controller, Delete, Get, Logger, Param, Patch, Post, Query, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
-import { IQuotation } from 'src/users/interface/Quotation.interface';
-import { EditorsService } from './editors.service';
+import { BadRequestException, Body, Controller, Delete, Get, Logger, Param, Patch, Post, Query, Req, UploadedFiles, UseGuards, UseInterceptors, Inject } from '@nestjs/common';
+import { IEditorsService, IEditorsServiceToken } from './interfaces/editors.service.interface';
 import { Types } from 'mongoose';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { RolesGuard } from 'src/auth/guards/role.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
-import { Editor } from './models/editor.schema';
-import { User } from 'src/users/models/user.schema';
 import { OutputType, QuotationStatus } from 'src/common/models/quotation.schema';
+import {
+  GetPublishedQuotationsQueryDto,
+  GetAcceptedQuotationsQueryDto,
+  SubmitWorkBodyDto,
+  CreateEditorBidBodyDto,
+  UpdateEditorBidBodyDto,
+  PaginatedAcceptedQuotationsResponseDto,
+  FileUploadResultDto,
+  BidResponseDto,
+  CompletedWorkDto,
+  PaginatedPublishedQuotationsResponseDto
+} from './dto/editors.dto';
+import { ApiBody, ApiConsumes, ApiOperation, ApiQuery, ApiResponse, ApiTags, getSchemaPath } from '@nestjs/swagger';
+import { IEditorsController } from './interfaces/editors.controller.interface';
 
+@ApiTags('editor')
 @Controller('editor')
 @UseGuards(AuthGuard, RolesGuard)
-export class EditorsController {
+export class EditorsController implements IEditorsController {
   private readonly logger = new Logger(EditorsController.name);
   constructor(
-    private editorService: EditorsService,
+    @Inject(IEditorsServiceToken) private editorService: IEditorsService,
   ) { };
 
   @Get('quotations')
   @Roles('Editor')
+  @ApiOperation({ summary: 'Get quotations for the editor (published or accepted)' })
+  @ApiQuery({ name: 'status', enum: QuotationStatus, description: 'Filter quotations by status (Published, Accepted)' })
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number for pagination' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Number of items per page' })
+  @ApiQuery({ name: 'searchTerm', required: false, type: String, description: 'Search term for filtering' })
+  @ApiQuery({ name: 'mediaType', required: false, type: String, description: 'Filter by media type (for published quotations)' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Successfully retrieved quotations. Type depends on status query param.',
+    schema: {
+      oneOf: [
+        { $ref: getSchemaPath(PaginatedAcceptedQuotationsResponseDto) },
+        { $ref: getSchemaPath(PaginatedPublishedQuotationsResponseDto) },
+      ],
+    }
+   })
   async getQuotations(
     @Req() req: Request,
-    @Query('status') status?: string,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-    @Query('mediaType') mediaType?: OutputType,
-    @Query('searchTerm') searchTerm?: string,
-  ) {
+    @Query('status') status: QuotationStatus,
+    @Query() queryDto: GetPublishedQuotationsQueryDto & GetAcceptedQuotationsQueryDto, 
+  ): Promise<PaginatedAcceptedQuotationsResponseDto | PaginatedPublishedQuotationsResponseDto> {
     const editor = req['user'] as { userId: Types.ObjectId, role: string };
-    const pageNumber = parseInt(page ? page : '1', 10);
-    const limitNumber = parseInt(limit ? limit : '15', 10);
+    const pageNumber = parseInt(queryDto.page ? queryDto.page.toString() : '1', 10);
+    const limitNumber = parseInt(queryDto.limit ? queryDto.limit.toString() : '15', 10);
 
     if (status === QuotationStatus.ACCEPTED) {
-      return this.editorService.getAcceptedQuotations(editor.userId,{
-        page: pageNumber,
-        limit: limitNumber,
-        searchTerm,
-      });
+      const acceptedQueryDto: GetAcceptedQuotationsQueryDto = { page: pageNumber, limit: limitNumber, searchTerm: queryDto.searchTerm };
+      return this.editorService.getAcceptedQuotations(editor.userId, acceptedQueryDto);
     } else if(status === QuotationStatus.PUBLISHED){
-      return this.editorService.getPublishedQuotations(editor.userId, {
-        page: pageNumber,
-        limit: limitNumber,
-        mediaType,
-        searchTerm,
-      });
+      const publishedQueryDto: GetPublishedQuotationsQueryDto = { page: pageNumber, limit: limitNumber, mediaType: queryDto.mediaType, searchTerm: queryDto.searchTerm };
+      return this.editorService.getPublishedQuotations(editor.userId, publishedQueryDto);
     }
     throw new BadRequestException('Invalid quotation status provided.');
   }
 
   @Post('quotations/response')
   @Roles('Editor')
-  async submitQuotationResponse(@Body() workData: any): Promise<boolean> {
-    return this.editorService.submitQuotationResponse(workData);
+  @ApiOperation({ summary: 'Submit completed work for a quotation' })
+  @ApiBody({ type: SubmitWorkBodyDto })
+  @ApiResponse({ status: 201, description: 'Work submitted successfully.', type: Boolean })
+  async submitQuotationResponse(
+    @Req() req: Request,
+    @Body() workData: SubmitWorkBodyDto
+  ): Promise<boolean> {
+    const editor = req['user'] as { userId: Types.ObjectId, role: string };
+    return this.editorService.submitQuotationResponse(editor.userId, workData);
   }
 
   @Post('uploads/work')
   @Roles('Editor')
   @UseInterceptors(FilesInterceptor('files', 3))
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Upload work files for a quotation' })
+  @ApiBody({
+    description: 'Files to upload and optional folder name',
+    schema: {
+      type: 'object',
+      properties: {
+        files: {
+          type: 'array',
+          items: { type: 'string', format: 'binary' },
+        },
+        folder: { type: 'string', nullable: true },
+      },
+    },
+  })
+  @ApiResponse({ status: 201, description: 'Files uploaded successfully.', type: [FileUploadResultDto] })
   async uploadWorkFiles(
     @Req() req: Request,
     @UploadedFiles() files: Express.Multer.File[],
     @Body('folder') folder?: string,
-  ) {
+  ): Promise<FileUploadResultDto[]> {
     this.logger.log(`Uploading ${files.length} files`);
     return this.editorService.uploadWorkFiles(files, folder);
   }
 
   @Get('works')
   @Roles('Editor')
-  async getCompletedWorks(@Req() req: Request): Promise<any[]> {
+  @ApiOperation({ summary: 'Get all completed works by the editor' })
+  @ApiResponse({ status: 200, description: 'Successfully retrieved completed works.', type: [CompletedWorkDto] })
+  async getCompletedWorks(@Req() req: Request): Promise<CompletedWorkDto[]> {
     const editor = req['user'] as { userId: Types.ObjectId, role: string };
     return this.editorService.getCompletedWorks(editor.userId);
   }
 
   @Post('bids')
   @Roles('Editor')
-  async createBid(@Body() bidData: { quotationId: string, bidAmount: number, notes?: string }, @Req() req: Request) {
+  @ApiOperation({ summary: 'Create a new bid for a quotation' })
+  @ApiBody({ type: CreateEditorBidBodyDto })
+  @ApiResponse({ status: 201, description: 'Bid created successfully.', type: BidResponseDto })
+  @ApiResponse({ status: 400, description: 'Invalid input data.' })
+  async createBid(@Body() bidData: CreateEditorBidBodyDto, @Req() req: Request): Promise<BidResponseDto> {
     const editor = req['user'] as { userId: Types.ObjectId; role: string };
 
     if (!Types.ObjectId.isValid(bidData.quotationId)) {
       throw new BadRequestException('Invalid quotation ID');
     }
 
-    if (bidData.bidAmount <= 0) {
-      throw new BadRequestException('Bid amount must be greater than 0');
-    }
-
-    return this.editorService.createBid(
-      new Types.ObjectId(bidData.quotationId),
-      editor.userId,
-      bidData.bidAmount,
-      bidData.notes
-    );
-  }
-
-  @Get('bids')
-  @Roles('Editor')
-  async getEditorBids(@Req() req: Request) {
-    const editor = req['user'] as { userId: Types.ObjectId; role: string };
-    return this.editorService.getEditorBids(new Types.ObjectId(editor.userId));
+    // Validation for bidAmount is handled by DTO's Min(0.01) decorator
+    return this.editorService.createBid(editor.userId, bidData);
   }
 
   @Patch('bids/:bidId')
   @Roles('Editor')
-  async updateBid(@Param('bidId') bidId: string, @Body() bidData: { bidAmount: number, notes?: string }, @Req() req: Request) {
+  @ApiOperation({ summary: 'Update an existing bid' })
+  @ApiBody({ type: UpdateEditorBidBodyDto })
+  @ApiResponse({ status: 200, description: 'Bid updated successfully.', type: BidResponseDto })
+  @ApiResponse({ status: 400, description: 'Invalid bid ID or input data.' })
+  async updateBid(
+    @Param('bidId') bidId: string, 
+    @Body() bidData: UpdateEditorBidBodyDto, 
+    @Req() req: Request
+  ): Promise<BidResponseDto> {
     const editor = req['user'] as { userId: Types.ObjectId; role: string };
 
     if (!Types.ObjectId.isValid(bidId)) {
       throw new BadRequestException('Invalid bid ID');
     }
-    return this.editorService.updateBid(new Types.ObjectId(bidId), new Types.ObjectId(editor.userId), bidData.bidAmount, bidData.notes);
+    return this.editorService.updateBid(new Types.ObjectId(bidId), new Types.ObjectId(editor.userId), bidData);
   }
 
   @Delete('bids/:bidId')
   @Roles('Editor')
-  async deleteBid(@Param('bidId') bidId: string, @Req() req: Request) {
+  @ApiOperation({ summary: 'Delete a bid' })
+  @ApiResponse({ status: 200, description: 'Bid deleted successfully.' })
+  @ApiResponse({ status: 400, description: 'Invalid bid ID.' })
+  async deleteBid(@Param('bidId') bidId: string, @Req() req: Request): Promise<void> {
     const editor = req['user'] as { userId: Types.ObjectId; role: string };
 
     if (!Types.ObjectId.isValid(bidId)) {
       throw new BadRequestException('Invalid bid ID');
     }
 
-    return this.editorService.deleteBid(new Types.ObjectId(bidId), new Types.ObjectId(editor.userId));
+    await this.editorService.deleteBid(new Types.ObjectId(bidId), new Types.ObjectId(editor.userId));
   }
 }

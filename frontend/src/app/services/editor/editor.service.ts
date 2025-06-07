@@ -80,10 +80,6 @@ export class EditorService {
     });
   }
 
-  getEditorBids(): Observable<IBid[]> {
-    return this.http.get<IBid[]>(`${this.editorApiUrl}/bids`);
-  }
-
   updateBid(
     bidId: string, amount: number, notes?: string,
   ): Observable<IBid> {

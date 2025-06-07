@@ -11,9 +11,16 @@ import { UsersModule } from 'src/users/users.module';
 import { NotificationModule } from 'src/notification/notification.module';
 import { Bid, BidSchema } from 'src/common/bids/models/bids.schema';
 import { BidsModule } from 'src/common/bids/bids.module';
+import { IEditorsServiceToken } from './interfaces/editors.service.interface';
 
 @Module({
-  providers: [EditorsService, CloudinaryService],
+  providers: [
+    { 
+      provide: IEditorsServiceToken, 
+      useClass: EditorsService 
+    },
+    CloudinaryService
+  ],
   controllers: [EditorsController],
   imports:[
     UsersModule, NotificationModule, BidsModule,
@@ -24,6 +31,7 @@ import { BidsModule } from 'src/common/bids/bids.module';
       { name: User.name, schema: userSchema},
       { name: Bid.name, schema: BidSchema}
     ])
-  ]
+  ],
+  exports: [IEditorsServiceToken]
 })
 export class EditorsModule {}

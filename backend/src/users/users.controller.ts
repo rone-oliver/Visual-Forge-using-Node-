@@ -10,6 +10,7 @@ import { EditorsService } from 'src/editors/editors.service';
 import { PaymentService } from 'src/common/payment/payment.service';
 import { PaymentType } from 'src/common/models/transaction.schema';
 import { Quotation, QuotationStatus } from 'src/common/models/quotation.schema';
+import { EditorDetailsResponseDto } from 'src/editors/dto/editors.dto';
 
 export interface GetQuotationsParams {
     page?: number;
@@ -248,7 +249,7 @@ export class UsersController {
     }
 
     @Get('editors/:id')
-    async getEditor(@Param('id') id: string): Promise<User & { editorDetails?: any } | null> {
+    async getEditor(@Param('id') id: string): Promise<EditorDetailsResponseDto | null> {
         return this.editorService.getEditor(id);
     }
 
@@ -271,7 +272,7 @@ export class UsersController {
     @Patch('quotations/:quotationId/payment')
     @Roles('User', 'Editor')
     async updateQuotationPayment(@Req() req: Request, @Param('quotationId') quotationId: string, @Body() body: { isAdvancePaid: boolean, orderId: string, paymentId: string, amount: number }) {
-        const user = req['user'] as { userId: Types.ObjectId, role: string };
+        const user = req['user'] as { userId: Types.ObjectId; role: string };
         const paymentType = body.isAdvancePaid ? PaymentType.BALANCE : PaymentType.ADVANCE;
 
         const paymentDetails = {

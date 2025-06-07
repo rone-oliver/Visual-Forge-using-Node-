@@ -1,24 +1,37 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Editor, EditorDocument } from './models/editor.schema';
 import { Model, Types } from 'mongoose';
-import { IQuotation } from 'src/users/interface/Quotation.interface';
 import { OutputType, Quotation, QuotationDocument, QuotationStatus } from 'src/common/models/quotation.schema';
-import { Observable } from 'rxjs';
-import { CloudinaryService, FileUploadResult } from 'src/common/cloudinary/cloudinary.service';
+import { CloudinaryService, FileType } from 'src/common/cloudinary/cloudinary.service';
 import { Works, WorksDocument } from 'src/common/models/works.schema';
-import { CompletedWork } from 'src/common/interfaces/completed-word.interface';
 import { User, UserDocument } from 'src/users/models/user.schema';
 import { NotificationService } from 'src/notification/notification.service';
 import { NotificationType } from 'src/notification/models/notification.schema';
 import { Bid, BidDocument, BidStatus } from 'src/common/bids/models/bids.schema';
 import { BidsService } from 'src/common/bids/bids.service';
+import { IEditorsService } from './interfaces/editors.service.interface';
+import {
+    GetPublishedQuotationsQueryDto,
+    GetAcceptedQuotationsQueryDto,
+    SubmitWorkBodyDto,
+    CreateEditorBidBodyDto,
+    UpdateEditorBidBodyDto,
+    EditorDetailsResponseDto,
+    PaginatedAcceptedQuotationsResponseDto,
+    FileUploadResultDto,
+    BidResponseDto,
+    CompletedWorkDto,
+    AcceptedQuotationItemDto,
+    UserForEditorDetailsDto,
+    EditorDetailsDto,
+    PaginatedPublishedQuotationsResponseDto,
+    PublishedQuotationItemDto,
+} from './dto/editors.dto';
 import { CreateBidDto } from 'src/common/bids/dto/create-bid.dto';
-import { GetEditorQuotationsParams, IQuotationWithEditorBid, PaginatedEditorQuotationsResponse } from './interfaces/common.interface';
-import { title } from 'process';
 
 @Injectable()
-export class EditorsService {
+export class EditorsService implements IEditorsService {
     private readonly logger = new Logger(EditorsService.name);
     constructor(
         @InjectModel(Editor.name) private editorModel: Model<EditorDocument>,
@@ -37,8 +50,8 @@ export class EditorsService {
 
     async getPublishedQuotations(
         editorId: Types.ObjectId,
-        params: GetEditorQuotationsParams
-    ): Promise<PaginatedEditorQuotationsResponse> {
+        params: GetPublishedQuotationsQueryDto
+    ): Promise<PaginatedPublishedQuotationsResponseDto> {
         const { page = 1, limit = 10, mediaType, searchTerm } = params;
         const skip = (page - 1) * limit;
 
@@ -152,10 +165,10 @@ export class EditorsService {
                 userId: q.userId?.toString(),
                 editorId: q.editorId?.toString(),
                 editorBid: q.editorBid ? { ...q.editorBid, bidId: q.editorBid.bidId?.toString() } : null,
-            })) as IQuotationWithEditorBid[];
+            })) as PublishedQuotationItemDto[];
 
             const totalItems = results[0].totalCount.length > 0 ? results[0].totalCount[0].count : 0;
-            this.logger.log('Quotations fetched successfully', quotations);
+            this.logger.log('Published quotations fetched successfully for editor', editorId);
             return {
                 quotations,
                 totalItems,
@@ -168,8 +181,11 @@ export class EditorsService {
         }
     }
 
-    async getAcceptedQuotations(editorId: Types.ObjectId, params: GetEditorQuotationsParams) {
-        const { page = 1, limit = 20, searchTerm } = params;
+    async getAcceptedQuotations(
+        editorId: Types.ObjectId,
+        params: GetAcceptedQuotationsQueryDto
+    ): Promise<PaginatedAcceptedQuotationsResponseDto> {
+        const { page = 1, limit = 10, searchTerm } = params;
         const skip = (page - 1) * limit;
 
         const matchStage: any = {
@@ -242,13 +258,38 @@ export class EditorsService {
         try {
             const totalItemsResult = await this.quotationModel.aggregate(countPipeline).exec();
             const totalItems = totalItemsResult.length > 0 ? totalItemsResult[0].totalItems : 0;
-            const quotations = await this.quotationModel.aggregate(dataPipeline).exec();
+            const result = await this.quotationModel.aggregate(dataPipeline).exec();
+
+            const paginatedResults = result;
+            const quotations: AcceptedQuotationItemDto[] = paginatedResults.map(q => ({
+                _id: q._id,
+                title: q.title,
+                description: q.description,
+                estimatedBudget: q.estimatedBudget,
+                theme: q.theme,
+                outputType: q.outputType,
+                dueDate: q.dueDate,
+                status: q.status,
+                userId: q.userId, // Client's ID
+                userFullName: q.userDetails?.fullname, // Client's full name
+                imageUrl: q.imageUrl,
+                attachedFiles: q.attachedFiles?.map(file => ({
+                    url: file.url,
+                    fileType: file.fileType,
+                    fileName: file.fileName,
+                    size: file.size,
+                    mimeType: file.mimeType,
+                    uploadedAt: file.uploadedAt,
+                })),
+                createdAt: q.createdAt,
+                updatedAt: q.updatedAt,
+            }));
 
             return {
                 quotations,
                 totalItems,
-                currentPage: Number(page),
-                itemsPerPage: Number(limit),
+                currentPage: Number(page) || 1,
+                itemsPerPage: Number(limit) || 10,
             };
         } catch (error) {
             this.logger.error('Error getting the accepted quotations', error);
@@ -256,49 +297,56 @@ export class EditorsService {
         }
     }
 
-    async uploadWorkFiles(files: Express.Multer.File[], folder?: string): Promise<FileUploadResult[]> {
-        try {
-            const uploadPromises = await this.cloudinaryService.uploadFiles(files, folder);
-            return Promise.all(uploadPromises);
-        } catch (error) {
-            this.logger.error(`Error in uploadFiles: ${error.message}`);
-            throw error;
+    async uploadWorkFiles(files: Express.Multer.File[], folder?: string): Promise<FileUploadResultDto[]> {
+        if (!files || files.length === 0) {
+            throw new BadRequestException('No files uploaded.');
         }
+        const uploadResults = await this.cloudinaryService.uploadFiles(files, folder);
+        return uploadResults.map(result => ({
+            url: result.url,
+            fileType: result.fileType as FileType, // Assuming FileType enum matches
+            fileName: result.fileName,
+            size: result.size,
+            mimeType: result.mimeType,
+            uploadedAt: result.uploadedAt,
+        }));
     }
 
-    async submitQuotationResponse(workData: any) {
+    async submitQuotationResponse(
+        editorId: Types.ObjectId, 
+        workData: SubmitWorkBodyDto) {
         try {
-            const { userId, quotationId, finalFiles, comments } = workData;
+            const { quotationId, finalFiles, comments } = workData;
             const quotation = await this.quotationModel.findById(new Types.ObjectId(quotationId));
-            if (!quotation) {
-                this.logger.warn(`Quotation with ID ${quotationId} not found`);
-                return false;
-            }
+        if (!quotation) {
+            this.logger.warn(`Quotation with ID ${quotationId} not found`);
+            return false;
+        }
             const work = await this.workModel.create({
                 editorId: quotation.editorId,
                 userId: quotation.userId,
                 finalFiles,
                 comments,
-            });
-            await this.quotationModel.findByIdAndUpdate(quotation._id, { status: QuotationStatus.COMPLETED, worksId: work._id });
+        });
+        await this.quotationModel.findByIdAndUpdate(quotation._id, { status: QuotationStatus.COMPLETED, worksId: work._id });
 
-            try {
-                await this.notificationService.createNotification({
+        try {
+            await this.notificationService.createNotification({
                     userId: quotation.userId,
                     type: NotificationType.WORK,
                     message: `Your work "${quotation.title}" has been completed`,
                     data: { title: quotation.title },
                     quotationId: quotation._id,
                     worksId: work._id
-                });
-                this.logger.log(`Notification sent to user ${quotation.userId} for completed work`);
-            } catch (notificationError) {
-                this.logger.error(`Failed to send notification: ${notificationError.message}`, notificationError.stack);
-                // Continue execution even if notification fails
-            }
+            });
+            this.logger.log(`Notification sent to user ${quotation.userId} for completed work`);
+        } catch (notificationError) {
+            this.logger.error(`Failed to send notification: ${notificationError.message}`, notificationError.stack);
+            // Continue execution even if notification fails
+        }
 
-            await this.updateEditorScore(quotation.editorId);
-            return true;
+        await this.updateEditorScore(quotation.editorId);
+        return true;
         } catch (error) {
             this.logger.error('Error submitting the quotation response', error);
             throw new Error('Error submitting the quotation response');
@@ -368,7 +416,7 @@ export class EditorsService {
         }
     }
 
-    async getCompletedWorks(editorId: Types.ObjectId): Promise<CompletedWork[]> {
+    async getCompletedWorks(editorId: Types.ObjectId): Promise<CompletedWorkDto[]> {
         try {
             const completedQuotations = await this.quotationModel
                 .find({ editorId, status: QuotationStatus.COMPLETED })
@@ -377,18 +425,48 @@ export class EditorsService {
                 .lean();
 
             return completedQuotations.map(quotation => {
-                const worksData = quotation.worksId as any || {};
-                const { worksId, ...quotationData } = quotation;
-                return {
-                    ...quotationData,
-                    ...worksData,
-                    quotationId: quotation._id,
-                    worksId: worksData._id || null,
-                    finalFiles: worksData.finalFiles || [],
-                    attachedFiles: quotationData.attachedFiles || [],
-                    comments: worksData.comments || '',
-                    completedAt: worksData.createdAt,
-                } as CompletedWork;
+                const worksData = quotation.worksId as any; // WorksDocument | undefined
+                const qData = quotation as any; // QuotationDocument
+
+                const completedWork: CompletedWorkDto = {
+                    quotationId: qData._id,
+                    worksId: worksData?._id,
+                    title: qData.title,
+                    description: qData.description,
+                    theme: qData.theme,
+                    estimatedBudget: qData.estimatedBudget,
+                    advanceAmount: qData.advanceAmount,
+                    dueDate: qData.dueDate,
+                    status: qData.status,
+                    outputType: qData.outputType,
+                    attachedFiles: qData.attachedFiles?.map(f => ({
+                        url: f.url,
+                        fileType: f.fileType,
+                        fileName: f.fileName,
+                        size: f.size,
+                        mimeType: f.mimeType,
+                        uploadedAt: f.uploadedAt,
+                    })),
+                    imageUrl: qData.imageUrl, // Assuming imageUrl might be on quotation
+                    userId: qData.userId, // Client's ID
+                    editorId: qData.editorId, // Editor's ID
+                    finalFiles: worksData?.finalFiles?.map(f => ({
+                        url: f.url,
+                        fileType: f.fileType,
+                        fileName: f.fileName,
+                        size: f.size,
+                        mimeType: f.mimeType,
+                        uploadedAt: f.uploadedAt,
+                    })) || [],
+                    comments: worksData?.comments || '',
+                    isPublic: worksData?.isPublic, // from Works schema if exists
+                    rating: worksData?.rating, // from Works schema if exists
+                    feedback: worksData?.feedback, // from Works schema if exists
+                    createdAt: qData.createdAt, // Quotation creation
+                    updatedAt: qData.updatedAt, // Quotation update
+                    completedAt: worksData?.createdAt, // Work submission time
+                };
+                return completedWork;
             })
         } catch (error) {
             this.logger.error('Error getting the completed works', error);
@@ -403,28 +481,46 @@ export class EditorsService {
         return parseFloat((sum / ratings.length).toFixed(1));
     }
 
-    async getEditor(editorId: string): Promise<User & { editorDetails?: any } | null> {
+    async getEditor(editorId: string): Promise<EditorDetailsResponseDto | null> {
         try {
             const user = await this.userModel.findById(new Types.ObjectId(editorId));
             if (user && user.isEditor) {
                 this.logger.log('Fetching the editor details');
-                console.log('user id: ', user._id);
-                const editorDetails = await this.editorModel.findOne({ userId: user._id }).lean();
-                if (editorDetails) {
-                    this.logger.log('Editor details: ', editorDetails)
-                    const userObj = user.toObject();
-                    return {
-                        ...userObj,
-                        editorDetails: {
-                            category: editorDetails.category || [],
-                            score: editorDetails.score || 0,
-                            ratingsCount: editorDetails.ratings?.length || 0,
-                            averageRating: this.calculateAverageRating(editorDetails.ratings),
-                            socialLinks: editorDetails.socialLinks || {},
-                            createdAt: editorDetails.createdAt,
-                        }
-                    }
-                } else console.log('no editor details');
+                const editorDetailsDoc = await this.editorModel.findOne({ userId: user._id }).lean();
+                if (editorDetailsDoc) {
+                    this.logger.log('Editor details: ', editorDetailsDoc)
+                    const userDto: UserForEditorDetailsDto = {
+                        _id: user._id,
+                        fullname: user.fullname,
+                        username: user.username,
+                        email: user.email,
+                        profileImage: user.profileImage,
+                        isEditor: user.isEditor,
+                    };
+
+                    const editorDto: EditorDetailsDto = {
+                        category: editorDetailsDoc.category || [],
+                        score: editorDetailsDoc.score || 0,
+                        ratingsCount: editorDetailsDoc.ratings?.length || 0,
+                        averageRating: this.calculateAverageRating(editorDetailsDoc.ratings),
+                        socialLinks: editorDetailsDoc.socialLinks || {},
+                        createdAt: editorDetailsDoc.createdAt,
+                    };
+
+                    return { ...userDto, editorDetails: editorDto };
+                } else {
+                    this.logger.warn(`No editor sub-document found for user ID: ${user._id}`);
+                    // Still return user details if they are an editor, but editorDetails might be minimal or absent
+                    const userDto: UserForEditorDetailsDto = {
+                        _id: user._id,
+                        fullname: user.fullname,
+                        username: user.username,
+                        email: user.email,
+                        profileImage: user.profileImage,
+                        isEditor: user.isEditor,
+                    };
+                    return { ...userDto, editorDetails: undefined };
+                }
             }
             return null;
         } catch (error) {
@@ -434,28 +530,37 @@ export class EditorsService {
     }
 
     async createBid(
-        quotationId: Types.ObjectId,
         editorId: Types.ObjectId,
-        bidAmount: number,
-        notes?: string
-    ): Promise<Bid> {
-        // Check if quotation exists and is in Published status
+        bidDto: CreateEditorBidBodyDto
+    ): Promise<BidResponseDto> {
+        const { quotationId, bidAmount, notes } = bidDto;
         const bidData = {
-            quotationId,
+            quotationId: new Types.ObjectId(quotationId),
             bidAmount,
             notes,
             status: BidStatus.PENDING
         } as unknown as CreateBidDto;
 
-        return this.bidsService.create(bidData, editorId);
+        return await this.bidsService.create(bidData, editorId);
     }
 
-    async getEditorBids(editorId: Types.ObjectId): Promise<Bid[]> {
-        return this.bidsService.findAllByEditor(editorId);
-    }
-
-    async updateBid(bidId: Types.ObjectId, editorId: Types.ObjectId, bidAmount: number, notes?: string): Promise<Bid> {
-        return this.bidsService.updateBid(bidId, editorId, bidAmount, notes);
+    async updateBid(
+        bidId: Types.ObjectId,
+        editorId: Types.ObjectId,
+        bidDto: UpdateEditorBidBodyDto
+    ): Promise<BidResponseDto> {
+        const { bidAmount, notes } = bidDto;
+        const updatedBid = await this.bidsService.updateBid(bidId, editorId, bidAmount, notes);
+        return {
+            _id: updatedBid._id,
+            quotationId: updatedBid.quotationId,
+            editorId: updatedBid.editorId,
+            bidAmount: updatedBid.bidAmount,
+            notes: updatedBid.notes,
+            status: updatedBid.status,
+            createdAt: updatedBid.createdAt,
+            updatedAt: updatedBid.updatedAt,
+        };
     }
 
     async deleteBid(bidId: Types.ObjectId, editorId: Types.ObjectId): Promise<void> {

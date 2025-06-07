@@ -7,11 +7,11 @@ export const IAdminsServiceToken = Symbol('IAdminsService');
 
 export interface IAdminsService {
   findOne(filter: Partial<Admin>): Promise<Admin | null>;
-  createAdmin(adminData: any): Promise<Admin>; // Assuming Admin is the return type, adjust if different
+  createAdmin(adminData: any): Promise<Admin>;
   getAllUsers(query: GetAllUsersQueryDto): Promise<User[]>;
   getEditorRequests(): Promise<FormattedEditorRequest[]>;
   approveRequest(requestId: Types.ObjectId, adminId: Types.ObjectId): Promise<boolean>;
-  rejectRequest(requestId: Types.ObjectId, reason: string): Promise<boolean>; // Assuming boolean, verify actual return
+  rejectRequest(requestId: Types.ObjectId, reason: string): Promise<boolean>;
   getEditors(query: GetEditorsQueryDto): Promise<FormattedEditor[]>;
   blockUser(userId: Types.ObjectId): Promise<boolean>;
 }
