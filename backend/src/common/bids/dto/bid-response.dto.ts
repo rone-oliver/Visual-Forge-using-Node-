@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Types } from 'mongoose';
 import { BidStatus } from 'src/common/bids/models/bids.schema';
 
 class EditorDto {
@@ -17,19 +18,19 @@ class EditorDto {
 
 export class BidResponseDto {
   @ApiProperty({ description: 'Unique identifier of the bid' })
-  _id: string;
+  _id: Types.ObjectId;
 
   @ApiProperty({ description: 'ID of the quotation this bid is for' })
-  quotationId: string;
+  quotationId: Types.ObjectId;
 
   @ApiProperty({ description: 'ID of the editor who placed the bid' })
-  editorId: string;
+  editorId: Types.ObjectId;
 
   @ApiProperty({ description: 'Amount of the bid' })
   bidAmount: number;
 
   @ApiProperty({ description: 'Current status of the bid', enum: BidStatus })
-  status: string;
+  status: BidStatus;
 
   @ApiProperty({ description: 'Due date for the bid', type: Date })
   dueDate: Date;

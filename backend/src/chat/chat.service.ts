@@ -1,8 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Message, MessagesDocument } from './models/chat-message.schema';
 import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { UsersService } from 'src/users/users.service';
+import { IUsersService, IUsersServiceToken } from 'src/users/interfaces/users.service.interface';
 
 @Injectable()
 export class ChatService {
@@ -10,7 +10,7 @@ export class ChatService {
   
   constructor(
     @InjectModel(Message.name) private messageModel: Model<MessagesDocument>,
-    private readonly userService: UsersService,
+    @Inject(IUsersServiceToken) private readonly userService: IUsersService,
   ) { }
 
   async getChatList(currentUserId: Types.ObjectId) {

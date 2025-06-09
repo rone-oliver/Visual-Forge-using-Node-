@@ -14,10 +14,17 @@ import { Transaction, TransactionSchema } from 'src/common/models/transaction.sc
 import { NotificationModule } from 'src/notification/notification.module';
 import { Bid, BidSchema } from 'src/common/bids/models/bids.schema';
 import { BidsModule } from 'src/common/bids/bids.module';
+import { IUsersServiceToken } from './interfaces/users.service.interface';
 
 @Module({
   controllers: [UsersController],
-  providers: [UsersService, CloudinaryService, EditorsService],
+  providers: [
+    {
+      provide: IUsersServiceToken,
+      useClass: UsersService,
+    },
+    CloudinaryService, EditorsService
+  ],
   imports:[
     MongooseModule.forFeature([
       { name:User.name, schema: userSchema},
@@ -31,6 +38,6 @@ import { BidsModule } from 'src/common/bids/bids.module';
     PaymentModule, BidsModule,
     forwardRef(()=> NotificationModule)
   ],
-  exports: [UsersService]
+  exports: [IUsersServiceToken]
 })
 export class UsersModule {}

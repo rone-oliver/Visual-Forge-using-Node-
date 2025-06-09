@@ -95,8 +95,8 @@ export class UserService {
     )
   }
 
-  updateProfileImage(url: string): Observable<boolean> {
-    return this.http.patch<boolean>(`${this.apiUrl}/user/profile/image`, { url }).pipe(
+  updateProfileImage(url: string): Observable<{success:boolean}> {
+    return this.http.patch<{success: boolean}>(`${this.apiUrl}/user/profile/image`, { profileImageUrl: url }).pipe(
       map(response => response),
       catchError(error => { throw error })
     )
@@ -186,21 +186,8 @@ export class UserService {
     );
   }
 
-  getUser(id: string): Observable<User> {
-    return this.http.get<User>(`${this.userApiUrl}?id=${id}`).pipe(
-      map(response => response),
-      catchError(error => { throw error })
-    )
-  }
-
   getUsers(): Observable<User[]> {
     return this.http.get<User[]>(`${this.userApiUrl}/users`);
-  }
-
-  getEditor(id: string): Observable<any> {
-    return this.http.get<any>(`${this.userApiUrl}/editors/${id}`).pipe(
-      catchError(error => { throw error })
-    );
   }
 
   createPaymentOrder(amount: number): Observable<any> {

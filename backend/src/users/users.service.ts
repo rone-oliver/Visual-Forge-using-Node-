@@ -1,24 +1,49 @@
-import { Injectable, Inject, Logger, HttpException, HttpStatus, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, HttpException, HttpStatus, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import * as bcrypt from 'bcrypt';
 import { Model, Types } from 'mongoose';
 import { User, UserDocument } from './models/user.schema';
-import { Categories, EditorRequest, EditorRequestDocument } from 'src/common/models/editorRequest.schema';
-import * as bcrypt from 'bcrypt';
 import { Editor, EditorDocument } from 'src/editors/models/editor.schema';
+import { EditorRequest, EditorRequestDocument } from 'src/common/models/editorRequest.schema';
 import { Quotation, QuotationDocument, QuotationStatus } from 'src/common/models/quotation.schema';
-import { CloudinaryService, FileUploadResult } from 'src/common/cloudinary/cloudinary.service';
-import { CompletedWork } from 'src/common/interfaces/completed-word.interface';
-import { Observable } from 'rxjs';
 import { Works, WorksDocument } from 'src/common/models/works.schema';
 import { PaymentStatus, PaymentType, Transaction, TransactionDocument } from 'src/common/models/transaction.schema';
+import { Bid, BidDocument } from 'src/common/bids/models/bids.schema';
+import { CloudinaryService, FileUploadResult } from 'src/common/cloudinary/cloudinary.service';
 import { NotificationService } from 'src/notification/notification.service';
-import { NotificationType } from 'src/notification/models/notification.schema';
-import { Bid, BidDocument, BidStatus } from 'src/common/bids/models/bids.schema';
 import { BidsService } from 'src/common/bids/bids.service';
-import { GetQuotationsParams, PaginatedQuotationsResponse, QuotationWithBidCount } from './users.controller';
+import { IUsersService, UserInfoForChatListDto } from './interfaces/users.service.interface';
+import {
+    CreateQuotationDto,
+    UpdateQuotationDto,
+    GetQuotationsParamsDto,
+    PaginatedQuotationsResponseDto,
+    QuotationWithBidCountDto,
+    UserBaseResponseDto,
+    UserProfileResponseDto,
+    UserBasicInfoDto,
+    SuccessResponseDto,
+    EditorRequestStatusResponseDto,
+    QuotationResponseDto,
+    FileUploadResultDto,
+    UpdateProfileDto,
+    ResetPasswordDto,
+    CompletedWorkDto,
+    RateWorkDto,
+    RateEditorDto,
+    EditorRatingResponseDto,
+    UpdateWorkPublicStatusDto,
+    PaginatedPublicWorksResponseDto,
+    GetPublicWorksQueryDto,
+    TransactionResponseDto,
+    UserRatingForEditorDto,
+    PublicWorkItemDto,
+    BidResponseDto
+} from './dto/users.dto';
+import { NotificationType } from 'src/notification/models/notification.schema';
 
 @Injectable()
-export class UsersService {
+export class UsersService implements IUsersService {
     private readonly logger = new Logger(UsersService.name);
     constructor(
         @InjectModel(User.name) private userModel: Model<UserDocument>,
@@ -124,7 +149,7 @@ export class UsersService {
         }
     }
 
-    async getUserDetails(userId: Types.ObjectId): Promise<User & { editorDetails?: any } | null> {
+    async getUserDetails(userId: Types.ObjectId): Promise<UserProfileResponseDto | null> {
         try {
             this.logger.log(`Fetching user details for ID: ${userId}`);
             const user = await this.userModel.findById(userId);
@@ -155,7 +180,7 @@ export class UsersService {
         }
     }
 
-    async getUsers(currentUserId: Types.ObjectId): Promise<User[]> {
+    async getUsers(currentUserId: Types.ObjectId): Promise<UserBasicInfoDto[]> {
         try {
             return await this.userModel.find({ _id: { $ne: currentUserId } });
         } catch (error) {
@@ -164,9 +189,13 @@ export class UsersService {
         }
     }
 
-    async getUserInfoForChatList(userId: Types.ObjectId) {
+    async getUserInfoForChatList(userId: Types.ObjectId): Promise<UserInfoForChatListDto> {
         try {
-            return await this.userModel.findById(userId, { username: 1, profileImage: 1, isOnline: 1 });
+            const userInfo = await this.userModel.findById(userId, { username: 1, profileImage: 1, isOnline: 1 });
+            if(!userInfo){
+                throw new NotFoundException('No user info found for your chats');
+            }
+            return userInfo;
         } catch (error) {
             this.logger.error(`Error fetching user info for chat list: ${error.message}`);
             throw error;
@@ -180,7 +209,7 @@ export class UsersService {
         return parseFloat((sum / ratings.length).toFixed(1));
     }
 
-    async requestForEditor(userId: Types.ObjectId): Promise<boolean> {
+    async requestForEditor(userId: Types.ObjectId): Promise<SuccessResponseDto> {
         try {
 
             const user = await this.userModel.findById(userId).select('isEditor');
@@ -188,31 +217,31 @@ export class UsersService {
                 this.logger.log(`User ${userId} is not an editor. Proceeding with request.`);
                 await this.editorRequestModel.create({ userId });
                 this.logger.log(`Editor request created for user ${userId}`);
-                return true;
+                return { success: true };
             }
             this.logger.log(`User ${userId} is already an editor or not found`);
-            return false;
+            return { success: false };
         } catch (error) {
             this.logger.error(`Error requesting editor role: ${error.message}`);
-            return false;
+            return { success: false };
         }
     }
 
-    async getEditorRequestStatus(userId: Types.ObjectId): Promise<string | null> {
+    async getEditorRequestStatus(userId: Types.ObjectId): Promise<EditorRequestStatusResponseDto> {
         try {
             const request = await this.editorRequestModel.findOne({ userId });
             if (request) {
                 this.logger.log(`Editor request status for user ${userId}: ${request.status}`);
-                return request.status;
+                return { status: request.status };
             }
-            return null;
+            return { status: null };
         } catch (error) {
             this.logger.error(`Error fetching editor request status: ${error.message}`);
             throw error;
         }
     }
 
-    async getQuotations(userId: Types.ObjectId, params: GetQuotationsParams): Promise<PaginatedQuotationsResponse> {
+    async getQuotations(userId: Types.ObjectId, params: GetQuotationsParamsDto): Promise<PaginatedQuotationsResponseDto> {
         try {
             const page = params.page || 1;
             const limit = params.limit || 10;
@@ -245,13 +274,64 @@ export class UsersService {
                     },
                 },
                 {
+                    $lookup: {
+                        from: 'editors',
+                        let: { editorIdFromQuotation: '$editorId' }, 
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: { $eq: ['$userId', '$$editorIdFromQuotation'] } 
+                                }
+                            },
+                            {
+                                $project: {
+                                    userId: 1, 
+                                    _id: 0    
+                                }
+                            }
+                        ],
+                        as: 'editorInfo',
+                    },
+                },
+                { $unwind: { path: '$editorInfo', preserveNullAndEmptyArrays: true } },
+                {
+                    $lookup: {
+                        from: 'users',
+                        let: { userIdFromEditor: '$editorInfo.userId' }, 
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: { $eq: ['$_id', '$$userIdFromEditor'] } 
+                                }
+                            },
+                            {
+                                $project: {
+                                    fullname: 1,
+                                    _id: 0 
+                                }
+                            }
+                        ],
+                        as: 'userInfo',
+                    },
+                },
+                { $unwind: { path: '$userInfo', preserveNullAndEmptyArrays: true } },
+                {
                     $addFields: {
                         bidCount: { $size: '$bidsInfo' },
+                        editor: {
+                            $cond: {
+                                if: { $ifNull: ['$userInfo.fullname', false] },
+                                then: '$userInfo.fullname',
+                                else: null
+                            }
+                        },
                     },
                 },
                 {
                     $project: {
                         bidsInfo: 0,
+                        editorInfo: 0, 
+                        userInfo: 0    
                     },
                 },
                 { $skip: skip },
@@ -259,9 +339,10 @@ export class UsersService {
             ]
 
             const quotations = await this.quotationModel.aggregate(aggregationPipeline).exec();
+            this.logger.log(`quotations from getQuotations for user: `,quotations)
             
             return {
-                quotations: quotations as QuotationWithBidCount[],
+                quotations: quotations as QuotationWithBidCountDto[],
                 totalItems,
                 totalPages,
                 currentPage: page,
@@ -280,17 +361,25 @@ export class UsersService {
         return { advanceAmount, balanceAmount };
     }
 
-    async createQuotation(quotation: Partial<Quotation>, userId: Types.ObjectId): Promise<Quotation> {
+    async createQuotation(userId: Types.ObjectId, createQuotationDto: CreateQuotationDto): Promise<QuotationResponseDto> {
         try {
-            this.logger.log(quotation)
-            if (!quotation.dueDate) throw new Error('Due date is required');
-            if (quotation.estimatedBudget) {
-                const { advanceAmount, balanceAmount } = this.calculateQuotationAmounts(quotation.estimatedBudget);
-                quotation.advanceAmount = advanceAmount;
-                quotation.balanceAmount = balanceAmount;
+            this.logger.log(createQuotationDto);
+            let calculatedAdvanceAmount: number | undefined;
+            let calculatedBalanceAmount: number | undefined;
+
+            if (!createQuotationDto.dueDate) throw new Error('Due date is required');
+            if (createQuotationDto.estimatedBudget) {
+                const { advanceAmount, balanceAmount } = this.calculateQuotationAmounts(createQuotationDto.estimatedBudget);
+                calculatedAdvanceAmount = advanceAmount;
+                calculatedBalanceAmount = balanceAmount;
             }
-            quotation.userId = userId;
-            const savedQuotation = await this.quotationModel.create(quotation);
+            const quotationDataForDb = {
+                ...createQuotationDto,
+                userId,
+                advanceAmount: calculatedAdvanceAmount,
+                balanceAmount: calculatedBalanceAmount,
+            }
+            const savedQuotation = await this.quotationModel.create(quotationDataForDb);
             await this.notificationService.createNotification({
                 userId,
                 type: NotificationType.WORK,
@@ -298,16 +387,16 @@ export class UsersService {
                 data: { title: savedQuotation.title },
                 quotationId: savedQuotation._id
             });
-            return savedQuotation;
+            return savedQuotation as unknown as QuotationResponseDto;
         } catch (error) {
             this.logger.error(`Error creating quotation: ${error.message}`);
             throw error;
         }
     }
 
-    async getQuotation(quotationId: Types.ObjectId) {
+    async getQuotation(quotationId: Types.ObjectId): Promise<QuotationResponseDto | null> {
         try {
-            const quotation = await this.quotationModel.findById(quotationId);
+            const quotation = await this.quotationModel.findById(quotationId) as QuotationResponseDto;
             return quotation;
         } catch (error) {
             this.logger.error(`Error fetching quotation: ${error.message}`);
@@ -315,14 +404,21 @@ export class UsersService {
         }
     }
 
-    async updateQuotation(quotationId: Types.ObjectId, quotation: Partial<Quotation>) {
+    async updateQuotation(quotationId: Types.ObjectId, quotation: UpdateQuotationDto): Promise<QuotationResponseDto | null> {
         try {
+            let advanceAmountCalc: number | undefined;
+            let balanceAmountCalc: number | undefined;
             if (quotation.estimatedBudget) {
                 const { advanceAmount, balanceAmount } = this.calculateQuotationAmounts(quotation.estimatedBudget);
-                quotation.advanceAmount = advanceAmount;
-                quotation.balanceAmount = balanceAmount;
+                advanceAmountCalc = advanceAmount;
+                balanceAmountCalc = balanceAmount;
             }
-            const updatedQuotation = await this.quotationModel.findByIdAndUpdate(quotationId, quotation, { new: true });
+            const quotationDataForDb = {
+                ...quotation,
+                advanceAmount: advanceAmountCalc,
+                balanceAmount: balanceAmountCalc,
+            }
+            const updatedQuotation = await this.quotationModel.findByIdAndUpdate(quotationId, quotationDataForDb, { new: true }) as QuotationResponseDto;
             return updatedQuotation;
         } catch (error) {
             this.logger.error(`Error updating quotation: ${error.message}`);
@@ -330,20 +426,19 @@ export class UsersService {
         }
     }
 
-    async deleteQuotation(quotationId: Types.ObjectId) {
+    async deleteQuotation(quotationId: Types.ObjectId): Promise<SuccessResponseDto> {
         try {
             await this.quotationModel.deleteOne({ _id: quotationId });
-            return true;
+            return { success: true };
         } catch (error) {
             this.logger.error(`Error deleting quotation: ${error.message}`);
             throw error;
         }
     }
 
-    async updateProfileImage(url: string, userId: Types.ObjectId) {
+    async updateProfileImage(userId: Types.ObjectId, profileImageUrl: string): Promise<UserBaseResponseDto | null> {
         try {
-            await this.userModel.updateOne({ _id: userId }, { profileImage: url });
-            return true;
+            return await this.userModel.findOneAndUpdate({ _id: userId }, { profileImage: profileImageUrl }, { new: true })
         } catch (error) {
             this.logger.error(`Error updating profile image: ${error.message}`);
             throw error;
@@ -360,32 +455,31 @@ export class UsersService {
         }
     }
 
-    async updateProfile(editedData: any, userId: Types.ObjectId): Promise<boolean> {
+    async updateProfile(userId: Types.ObjectId, updateProfileDto: UpdateProfileDto): Promise<UserProfileResponseDto | null> {
         try {
-            await this.userModel.updateOne({ _id: userId }, { $set: editedData })
-            return true;
+            return await this.userModel.findOneAndUpdate({ _id: userId }, { $set: updateProfileDto })
         } catch (error) {
             this.logger.error(`Error updating profile: ${error.message}`);
             throw error;
         }
     }
 
-    async resetPassword(body: { currentPassword: string, newPassword: string }, userId: Types.ObjectId): Promise<boolean> {
+    async resetPassword(userId: Types.ObjectId, resetPasswordDto: ResetPasswordDto): Promise<SuccessResponseDto> {
         try {
             const user = await this.userModel.findById(userId);
             if (!user) throw new Error('User not found');
-            const isPasswordValid = await bcrypt.compare(body.currentPassword, user.password);
+            const isPasswordValid = await bcrypt.compare(resetPasswordDto.currentPassword, user.password);
             if (!isPasswordValid) throw new Error('Current password is incorrect');
-            const hashedPassword = await bcrypt.hash(body.newPassword, 10);
+            const hashedPassword = await bcrypt.hash(resetPasswordDto.newPassword, 10);
             await this.userModel.updateOne({ _id: userId }, { $set: { password: hashedPassword } });
-            return true;
+            return { success: true };
         } catch (error) {
             this.logger.error(`Error resetting password: ${error.message}`);
             throw error;
         }
     }
 
-    async getCompletedWorks(userId: Types.ObjectId): Promise<CompletedWork[]> {
+    async getCompletedWorks(userId: Types.ObjectId): Promise<CompletedWorkDto[]> {
         try {
             const completedQuotations = await this.quotationModel
                 .find({ userId, status: QuotationStatus.COMPLETED })
@@ -405,7 +499,7 @@ export class UsersService {
                     attachedFiles: quotationData.attachedFiles || [],
                     comments: worksData.comments || '',
                     completedAt: worksData.createdAt,
-                } as CompletedWork;
+                } as CompletedWorkDto;
             })
         } catch (error) {
             this.logger.error(`Error fetching completed works: ${error}`);
@@ -413,15 +507,15 @@ export class UsersService {
         }
     }
 
-    async rateWork(workId: string, rating: number, feedback: string): Promise<boolean> {
+    async rateWork(workId: string, rateWorkDto: RateWorkDto): Promise<SuccessResponseDto> {
         try {
-            this.logger.log('rating work:', workId, rating, feedback);
-            const result = await this.workModel.updateOne({ _id: new Types.ObjectId(workId) }, { $set: { rating, feedback } });
+            this.logger.log('rating work:', workId, rateWorkDto.rating, rateWorkDto.feedback);
+            const result = await this.workModel.updateOne({ _id: new Types.ObjectId(workId) }, { $set: { rating: rateWorkDto.rating, feedback: rateWorkDto.feedback } });
             console.log('rating work success');
             if (result.matchedCount > 0 && result.modifiedCount > 0) {
-                return true;
+                return { success: true };
             } else {
-                return false;
+                return { success: false };
             }
         } catch (error) {
             this.logger.error(`Error rating work: ${error.message}`);
@@ -429,16 +523,16 @@ export class UsersService {
         }
     }
 
-    async rateEditor(editorId: string, rating: number, feedback: string, userId: Types.ObjectId): Promise<boolean> {
+    async rateEditor(userId: Types.ObjectId, rateEditorDto: RateEditorDto): Promise<SuccessResponseDto> {
         try {
-            this.logger.log('rating editor dto from service:', editorId, rating, feedback, userId);
-            const result = await this.editorModel.updateOne({ userId: new Types.ObjectId(editorId) }, { $push: { ratings: { rating, feedback, userId } } });
+            this.logger.log('rating editor dto from service:', rateEditorDto.editorId, rateEditorDto.rating, rateEditorDto.feedback, userId);
+            const result = await this.editorModel.updateOne({ userId: new Types.ObjectId(rateEditorDto.editorId) }, { $push: { ratings: { rating: rateEditorDto.rating, feedback: rateEditorDto.feedback, userId } } });
             if (result.matchedCount > 0 && result.modifiedCount > 0) {
                 this.logger.log('rating editor success');
-                return true;
+                return { success: true };
             } else {
                 this.logger.log('rating editor failed');
-                return false;
+                return { success: false };
             }
         } catch (error) {
             this.logger.error(`Error rating editor: ${error.message}`);
@@ -446,18 +540,24 @@ export class UsersService {
         }
     }
 
-    async getCurrentEditorRating(editorId: string, userId: Types.ObjectId) {
+    async getCurrentEditorRating(userId: Types.ObjectId, editorId: string):Promise<UserRatingForEditorDto | null> {
         try {
-            const editor = await this.editorModel.findOne({ userId: new Types.ObjectId(editorId) }).select('ratings');
-            if (editor?.ratings) {
+            const editor = await this.editorModel.findOne({ userId: new Types.ObjectId(editorId) }).select('ratings').lean();
+            if (editor?.ratings && editor.ratings.length > 0) {
                 this.logger.log(`Editor ratings for user ${editorId}: ${editor.ratings}`);
-                const rating = editor.ratings.find((rating: any) => rating.userId.equals(userId));
-                if (rating) {
-                    this.logger.log(`Current rating of user ${userId} on editor ${editorId}: ${rating.rating}`);
-                    return rating;
+                const specificRating = editor.ratings.find((rating) => rating.userId.equals(userId));
+                if (specificRating) {
+                    this.logger.log(`Current rating of user ${userId} on editor ${editorId}: ${specificRating.rating}`);
+                    return {
+                        rating: specificRating.rating,
+                        feedback: specificRating.feedback,
+                        userId: specificRating.userId.toString(), // Convert ObjectId to string
+                    };
                 }
+                this.logger.log(`No specific rating found for user ${userId} on editor ${editorId}`);
                 return null;
             }
+            this.logger.log(`No ratings found for editor ${editorId}`);
             return null;
         } catch (error) {
             this.logger.error(`Error getting current editor rating: ${error.message}`);
@@ -465,15 +565,15 @@ export class UsersService {
         }
     }
 
-    async updateWorkPublicStatus(worksId: string, isPublic: boolean) {
+    async updateWorkPublicStatus(worksId: string, updateWorkPublicStatusDto: UpdateWorkPublicStatusDto): Promise<SuccessResponseDto> {
         try {
-            const result = await this.workModel.updateOne({ _id: new Types.ObjectId(worksId) }, { $set: { isPublic } });
+            const result = await this.workModel.updateOne({ _id: new Types.ObjectId(worksId) }, { $set: { isPublic: updateWorkPublicStatusDto.isPublic } });
             if (result.matchedCount > 0 && result.modifiedCount > 0) {
                 this.logger.log('Work public status updated successfully');
-                return true;
+                return { success: true };
             } else {
                 this.logger.log('Work public status update failed');
-                return false;
+                return { success: false };
             }
         } catch (error) {
             this.logger.error(`Error updating work public status: ${error.message}`);
@@ -482,22 +582,19 @@ export class UsersService {
     }
 
     async getPublicWorks(
-        page: number,
-        limit: number,
-        rating?: number,
-        search?: string,
-    ): Promise<{ works: Works[], total: number }> {
+        params: GetPublicWorksQueryDto,
+    ): Promise<PaginatedPublicWorksResponseDto> {
         try {
-            this.logger.log(`getPublicWorks called with: page=${page}, limit=${limit}, rating=${rating}, search="${search}"`);
+            this.logger.log(`getPublicWorks called with: page=${params.page}, limit=${params.limit}, rating=${params.rating}, search="${params.search}"`);
 
             const filter: any = { isPublic: true };
 
-            if (rating !== undefined && rating !== null) {
-                filter.rating = rating;
+            if (params.rating !== undefined && params.rating !== null) {
+                filter.rating = params.rating;
             }
 
-            if (search && search.trim()) {
-                const searchTerm = search.trim().toLowerCase();
+            if (params.search && params.search.trim()) {
+                const searchTerm = params.search.trim().toLowerCase();
                 this.logger.log(`Searching for term: "${searchTerm}"`);
 
                 // Find users and editors that match the search term
@@ -527,7 +624,7 @@ export class UsersService {
                     if (editorIds.length > 0) {
                         filter.$or.push({ editorId: { $in: editorIds } });
                     }
-                } else if (search.trim()) {
+                } else if (params.search.trim()) {
                     // If search term was provided but no matches found, return empty results
                     this.logger.log(`No matching users or editors found for "${searchTerm}", returning empty results`);
                     return { works: [], total: 0 };
@@ -540,31 +637,68 @@ export class UsersService {
             const [works, total] = await Promise.all([
                 this.workModel.find(filter)
                     .sort({ createdAt: -1 })
-                    .skip((page - 1) * limit)
-                    .limit(limit)
-                    .populate({
-                        path: 'editorId',
-                        select: 'fullname email profileImage',
-                        model: this.userModel
-                    })
-                    .populate({
-                        path: 'userId',
-                        select: 'fullname email profileImage',
-                        model: this.userModel
-                    }),
+                    .skip((params.page - 1) * params.limit)
+                    .limit(params.limit)
+                    .populate<{
+                        editorId: { _id: Types.ObjectId; fullname: string; username: string; email: string; profileImage?: string } | null; 
+                        userId: { _id: Types.ObjectId; fullname: string; username: string; email: string; profileImage?: string } | null;
+                    }>([
+                        {
+                            path: 'editorId',
+                            select: 'fullname username profileImage email _id', // Ensured _id and email are selected
+                            model: this.userModel
+                        },
+                        {
+                            path: 'userId',
+                            select: 'fullname username profileImage email _id', // Ensured _id and email are selected
+                            model: this.userModel
+                        }
+                    ])
+                    .lean(), 
                 this.workModel.countDocuments(filter)
             ]);
-            this.logger.log(`public works: `, works);
+            const publicWorksDto: PublicWorkItemDto[] = works.map(work => {
+                // Type assertion for populated fields if necessary, or ensure populate returns the expected shape
+                const editorInfo = work.editorId as any; // Assuming editorId is populated with user-like info
+                const userInfo = work.userId as any; // Assuming userId is populated with user-like info
 
+                return {
+                    _id: work._id.toString(),
+                    comments: work.comments,
+                    isPublic: !!work.isPublic,
+                    finalFiles: work.finalFiles as unknown as FileUploadResultDto[] || [],
+                    rating: work.rating,
+                    feedback: work.feedback,
+                    createdAt: work.createdAt,
+                    updatedAt: work.updatedAt,
+                    editorId: work.editorId,
+                    userId: work.userId,
+                    editor:{
+                        _id: editorInfo._id.toString(),
+                        fullname: editorInfo.fullname,
+                        username: editorInfo.username,
+                        email: editorInfo.email,
+                        profileImage: editorInfo.profileImage,
+                    },
+                    user:{
+                        _id: userInfo._id.toString(),
+                        fullname: userInfo.fullname,
+                        username: userInfo.username,
+                        email: userInfo.email,
+                        profileImage: userInfo.profileImage,
+                    },
+                };
+            });
             this.logger.log(`Found ${works.length} works out of ${total} total`);
-            return { works, total };
+            this.logger.log(`public works: `, publicWorksDto);
+            return { works:publicWorksDto, total };
         } catch (error) {
             this.logger.error(`Error getting public works: ${error.message}`);
             throw error;
         }
     }
 
-    async getUser(userId: Types.ObjectId): Promise<User> {
+    async getUser(userId: Types.ObjectId): Promise<UserBasicInfoDto | null> {
         try {
             const user = await this.userModel.findById(userId);
             if (!user) {
@@ -583,7 +717,7 @@ export class UsersService {
         orderId: string;
         amount: number;
         paymentType: PaymentType
-    }) {
+    }): Promise<TransactionResponseDto>{
         try {
             const transaction = await this.transactionModel.create({
                 userId,
@@ -617,7 +751,7 @@ export class UsersService {
             .exec();
     }
 
-    async getBidsByQuotation(quotationId: Types.ObjectId, userId: Types.ObjectId) {
+    async getBidsByQuotation(quotationId: Types.ObjectId, userId: Types.ObjectId): Promise<BidResponseDto[]> {
         const quotation = await this.quotationModel.findOne({ _id: quotationId, userId: userId.toString() });
         if (!quotation) {
             throw new NotFoundException('Quotation not found or does not belong to you');
@@ -627,7 +761,7 @@ export class UsersService {
         return bids;
     }
 
-    async acceptBid(bidId: Types.ObjectId, userId: Types.ObjectId): Promise<Bid> {
+    async acceptBid(bidId: Types.ObjectId, userId: Types.ObjectId): Promise<BidResponseDto> {
         const bid = await this.bidsService.acceptBid(bidId, userId);
 
         // Get the quotation to send notification

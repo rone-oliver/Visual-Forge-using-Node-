@@ -376,8 +376,12 @@ export class QuotationComponent implements OnInit, OnDestroy {
 
   async initiateBalancePayment(work: CompletedWork) {
     try {
+      if(!work.balanceAmount){
+        console.error('Balance amount not specified');
+        return;
+      }
       const order = await firstValueFrom(
-        this.paymentService.createOrder(work.estimatedBudget, 'INR')
+        this.paymentService.createOrder(work.balanceAmount, 'INR')
       );
 
       const paymentResult = await this.paymentService.openRazorpayCheckout(order);

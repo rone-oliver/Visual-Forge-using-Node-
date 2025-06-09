@@ -117,9 +117,11 @@ export class ProfileComponent implements OnInit{
   uploadImage(){
     if(this.selectedFile){
       this.cloudinaryService.uploadProfileImage(this.selectedFile, this.user.username).subscribe((url:string)=>{
-        this.userService.updateProfileImage(url).subscribe(()=>{
-          this.showSuccess('Profile image updated successfully!');
-          this.getUserData();
+        this.userService.updateProfileImage(url).subscribe((response)=>{
+          if(response.success){
+            this.showSuccess('Profile image updated successfully!');
+            this.getUserData();
+          }
           this.cancelUpload();
         })
       })

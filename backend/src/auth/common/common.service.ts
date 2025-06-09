@@ -1,13 +1,13 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Response } from 'express';
 import { Model, Types } from 'mongoose';
 import { Preference, PreferenceDocument } from 'src/common/models/userPreference.schema';
 import { OAuth2Client } from 'google-auth-library';
 import { ConfigService } from '@nestjs/config';
-import { UsersService } from 'src/users/users.service';
 import { Language, User } from 'src/users/models/user.schema';
 import { JwtService } from '@nestjs/jwt';
+import { IUsersService, IUsersServiceToken } from 'src/users/interfaces/users.service.interface';
 
 @Injectable()
 export class CommonService {
@@ -16,7 +16,7 @@ export class CommonService {
   constructor(
     @InjectModel(Preference.name) private preferenceModel: Model<PreferenceDocument>,
     private configService: ConfigService,
-    private userService: UsersService,
+    @Inject(IUsersServiceToken) private readonly userService: IUsersService,
     private jwtService: JwtService
   ) {
     this.googleClient = new OAuth2Client(this.configService.get<string>('GOOGLE_CLIENT_ID'));

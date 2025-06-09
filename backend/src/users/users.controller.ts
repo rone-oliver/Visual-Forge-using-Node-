@@ -1,16 +1,17 @@
-import { BadRequestException, Body, Controller, Delete, Get, Logger, Param, Patch, Post, Put, Query, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Inject, InternalServerErrorException, Logger, NotFoundException, Param, Patch, Post, Put, Query, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { Types } from 'mongoose';
-import { UsersService } from './users.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { RolesGuard } from 'src/auth/guards/role.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
-import { User } from './models/user.schema';
 import { EditorsService } from 'src/editors/editors.service';
 import { PaymentService } from 'src/common/payment/payment.service';
 import { PaymentType } from 'src/common/models/transaction.schema';
 import { Quotation, QuotationStatus } from 'src/common/models/quotation.schema';
-import { EditorDetailsResponseDto } from 'src/editors/dto/editors.dto';
+import { BidResponseDto, CreatePaymentDto, CreatePaymentResponseDto, CreateQuotationDto, GetPublicWorksQueryDto, GetQuotationsParamsDto, PaginatedPublicWorksResponseDto, PaginatedQuotationsResponseDto, RateEditorDto, SuccessResponseDto, UpdateProfileDto, UpdateProfileImageDto, UpdateQuotationDto, UpdateQuotationPaymentDto, UpdateWorkPublicStatusDto, UserBasicInfoDto, UserEditorRatingDto, UserProfileResponseDto } from './dto/users.dto';
+import { IUsersService, IUsersServiceToken } from './interfaces/users.service.interface';
+import { IUsersController } from './interfaces/users.controller.interface';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 export interface GetQuotationsParams {
     page?: number;
@@ -31,23 +32,29 @@ export interface PaginatedQuotationsResponse {
     itemsPerPage: number;
 }
 
+@ApiTags('Users')
+@ApiBearerAuth()
 @Controller('user')
 @UseGuards(AuthGuard, RolesGuard)
-export class UsersController {
+export class UsersController implements IUsersController {
     private readonly logger = new Logger(UsersController.name);
+
     constructor(
-        private userService: UsersService,
+        @Inject(IUsersServiceToken) private readonly userService: IUsersService,
         private editorService: EditorsService,
         private paymentService: PaymentService,
     ) { };
 
     @Get('profile')
     @Roles('User', 'Editor')
-    async getUserProfile(@Req() req: Request) {
-        console.log('controlled hitted on /user/profile');
+    async getUserProfile(@Req() req: Request):Promise<UserProfileResponseDto> {
+        console.log('controller hitted on /user/profile');
         const user = req['user'] as { userId: Types.ObjectId; role: string }
         const userDet = await this.userService.getUserDetails(user.userId);
         console.log('user profile data', userDet);
+        if (!userDet) {
+            throw new NotFoundException('User not found');
+        }
         return userDet;
     }
 
@@ -64,24 +71,21 @@ export class UsersController {
     async getEditorRequestStatus(@Req() req: Request) {
         const user = req['user'] as { userId: Types.ObjectId; role: string };
         const status = await this.userService.getEditorRequestStatus(user.userId);
-        return { status };
+        return status;
     }
 
     @Get('quotations')
     @Roles('User', 'Editor')
     async getQuotations(
         @Req() req: Request,
-        @Query('page') page?: string,
-        @Query('limit') limit?: string,
-        @Query('status') status?: QuotationStatus | 'All',
-        @Query('searchTerm') searchTerm?: string,
-    ): Promise<PaginatedQuotationsResponse>{
+        @Query() query: GetQuotationsParamsDto,
+    ): Promise<PaginatedQuotationsResponseDto>{
         const user = req['user'] as { userId: Types.ObjectId; role: string };
         const params: GetQuotationsParams = {
-            page: page ? parseInt(page,10) : undefined,
-            limit: limit ? parseInt(limit,10) : undefined,
-            status: status,
-            searchTerm: searchTerm,
+            page: query.page ? parseInt(query.page.toString(),10) : undefined,
+            limit: query.limit ? parseInt(query.limit.toString(),10) : undefined,
+            status: query.status,
+            searchTerm: query.searchTerm,
         }
         return this.userService.getQuotations(user.userId, params);
     }
@@ -103,7 +107,7 @@ export class UsersController {
 
     @Get('quotations/:quotationId/bids')
     @Roles('User','Editor')
-    async getBidsByQuotation(@Param('quotationId') quotationId: string, @Req() req: Request) {
+    async getBidsByQuotation(@Param('quotationId') quotationId: string, @Req() req: Request): Promise<BidResponseDto[]> {
         const user = req['user'] as { userId: Types.ObjectId; role: string };
         
         if (!Types.ObjectId.isValid(quotationId)) {
@@ -115,19 +119,19 @@ export class UsersController {
 
     @Post('quotations')
     @Roles('User', 'Editor')
-    async createQuotation(@Req() req: Request, @Body() body) {
+    async createQuotation(@Req() req: Request, @Body() body:{quotation: CreateQuotationDto}): Promise<SuccessResponseDto> {
         const user = req['user'] as { userId: Types.ObjectId; role: string };
-        const success = await this.userService.createQuotation(body.quotation, user.userId);
+        const success = await this.userService.createQuotation(user.userId, body.quotation);
         if (success) {
-            return true;
+            return { success: true };
         }
-        return false;
+        return { success: false };
     }
 
     @Patch('quotations/:quotationId')
     @Roles('User','Editor')
-    async updateQuotation(@Param('quotationId') quotationId: string, @Body() body: { quotation: Partial<Quotation> }) {
-        return await this.userService.updateQuotation(new Types.ObjectId(quotationId), body.quotation);
+    async updateQuotation(@Param('quotationId') quotationId: string, @Body() dto: UpdateQuotationDto) {
+        return await this.userService.updateQuotation(new Types.ObjectId(quotationId), dto);
     }
 
     @Delete('quotations/:quotationId')
@@ -138,24 +142,24 @@ export class UsersController {
 
     @Patch('profile/image')
     @Roles('User', 'Editor')
-    async updateProfileImage(@Req() req: Request, @Body() body) {
+    async updateProfileImage(@Req() req: Request, @Body() dto: UpdateProfileImageDto): Promise<SuccessResponseDto> {
         const user = req['user'] as { userId: Types.ObjectId, role: string }
-        const success = await this.userService.updateProfileImage(body.url, user.userId);
+        const success = await this.userService.updateProfileImage(user.userId, dto.profileImageUrl);
         if (success) {
-            return true;
+            return { success: true };
         }
-        return false;
+        return { success: false };
     }
 
     @Patch('profile')
     @Roles('User', 'Editor')
-    async updateProfile(@Req() req: Request, @Body() body) {
+    async updateProfile(@Req() req: Request, @Body() dto: UpdateProfileDto): Promise<SuccessResponseDto> {
         const user = req['user'] as { userId: Types.ObjectId, role: string }
-        const success = await this.userService.updateProfile(body, user.userId);
+        const success = await this.userService.updateProfile(user.userId, dto);
         if (success) {
-            return true;
+            return { success: true };
         }
-        return false;
+        return { success: false };
     }
 
     @Patch('reset-password')
@@ -163,7 +167,7 @@ export class UsersController {
     async resetPassword(@Req() req: Request, @Body() body: { currentPassword: string, newPassword: string }) {
         const user = req['user'] as { userId: Types.ObjectId, role: string }
         try {
-            const response = await this.userService.resetPassword(body, user.userId);
+            const response = await this.userService.resetPassword(user.userId, body);
             return response;
         } catch (error) {
             throw new BadRequestException(error.message);
@@ -185,80 +189,98 @@ export class UsersController {
 
     @Put('quotations/:workId/rating')
     @Roles('User', 'Editor')
-    async rateWork(@Req() req: Request, @Param('workId') workId: string, @Body() body: { rating: number, feedback: string }) {
+    async rateWork(@Req() req: Request, @Param('workId') workId: string, @Body() body: UserEditorRatingDto) {
         const user = req['user'] as { userId: Types.ObjectId, role: string }
         console.log('worksId from controller:', workId);
-        const success = await this.userService.rateWork(workId, body.rating, body.feedback);
-        if (success) {
-            return true;
+        const success = await this.userService.rateWork(workId, body);
+        if (!success) {
+            throw new InternalServerErrorException('Work rating failed');
         }
-        return false;
+        return true;
     }
 
     @Patch('quotations/:workId/public')
-    async updateWorkPublicStatus(@Req() req: Request, @Param('workId') workId: string, @Body() body: { isPublic: boolean }) {
-        const success = await this.userService.updateWorkPublicStatus(workId, body.isPublic)
-        if (success) {
-            return true
+    async updateWorkPublicStatus(@Req() req: Request, @Param('workId') workId: string, @Body() body: UpdateWorkPublicStatusDto) {
+        const user = req['user'] as { userId: Types.ObjectId, role: string }
+        const success = await this.userService.updateWorkPublicStatus(workId, body);
+        if (!success) {
+            throw new InternalServerErrorException('Work Status update failed')
         }
-        return false
+        return true;
     }
 
     @Post('editor/rating')
     @Roles('User', 'Editor')
-    async rateEditor(@Req() req: Request, @Body() body: { editorId: string, rating: number, feedback: string }) {
+    async rateEditor(@Req() req: Request, @Body() body: RateEditorDto): Promise<SuccessResponseDto> {
         this.logger.log('rating editor:', body.editorId, body.rating, body.feedback);
         const user = req['user'] as { userId: Types.ObjectId, role: string }
-        const success = await this.userService.rateEditor(body.editorId, body.rating, body.feedback, user.userId);
-        if (success) {
-            return true;
-        }
-        return false;
+        return await this.userService.rateEditor(user.userId, body);
     }
 
     @Get('editor/rating')
     @Roles('User', 'Editor')
     async getCurrentEditorRating(@Req() req: Request, @Query('editorId') editorId: string) {
         const user = req['user'] as { userId: Types.ObjectId, role: string }
-        const rating = await this.userService.getCurrentEditorRating(editorId, user.userId);
+        const rating = await this.userService.getCurrentEditorRating(user.userId, editorId);
         return rating;
     }
 
     @Get('works/public')
     @Roles('User', 'Editor')
     async getPublicWorks(
-        @Query('page') page: number,
-        @Query('limit') limit: number,
-        @Query('search') search?: string,
-        @Query('rating') rating?: number,
-    ) {
-        const works = await this.userService.getPublicWorks(page, limit, rating, search);
+        @Query() query: GetPublicWorksQueryDto,
+    ): Promise<PaginatedPublicWorksResponseDto> {
+        const works = await this.userService.getPublicWorks(query);
         return works;
     }
 
-    @Get('')
-    async getUser(@Query('id') id: string): Promise<User> {
-        console.log('getUser controller hit. id: ',id);
-        return this.userService.getUser(new Types.ObjectId(id));
-    }
+    // @Get('')
+    // async getUser(@Query('id') id: string): Promise<UserBasicInfoDto> {
+    //     console.log('getUser controller hit. id: ',id);
+    //     const user = await this.userService.getUser(new Types.ObjectId(id));
+    //     if (!user) {
+    //         throw new NotFoundException('User not found');
+    //     }
+    //     return user;
+    // }
 
     @Get('users')
-    async getUsers(@Req() req: Request): Promise<User[]> {
+    async getUsers(@Req() req: Request): Promise<UserBasicInfoDto[]> {
         const user = req['user'] as { userId: Types.ObjectId, role: string }
         return this.userService.getUsers(new Types.ObjectId(user.userId));
     }
 
-    @Get('editors/:id')
-    async getEditor(@Param('id') id: string): Promise<EditorDetailsResponseDto | null> {
-        return this.editorService.getEditor(id);
-    }
+    // @Get('editors/:id')
+    // async getEditor(@Param('id') id: string): Promise<EditorDetailsResponseDto | null> {
+    //     return this.editorService.getEditor(id);
+    // }
 
     @Post('payment')
     @Roles('User', 'Editor')
-    async createPayment(@Req() req: Request, @Body() body: { amount: number, currency?: string }) {
-        const user = req['user'] as { userId: Types.ObjectId, role: string }
-        const payment = await this.paymentService.createRazorpayOrder(body.amount, body.currency);
-        return payment;
+    async createPayment(@Req() req: Request, @Body() body: CreatePaymentDto): Promise<CreatePaymentResponseDto> {
+        const user = req['user'] as { userId: Types.ObjectId, role: string };
+        const razorpayOrder = await this.paymentService.createRazorpayOrder(body.amount, body.currency);
+
+        // Explicitly map RazorpayOrder to CreatePaymentResponseDto
+        const response: CreatePaymentResponseDto = {
+            id: razorpayOrder.id,
+            entity: razorpayOrder.entity,
+            amount: Number(razorpayOrder.amount), // Ensure this is a number
+            amount_paid: Number(razorpayOrder.amount_paid), // Ensure this is a number
+            amount_due: Number(razorpayOrder.amount_due), // Ensure this is a number
+            currency: razorpayOrder.currency,
+            receipt: razorpayOrder.receipt ?? undefined, // Handle possible null from Razorpay
+            offer_id: razorpayOrder.offer_id ?? undefined, // Handle possible null from Razorpay
+            status: razorpayOrder.status,
+            attempts: razorpayOrder.attempts,
+            // Assuming razorpayOrder.notes is compatible with any[] or needs specific mapping
+            // Based on your DTO (any[]) and sample (notes: []), direct assignment might be okay if SDK type matches.
+            // If razorpayOrder.notes is an object, you might need: Array.isArray(razorpayOrder.notes) ? razorpayOrder.notes : (razorpayOrder.notes ? [razorpayOrder.notes] : [])
+            notes:razorpayOrder.notes ? [razorpayOrder.notes] : [], 
+            created_at: razorpayOrder.created_at,
+        };
+
+        return response;
     }
 
     @Post('payment/verify')
@@ -271,7 +293,7 @@ export class UsersController {
 
     @Patch('quotations/:quotationId/payment')
     @Roles('User', 'Editor')
-    async updateQuotationPayment(@Req() req: Request, @Param('quotationId') quotationId: string, @Body() body: { isAdvancePaid: boolean, orderId: string, paymentId: string, amount: number }) {
+    async updateQuotationPayment(@Req() req: Request, @Param('quotationId') quotationId: string, @Body() body: UpdateQuotationPaymentDto): Promise<SuccessResponseDto> {
         const user = req['user'] as { userId: Types.ObjectId; role: string };
         const paymentType = body.isAdvancePaid ? PaymentType.BALANCE : PaymentType.ADVANCE;
 
@@ -284,15 +306,15 @@ export class UsersController {
         console.log('paymentDetails: ',paymentDetails);
 
         const success = await this.userService.createTransaction(user.userId, new Types.ObjectId(quotationId), paymentDetails);
-        if (success) {
-            return true;
+        if (!success) {
+            throw new InternalServerErrorException('Create Transaction failed for quotationId: ',quotationId)
         }
-        return false;
+        return { success: true };
     }
 
     @Post('bids/:bidId/accept')
     @Roles('User','Editor')
-    async acceptBid(@Param('bidId') bidId: string, @Req() req: Request) {
+    async acceptBid(@Param('bidId') bidId: string, @Req() req: Request): Promise<BidResponseDto> {
         const user = req['user'] as { userId: Types.ObjectId; role: string };
         
         if (!Types.ObjectId.isValid(bidId)) {

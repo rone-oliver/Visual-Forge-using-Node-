@@ -1,5 +1,4 @@
-import { Injectable, UnauthorizedException, Logger, HttpStatus, HttpException } from '@nestjs/common';
-import { UsersService } from 'src/users/users.service';
+import { Injectable, UnauthorizedException, Logger, HttpStatus, HttpException, Inject } from '@nestjs/common';
 import { User } from 'src/users/models/user.schema';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -7,11 +6,12 @@ import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { OtpService } from './otp/otp.service';
 import { Types } from 'mongoose';
+import { IUsersService, IUsersServiceToken } from 'src/users/interfaces/users.service.interface';
 
 @Injectable()
 export class UsersAuthService {
     constructor(
-        private usersService: UsersService,
+        @Inject(IUsersServiceToken) private readonly usersService: IUsersService,
         private jwtService: JwtService,
         private configService: ConfigService,
         private otpService: OtpService,

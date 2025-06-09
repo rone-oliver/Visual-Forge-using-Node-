@@ -1,12 +1,12 @@
-import { CanActivate, ExecutionContext, HttpException, HttpStatus, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
-import { UsersService } from 'src/users/users.service';
+import { CanActivate, ExecutionContext, HttpException, HttpStatus, Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { IUsersService, IUsersServiceToken } from 'src/users/interfaces/users.service.interface';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   private readonly logger = new Logger(AuthGuard.name);
 
   constructor(
-    private readonly userService: UsersService,
+    @Inject(IUsersServiceToken)private readonly userService: IUsersService,
   ){};
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
@@ -24,6 +24,8 @@ export class AuthGuard implements CanActivate {
           message: 'User account is blocked',
           errorCode: 'USER_ACCOUNT_BLOCKED',
         }, HttpStatus.FORBIDDEN,);
+      }else if(!userDetails){
+        this.logger.error(`Doesn't find the user with _id: ${user.userId}`)
       }
     }
     return true;
