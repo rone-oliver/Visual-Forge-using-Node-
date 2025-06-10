@@ -23,6 +23,7 @@ import {
     UpdateQuotationPaymentDto,
     UserProfileResponseDto,
     GetQuotationsParamsDto,
+    PaginatedTransactionsResponseDto,
 } from '../dto/users.dto';
 import { User } from '../models/user.schema';
 import { EditorDetailsResponseDto } from 'src/editors/dto/editors.dto';
@@ -33,6 +34,10 @@ export interface IUsersController {
     getUserProfile(req: Request): Promise<UserProfileResponseDto>;
     requestForEditor(req: Request): Promise<SuccessResponseDto>;
     getEditorRequestStatus(req: Request): Promise<EditorRequestStatusResponseDto>;
+    getTransactionHistory(
+        req: Request,
+        query: GetQuotationsParamsDto,
+    ): Promise<PaginatedTransactionsResponseDto>;
 
     getQuotations(
         req: Request,

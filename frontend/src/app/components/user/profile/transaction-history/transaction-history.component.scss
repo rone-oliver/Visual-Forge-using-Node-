@@ -1,0 +1,192 @@
+.transaction-history-container {
+  padding: 2rem;
+  background-color: var(--color-background);
+  border-radius: 12px;
+
+  .header {
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    background-color: var(--color-surface);
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--color-text);
+      margin: 0;
+    }
+  }
+
+  .loading-spinner,
+  .error-message {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 1rem;
+    min-height: 200px;
+    color: var(--color-text);
+
+    mat-icon {
+      font-size: 3rem;
+      width: 3rem;
+      height: 3rem;
+      color: var(--color-neutral-500);
+    }
+
+    span {
+      font-size: 1.125rem;
+    }
+  }
+
+  .transaction-history-header {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--color-neutral-200);
+  }
+
+  .transaction-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .transaction-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    background-color: var(--color-surface);
+    border-radius: 10px;
+    border: 1px solid var(--color-neutral-200);
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+      border-color: var(--color-primary);
+    }
+  }
+
+  .transaction-details {
+    .transaction-description {
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--color-text);
+      margin-bottom: 0.25rem;
+    }
+
+    .transaction-date {
+      font-size: 0.875rem;
+      color: var(--color-neutral-500);
+    }
+  }
+
+  .transaction-amount {
+    text-align: right;
+
+    .amount {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--color-danger);
+    }
+
+    .status {
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-top: 0.25rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      text-transform: capitalize;
+
+      &.status-completed {
+        color: var(--color-success-dark, #166534);
+        background-color: var(--color-success-light, #dcfce7);
+      }
+
+      &.status-pending {
+        color: var(--color-warning-dark, #9a3412);
+        background-color: var(--color-warning-light, #ffedd5);
+      }
+
+      &.status-failed {
+        color: var(--color-danger-dark, #991b1b);
+        background-color: var(--color-danger-light, #fee2e2);
+      }
+    }
+  }
+}
+
+.app-paginator {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border-top: 1px solid var(--color-neutral-200);
+  padding-top: 8px;
+  margin-top: 24px;
+
+  .dark & {
+    border-top-color: var(--color-neutral-700);
+  }
+
+  .mat-mdc-paginator-page-size-label,
+  .mat-mdc-paginator-range-label {
+    color: var(--color-text);
+    font-size: 0.875rem;
+  }
+
+  .mat-mdc-select-value,
+  .mat-mdc-select-arrow {
+    color: var(--color-primary);
+  }
+
+  .mat-mdc-icon-button {
+    background-color: transparent;
+    color: var(--color-primary);
+
+    &:hover:not([disabled]) {
+      background-color: var(--color-neutral-100);
+    }
+
+    .dark &:hover:not([disabled]) {
+      background-color: var(--color-neutral-700);
+    }
+
+    &.mat-mdc-paginator-navigation-disabled {
+      color: var(--color-neutral-400);
+      .dark & {
+        color: var(--color-neutral-500);
+      }
+    }
+  }
+}
+
+::ng-deep {
+  .mat-mdc-select-panel.custom-paginator-dropdown {
+    background-color: var(--color-surface) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+
+    .mat-mdc-option {
+      color: var(--color-text) !important;
+      &:hover:not(.mdc-list-item--disabled),
+      &.mat-mdc-option-active {
+        background-color: var(--color-neutral-100) !important;
+        .dark & {
+          background-color: var(--color-neutral-700) !important;
+        }
+      }
+      &.mat-selected:not(.mat-mdc-option-multiple) {
+        background-color: var(--color-secondary-100) !important;
+        color: var(--color-primary) !important;
+        .dark & {
+          background-color: var(--color-secondary-500) !important;
+          color: var(--color-primary) !important;
+        }
+      }
+    }
+  }
+}

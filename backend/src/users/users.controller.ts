@@ -8,7 +8,7 @@ import { EditorsService } from 'src/editors/editors.service';
 import { PaymentService } from 'src/common/payment/payment.service';
 import { PaymentType } from 'src/common/models/transaction.schema';
 import { Quotation, QuotationStatus } from 'src/common/models/quotation.schema';
-import { BidResponseDto, CreatePaymentDto, CreatePaymentResponseDto, CreateQuotationDto, GetPublicWorksQueryDto, GetQuotationsParamsDto, PaginatedPublicWorksResponseDto, PaginatedQuotationsResponseDto, RateEditorDto, SuccessResponseDto, UpdateProfileDto, UpdateProfileImageDto, UpdateQuotationDto, UpdateQuotationPaymentDto, UpdateWorkPublicStatusDto, UserBasicInfoDto, UserEditorRatingDto, UserProfileResponseDto } from './dto/users.dto';
+import { BidResponseDto, CreatePaymentDto, CreatePaymentResponseDto, CreateQuotationDto, GetPublicWorksQueryDto, GetQuotationsParamsDto, PaginatedPublicWorksResponseDto, PaginatedQuotationsResponseDto, PaginatedTransactionsResponseDto, RateEditorDto, SuccessResponseDto, UpdateProfileDto, UpdateProfileImageDto, UpdateQuotationDto, UpdateQuotationPaymentDto, UpdateWorkPublicStatusDto, UserBasicInfoDto, UserEditorRatingDto, UserProfileResponseDto } from './dto/users.dto';
 import { IUsersService, IUsersServiceToken } from './interfaces/users.service.interface';
 import { IUsersController } from './interfaces/users.controller.interface';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -72,6 +72,20 @@ export class UsersController implements IUsersController {
         const user = req['user'] as { userId: Types.ObjectId; role: string };
         const status = await this.userService.getEditorRequestStatus(user.userId);
         return status;
+    }
+
+    @Get('transactions')
+    @Roles('User', 'Editor')
+    async getTransactionHistory(
+        @Req() req: Request,
+        @Query() query: GetQuotationsParamsDto,
+    ): Promise<PaginatedTransactionsResponseDto> {
+        const user = req['user'] as { userId: Types.ObjectId; role: string };
+        const params = {
+            page: query.page ? parseInt(query.page.toString(), 10) : 1,
+            limit: query.limit ? parseInt(query.limit.toString(), 10) : 10,
+        };
+        return this.userService.getTransactionHistory(user.userId, params);
     }
 
     @Get('quotations')

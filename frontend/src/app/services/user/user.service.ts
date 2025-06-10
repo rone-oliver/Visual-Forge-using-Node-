@@ -6,6 +6,7 @@ import { environment } from '../../../environments/environment';
 import { FileAttachmentResponse, GetQuotationsParams, IPaymentVerification, PaginatedQuotationsResponse } from '../../interfaces/quotation.interface';
 import { CompletedWork, Works } from '../../interfaces/completed-word.interface';
 import { IBid } from '../../interfaces/bid.interface';
+import { PaginatedTransactionResponse } from '../../interfaces/transaction.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -65,6 +66,20 @@ export class UserService {
         throw error
       })
     )
+  }
+
+  getTransactionHistory(page: number, limit: number): Observable<PaginatedTransactionResponse> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', limit.toString());
+
+    return this.http.get<PaginatedTransactionResponse>(`${this.userApiUrl}/transactions`, { params }).pipe(
+      map(response => response),
+      catchError(error => {
+        console.error('Error fetching transaction history:', error);
+        throw error;
+      })
+    );
   }
 
   getQuotationById(id: string): Observable<any> {

@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Transform, Type } from 'class-transformer';
+import { Expose, Transform, Type } from 'class-transformer';
 import {
     IsArray,
     IsBoolean,
@@ -1027,4 +1027,66 @@ export class UploadFilesBodyDto {
     @IsString()
     @IsOptional()
     folder?: string;
+}
+
+class QuotationDetailsForTransactionsDto {
+    @ApiProperty({ description: 'The ID of the quotation.'})
+    @Expose()
+    @IsMongoId()
+    _id: Types.ObjectId;
+
+    @ApiProperty({ description: 'The name of the quotation.', example: 'Logo Design for MyBrand' })
+    @Expose()
+    @IsString()
+    title: string;
+}
+
+export class TransactionItemDto {
+    @ApiProperty({ description: 'The unique identifier of the transaction.', example: '682326516358a4ebb22a055c' })
+    @Expose()
+    _id: Types.ObjectId;
+  
+    @ApiProperty({ description: 'Details of the associated quotation.' })
+    @Expose()
+    @Type(() => QuotationDetailsForTransactionsDto)
+    quotationId: QuotationDetailsForTransactionsDto;
+  
+    @ApiProperty({ description: 'The amount of the transaction.', example: 900 })
+    @Expose()
+    amount: number;
+  
+    @ApiProperty({ description: 'The type of payment (e.g., advance, balance).', example: 'advance' })
+    @Expose()
+    paymentType: PaymentType;
+  
+    @ApiProperty({ description: 'The status of the payment.', example: 'completed' })
+    @Expose()
+    status: PaymentStatus;
+  
+    @ApiProperty({ description: 'The date of the payment.', example: '2025-05-13T11:00:33.490Z' })
+    @Expose()
+    createdAt: Date;
+}
+
+export class PaginatedTransactionsResponseDto {
+    @ApiProperty({ type: [TransactionItemDto], description: 'The list of transactions for the current page.' })
+    @Expose()
+    @Type(() => TransactionItemDto)
+    transactions: TransactionItemDto[];
+  
+    @ApiProperty({ description: 'The total number of transactions available.', example: 50 })
+    @Expose()
+    totalItems: number;
+  
+    @ApiProperty({ description: 'The total number of pages.', example: 5 })
+    @Expose()
+    totalPages: number;
+  
+    @ApiProperty({ description: 'The current page number.', example: 1 })
+    @Expose()
+    currentPage: number;
+  
+    @ApiProperty({ description: 'The number of items per page.', example: 10 })
+    @Expose()
+    limit: number;
 }

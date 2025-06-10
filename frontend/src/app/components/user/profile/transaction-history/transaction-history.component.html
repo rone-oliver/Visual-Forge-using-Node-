@@ -1,0 +1,55 @@
+<div class="transaction-history-container">
+  <div class="header">
+    <h1>Transaction History</h1>
+  </div>
+
+  @if(loading){
+  <div class="loading-spinner">
+    <mat-spinner></mat-spinner>
+  </div>
+  }
+
+  @if(error){
+  <div class="error-message">
+    <mat-icon>error_outline</mat-icon>
+    <span>{{ error }}</span>
+  </div>
+  }
+
+  @if(!loading && !error && transactions.length > 0){
+  <div class="transaction-list">
+    @for(transaction of transactions; track transaction._id){
+    <div class="transaction-item">
+      <div class="transaction-details">
+        <p class="transaction-description">{{ transaction.paymentType === 'advance' ? `Advance Payment for` : `Balance
+          Payment for` }} {{'quotation: ' + transaction.quotationId.title }}</p>
+        <p class="transaction-date">{{ transaction.createdAt | localDate:'long' }}</p>
+      </div>
+      <div class="transaction-amount">
+        <p class="amount">- {{ transaction.amount | currency:'USD' }}</p>
+        <p class="status" [class]="'status-' + transaction.status.toLowerCase()">{{ transaction.status }}</p>
+      </div>
+    </div>
+    }
+  </div>
+
+  <mat-paginator
+    [length]="totalItems"
+    [pageSize]="itemsPerPage"
+    [pageIndex]="currentPage - 1"
+    [pageSizeOptions]="[5, 10, 25, 100]"
+    (page)="handlePageEvent($event)"
+    aria-label="Select page of transactions"
+    class="app-paginator"
+    panelClass="custom-paginator-dropdown">
+  </mat-paginator>
+  }
+
+  @else if(!loading && !error && transactions.length === 0){
+  <div class="empty-state">
+    <mat-icon>receipt_long</mat-icon>
+    <p>No transactions found.</p>
+    <span>You haven't made any payments yet.</span>
+  </div>
+  }
+</div>

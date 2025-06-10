@@ -1,15 +1,15 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { User } from '../../../interfaces/user.interface';
-import { UserService } from '../../../services/user/user.service';
+import { User } from '../../../../interfaces/user.interface';
+import { UserService } from '../../../../services/user/user.service';
 import { Observable } from 'rxjs';
-import { DatePipe } from '../../../pipes/date.pipe';
+import { DatePipe } from '../../../../pipes/date.pipe';
 import { MatSnackBarConfig, MatSnackBar } from '@angular/material/snack-bar';
-import { CloudinaryService } from '../../../services/cloudinary.service';
+import { CloudinaryService } from '../../../../services/cloudinary.service';
 import { MatDialog } from '@angular/material/dialog';
-import { ProfileEditModalComponent } from '../profile-edit-modal/profile-edit-modal.component';
-import { ResetPasswordComponent } from '../../mat-dialogs/reset-password/reset-password.component';
+import { ProfileEditModalComponent } from '../../profile-edit-modal/profile-edit-modal.component';
+import { ResetPasswordComponent } from '../../../mat-dialogs/reset-password/reset-password.component';
 
 
 @Component({
@@ -44,7 +44,9 @@ export class ProfileComponent implements OnInit{
 
   ngOnInit(): void {
     this.getUserData();
-    this.checkEditorRequestStatus();
+    if(!this.user.isEditor){
+      this.checkEditorRequestStatus();
+    }
   }
 
   private getUserData(){

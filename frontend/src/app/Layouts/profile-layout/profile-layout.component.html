@@ -1,0 +1,32 @@
+<div class="profile-container">
+    <aside class="profile-sidebar">
+        <div class="sidebar-header">
+            <h2 class="sidebar-title">My Account</h2>
+        </div>
+        <nav class="sidebar-nav" aria-label="Profile Navigation"> <a routerLink="./" routerLinkActive="active"
+                [routerLinkActiveOptions]="{ exact: true }" class="nav-item" aria-current="page">
+                <mat-icon>person</mat-icon>
+                <span>Profile</span>
+            </a>
+            <a routerLink="transactions" routerLinkActive="active" class="nav-item">
+                <mat-icon>history</mat-icon>
+                <span>Transaction History</span>
+            </a>
+            <a routerLink="wallet" routerLinkActive="active" class="nav-item disabled" aria-disabled="true">
+                <mat-icon>account_balance_wallet</mat-icon>
+                <span>Wallet</span>
+            </a>
+            <a routerLink="notifications" routerLinkActive="active" class="nav-item disabled" aria-disabled="true">
+                <mat-icon>notifications</mat-icon>
+                <span>Notifications</span>
+            </a>
+            <a routerLink="settings" routerLinkActive="active" class="nav-item disabled" aria-disabled="true">
+                <mat-icon>settings</mat-icon>
+                <span>Settings</span>
+            </a>
+        </nav>
+    </aside>
+    <main class="profile-content">
+        <router-outlet></router-outlet>
+    </main>
+</div>

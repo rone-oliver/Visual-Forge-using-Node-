@@ -6,11 +6,13 @@ export const AUTH_ROUTES = {
 
 export const USER_ROUTES = {
     HOME: () => import('../components/user/home/home.component').then(m => m.HomeComponent),
-    PROFILE: () => import('../components/user/profile/profile.component').then(m => m.ProfileComponent),
     QUOTATIONS: () => import('../components/user/quotation/quotation.component').then(m => m.QuotationComponent),
     CREATE_QUOTATION: () => import('../components/user/create-quotation/create-quotation.component').then(m => m.CreateQuotationComponent),
     PUBLIC_WORKS: () => import('../components/user/public-works/public-works.component').then(m => m.PublicWorksComponent),
-    CHAT: () => import('../components/user/chat/chat.component').then(m => m.ChatComponent)
+    CHAT: () => import('../components/user/chat/chat.component').then(m => m.ChatComponent),
+    PROFILE_LAYOUT: () => import('../Layouts/profile-layout/profile-layout.component').then(m => m.ProfileLayoutComponent),
+    PROFILE: () => import('../components/user/profile/details/profile.component').then(m => m.ProfileComponent),
+    TRANSACTION_HISTORY: () => import('../components/user/profile/transaction-history/transaction-history.component').then(m => m.TransactionHistoryComponent)
 }
 
 export const ADMIN_ROUTES = {

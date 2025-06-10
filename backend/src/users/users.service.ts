@@ -1,4 +1,4 @@
-import { Injectable, Logger, HttpException, HttpStatus, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, HttpException, HttpStatus, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Model, Types } from 'mongoose';
@@ -38,7 +38,8 @@ import {
     TransactionResponseDto,
     UserRatingForEditorDto,
     PublicWorkItemDto,
-    BidResponseDto
+    BidResponseDto,
+    PaginatedTransactionsResponseDto
 } from './dto/users.dto';
 import { NotificationType } from 'src/notification/models/notification.schema';
 
@@ -238,6 +239,43 @@ export class UsersService implements IUsersService {
         } catch (error) {
             this.logger.error(`Error fetching editor request status: ${error.message}`);
             throw error;
+        }
+    }
+
+    async getTransactionHistory(userId: Types.ObjectId, params: { page: number, limit: number }): Promise<PaginatedTransactionsResponseDto> {
+        const { page, limit } = params;
+        const skip = (page - 1) * limit;
+
+        try {
+            this.logger.log(`Fetching transaction history for user ${userId}, page: ${page}, limit: ${limit}`);
+
+            const transactionsQuery = this.transactionModel.find({ userId })
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .populate({
+                    path: 'quotationId',
+                    select: 'title',
+                })
+                .lean()
+                .exec();
+
+            const totalItemsQuery = this.transactionModel.countDocuments({ userId }).exec();
+
+            const [transactions, totalItems] = await Promise.all([transactionsQuery, totalItemsQuery]);
+
+            const totalPages = Math.ceil(totalItems / limit);
+
+            return {
+                transactions: transactions as any,
+                totalItems,
+                totalPages,
+                currentPage: page,
+                limit,
+            };
+        } catch (error) {
+            this.logger.error(`Error fetching transaction history for user ${userId}: ${error.message}`);
+            throw new InternalServerErrorException('Failed to fetch transaction history.');
         }
     }
 

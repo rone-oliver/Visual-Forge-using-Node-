@@ -60,7 +60,29 @@ export const routes: Routes = [
             },
             {
                 path:'profile', 
-                loadComponent: USER_ROUTES.PROFILE
+                loadComponent: USER_ROUTES.PROFILE_LAYOUT,
+                children:[
+                    {
+                        path: '',
+                        loadComponent: USER_ROUTES.PROFILE
+                    },
+                    {
+                        path: 'transactions',
+                        loadComponent: USER_ROUTES.TRANSACTION_HISTORY
+                    },
+                    // {
+                    //     path: 'wallet',
+                    //     loadComponent: USER_ROUTES.WALLET
+                    // },
+                    // {
+                    //     path: 'notifications',
+                    //     loadComponent: USER_ROUTES.NOTIFICATIONS
+                    // },
+                    // {
+                    //     path: 'settings',
+                    //     loadComponent: USER_ROUTES.SETTINGS
+                    // }
+                ]
             },
             {
                 path:'quotations', 
