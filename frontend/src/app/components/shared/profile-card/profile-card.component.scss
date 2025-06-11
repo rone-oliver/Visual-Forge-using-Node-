@@ -1,166 +1,147 @@
-.user-card {
-    width: 90%;
-    max-width: 400px;
+:host {
+  display: block;
+  height: 100%;
+}
+
+.profile-card {
+  background-color: var(--color-background);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  text-align: center;
+  border: 1px solid var(--color-neutral-200);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  }
+}
+
+.card-header {
+  display: flex;
+  justify-content: flex-end;
+  height: 24px;
+
+  .verified-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--color-primary);
+
+    mat-icon {
+      font-size: 1rem;
+      width: 1rem;
+      height: 1rem;
+      color: var(--color-primary);
+    }
+  }
+}
+
+.card-body {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.avatar-section {
+  margin-bottom: 1rem;
+
+  .avatar,
+  .default-avatar {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--color-primary);
+  }
+
+  .default-avatar {
+    background-color: var(--color-background);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    mat-icon {
+      font-size: 3rem;
+      width: 3rem;
+      height: 3rem;
+      color: var(--color-text);
+    }
+  }
+}
+
+.fullname {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.username {
+  font-size: 0.9rem;
+  color: var(--color-text);
+  margin-bottom: 1rem;
+}
+
+.categories {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+
+  .category-chip {
+    background-color: var(--color-primary);
+    color: var(--color-background);
+    padding: 0.25rem 0.75rem;
     border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-    background-color: var(--admin-color-primary);
-    color: var(--admin-color-text);
-    font-family: 'Roboto', sans-serif;
-    position: relative;
-    transition: all 0.3s ease;
-
-    &-header {
-        padding: 12px 20px;
-        position: relative;
-    }
-
-    &-avatar-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 10px 0 25px;
-    }
-
-    &-avatar {
-        width: 100px;
-        height: 100px;
-        border-radius: 50%;
-        background-color: var(--admin-color-surface);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        border: 4px solid rgba(255, 255, 255, 0.4);
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        overflow: hidden;
-        margin-bottom: 12px;
-
-        img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .default-avatar {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: var(--admin-color-surface);
-
-            mat-icon {
-                font-size: 50px;
-                width: 50px;
-                height: 50px;
-                color: var(--admin-color-primary);
-            }
-        }
-    }
-
-    &-content {
-        background-color: white;
-        border-radius: 24px 24px 16px 16px;
-        padding: 9px 20px 9px;
-    }
-
-    .since-badge {
-        position: absolute;
-        top: 15px;
-        left: 20px;
-        font-size: 14px;
-        font-weight: 500;
-        color: rgba(255, 255, 255, 0.9);
-    }
-
-    .user-phone {
-        font-size: 15px;
-        font-weight: 500;
-        color: rgba(255, 255, 255, 0.95);
-        letter-spacing: 0.5px;
-    }
-
-    .info-field {
-        margin-bottom: 8px;
-
-        &:last-child {
-            margin-bottom: 0;
-        }
-    }
-
-    .info-label {
-        font-size: 12px;
-        font-weight: 500;
-        color: rgba(0, 0, 0, 0.6);
-        margin-bottom: 4px;
-        padding-left: 8px;
-    }
-
-    .info-value {
-        background-color: var(--admin-color-surface);
-        padding: 12px 16px;
-        border-radius: 12px;
-        font-size: 15px;
-        font-weight: 500;
-        color: var(--admin-color-text);
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-        border: 1px solid var(--admin-color-border);
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .info-field-row {
-        display: flex;
-        gap: 12px;
-
-        .half-width {
-            flex: 1;
-        }
-    }
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
 }
 
-// Dark mode styles
-.admin-dark {
-    .user-card-content {
-        background-color: var(--admin-color-surface);
-    }
-
-    .info-label {
-        color: rgba(255, 255, 255, 0.7);
-    }
-
-    .info-value {
-        background-color: rgba(255, 255, 255, 0.08);
-        border-color: var(--admin-color-border);
-        color: var(--admin-color-text);
-    }
+.card-footer {
+  display: flex;
+  justify-content: space-around;
+  border-top: 1px solid var(--color-neutral-200);
+  padding-top: 1rem;
+  width: 100%;
 }
 
-// Responsive design
-@media (max-width: 480px) {
-    .user-card {
-        border-radius: 12px;
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
-        &-avatar {
-            width: 80px;
-            height: 80px;
-        }
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text);
 
-        &-content {
-            padding: 7px 16px 7px;
-            border-radius: 20px 20px 12px 12px;
-        }
+  &.rating {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--color-primary);
 
-        .info-field {
-            margin-bottom: 16px;
-        }
-
-        .info-field-row {
-            gap: 10px;
-        }
-
-        .info-value {
-            padding: 10px 14px;
-        }
+    mat-icon {
+      font-size: 1.5rem;
+      width: 1.5rem;
+      height: 1.5rem;
     }
+  }
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: var(--color-text);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }

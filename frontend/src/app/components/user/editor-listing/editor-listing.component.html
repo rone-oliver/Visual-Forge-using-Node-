@@ -1,0 +1,66 @@
+<div class="editor-listing-container">
+  <header class="listing-header">
+    <h1>Find Your Perfect Editor</h1>
+    <p>Search, filter, and connect with the best creative talent.</p>
+  </header>
+
+  <form [formGroup]="filterForm" class="filter-bar">
+    <div class="search-wrapper">
+      <input type="text" formControlName="search" placeholder="Search by name..." class="search-input" />
+    </div>
+    
+    <div class="filter-tabs">
+      <select formControlName="category" class="filter-select">
+        <option value="">All Categories</option>
+        @for (category of categories; track category.value) {
+          <option [value]="category.value">{{ category.viewValue }}</option>
+        }
+      </select>
+
+      <select formControlName="rating" class="filter-select">
+        <option [ngValue]="null">Any Rating</option>
+         @for (rating of ratings; track rating.value) {
+          <option [value]="rating.value">{{ rating.viewValue }}</option>
+        }
+      </select>
+    </div>
+
+    <button type="button" (click)="clearFilters()" class="clear-button">
+      Clear Filters
+    </button>
+  </form>
+
+  <div class="results-container">
+    @if (loading | async) {
+      <div class="loading-spinner">
+        <mat-spinner diameter="50"></mat-spinner>
+      </div>
+    } @else {
+      @if (editors && editors.length > 0) {
+        <div class="editors-grid">
+          @for (editor of editors; track editor._id) {
+            <div class="profile-card-wrapper" (click)="navigateToProfile(editor._id)">
+              <app-profile-card [user]="editor"></app-profile-card>
+            </div>
+          }
+        </div>
+
+        <mat-paginator
+          [length]="totalEditors"
+          [pageSize]="pageSize"
+          [pageIndex]="currentPage"
+          [pageSizeOptions]="[12, 24, 48]"
+          (page)="onPageChange($event)"
+          aria-label="Select page of editors"
+        >
+        </mat-paginator>
+      } @else {
+        <div class="empty-state">
+          <mat-icon>search_off</mat-icon>
+          <h2>No Editors Found</h2>
+          <p>Try adjusting your search or filter criteria.</p>
+        </div>
+      }
+    }
+  </div>
+</div>

@@ -81,7 +81,7 @@ export const routes: Routes = [
                     // {
                     //     path: 'settings',
                     //     loadComponent: USER_ROUTES.SETTINGS
-                    // }
+                    // },
                 ]
             },
             {
@@ -103,7 +103,15 @@ export const routes: Routes = [
             {
                 path:'messaging', 
                 loadComponent: USER_ROUTES.CHAT
-            }
+            },
+            {
+                path:'editors',
+                loadComponent: USER_ROUTES.EDITOR_LISTING
+            },
+            {
+                path: 'editors/profile/:id',
+                loadComponent: USER_ROUTES.EDITOR_PROFILE
+            },
         ]
     },
     {

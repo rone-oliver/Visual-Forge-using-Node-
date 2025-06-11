@@ -1,12 +1,13 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { User } from '../../interfaces/user.interface';
+import { EditorPublicProfile, User } from '../../interfaces/user.interface';
 import { catchError, map, Observable, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { FileAttachmentResponse, GetQuotationsParams, IPaymentVerification, PaginatedQuotationsResponse } from '../../interfaces/quotation.interface';
 import { CompletedWork, Works } from '../../interfaces/completed-word.interface';
 import { IBid } from '../../interfaces/bid.interface';
 import { PaginatedTransactionResponse } from '../../interfaces/transaction.interface';
+import { GetPublicEditorsDto, PaginatedPublicEditors } from '../../interfaces/user.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -79,6 +80,29 @@ export class UserService {
         console.error('Error fetching transaction history:', error);
         throw error;
       })
+    );
+  }
+
+  getEditorPublicProfile(editorId: string): Observable<EditorPublicProfile> {
+    return this.http.get<EditorPublicProfile>(`${this.userApiUrl}/profile/editors/${editorId}`).pipe(
+      map(response => response),
+      catchError(error => {
+        console.error(`Error fetching editor profile for ID ${editorId}:`, error);
+        throw error;
+      })
+    );
+  }
+
+  getPublicEditors(params: GetPublicEditorsDto): Observable<PaginatedPublicEditors> {
+    let httpParams = new HttpParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        httpParams = httpParams.set(key, String(value));
+      }
+    });
+    return this.http.get<PaginatedPublicEditors>(`${this.userApiUrl}/editors`, { params: httpParams }).pipe(
+      map(response => response),
+      catchError(error => { throw error })
     );
   }
 

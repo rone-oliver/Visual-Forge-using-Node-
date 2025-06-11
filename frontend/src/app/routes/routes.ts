@@ -10,6 +10,8 @@ export const USER_ROUTES = {
     CREATE_QUOTATION: () => import('../components/user/create-quotation/create-quotation.component').then(m => m.CreateQuotationComponent),
     PUBLIC_WORKS: () => import('../components/user/public-works/public-works.component').then(m => m.PublicWorksComponent),
     CHAT: () => import('../components/user/chat/chat.component').then(m => m.ChatComponent),
+    EDITOR_LISTING: () => import('../components/user/editor-listing/editor-listing.component').then(m => m.EditorListingComponent),
+    EDITOR_PROFILE: () => import('../components/user/editor-profile/editor-profile.component').then(m => m.EditorProfileComponent),
     PROFILE_LAYOUT: () => import('../Layouts/profile-layout/profile-layout.component').then(m => m.ProfileLayoutComponent),
     PROFILE: () => import('../components/user/profile/details/profile.component').then(m => m.ProfileComponent),
     TRANSACTION_HISTORY: () => import('../components/user/profile/transaction-history/transaction-history.component').then(m => m.TransactionHistoryComponent)

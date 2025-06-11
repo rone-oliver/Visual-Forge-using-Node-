@@ -8,10 +8,34 @@ import { EditorsService } from 'src/editors/editors.service';
 import { PaymentService } from 'src/common/payment/payment.service';
 import { PaymentType } from 'src/common/models/transaction.schema';
 import { Quotation, QuotationStatus } from 'src/common/models/quotation.schema';
-import { BidResponseDto, CreatePaymentDto, CreatePaymentResponseDto, CreateQuotationDto, GetPublicWorksQueryDto, GetQuotationsParamsDto, PaginatedPublicWorksResponseDto, PaginatedQuotationsResponseDto, PaginatedTransactionsResponseDto, RateEditorDto, SuccessResponseDto, UpdateProfileDto, UpdateProfileImageDto, UpdateQuotationDto, UpdateQuotationPaymentDto, UpdateWorkPublicStatusDto, UserBasicInfoDto, UserEditorRatingDto, UserProfileResponseDto } from './dto/users.dto';
+import {
+    BidResponseDto,
+    CreatePaymentDto,
+    CreatePaymentResponseDto,
+    CreateQuotationDto,
+    GetPublicWorksQueryDto,
+    GetQuotationsParamsDto,
+    PaginatedPublicWorksResponseDto,
+    PaginatedQuotationsResponseDto,
+    PaginatedTransactionsResponseDto,
+    RateEditorDto,
+    SuccessResponseDto,
+    UpdateProfileDto,
+    UpdateProfileImageDto,
+    UpdateQuotationDto,
+    UpdateQuotationPaymentDto,
+    UpdateWorkPublicStatusDto,
+    UserBasicInfoDto,
+    UserEditorRatingDto,
+    UserProfileResponseDto,
+    EditorPublicProfileResponseDto,
+    GetPublicEditorsDto,
+    PaginatedPublicEditorsDto
+} from './dto/users.dto';
 import { IUsersService, IUsersServiceToken } from './interfaces/users.service.interface';
 import { IUsersController } from './interfaces/users.controller.interface';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+// import { Public } from 'src/common/decorators/public.decorator';
 
 export interface GetQuotationsParams {
     page?: number;
@@ -269,6 +293,15 @@ export class UsersController implements IUsersController {
     //     return this.editorService.getEditor(id);
     // }
 
+    @Get('profile/editors/:id')
+    @Roles('User', 'Editor')
+    @ApiOperation({ summary: "Get an editor's public profile" })
+    @ApiResponse({ status: 200, description: 'Returns the public profile of the editor.', type: EditorPublicProfileResponseDto })
+    @ApiResponse({ status: 404, description: 'Editor not found.' })
+    async getEditorPublicProfile(@Param('id') id: string): Promise<EditorPublicProfileResponseDto> {
+        return this.userService.getEditorPublicProfile(id);
+    }
+
     @Post('payment')
     @Roles('User', 'Editor')
     async createPayment(@Req() req: Request, @Body() body: CreatePaymentDto): Promise<CreatePaymentResponseDto> {
@@ -336,5 +369,15 @@ export class UsersController implements IUsersController {
         }
         
         return this.userService.acceptBid(new Types.ObjectId(bidId), user.userId);
+    }
+
+    // @Public()
+    @Get('editors')
+    @ApiOperation({ summary: 'Get a list of public editor profiles' })
+    @ApiResponse({ status: 200, description: 'Successfully retrieved public editor profiles.', type: PaginatedPublicEditorsDto })
+    getPublicEditors(
+        @Query() query: GetPublicEditorsDto,
+    ): Promise<PaginatedPublicEditorsDto> {
+        return this.userService.getPublicEditors(query);
     }
 }

@@ -64,7 +64,7 @@ function handleTokenAddition(
     userType: 'Admin' | 'User',
     authService: AuthService,
     router: Router) {
-    const accessToken = authService.getAccessToken(userType);
+    const accessToken = authService.getAccessToken(userType); // potential bug
 
     if (!accessToken) {
         router.navigate([userType === 'Admin' ? '/auth/admin/login' : '/auth/login']);

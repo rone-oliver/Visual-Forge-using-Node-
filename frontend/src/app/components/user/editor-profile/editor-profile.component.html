@@ -1,0 +1,137 @@
+@if (editorProfile$ | async; as profile) {
+  <div class="editor-profile-container">
+    <header class="profile-header">
+      <div class="breadcrumb">
+        <span routerLink="/user/editors">Editors</span>
+        <mat-icon>chevron_right</mat-icon>
+        <span>Editor Profile</span>
+      </div>
+      <div class="editor-info-card">
+        <div class="avatar-container">
+          <img [src]="profile.profileImage" [alt]="profile.fullname" class="avatar" />
+          <span class="editor-name">{{ profile.fullname }}</span>
+        </div>
+        <div class="editor-details">
+          <div class="detail-item">
+            <span class="label">Username</span>
+            <span class="value">{{ profile.username }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Average Rating</span>
+            <span class="value">{{ profile.averageRating }}/5</span>
+          </div>
+          <div class="detail-item score">
+            <span class="label">Score</span>
+            <span class="value">{{ profile.score | number }}</span>
+          </div>
+          @if(profile.categories.length > 0){
+            <div class="categories">
+              @for(category of profile.categories; track $index){
+                <span class="category-chip">{{ category }}</span>
+              }
+            </div>
+          }
+        </div>
+        @if (profile.socialLinks && (profile.socialLinks.website || profile.socialLinks.linkedIn || profile.socialLinks.instagram || profile.socialLinks.pinterest || profile.socialLinks.facebook)) {
+          <div class="social-links">
+            @if (profile.socialLinks.website) {
+              <a [href]="profile.socialLinks.website" target="_blank" rel="noopener noreferrer" class="social-link">
+                <mat-icon>language</mat-icon>
+              </a>
+            }
+            @if (profile.socialLinks.linkedIn) {
+              <a [href]="profile.socialLinks.linkedIn" target="_blank" rel="noopener noreferrer" class="social-link">
+                <mat-icon svgIcon="linkedin"></mat-icon>
+              </a>
+            }
+            @if (profile.socialLinks.instagram) {
+              <a [href]="profile.socialLinks.instagram" target="_blank" rel="noopener noreferrer" class="social-link">
+                <mat-icon svgIcon="instagram"></mat-icon>
+              </a>
+            }
+            @if (profile.socialLinks.pinterest) {
+              <a [href]="profile.socialLinks.pinterest" target="_blank" rel="noopener noreferrer" class="social-link">
+                <mat-icon svgIcon="pinterest"></mat-icon>
+              </a>
+            }
+            @if (profile.socialLinks.facebook) {
+              <a [href]="profile.socialLinks.facebook" target="_blank" rel="noopener noreferrer" class="social-link">
+                <mat-icon svgIcon="facebook"></mat-icon>
+              </a>
+            }
+          </div>
+        }
+      </div>
+    </header>
+
+    <mat-tab-group animationDuration="500ms" mat-align-tabs="center" class="profile-tabs">
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">video_library</mat-icon>
+          Shared Tutorials
+        </ng-template>
+        <div class="tab-content tutorials-grid">
+          <ng-container *ngIf="profile.sharedTutorials.length > 0; else noTutorials">
+            <div class="tutorial-card" *ngFor="let tutorial of profile.sharedTutorials; let i = index">
+              <img src="https://www.placehold.co/300x200" alt="Tutorial Thumbnail" class="thumbnail" />
+              <div class="play-icon">
+                <mat-icon>play_circle_filled</mat-icon>
+              </div>
+            </div>
+          </ng-container>
+          <ng-template #noTutorials>
+            <div class="empty-state">
+              <mat-icon>video_library</mat-icon>
+              <span>No tutorials shared yet.</span>
+            </div>
+          </ng-template>
+        </div>
+      </mat-tab>
+
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">lightbulb</mat-icon>
+          Tips & Tricks
+        </ng-template>
+        <div class="tab-content tips-section">
+          <ng-container *ngIf="profile.tipsAndTricks; else noTips">
+            <div class="content-wrapper">
+              <p>{{ profile.tipsAndTricks }}</p>
+            </div>
+          </ng-container>
+          <ng-template #noTips>
+            <div class="empty-state">
+              <mat-icon>lightbulb_outline</mat-icon>
+              <span>No tips and tricks shared yet.</span>
+            </div>
+          </ng-template>
+        </div>
+      </mat-tab>
+
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">info</mat-icon>
+          About
+        </ng-template>
+        <div class="tab-content about-section">
+          <ng-container *ngIf="profile.about; else noAbout">
+            <div class="content-wrapper">
+              <p>{{ profile.about }}</p>
+            </div>
+          </ng-container>
+          <ng-template #noAbout>
+            <div class="empty-state">
+              <mat-icon>info_outline</mat-icon>
+              <span>No information provided.</span>
+            </div>
+          </ng-template>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+} @else {
+  <div class="loading-container">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Loading Editor Profile...</p>
+  </div>
+}

@@ -18,6 +18,8 @@ import {
     ValidateNested,
     Min,
     Max,
+    IsUrl,
+    IsObject,
 } from 'class-validator';
 import { Types } from 'mongoose';
 import { Gender, Language } from '../models/user.schema';
@@ -1088,5 +1090,153 @@ export class PaginatedTransactionsResponseDto {
   
     @ApiProperty({ description: 'The number of items per page.', example: 10 })
     @Expose()
+    limit: number;
+}
+
+export class EditorPublicProfileResponseDto {
+    @ApiProperty({ description: "Editor's user ID", example: '60d21b4667d0d8992e610c85' })
+    @IsMongoId()
+    _id: Types.ObjectId;
+
+    @ApiProperty({ description: "Editor's username", example: 'john.doe' })
+    @IsString()
+    username: string;
+
+    @ApiProperty({ description: "Editor's full name", example: 'John Doe' })
+    @IsString()
+    fullname: string;
+
+    @ApiProperty({ description: 'URL of the profile image', example: 'https://example.com/avatar.jpg' })
+    @IsString()
+    @IsUrl()
+    profileImage: string;
+
+    @ApiProperty({ description: "Editor's score", example: 9250 })
+    @IsNumber()
+    score: number;
+
+    @ApiProperty({ description: 'Average rating of the editor', example: 4.5 })
+    @IsNumber()
+    @Min(0)
+    @Max(5)
+    averageRating: number;
+
+    @ApiProperty({ description: 'Specialization categories', example: ['UI/UX Design', 'Web Development'] })
+    @IsArray()
+    @IsString({ each: true })
+    categories: string[];
+
+    @ApiProperty({ description: 'A short bio about the editor', example: 'Passionate designer and developer.' })
+    @IsString()
+    about: string;
+
+    @ApiProperty({ description: 'Shared tutorials by the editor', isArray: true, type: 'string', example: ['tutorial_link_1', 'tutorial_link_2'] })
+    @IsArray()
+    @IsOptional()
+    @IsString({ each: true })
+    sharedTutorials?: string[];
+
+    @ApiProperty({ description: 'Tips and tricks from the editor', example: 'Always use version control!' })
+    @IsString()
+    @IsOptional()
+    tipsAndTricks?: string;
+
+    @ApiProperty({ 
+        description: 'Social media links of the editor', 
+        example: { 
+            linkedIn: 'https://linkedin.com/in/editor',
+            website: 'https://editor.com'
+        }
+    })
+    @IsObject()
+    @IsOptional()
+    socialLinks?: { [key: string]: string };
+}
+
+export class GetUsersQueryDto {
+    @ApiProperty({ required: false, default: 1, description: 'Page number' })
+    @Type(() => Number)
+    @IsInt()
+    @Min(1)
+    page: number;
+
+    @ApiProperty({ required: false, default: 10, description: 'Number of items per page' })
+    @Type(() => Number)
+    @IsInt()
+    @Min(1)
+    limit: number;
+}
+
+export class GetPublicEditorsDto {
+    @ApiPropertyOptional({ description: 'Search term for filtering public editors' })
+    @IsString()
+    @IsOptional()
+    search?: string;
+
+    @ApiPropertyOptional({ description: 'Filter by category', example: 'audio' })
+    @IsString()
+    @IsOptional()
+    category?: string;
+
+    @ApiPropertyOptional({ description: 'Filter by rating (1-5)' })
+    @Type(() => Number)
+    @IsNumber()
+    @Min(1)
+    @Max(5)
+    @IsOptional()
+    rating?: number;
+
+    @ApiPropertyOptional({ description: 'Page number for pagination', default: 1 })
+    @Type(() => Number)
+    @IsNumber()
+    @Min(1)
+    @IsOptional()
+    page?: number;
+
+    @ApiPropertyOptional({ description: 'Number of items per page', default: 10 })
+    @Type(() => Number)
+    @IsNumber()
+    @Min(1)
+    @IsOptional()
+    limit?: number;
+}
+
+export class PublicEditorProfileDto {
+    @ApiProperty({ description: 'Editor ID' })
+    _id: Types.ObjectId;
+
+    @ApiProperty({ description: 'Editor full name' })
+    fullname: string;
+
+    @ApiProperty({ description: 'Editor username' })
+    username: string;
+
+    @ApiPropertyOptional({ description: 'Editor profile image URL' })
+    profileImage?: string;
+
+    @ApiProperty({ description: 'Editor categories' })
+    categories: string[];
+
+    @ApiProperty({ description: 'Editor score' })
+    score: number;
+
+    @ApiProperty({ description: 'Editor average rating' })
+    averageRating: number;
+
+    @ApiProperty({ description: 'Editor is verified' })
+    isVerified: boolean;
+}
+
+export class PaginatedPublicEditorsDto {
+    @ApiProperty({ description: 'List of public editors' })
+    data: PublicEditorProfileDto[];
+
+    @ApiProperty({ description: 'Total number of public editors' })
+    total: number;
+
+    @ApiProperty({ description: 'Current page number' })
+    page: number;
+
+    @ApiProperty({ description: 'Number of items per page' })
     limit: number;
 }

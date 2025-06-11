@@ -1,4 +1,3 @@
-import { Types } from 'mongoose';
 import {
     UserEditorRatingDto,
     UpdateWorkPublicStatusDto,
@@ -24,15 +23,18 @@ import {
     UserProfileResponseDto,
     GetQuotationsParamsDto,
     PaginatedTransactionsResponseDto,
+    EditorPublicProfileResponseDto,
+    GetPublicEditorsDto,
+    PaginatedPublicEditorsDto,
 } from '../dto/users.dto';
-import { User } from '../models/user.schema';
-import { EditorDetailsResponseDto } from 'src/editors/dto/editors.dto';
 import { BidResponseDto } from '../dto/users.dto';
 import { FileUploadResult } from 'src/common/cloudinary/cloudinary.service'; 
 
 export interface IUsersController {
     getUserProfile(req: Request): Promise<UserProfileResponseDto>;
     requestForEditor(req: Request): Promise<SuccessResponseDto>;
+    getEditorPublicProfile(id: string): Promise<EditorPublicProfileResponseDto>;
+    getPublicEditors(query: GetPublicEditorsDto): Promise<PaginatedPublicEditorsDto>;
     getEditorRequestStatus(req: Request): Promise<EditorRequestStatusResponseDto>;
     getTransactionHistory(
         req: Request,

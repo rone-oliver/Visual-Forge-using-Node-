@@ -1,4 +1,4 @@
-import { Injectable, Logger, HttpException, HttpStatus, NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, Logger, HttpException, HttpStatus, NotFoundException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Model, Types } from 'mongoose';
@@ -39,7 +39,10 @@ import {
     UserRatingForEditorDto,
     PublicWorkItemDto,
     BidResponseDto,
-    PaginatedTransactionsResponseDto
+    PaginatedTransactionsResponseDto,
+    EditorPublicProfileResponseDto,
+    GetPublicEditorsDto,
+    PaginatedPublicEditorsDto
 } from './dto/users.dto';
 import { NotificationType } from 'src/notification/models/notification.schema';
 
@@ -810,5 +813,110 @@ export class UsersService implements IUsersService {
         }
 
         return bid;
+    }
+
+    async getEditorPublicProfile(editorId: string): Promise<EditorPublicProfileResponseDto> {
+        if (!Types.ObjectId.isValid(editorId)) {
+            this.logger.log(`Invalid editor ID format: ${editorId}`);
+            throw new BadRequestException('Invalid editor ID format.');
+        }
+
+        const editor = await this.editorModel.findOne({ userId: new Types.ObjectId(editorId) }).populate('userId').lean();
+
+        if (!editor || !editor.userId) {
+            this.logger.log(`Editor with user ID ${editorId} not found.`);
+            throw new NotFoundException(`Editor with user ID ${editorId} not found.`);
+        }
+
+        const user = editor.userId as unknown as User;
+
+        const averageRating = this.calculateAverageRating(editor.ratings);
+
+        return {
+            _id: user._id,
+            username: user.username,
+            fullname: user.fullname,
+            profileImage: user.profileImage || '',
+            score: editor.score || 0,
+            averageRating,
+            categories: editor.category || [],
+            about: user.about || '',
+            sharedTutorials: editor.sharedTutorials || [],
+            tipsAndTricks: editor.tipsAndTricks || '',
+            socialLinks: editor.socialLinks || {},
+        };
+    }
+
+    async getPublicEditors(params: GetPublicEditorsDto): Promise<PaginatedPublicEditorsDto> {
+        let { search, category, rating, page = 1, limit = 10 } = params;
+        limit = parseInt(limit.toString());
+        page = parseInt(page.toString());
+        rating = rating ? parseInt(rating.toString()) : undefined;
+
+        const skip = (page - 1) * limit;
+    
+        const matchStage: any = { 'user.isVerified': true };
+    
+        if (search) {
+          matchStage['$or'] = [
+            { 'user.fullname': { $regex: search, $options: 'i' } },
+            { 'user.username': { $regex: search, $options: 'i' } },
+          ];
+        }
+    
+        if (category) {
+          matchStage.category = category;
+        }
+    
+        const pipeline: any[] = [
+          { $lookup: { from: 'users', localField: 'userId', foreignField: '_id', as: 'user' } },
+          { $unwind: '$user' },
+          { $match: matchStage },
+          {
+            $addFields: {
+              averageRating: { $ifNull: [{ $avg: '$ratings.rating' }, 0] },
+            },
+          },
+        ];
+    
+        if (rating) {
+          pipeline.push({ $match: { averageRating: { $gte: rating } } });
+        }
+    
+        pipeline.push(
+          {
+            $facet: {
+              data: [
+                { $skip: skip },
+                { $limit: limit },
+                {
+                  $project: {
+                    _id: '$user._id',
+                    fullname: '$user.fullname',
+                    username: '$user.username',
+                    profileImage: '$user.profileImage',
+                    category: '$category',
+                    score: '$score',
+                    averageRating: '$averageRating',
+                    isVerified: '$user.isVerified',
+                  },
+                },
+              ],
+              total: [{ $count: 'count' }],
+            },
+          },
+        );
+    
+        const result = await this.editorModel.aggregate(pipeline).exec();
+
+        const data = result[0]?.data || [];
+        const total = result[0]?.total.length > 0 ? result[0].total[0].count : 0;
+    
+        return {
+          data,
+          total,
+          page,
+          limit,
+        };
     }
 }

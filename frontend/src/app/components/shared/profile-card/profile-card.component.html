@@ -1,48 +1,41 @@
-<div class="user-card">
-    <div class="user-card-header">
-        <span class="since-badge">Since 2025</span>
+<div class="profile-card">
+  <div class="card-header">
+    <div class="verified-badge" *ngIf="user.isVerified">
+      <mat-icon>verified</mat-icon>
+      <span>Verified</span>
     </div>
+  </div>
 
-    <div class="user-card-avatar-container">
-        <div class="user-card-avatar">
-            <ng-container *ngIf="user?.profileImage; else defaultAvatar">
-                <img [src]="user.profileImage" alt="User Avatar">
-            </ng-container>
-            <ng-template #defaultAvatar>
-                <div class="default-avatar">
-                    <mat-icon>person</mat-icon>
-                </div>
-            </ng-template>
+  <div class="card-body">
+    <div class="avatar-section">
+      <ng-container *ngIf="user.profileImage; else defaultAvatar">
+        <img [src]="user.profileImage" alt="Editor profile image" class="avatar">
+      </ng-container>
+      <ng-template #defaultAvatar>
+        <div class="default-avatar">
+          <mat-icon>person</mat-icon>
         </div>
-        <div class="user-phone" *ngIf="user?.mobileNumber">{{user.mobileNumber}}</div>
+      </ng-template>
     </div>
+    <h2 class="fullname">{{ user.fullname }}</h2>
+    <p class="username">&#64;{{ user.username }}</p>
 
-    <div class="user-card-content">
-        <div class="info-field">
-            <div class="info-label">Username</div>
-            <div class="info-value">{{user.username || 'Not set'}}</div>
-        </div>
-
-        <div class="info-field">
-            <div class="info-label">E-Mail</div>
-            <div class="info-value">{{user.email || 'Not set'}}</div>
-        </div>
-
-        <div class="info-field">
-            <div class="info-label">Name</div>
-            <div class="info-value">{{user.fullname || 'Not set'}}</div>
-        </div>
-
-        <div class="info-field-row">
-            <div class="info-field half-width">
-                <div class="info-label">Gender</div>
-                <div class="info-value">{{user.gender || 'Not set'}}</div>
-            </div>
-
-            <div class="info-field half-width">
-                <div class="info-label">Beh. Rating</div>
-                <div class="info-value">{{user.behaviourRating || 'N/A'}}</div>
-            </div>
-        </div>
+    <div class="categories" *ngIf="user.categories?.length">
+      <span *ngFor="let category of user.categories" class="category-chip">{{ category }}</span>
     </div>
+  </div>
+
+  <div class="card-footer">
+    <div class="stat">
+      <span class="stat-value">{{ user.score }}</span>
+      <span class="stat-label">Score</span>
+    </div>
+    <div class="stat">
+      <span class="stat-value rating">
+        <mat-icon>star</mat-icon>
+        {{ user.averageRating | number:'1.1-1' }}
+      </span>
+      <span class="stat-label">Rating</span>
+    </div>
+  </div>
 </div>

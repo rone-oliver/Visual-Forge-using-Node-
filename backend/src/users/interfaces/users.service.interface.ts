@@ -24,7 +24,10 @@ import {
     UserBaseResponseDto,
     CreatePaymentResponseDto,
     UserEditorRatingDto,
-    PaginatedTransactionsResponseDto
+    PaginatedTransactionsResponseDto,
+    EditorPublicProfileResponseDto,
+    GetPublicEditorsDto,
+    PaginatedPublicEditorsDto
 } from '../dto/users.dto';
 import { User } from '../models/user.schema';
 import { PaymentType } from 'src/common/models/transaction.schema';
@@ -44,6 +47,8 @@ export interface IUsersService {
     getUserDetails(userId: Types.ObjectId): Promise<UserProfileResponseDto | null>;
     requestForEditor(userId: Types.ObjectId): Promise<SuccessResponseDto>; // Assuming boolean maps to a success DTO
     getEditorRequestStatus(userId: Types.ObjectId): Promise<EditorRequestStatusResponseDto>;
+    getEditorPublicProfile(editorId: string): Promise<EditorPublicProfileResponseDto>;
+    getPublicEditors(params: GetPublicEditorsDto): Promise<PaginatedPublicEditorsDto>;
     getTransactionHistory(userId: Types.ObjectId, params: { page: number, limit: number }): Promise<PaginatedTransactionsResponseDto>;
 
     getQuotations(userId: Types.ObjectId, params: GetQuotationsParamsDto): Promise<PaginatedQuotationsResponseDto>;

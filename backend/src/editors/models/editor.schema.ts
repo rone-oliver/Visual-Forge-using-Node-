@@ -42,6 +42,12 @@ export class Editor {
     website?:string
   }
 
+  @Prop({ type: [String], default: [] })
+  sharedTutorials?: string[];
+
+  @Prop({ type: String, default: '' })
+  tipsAndTricks?: string;
+
   createdAt: Date;
   updatedAt: Date;
 }

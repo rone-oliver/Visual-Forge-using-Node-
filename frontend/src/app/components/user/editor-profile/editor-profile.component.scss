@@ -1,0 +1,326 @@
+:host {
+  display: block;
+  padding: 2rem;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family: 'Roboto', sans-serif;
+}
+
+.editor-profile-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.profile-header {
+  margin-bottom: 2rem;
+
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    color: var(--color-neutral-500);
+    margin-bottom: 1.5rem;
+
+    span:hover {
+      cursor:pointer;
+      color: var(--color-text);
+    }
+
+    mat-icon {
+      font-size: 1.2rem;
+      height: 1.2rem;
+      width: 1.2rem;
+    }
+  }
+
+  .editor-info-card {
+    background-color: var(--color-surface);
+    border-radius: 16px;
+    padding: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--color-neutral-200);
+
+    .avatar-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+
+      .avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        border: 3px solid var(--color-primary);
+        object-fit: cover;
+      }
+
+      .editor-name {
+        font-weight: 500;
+        font-size: 1.2rem;
+        color: var(--color-text);
+      }
+    }
+
+    .editor-details {
+      flex-grow: 1;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+
+      .detail-item {
+        display: flex;
+        flex-direction: column;
+
+        .label {
+          font-size: 0.8rem;
+          color: var(--color-neutral-500);
+          margin-bottom: 0.25rem;
+        }
+
+        .value {
+          font-size: 1rem;
+          font-weight: 500;
+          background-color: var(--color-background);
+          padding: 0.5rem 1rem;
+          border-radius: 8px;
+        }
+
+        &.score .value {
+          color: var(--color-primary);
+          font-size: 1.5rem;
+          font-weight: bold;
+        }
+      }
+
+      .categories {
+        grid-column: span 2;
+        display: flex;
+        gap: 0.5rem;
+
+        .category-chip {
+          background-color: var(--color-neutral-200);
+          color: var(--color-neutral-700);
+          padding: 0.25rem 0.75rem;
+          border-radius: 16px;
+          font-size: 0.8rem;
+        }
+      }
+
+      .social-links {
+        grid-column: span 2;
+        display: flex;
+        flex-direction: column;
+
+        .label {
+          font-size: 0.8rem;
+          color: var(--color-neutral-500);
+          margin-bottom: 0.5rem;
+        }
+
+        .links-container {
+          display: flex;
+          gap: 1rem;
+          align-items: center;
+        }
+
+        .social-link {
+          color: var(--color-neutral-600);
+          transition: color 0.3s ease;
+
+          &:hover {
+            color: var(--color-primary);
+          }
+
+          mat-icon {
+            font-size: 24px;
+            width: 24px;
+            height: 24px;
+          }
+        }
+      }
+    }
+  }
+}
+
+.profile-tabs {
+  ::ng-deep .mat-mdc-tab-header {
+    border-bottom: 1px solid var(--color-neutral-200);
+  }
+
+  ::ng-deep .mat-mdc-tab-label {
+    min-width: 160px !important;
+    height: 60px !important;
+    color: var(--color-neutral-500);
+    font-weight: 500;
+    opacity: 0.7;
+
+    .tab-icon {
+      margin-right: 8px;
+    }
+
+    &.mat-mdc-tab-active {
+      color: var(--color-primary);
+      opacity: 1;
+    }
+  }
+
+  ::ng-deep .mat-mdc-tab-body-content {
+    padding: 2rem;
+  }
+
+  ::ng-deep .mat-ink-bar {
+    background-color: var(--color-primary);
+    height: 3px;
+  }
+}
+
+.tab-content {
+  min-height: 400px;
+  animation: tab-fade-in 0.5s ease-in-out;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  color: var(--color-neutral-400);
+  text-align: center;
+  margin: 0 auto;
+
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 1rem;
+  }
+
+  span {
+    font-size: 1.1rem;
+  }
+}
+
+.tutorials-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+
+  .tutorial-card {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+
+      .play-icon {
+        opacity: 1;
+        transform: scale(1.1);
+      }
+    }
+
+    .thumbnail {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .play-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-size: 4rem;
+      opacity: 0.8;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+
+      mat-icon {
+        font-size: inherit;
+        width: 1em;
+        height: 1em;
+      }
+    }
+  }
+}
+
+.tips-section, .about-section {
+  line-height: 1.8;
+  font-size: 1.1rem;
+  max-width: 800px;
+  margin: 0 auto;
+
+  .content-wrapper {
+    max-height: 350px;
+    overflow-y: auto;
+    padding-right: 15px;
+
+    &::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: var(--color-background);
+      border-radius: 5px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: var(--color-neutral-300);
+      border-radius: 5px;
+      border: 2px solid var(--color-background);
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+      background-color: var(--color-neutral-400);
+    }
+  }
+}
+
+.about-section .content-wrapper p {
+  font-family: 'Merriweather', serif;
+  color: var(--color-neutral-700);
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  min-height: 400px;
+  gap: 1rem;
+  color: var(--color-text);
+
+  mat-spinner::ng-deep .mat-progress-spinner circle,
+  .mat-spinner circle {
+    stroke: var(--color-primary);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes tab-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

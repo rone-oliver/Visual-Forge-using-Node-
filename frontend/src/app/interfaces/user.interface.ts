@@ -1,5 +1,5 @@
 export interface User {
-    _id:string;
+    _id: string;
     username: string;
     fullname: string;
     profileImage: string;
@@ -62,4 +62,55 @@ export interface EditorRequest {
     createdAt: string;
     status: EditorRequestStatus;
     reason?: string;
+}
+
+export interface EditorPublicProfile {
+    _id: string;
+    username: string;
+    fullname: string;
+    profileImage: string;
+    score: number;
+    averageRating: number;
+    categories: string[];
+    about: string;
+    sharedTutorials: string[];
+    tipsAndTricks: string;
+    socialLinks?: {
+        linkedIn?: string;
+        pinterest?: string;
+        instagram?: string;
+        facebook?: string;
+        website?: string;
+    };
+}
+
+// export interface EditorProfile {
+//     portfolio?: string;
+//     specialties?: string[];
+// }
+
+export interface GetPublicEditorsDto {
+  search?: string;
+  category?: string;
+  rating?: number;
+  page?: number;
+  limit?: number;
+}
+
+export interface PublicEditorProfile {
+  _id: string;
+  fullname: string;
+  username: string;
+  profileImage?: string;
+  categories: string[];
+  score: number;
+  averageRating: number;
+  isVerified: boolean;
+}
+
+export interface PaginatedPublicEditors {
+  data: PublicEditorProfile[];
+  total: number;
+  page: number;
+  limit: number;
 }
