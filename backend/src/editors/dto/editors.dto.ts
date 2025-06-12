@@ -423,7 +423,7 @@ export class CompletedWorkDto {
   @ApiPropertyOptional()
   @IsBoolean()
   @IsOptional()
-  isPublic?: boolean;
+  isPublic: boolean;
 
   @ApiPropertyOptional()
   @IsNumber()

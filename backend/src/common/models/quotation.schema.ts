@@ -66,7 +66,7 @@ export class Quotation {
     estimatedBudget: number;
 
     @Prop({ type: String, enum: OutputType, required: true})
-    outputType: string;
+    outputType: OutputType;
 
     @Prop({ type: Number })
     advanceAmount: number;

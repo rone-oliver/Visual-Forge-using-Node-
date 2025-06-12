@@ -428,14 +428,20 @@ export class EditorsService implements IEditorsService {
     async getCompletedWorks(editorId: Types.ObjectId): Promise<CompletedWorkDto[]> {
         try {
             const completedQuotations = await this.quotationModel
-                .find({ editorId, status: QuotationStatus.COMPLETED })
+                .find({
+                    $or: [
+                        { editorId },
+                        { editorId: new Types.ObjectId(editorId) }
+                    ],
+                    status: QuotationStatus.COMPLETED 
+                })
                 .populate('worksId')
                 .sort({ createdAt: -1 })
                 .lean();
 
             return completedQuotations.map(quotation => {
-                const worksData = quotation.worksId as any; // WorksDocument | undefined
-                const qData = quotation as any; // QuotationDocument
+                const worksData = quotation.worksId as unknown as WorksDocument;
+                const qData = quotation as unknown as QuotationDocument;
 
                 const completedWork: CompletedWorkDto = {
                     quotationId: qData._id,
@@ -456,7 +462,6 @@ export class EditorsService implements IEditorsService {
                         mimeType: f.mimeType,
                         uploadedAt: f.uploadedAt,
                     })),
-                    imageUrl: qData.imageUrl, // Assuming imageUrl might be on quotation
                     userId: qData.userId, // Client's ID
                     editorId: qData.editorId, // Editor's ID
                     finalFiles: worksData?.finalFiles?.map(f => ({
