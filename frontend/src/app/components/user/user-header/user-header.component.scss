@@ -18,9 +18,17 @@ body {
 }
 
 .logo {
+    display: flex;
+    align-items: center;
     font-size: 24px;
     font-weight: bold;
     color: var(--color-text);
+}
+
+.brand-icon {
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
 }
 
 .nav-links {

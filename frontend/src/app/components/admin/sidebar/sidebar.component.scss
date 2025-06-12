@@ -21,11 +21,20 @@
   border-bottom: 1px solid var(--admin-color-border);
   display: flex;
   justify-content: space-between;
+  align-items: center;
   
   .logo {
+    display: flex;
+    align-items: center;
     font-size: 22px;
     font-weight: bold;
     color: var(--admin-color-text);
+  }
+  
+  .brand-icon {
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
   }
 }
 

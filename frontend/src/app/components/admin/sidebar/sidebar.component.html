@@ -1,7 +1,10 @@
 <div class="sidebar bg-navy dark:bg-navy text-white">
     <!-- Logo -->
     <div class="sidebar-header">
-        <div class="logo">Visual Forge</div>
+        <div class="logo">
+            <img src="Brand_icon.png" alt="Brand Icon" class="brand-icon">
+            <span>Visual Forge</span>
+        </div>
         <button (click)="themeService.toggleAdminTheme()"
             class="icon-button p-2 rounded-lg bg-gray-500 dark:bg-gray-700 text-text-light dark:text-text-dark">
             <span *ngIf="themeService.isAdminDarkTheme$ | async; else lightIcon">🌞</span>
