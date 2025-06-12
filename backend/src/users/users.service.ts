@@ -731,7 +731,6 @@ export class UsersService implements IUsersService {
                 };
             });
             this.logger.log(`Found ${works.length} works out of ${total} total`);
-            this.logger.log(`public works: `, publicWorksDto);
             return { works:publicWorksDto, total };
         } catch (error) {
             this.logger.error(`Error getting public works: ${error.message}`);

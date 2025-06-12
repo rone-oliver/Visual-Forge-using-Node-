@@ -16,7 +16,7 @@
                     <span class="filter-label">Filter by rating:</span>
                     <div class="rating-stars">
                         @for (i of [1, 2, 3, 4, 5]; track i) {
-                            <button mat-icon-button [class.active]="filterRating === i"
+                            <button mat-icon-button [class.active]="filterRating !== null && filterRating >= i"
                                 (click)="setRatingFilter(filterRating === i ? null : i)">
                                 <mat-icon>star</mat-icon>
                             </button>
