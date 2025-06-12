@@ -189,15 +189,24 @@ export class EditorsService implements IEditorsService {
         const skip = (page - 1) * limit;
 
         const matchStage: any = {
-            editorId,
             status: QuotationStatus.ACCEPTED,
-        }
+            $or: [
+                { editorId },
+                { editorId: new Types.ObjectId(editorId) }
+            ],
+        };
 
         if (searchTerm) {
-            matchStage.$or = [
-                { title: { $regex: searchTerm, $options: 'i' } },
-                { description: { $regex: searchTerm, $options: 'i' } },
-            ]
+            matchStage.$and = [
+                { $or: matchStage.$or },
+                {
+                    $or: [
+                        { title: { $regex: searchTerm, $options: 'i' } },
+                        { description: { $regex: searchTerm, $options: 'i' } },
+                    ]
+                }
+            ];
+            delete matchStage.$or;
         }
 
         const countPipeline = [
