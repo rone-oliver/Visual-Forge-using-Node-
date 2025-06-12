@@ -56,7 +56,6 @@
     align-items: center;
     border: 5px solid var(--color-background);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
     position: relative;
     margin-top: -60px;
 
@@ -88,6 +87,7 @@
     cursor: pointer;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     transition: all 0.2s ease;
+    transform: translate(10%, -10%);
 }
 
 .edit-overlay:hover {
