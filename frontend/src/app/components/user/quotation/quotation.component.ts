@@ -345,8 +345,12 @@ export class QuotationComponent implements OnInit, OnDestroy {
 
   async initiateAdvancePayment(quotation: IQuotation) {
     try {
+      if (!quotation.advanceAmount) {
+        console.error('Advance amount not specified');
+        return;
+      }
       const order = await firstValueFrom(
-        this.paymentService.createOrder(quotation.estimatedBudget, 'INR')
+        this.paymentService.createOrder(quotation.advanceAmount, 'INR')
       );
 
       const paymentResult = await this.paymentService.openRazorpayCheckout(order);
@@ -367,7 +371,7 @@ export class QuotationComponent implements OnInit, OnDestroy {
 
     } catch (error) {
       console.error('Payment or update failed:', error);
-      this.snackBar.open('Payment process failed', 'Dismiss', {
+      this.snackBar.open('Payment process failed. Please reload the page and Try Again', 'Dismiss', {
         duration: 3000,
         panelClass: 'error-snack'
       });
