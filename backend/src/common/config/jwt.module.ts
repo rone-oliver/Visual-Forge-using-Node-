@@ -43,6 +43,7 @@ export class JwtConfigModule implements NestModule {
         { path: 'auth/user/reset-password', method: RequestMethod.POST },
         { path: 'auth/user/resend-otp', method: RequestMethod.POST },
         { path: 'auth/admin/login', method: RequestMethod.POST },
+        { path: 'auth/logout', method: RequestMethod.DELETE },
         { path: 'auth/refresh', method: RequestMethod.GET },
         { path: 'auth/google', method: RequestMethod.POST },
       )

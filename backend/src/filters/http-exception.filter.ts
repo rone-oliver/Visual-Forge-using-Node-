@@ -14,28 +14,25 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     this.logger.error(`HTTP Exception: ${status} - ${message}`);
 
-    if (typeof exceptionResponse === 'object') {
+    if (typeof exceptionResponse === 'object' && exceptionResponse !== null) {
+      // If the exception response is already a structured object, pass it along.
+      // We can add a timestamp for consistency, unless it's a 'success' response
+      // that might have its own format.
       if ('success' in exceptionResponse) {
         response.status(status).json(exceptionResponse);
-        return;
-      }
-
-      // Handle blocked user case specifically
-      if (status === HttpStatus.FORBIDDEN && 'isBlocked' in exceptionResponse) {
+      } else {
         response.status(status).json({
-          ...exceptionResponse,
+          ...(exceptionResponse as object),
           timestamp: new Date().toISOString(),
         });
-        return;
       }
     } else {
-      response
-        .status(status)
-        .json({
-          statusCode: status,
-          timestamp: new Date().toISOString(),
+      // If the exception response is a simple string, create a standard error object.
+      response.status(status).json({
+        statusCode: status,
+        timestamp: new Date().toISOString(),
           message: message,
-        });
+      });
     }
   }
 }
