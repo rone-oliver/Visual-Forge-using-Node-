@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
 import { AuthService } from '../auth.service';
 import { jwtDecode } from 'jwt-decode';
-import { catchError, Observable, of } from 'rxjs';
+import { BehaviorSubject, catchError, Observable, of, Subject } from 'rxjs';
 import { JwtPayload } from '../auth.service';
 import { environment } from '../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
@@ -28,12 +28,21 @@ export interface ChatItem {
   unreadCount?: number;
 }
 
+interface ConversationSubjects {
+  outgoing$: BehaviorSubject<Message[]>;
+  incoming$: BehaviorSubject<Message[]>;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class ChatService {
   private userId: string | null;
   private socket: Socket | null = null;
+  private newMessage = new Subject<Message>();
+  private messageStatusUpdated = new Subject<{ messageId: string, status: string }>();
+  private chatListUpdated = new Subject<void>();
+  private conversationSubjects = new Map<string, ConversationSubjects>();
 
   constructor(
     private authService: AuthService,
@@ -45,14 +54,18 @@ export class ChatService {
       return;
     }
     this.initializeSocket();
+    this.setupNewMessageListener();
   }
 
   private initializeSocket() {
-    if (!this.userId) return;
+    const token = this.authService.getAccessToken('User');
+    if (!this.userId || !token) return;
 
     this.socket = io(`${environment.apiUrl}/chat`, {
       transports: ['websocket'],
-      query: { userId: this.userId },
+      auth: {
+        token: `Bearer ${token}`
+      },
       autoConnect: true,
       reconnection: true
     });
@@ -107,14 +120,25 @@ export class ChatService {
   }
 
   sendMessage(recipientId: string, content: string): void {
-    this.socket?.emit('sendMessage', { recipientId, content });
+    const messageData = { recipientId, content };
+    this.socket?.emit('sendMessage', messageData);
+
+    const subjects = this.conversationSubjects.get(recipientId);
+    if (subjects) {
+      const optimisticMessage: Message = {
+        sender: this.userId!,
+        recipient: recipientId,
+        content: content,
+        status: 'sent',
+        createdAt: new Date(),
+      };
+      const currentHistory = subjects.outgoing$.getValue();
+      subjects.outgoing$.next([...currentHistory, optimisticMessage].slice(-5));
+    }
   }
 
   onNewMessage(): Observable<Message> {
-    return new Observable(observer => {
-      this.socket?.on('newMessage', (message: Message) => observer.next(message));
-      return () => this.socket?.off('newMessage');
-    });
+    return this.newMessage.asObservable();
   }
 
   onConnected(): Observable<any> {
@@ -135,11 +159,8 @@ export class ChatService {
     this.socket?.emit('updateMessageStatus', { messageId, status });
   }
 
-  onMessageStatusUpdate(): Observable<{ messageId: string, status: 'delivered' | 'read' }> {
-    return new Observable(observer => {
-      this.socket?.on('messageStatusUpdate', (update) => observer.next(update));
-      return () => this.socket?.off('messageStatusUpdate');
-    });
+  onMessageStatusUpdate(): Observable<{ messageId: string, status: string }> {
+    return this.messageStatusUpdated.asObservable();
   }
 
   getUserInfo(userId: string) {
@@ -159,6 +180,62 @@ export class ChatService {
     );
   }
 
+  getMessageHistorySubjects(recipientId: string): { outgoing$: Observable<Message[]>, incoming$: Observable<Message[]> } {
+    if (!this.conversationSubjects.has(recipientId)) {
+      this.conversationSubjects.set(recipientId, {
+        outgoing$: new BehaviorSubject<Message[]>([]),
+        incoming$: new BehaviorSubject<Message[]>([]),
+      });
+    }
+    const subjects = this.conversationSubjects.get(recipientId)!;
+    return {
+      outgoing$: subjects.outgoing$.asObservable(),
+      incoming$: subjects.incoming$.asObservable(),
+    };
+  }
+
+  populateHistoryBuffers(messages: Message[], recipientId: string): void {
+    const conversation = this.conversationSubjects.get(recipientId);
+    if (!conversation) return;
+
+    const outgoingMessages = messages.filter(m => m.sender === this.userId).slice(-5);
+    const incomingMessages = messages.filter(m => m.sender !== this.userId).slice(-5);
+
+    conversation.outgoing$.next(outgoingMessages);
+    conversation.incoming$.next(incomingMessages);
+  }
+
+  getSmartReplies(messages: Message[]): void {
+    console.log('messages for suggestions:', messages);
+    this.socket?.emit('getSmartReplies', { messages });
+  }
+
+  onSmartRepliesResult(): Observable<{ suggestions?: string[]; error?: string }> {
+    return new Observable(observer => {
+      this.socket?.on('smartRepliesResult', (result) => observer.next(result));
+      return () => this.socket?.off('smartRepliesResult');
+    });
+  }
+
+  private setupNewMessageListener(): void {
+    this.socket?.on('newMessage', (message: Message) => {
+      this.newMessage.next(message);
+
+      const recipientId = message.sender === this.userId ? message.recipient : message.sender;
+      const conversation = this.conversationSubjects.get(recipientId);
+
+      if (conversation) {
+        if (message.sender === this.userId) {
+          const currentHistory = conversation.outgoing$.getValue();
+          conversation.outgoing$.next([...currentHistory, message].slice(-5));
+        } else {
+          const currentHistory = conversation.incoming$.getValue();
+          conversation.incoming$.next([...currentHistory, message].slice(-5));
+        }
+      }
+    });
+  }
+
   disconnect(): void {
     this.socket?.disconnect();
   }
@@ -168,4 +245,4 @@ export class ChatService {
       this.initializeSocket();
     }
   }
-} 
+}

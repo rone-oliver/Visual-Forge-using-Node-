@@ -11,19 +11,27 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Message, MessagesDocument, MessageStatus } from './models/chat-message.schema';
 import { User, UserDocument } from 'src/users/models/user.schema';
+import { AiService } from 'src/ai/ai.service';
+import { UseGuards } from '@nestjs/common';
+import { WsAuthGuard } from 'src/auth/guards/ws-auth.guard';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { WsRolesGuard } from 'src/auth/guards/ws-roles.guard';
 
 @WebSocketGateway({ 
     cors: { origin:'http://localhost:' + process.env.FRONTEND_PORT, credentials: true },
     namespace: '/chat'
-}) // Enable CORS for development
+})
+@UseGuards(WsAuthGuard, WsRolesGuard) 
+@Roles('User', 'Editor') 
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @WebSocketServer() server: Server;
-    private logger: Logger = new Logger(ChatGateway.name);
+    private readonly logger = new Logger(ChatGateway.name);
     private userSocketMap: Map<string, string> = new Map();
 
     constructor(
         @InjectModel(Message.name) private messageModel: Model<MessagesDocument>,
-        @InjectModel(User.name) private userModel: Model<UserDocument>, // Assuming you have a User model
+        @InjectModel(User.name) private userModel: Model<UserDocument>, 
+        private readonly aiService: AiService
     ) { }
 
     async handleConnection(client: Socket, ...args: any[]) {
@@ -149,15 +157,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         }
     }
 
-    private getClientSocketId(userId: string): string | undefined {
-        // In a real application, you would maintain a mapping of userId to socketId
-        // This could be in memory (for simple cases) or in a more persistent store like Redis
-        // For this basic example, we'll iterate through connected clients (not efficient for large scale)
-        for (const clientId of Object.keys(this.server.sockets.sockets)) {
-            if (this.server.sockets.sockets[clientId]['userId'] === userId) {
-                return clientId;
-            }
+    @SubscribeMessage('getSmartReplies')
+    async handleGetSmartReplies(client: Socket, payload: { messages: Message[] }) {
+        this.logger.log(`Smart reply request received from ${client['userId']}`);
+        try {
+            const suggestions = await this.aiService.generateSmartReplies(payload.messages, client['userId']);
+            client.emit('smartRepliesResult', { suggestions });
+        } catch (error) {
+            this.logger.error('Error getting smart replies:', error.message);
+            client.emit('smartRepliesResult', { error: 'Failed to generate smart replies.' });
         }
-        return undefined;
     }
 }

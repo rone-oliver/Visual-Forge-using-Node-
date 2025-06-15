@@ -7,7 +7,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Router } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+import { combineLatest, Subject, takeUntil, withLatestFrom } from 'rxjs';
 import { TemplatePortal } from '@angular/cdk/portal';
 import { ChatItem, ChatService, Message } from '../../../services/chat/chat.service';
 import { AuthService } from '../../../services/auth.service';
@@ -37,6 +37,8 @@ export class ChatComponent implements OnInit, AfterViewChecked, OnDestroy {
   recipient: Recipient | null = null;
   messages: Message[] = [];
   newMessage = '';
+  isUserListVisible = true;
+  isChatAreaVisible = false;
   isTyping = false;
   isMobile = false;
   currentUserId: string | null = null;
@@ -48,8 +50,10 @@ export class ChatComponent implements OnInit, AfterViewChecked, OnDestroy {
   filteredChats: ChatItem[] = [];
   searchQuery = '';
   selectedChatId: string | null = null;
+  smartReplySuggestions: string[] = [];
 
   private destroy$ = new Subject<void>();
+  private smartReplySubscriptionDestroy$ = new Subject<void>();
   private attachmentOverlayRef: OverlayRef | null = null;
   private emojiPickerOverlayRef: OverlayRef | null = null;
 
@@ -67,7 +71,9 @@ export class ChatComponent implements OnInit, AfterViewChecked, OnDestroy {
   ngOnInit(): void {
     this.currentUserId = this.chatService.getLoggedInUserId();
     this.loadChatList();
-    this.chatService.onNewMessage().subscribe(message => {
+    this.chatService.onNewMessage()
+    .pipe(takeUntil(this.destroy$))
+    .subscribe(message => {
       if (message.sender === this.selectedChatId || message.recipient === this.selectedChatId) {
         this.messages.push({
           ...message,
@@ -78,17 +84,30 @@ export class ChatComponent implements OnInit, AfterViewChecked, OnDestroy {
       this.updateChatListWithNewMessage(message);
     })
 
-    this.chatService.onMessageStatusUpdate().subscribe(update => {
-      this.updateMessageStatus(update.messageId, update.status);
+    this.chatService.onMessageStatusUpdate()
+    .pipe(takeUntil(this.destroy$))
+    .subscribe(update => {
+      this.updateMessageStatus(update.messageId, update.status as 'delivered' | 'read');
     });
 
     // Monitor screen size changes
-    this.breakpointObserver
-      .observe([Breakpoints.XSmall, Breakpoints.Small])
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(result => {
-        this.isMobile = result.matches;
-      });
+    this.breakpointObserver.observe([Breakpoints.XSmall, Breakpoints.Small])
+    .pipe(takeUntil(this.destroy$))
+    .subscribe(result => {
+      this.isMobile = result.matches;
+    });
+    
+    this.chatService.onSmartRepliesResult()
+    .pipe(takeUntil(this.destroy$))
+    .subscribe(result => {
+        if (result.suggestions) {
+          console.log('smart reply suggestions', result.suggestions);
+          this.smartReplySuggestions = result.suggestions;
+        } else if (result.error) {
+          console.error('Smart reply error:', result.error);
+          this.smartReplySuggestions = [];
+        }
+    });
   }
 
   updateChatListWithNewMessage(message: Message): void {
@@ -140,6 +159,8 @@ export class ChatComponent implements OnInit, AfterViewChecked, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    this.smartReplySubscriptionDestroy$.next();
+    this.smartReplySubscriptionDestroy$.complete();
     this.closeAllOverlays();
   }
 
@@ -187,6 +208,44 @@ export class ChatComponent implements OnInit, AfterViewChecked, OnDestroy {
 
   selectChat(chat: ChatItem): void {
     this.selectedChatId = chat._id;
+    this.messages = [];
+    this.smartReplySuggestions = []; // Clear previous suggestions
+
+    // Unsubscribe from the previous chat's smart reply listener to prevent memory leaks
+    this.smartReplySubscriptionDestroy$.next();
+
+    this.loadMessages(chat._id);
+
+    // Adjust layout for mobile
+    this.isUserListVisible = false;
+    this.isChatAreaVisible = true;
+
+    const { outgoing$, incoming$ } = this.chatService.getMessageHistorySubjects(chat._id);
+
+    // We only trigger smart replies when a new message is *received*.
+    // We subscribe to the incoming$ stream and use withLatestFrom to get the latest outgoing messages without being triggered by them.
+    incoming$.pipe(
+        withLatestFrom(outgoing$),
+        takeUntil(this.smartReplySubscriptionDestroy$),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(([incomingMessages, outgoingMessages]) => {
+        // Only proceed if there are actually incoming messages to prevent firing on initial load with empty history.
+        if (incomingMessages.length === 0) {
+            return;
+        }
+
+        const conversationHistory = [...outgoingMessages, ...incomingMessages]
+          .sort((a, b) => {
+            const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return timeA - timeB;
+          });
+
+        if (conversationHistory.length > 0) {
+          this.chatService.getSmartReplies(conversationHistory);
+        }
+      });
 
     // Reset unread count when selecting a chat
     const chatIndex = this.chatList.findIndex(c => c._id === chat._id);
@@ -205,14 +264,6 @@ export class ChatComponent implements OnInit, AfterViewChecked, OnDestroy {
     // this.loadRecipientData(chat);
 
     // Load messages for this chat
-    this.loadMessages(chat._id);
-
-    // Simulate typing indicator after a delay
-    // if (chat.id === '123') {
-    //   setTimeout(() => {
-    //     this.simulateTypingIndicator();
-    //   }, 2000);
-    // }
   }
 
   getLastMessageTime(chat: ChatItem): string {
@@ -268,6 +319,7 @@ export class ChatComponent implements OnInit, AfterViewChecked, OnDestroy {
           ...message,
           isOutgoing: message.sender === this.currentUserId
         }));
+        this.chatService.populateHistoryBuffers(messages, chatId);
       });
   }
 
@@ -277,6 +329,7 @@ export class ChatComponent implements OnInit, AfterViewChecked, OnDestroy {
     if (!messageContent || !this.selectedChatId || !this.currentUserId || !this.recipient) return;
 
     this.chatService.sendMessage(this.recipient.id, messageContent);
+    this.smartReplySuggestions = [];
     
     // Update the last message in chat list
     const chatIndex = this.chatList.findIndex(c => c._id === this.selectedChatId);
@@ -299,13 +352,10 @@ export class ChatComponent implements OnInit, AfterViewChecked, OnDestroy {
     });
   }
 
-  // simulateTypingIndicator(): void {
-  //   this.isTyping = true;
-
-  //   setTimeout(() => {
-  //     this.isTyping = false;
-  //   }, 3000);
-  // }
+  sendSmartReply(reply: string): void {
+    this.sendMessage(reply);
+    this.smartReplySuggestions = [];
+  }
 
   updateMessageStatus(messageId: string, status: 'delivered' | 'read'): void {
     const messageIndex = this.messages.findIndex(m => m._id === messageId);

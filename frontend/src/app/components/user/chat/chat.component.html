@@ -142,6 +142,13 @@
         </div>
       </div>
 
+      <!-- Smart Reply Suggestions -->
+      <div class="smart-reply-container" *ngIf="smartReplySuggestions.length > 0">
+        <button *ngFor="let suggestion of smartReplySuggestions" (click)="sendSmartReply(suggestion)" class="smart-reply-btn">
+          {{ suggestion }}
+        </button>
+      </div>
+
       <!-- Chat Input Area -->
       <div class="input-container">
         <button mat-icon-button class="attachment-button" (click)="openAttachmentMenu($event)">
