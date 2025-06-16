@@ -30,20 +30,20 @@ import { MediaProtectionDirective } from '../../../directives/media-protection.d
 export class LandingPageComponent implements OnInit, OnDestroy {
   isDarkMode = false;
   trendingWorks = [
-    { id: 1, image: 'assets/trending1.jpg', editor: 'Chris Hartt', status: 'Verified' },
-    { id: 2, image: 'assets/trending2.jpg', editor: 'Alex Morgan', status: 'Verified' },
-    { id: 3, image: 'assets/trending3.jpg', editor: 'Jamie Wilson', status: 'Verified' },
-    { id: 4, image: 'assets/trending4.jpg', editor: 'Taylor Reed', status: 'Verified' },
-    { id: 5, image: 'assets/trending5.jpg', editor: 'Jordan Lee', status: 'Verified' },
-    { id: 6, image: 'assets/trending6.jpg', editor: 'Casey Kim', status: 'Verified' },
-    { id: 7, image: 'assets/trending7.jpg', editor: 'Riley Smith', status: 'Verified' },
-    { id: 8, image: 'assets/trending8.jpg', editor: 'Quinn Johnson', status: 'Verified' }
+    { id: 1, image: 'https://placehold.co/600x400', editor: 'Chris Hartt', status: 'Verified' },
+    { id: 2, image: 'https://placehold.co/600x400', editor: 'Alex Morgan', status: 'Verified' },
+    { id: 3, image: 'https://placehold.co/600x400', editor: 'Jamie Wilson', status: 'Verified' },
+    { id: 4, image: 'https://placehold.co/600x400', editor: 'Taylor Reed', status: 'Verified' },
+    { id: 5, image: 'https://placehold.co/600x400', editor: 'Jordan Lee', status: 'Verified' },
+    { id: 6, image: 'https://placehold.co/600x400', editor: 'Casey Kim', status: 'Verified' },
+    { id: 7, image: 'https://placehold.co/600x400', editor: 'Riley Smith', status: 'Verified' },
+    { id: 8, image: 'https://placehold.co/600x400', editor: 'Quinn Johnson', status: 'Verified' }
   ];
   
   topEditors = [
-    { id: 1, name: 'Mark Thompson', avatar: 'assets/avatar1.jpg', rating: 4.9 },
-    { id: 2, name: 'Sarah Miller', avatar: 'assets/avatar2.jpg', rating: 4.8 },
-    { id: 3, name: 'James Wilson', avatar: 'assets/avatar3.jpg', rating: 4.8 }
+    { id: 1, name: 'Mark Thompson', avatar: 'https://placehold.co/400/orange/white', rating: 4.9 },
+    { id: 2, name: 'Sarah Miller', avatar: 'https://placehold.co/400/orange/white', rating: 4.8 },
+    { id: 3, name: 'James Wilson', avatar: 'https://placehold.co/400/orange/white', rating: 4.8 }
   ];
   
   countdown = {

@@ -13,13 +13,13 @@
     </nav>
 
     <div class="header-actions">
-        <div class="icon-button text-text-light dark:text-text-dark" (click)="openNotificationsOverlay($event)">
-            <mat-icon>notifications</mat-icon>
-            <span *ngIf="unreadNotificationsCount > 0" class="notification-badge">
-                {{ unreadNotificationsCount > 99 ? '99+' : unreadNotificationsCount }}
-            </span>
-        </div>
         <ng-container *ngIf="isAuthenticated">
+            <div class="icon-button text-text-light dark:text-text-dark" (click)="openNotificationsOverlay($event)">
+                <mat-icon>notifications</mat-icon>
+                <span *ngIf="unreadNotificationsCount > 0" class="notification-badge">
+                    {{ unreadNotificationsCount > 99 ? '99+' : unreadNotificationsCount }}
+                </span>
+            </div>
             <div [routerLink]="['/user/messaging']" class="icon-button">
                 <mat-icon>chat</mat-icon>
             </div>
