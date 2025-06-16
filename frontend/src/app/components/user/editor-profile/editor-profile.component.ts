@@ -8,11 +8,12 @@ import { UserService } from '../../../services/user/user.service';
 import { EditorPublicProfile } from '../../../interfaces/user.interface';
 import { Observable } from 'rxjs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MediaProtectionDirective } from '../../../directives/media-protection.directive';
 
 @Component({
   selector: 'app-editor-profile',
   standalone: true,
-  imports: [CommonModule, MatTabsModule, MatIconModule, RouterLink, MatProgressSpinnerModule],
+  imports: [CommonModule, MatTabsModule, MatIconModule, RouterLink, MatProgressSpinnerModule, MediaProtectionDirective],
   templateUrl: './editor-profile.component.html',
   styleUrls: ['./editor-profile.component.scss']
 })

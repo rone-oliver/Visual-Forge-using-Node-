@@ -35,7 +35,7 @@
   <div *ngIf="!isLoading && filteredUsers.length > 0" class="user-list">
     <div *ngFor="let user of filteredUsers" class="user-item" (click)="selectUser(user)">
       <div class="user-avatar">
-        <img *ngIf="user.profileImage" [src]="user.profileImage" alt="{{ user.username }}'s avatar">
+        <img *ngIf="user.profileImage" [src]="user.profileImage" alt="{{ user.username }}'s avatar" appMediaProtection>
         <div *ngIf="!user.profileImage" class="avatar-placeholder">
           {{ getInitials(user.username) }}
         </div>

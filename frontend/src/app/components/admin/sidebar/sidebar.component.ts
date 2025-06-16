@@ -6,10 +6,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../../services/auth.service';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { MediaProtectionDirective } from '../../../directives/media-protection.directive';
 
 @Component({
   selector: 'app-sidebar',
-  imports:[MatIconModule,RouterModule,CommonModule],
+  imports:[MatIconModule,RouterModule,CommonModule, MediaProtectionDirective],
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.scss']
 })

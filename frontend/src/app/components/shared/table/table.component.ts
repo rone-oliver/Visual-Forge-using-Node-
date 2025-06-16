@@ -3,6 +3,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '../../../pipes/date.pipe';
 import { LucideAngularModule, CheckCircle, XCircle, Edit, Trash, Ban, Check} from 'lucide-angular';
+import { MediaProtectionDirective } from '../../../directives/media-protection.directive';
 
 export interface TableColumn {
   key: string;          // Property name in data object
@@ -16,7 +17,7 @@ export interface TableColumn {
 
 @Component({
   selector: 'app-table',
-  imports: [CommonModule, FormsModule,DatePipe, LucideAngularModule],
+  imports: [CommonModule, FormsModule,DatePipe, LucideAngularModule, MediaProtectionDirective],
   templateUrl: './table.component.html',
   styleUrl: './table.component.scss'
 })

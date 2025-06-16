@@ -9,7 +9,7 @@
   <div class="card-body">
     <div class="avatar-section">
       <ng-container *ngIf="user.profileImage; else defaultAvatar">
-        <img [src]="user.profileImage" alt="Editor profile image" class="avatar">
+        <img [src]="user.profileImage" alt="Editor profile image" class="avatar" appMediaProtection>
       </ng-container>
       <ng-template #defaultAvatar>
         <div class="default-avatar">

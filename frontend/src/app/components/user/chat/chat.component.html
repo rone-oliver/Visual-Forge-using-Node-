@@ -19,7 +19,7 @@
            [ngClass]="{'active': chat._id === selectedChatId}"
            (click)="selectChat(chat)">
         <div class="chat-avatar">
-          <img *ngIf="chat.avatarUrl" [src]="chat.avatarUrl" alt="Avatar">
+          <img *ngIf="chat.avatarUrl" [src]="chat.avatarUrl" alt="Avatar" appMediaProtection>
           <div *ngIf="!chat.avatarUrl" class="avatar-placeholder">
             {{ getInitials(chat.username) }}
           </div>
@@ -66,7 +66,7 @@
               <mat-icon>arrow_back</mat-icon>
             </button>
             <div class="avatar" *ngIf="recipient">
-              <img *ngIf="recipient.avatarUrl" [src]="recipient.avatarUrl" alt="Avatar">
+              <img *ngIf="recipient.avatarUrl" [src]="recipient.avatarUrl" alt="Avatar" appMediaProtection>
               <div *ngIf="!recipient.avatarUrl" class="avatar-placeholder">
                 {{ getInitials(recipient.username) }}
               </div>

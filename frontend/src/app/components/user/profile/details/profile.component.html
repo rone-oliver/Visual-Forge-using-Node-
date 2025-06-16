@@ -6,7 +6,7 @@
             <div class="avatar-container">
                 <div class="avatar">
                     <ng-container *ngIf="user.profileImage; else defaultAvatar">
-                        <img [src]="user.profileImage" [alt]="user.fullname || 'User Avatar'">
+                        <img [src]="user.profileImage" [alt]="user.fullname || 'User Avatar'" appMediaProtection>
                     </ng-container>
                     <ng-template #defaultAvatar>
                         <mat-icon>person</mat-icon>
@@ -28,7 +28,7 @@
                 <div class="dialog-content">
                     <h3>Update Profile Picture</h3>
                     <div class="image-preview">
-                        <img [src]="previewUrl" alt="Preview">
+                        <img [src]="previewUrl" alt="Preview" appMediaProtection>
                     </div>
                     <div class="dialog-actions">
                         <button class="cancel-btn" (click)="cancelUpload()">Cancel</button>

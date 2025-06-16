@@ -10,11 +10,12 @@ import { CloudinaryService } from '../../../../services/cloudinary.service';
 import { MatDialog } from '@angular/material/dialog';
 import { ProfileEditModalComponent } from '../../profile-edit-modal/profile-edit-modal.component';
 import { ResetPasswordComponent } from '../../../mat-dialogs/reset-password/reset-password.component';
+import { MediaProtectionDirective } from '../../../../directives/media-protection.directive';
 
 
 @Component({
   selector: 'app-profile',
-  imports: [MatIconModule,CommonModule,DatePipe],
+  imports: [MatIconModule,CommonModule,DatePipe, MediaProtectionDirective],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.scss'
 })

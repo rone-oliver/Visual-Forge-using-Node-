@@ -10,6 +10,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { UserService } from '../../../services/user/user.service';
 import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
+import { MediaProtectionDirective } from '../../../directives/media-protection.directive';
 
 export interface User {
   _id: string;
@@ -36,7 +37,8 @@ export interface UserSearchDialogData {
     MatInputModule,
     MatFormFieldModule,
     MatProgressSpinnerModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MediaProtectionDirective,
   ],
   templateUrl: './user-search.component.html',
   styleUrls: ['./user-search.component.scss']

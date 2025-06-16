@@ -10,10 +10,11 @@ import { EditorService } from '../../../services/editor/editor.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { IBid, BidStatus, IEditorBidDetails } from '../../../interfaces/bid.interface';
 import { ConfirmationDialogComponent, DialogType } from '../../mat-dialogs/confirmation-dialog/confirmation-dialog.component';
+import { MediaProtectionDirective } from '../../../directives/media-protection.directive';
 
 @Component({
   selector: 'app-quotation-card',
-  imports: [CommonModule, FormsModule, LocalDatePipe, MatIconModule, MatDialogModule],
+  imports: [CommonModule, FormsModule, LocalDatePipe, MatIconModule, MatDialogModule, MediaProtectionDirective],
   templateUrl: './quotation-card.component.html',
   styleUrl: './quotation-card.component.scss'
 })

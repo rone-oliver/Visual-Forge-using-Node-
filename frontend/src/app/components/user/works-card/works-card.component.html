@@ -7,14 +7,14 @@
             <div *ngIf="work.finalFiles.length > 0" class="file-preview">
                 <ng-container [ngSwitch]="getFileType(work.finalFiles[activeFileIndex].mimeType)">
                     <img *ngSwitchCase="'image'" [src]="work.finalFiles[activeFileIndex].url" alt="Work preview"
-                        class="preview-content">
-                    <video *ngSwitchCase="'video'" controls class="preview-content">
+                        class="preview-content" appMediaProtection>
+                    <video *ngSwitchCase="'video'" controls class="preview-content" appMediaProtection>
                         <source [src]="work.finalFiles[activeFileIndex].url" [type]="work.finalFiles[activeFileIndex].mimeType">
                         Your browser does not support the video tag.
                     </video>
                     <div *ngSwitchCase="'audio'" class="audio-container">
                         <app-audio-visualizer *ngIf="audioElementReady" [audioElement]="audioPlayerRef.nativeElement"></app-audio-visualizer>
-                        <audio #audioPlayer controls crossorigin="anonymous" class="preview-content audio-player">
+                        <audio #audioPlayer controls crossorigin="anonymous" class="preview-content audio-player" appMediaProtection>
                             <source [src]="work.finalFiles[activeFileIndex].url" [type]="work.finalFiles[activeFileIndex].mimeType">
                             Your browser does not support the audio element.
                         </audio>
@@ -47,7 +47,7 @@
             <div class="creators">
                 <div class="creator editor" (click)="navigateToEditorProfile()">
                     <div class="avatar">
-                        <img [src]="editor.profileImage || '../../../../assets/images/man.png'" alt="Editor avatar">
+                        <img [src]="editor.profileImage || '../../../../assets/images/man.png'" alt="Editor avatar" appMediaProtection>
                     </div>
                     <div class="details">
                         <span class="label">Editor</span>
@@ -57,7 +57,7 @@
 
                 <div *ngIf="user" class="creator user" (click)="navigateToUserProfile()">
                     <div class="avatar">
-                        <img [src]="user.profileImage || '../../../../assets/images/man.png'" alt="User avatar">
+                        <img [src]="user.profileImage || '../../../../assets/images/man.png'" alt="User avatar" appMediaProtection>
                     </div>
                     <div class="details">
                         <span class="label">User</span>

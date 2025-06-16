@@ -32,7 +32,7 @@
                 [class.selected]="selectedQuotation?._id === quotation._id" (click)="selectQuotation(quotation)"
                 matRipple>
                 <div class="quotation-thumbnail">
-                    <img [src]="quotation.imageUrl || 'https://placehold.co/400'" alt="Thumbnail">
+                    <img [src]="quotation.imageUrl || 'https://placehold.co/400'" alt="Thumbnail" appMediaProtection>
                 </div>
                 <div class="quotation-info">
                     <h3 class="quotation-title">{{ quotation.title }}</h3>

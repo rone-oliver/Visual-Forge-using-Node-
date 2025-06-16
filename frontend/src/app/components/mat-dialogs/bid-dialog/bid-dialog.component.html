@@ -58,7 +58,7 @@
             <div class="bid-header">
                 <div class="editor-info">
                     <div class="editor-avatar" *ngIf="bid.editor">
-                        <img *ngIf="bid.editor.profileImage" [src]="bid.editor.profileImage" [alt]="bid.editor.fullname">
+                        <img *ngIf="bid.editor.profileImage" [src]="bid.editor.profileImage" [alt]="bid.editor.fullname" appMediaProtection>
                         <div *ngIf="!bid.editor.profileImage" class="avatar-placeholder">
                             {{ bid.editor.fullname.charAt(0) }}
                         </div>

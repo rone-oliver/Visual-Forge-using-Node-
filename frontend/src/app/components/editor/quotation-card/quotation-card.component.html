@@ -1,7 +1,7 @@
 <article class="quotation-card" tabindex="0">
     <!-- Card Media Section -->
     <div class="card-media">
-        <img [src]="quotation.imageUrl || 'https://placehold.co/600x400'" [alt]="quotation.title" class="media-image" loading="lazy">
+        <img [src]="quotation.imageUrl || 'https://placehold.co/600x400'" [alt]="quotation.title" class="media-image" loading="lazy" appMediaProtection>
         <div class="price-badge">₹{{ quotation.estimatedBudget }}</div>
     </div>
 

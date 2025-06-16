@@ -8,7 +8,7 @@
       </div>
       <div class="editor-info-card">
         <div class="avatar-container">
-          <img [src]="profile.profileImage" [alt]="profile.fullname" class="avatar" />
+          <img [src]="profile.profileImage" [alt]="profile.fullname" class="avatar" appMediaProtection/>
           <span class="editor-name">{{ profile.fullname }}</span>
         </div>
         <div class="editor-details">
@@ -73,7 +73,7 @@
         <div class="tab-content tutorials-grid">
           <ng-container *ngIf="profile.sharedTutorials.length > 0; else noTutorials">
             <div class="tutorial-card" *ngFor="let tutorial of profile.sharedTutorials; let i = index">
-              <img src="https://www.placehold.co/300x200" alt="Tutorial Thumbnail" class="thumbnail" />
+              <img src="https://www.placehold.co/300x200" alt="Tutorial Thumbnail" class="thumbnail" appMediaProtection/>
               <div class="play-icon">
                 <mat-icon>play_circle_filled</mat-icon>
               </div>

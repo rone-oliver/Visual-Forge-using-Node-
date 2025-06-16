@@ -9,11 +9,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { Overlay, OverlayRef } from '@angular/cdk/overlay';
 import { Notification, NotificationService } from '../../../services/notification/notification.service';
 import { TemplatePortal } from '@angular/cdk/portal';
+import { MediaProtectionDirective } from '../../../directives/media-protection.directive';
 
 @Component({
   selector: 'app-user-header',
   standalone: true,
-  imports: [CommonModule, RouterLink, MatIconModule],
+  imports: [CommonModule, RouterLink, MatIconModule, MediaProtectionDirective],
   templateUrl: './user-header.component.html',
   styleUrls: ['./user-header.component.scss']
 })

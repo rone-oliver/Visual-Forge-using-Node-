@@ -6,10 +6,11 @@ import { FileAttachmentResponse } from '../../../interfaces/quotation.interface'
 import { HttpClient, HttpEventType } from '@angular/common/http';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Subject, takeUntil } from 'rxjs';
+import { MediaProtectionDirective } from '../../../directives/media-protection.directive';
 
 @Component({
   selector: 'app-files-preview',
-  imports: [CommonModule, MatIconModule, MatDialogModule, MatProgressSpinnerModule],
+  imports: [CommonModule, MatIconModule, MatDialogModule, MatProgressSpinnerModule, MediaProtectionDirective],
   templateUrl: './files-preview.component.html',
   styleUrl: './files-preview.component.scss'
 })

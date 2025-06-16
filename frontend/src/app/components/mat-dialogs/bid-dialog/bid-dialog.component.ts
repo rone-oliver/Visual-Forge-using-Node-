@@ -9,6 +9,7 @@ import { LocalDatePipe } from '../../../pipes/date.pipe';
 import { IBid, BidStatus } from '../../../interfaces/bid.interface';
 import { IQuotation } from '../../../interfaces/quotation.interface';
 import { UserService } from '../../../services/user/user.service';
+import { MediaProtectionDirective } from '../../../directives/media-protection.directive';
 
 @Component({
   selector: 'app-bid-dialog',
@@ -20,7 +21,8 @@ import { UserService } from '../../../services/user/user.service';
     MatIconModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
-    LocalDatePipe
+    LocalDatePipe,
+    MediaProtectionDirective
   ],
   templateUrl: './bid-dialog.component.html',
   styleUrls: ['./bid-dialog.component.scss']

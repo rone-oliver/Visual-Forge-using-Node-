@@ -25,7 +25,7 @@
                 </div>
                 <div class="md:w-1/2 relative" @staggered>
                     <div class="relative z-10 transform transition-all hover:rotate-1 hover:scale-105 duration-300">
-                        <img src="assets/hero-illustration.svg" alt="Editor Illustration" class="w-full h-auto">
+                        <img src="assets/hero-illustration.svg" alt="Editor Illustration" class="w-full h-auto" appMediaProtection>
                     </div>
                     <div
                         class="absolute -top-4 -left-4 w-32 h-32 bg-amber-400 dark:bg-amber-600 rounded-full filter blur-3xl opacity-30 animate-pulse">
@@ -50,7 +50,7 @@
                         class="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-md hover:shadow-xl transform hover:scale-105 transition-all duration-300">
                         <div class="relative">
                             <img [src]="work.image" [alt]="'Artwork by ' + work.editor"
-                                class="w-full h-48 object-cover">
+                                class="w-full h-48 object-cover" appMediaProtection>
                             <div
                                 class="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full flex items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" viewBox="0 0 20 20"
@@ -98,7 +98,7 @@
                         class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-xl flex flex-col items-center transition-all duration-300 transform hover:scale-105 hover:rotate-1">
                         <div
                             class="w-24 h-24 rounded-full overflow-hidden border-4 border-amber-400 dark:border-amber-500 mb-4">
-                            <img [src]="editor.avatar" [alt]="editor.name" class="w-full h-full object-cover">
+                            <img [src]="editor.avatar" [alt]="editor.name" class="w-full h-full object-cover" appMediaProtection>
                         </div>
                         <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">{{ editor.name }}</h3>
                         <div class="flex items-center mb-2">
@@ -132,7 +132,7 @@
             <div class="absolute inset-0 overflow-hidden">
                 <div class="absolute inset-0 bg-gradient-to-b from-transparent to-gray-900 z-10"></div>
                 <img src="assets/exhibition-bg.jpg" alt="Exhibition Background"
-                    class="w-full h-full object-cover opacity-20">
+                    class="w-full h-full object-cover opacity-20" appMediaProtection>
             </div>
 
             <div class="container mx-auto px-4 relative z-20">

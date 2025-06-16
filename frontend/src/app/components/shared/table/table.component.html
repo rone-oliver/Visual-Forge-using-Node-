@@ -51,7 +51,7 @@
                         <!-- Image content -->
                         <ng-container *ngIf="column.type === 'image'">
                             <img *ngIf="getNestedProperty(item, column.key)" [src]="getNestedProperty(item, column.key)"
-                                alt="Image" class="table-image">
+                                alt="Image" class="table-image" appMediaProtection>
                             <div *ngIf="!getNestedProperty(item, column.key)" class="image-placeholder"></div>
                         </ng-container>
 

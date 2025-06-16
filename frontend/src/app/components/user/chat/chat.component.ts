@@ -14,6 +14,7 @@ import { AuthService } from '../../../services/auth.service';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { UserSearchComponent } from '../../mat-dialogs/user-search/user-search.component';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MediaProtectionDirective } from '../../../directives/media-protection.directive';
 
 interface Recipient {
   id: string;
@@ -24,7 +25,7 @@ interface Recipient {
 
 @Component({
   selector: 'app-chat',
-  imports: [CommonModule, MatIconModule, FormsModule, MatMenuModule, MatTooltipModule, MatDialogModule],
+  imports: [CommonModule, MatIconModule, FormsModule, MatMenuModule, MatTooltipModule, MatDialogModule, MediaProtectionDirective],
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.scss']
 })

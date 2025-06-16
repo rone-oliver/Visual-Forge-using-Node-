@@ -41,7 +41,7 @@
             </div>
             <div class="file-preview">
                 <!-- Image preview -->
-                <img *ngIf="file.fileType === 'image'" [src]="file.url" [alt]="file.fileName" class="image-preview">
+                <img *ngIf="file.fileType === 'image'" [src]="file.url" [alt]="file.fileName" class="image-preview" appMediaProtection>
 
                 <!-- Audio preview -->
                 <audio *ngIf="file.fileType === 'audio'" controls>
@@ -50,7 +50,7 @@
                 </audio>
 
                 <!-- Video preview -->
-                <video *ngIf="file.fileType === 'video'" controls class="video-preview">
+                <video *ngIf="file.fileType === 'video'" controls class="video-preview" appMediaProtection>
                     <source [src]="file.url" [type]="file.mimeType">
                     Your browser does not support the video element.
                 </video>

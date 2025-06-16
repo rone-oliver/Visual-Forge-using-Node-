@@ -5,10 +5,11 @@ import { ThemeService } from '../../../services/theme.service';
 import { UserFooterComponent } from '../../../components/user/user-footer/user-footer.component';
 import { UserHeaderComponent } from '../../../components/user/user-header/user-header.component';
 import { Subscription } from 'rxjs';
+import { MediaProtectionDirective } from '../../../directives/media-protection.directive';
 
 @Component({
   selector: 'app-landing-page',
-  imports: [CommonModule, UserHeaderComponent, UserFooterComponent],
+  imports: [CommonModule, UserHeaderComponent, UserFooterComponent, MediaProtectionDirective],
   templateUrl: './landing-page.component.html',
   styleUrl: './landing-page.component.scss',
   animations: [
@@ -79,4 +80,3 @@ export class LandingPageComponent implements OnInit, OnDestroy {
     this.themeService.toggleTheme();
   }
 }
-
