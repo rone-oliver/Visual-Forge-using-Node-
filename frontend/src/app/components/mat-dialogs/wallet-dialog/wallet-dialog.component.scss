@@ -1,0 +1,79 @@
+:host {
+  display: block;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border-radius: 16px;
+  max-width: 450px;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--color-neutral-200);
+
+  h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--color-primary);
+  }
+
+  button {
+    cursor: pointer;
+  }
+}
+
+.dialog-content {
+  padding: 1.5rem;
+  
+  p {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: var(--color-neutral-600);
+  }
+}
+
+.quick-add-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+
+  button {
+    flex: 1;
+    border-radius: 8px;
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
+
+    &:hover {
+      background-color: rgba(var(--color-surface), 0.1);
+    }
+  }
+}
+
+.amount-input {
+  width: 100%;
+}
+
+input[type='number'] {
+  -moz-appearance: textfield; /* Firefox */
+  appearance: textfield;
+  
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+mat-dialog-actions {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--color-neutral-200);
+
+  button {
+    border-radius: 8px;
+    padding: 0.5rem 1.5rem;
+  }
+}

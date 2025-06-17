@@ -14,7 +14,8 @@ export const USER_ROUTES = {
     EDITOR_PROFILE: () => import('../components/user/editor-profile/editor-profile.component').then(m => m.EditorProfileComponent),
     PROFILE_LAYOUT: () => import('../Layouts/profile-layout/profile-layout.component').then(m => m.ProfileLayoutComponent),
     PROFILE: () => import('../components/user/profile/details/profile.component').then(m => m.ProfileComponent),
-    TRANSACTION_HISTORY: () => import('../components/user/profile/transaction-history/transaction-history.component').then(m => m.TransactionHistoryComponent)
+    TRANSACTION_HISTORY: () => import('../components/user/profile/transaction-history/transaction-history.component').then(m => m.TransactionHistoryComponent),
+    WALLET: () => import('../components/user/profile/wallet/wallet.component').then(m => m.WalletComponent)
 }
 
 export const ADMIN_ROUTES = {

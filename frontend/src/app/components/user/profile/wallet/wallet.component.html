@@ -1,0 +1,68 @@
+<div class="wallet-container">
+  <header class="wallet-header">
+    <h1>My Wallet</h1>
+    <button mat-icon-button class="options-button" aria-label="Options">
+      <mat-icon>more_vert</mat-icon>
+    </button>
+  </header>
+
+  <div class="balance-card">
+    <div class="balance-info">
+      <p class="balance-label">Total Balance</p>
+      <h2 class="balance-amount">₹{{ currentBalance | number:'1.2-2' }}</h2>
+    </div>
+    <div class="wallet-icon">
+      <mat-icon>account_balance_wallet</mat-icon>
+    </div>
+  </div>
+
+  <div class="wallet-actions">
+    <button mat-flat-button color="primary" class="action-btn add-money" (click)="openAddMoneyDialog()">
+      <mat-icon>add_circle_outline</mat-icon>
+      <span>Add Money</span>
+    </button>
+    <button mat-stroked-button color="primary" class="action-btn withdraw" (click)="openWithdrawDialog()">
+      <mat-icon>remove_circle_outline</mat-icon>
+      <span>Withdraw</span>
+    </button>
+  </div>
+
+  <div class="transactions-section">
+    <h3>Recent Transactions</h3>
+
+    <!-- Loading, Error, and Empty States -->
+    <div *ngIf="isLoading && transactions.length === 0" class="state-container">
+      <mat-spinner diameter="50"></mat-spinner>
+    </div>
+
+    <div *ngIf="!isLoading && transactions.length === 0 && !error" class="state-container empty-state">
+      <mat-icon>receipt_long</mat-icon>
+      <p>No recent transactions</p>
+    </div>
+
+    <!-- Transaction List -->
+    <div class="transaction-list" *ngIf="transactions.length > 0">
+      <div *ngFor="let tx of transactions" class="transaction-item">
+        <div class="transaction-icon" [ngClass]="tx.type.toLowerCase()">
+          <mat-icon>{{ tx.type === 'credit' ? 'arrow_upward' : 'arrow_downward' }}</mat-icon>
+        </div>
+        <div class="transaction-details">
+          <p class="transaction-party">{{ tx.description }}</p>
+          <p class="transaction-date">{{ tx.createdAt | date:'mediumDate' }}</p>
+        </div>
+        <div class="transaction-amount" [ngClass]="tx.type.toLowerCase()">
+          {{ tx.type === 'credit' ? '+' : '-' }} ₹{{ tx.amount | number:'1.2-2' }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Load More Button and Spinner -->
+    <div *ngIf="canLoadMore && !isLoading && transactions.length > 0" class="load-more-container">
+      <button mat-stroked-button (click)="loadTransactions()">Load More</button>
+    </div>
+    <div *ngIf="isLoading && transactions.length > 0" class="state-container">
+        <mat-spinner diameter="30"></mat-spinner>
+    </div>
+
+  </div>
+</div>

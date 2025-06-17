@@ -8,6 +8,7 @@ import { CompletedWork, Works } from '../../interfaces/completed-word.interface'
 import { IBid } from '../../interfaces/bid.interface';
 import { PaginatedTransactionResponse } from '../../interfaces/transaction.interface';
 import { GetPublicEditorsDto, PaginatedPublicEditors } from '../../interfaces/user.interface';
+import { IPaginatedResponse, IWallet, IWalletTransaction } from '../../interfaces/wallet.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -255,5 +256,27 @@ export class UserService {
 
   acceptBid(bidId: string): Observable<IBid> {
     return this.http.post<IBid>(`${this.userApiUrl}/bids/${bidId}/accept`, {});
+  }
+
+  getWalletDetails(): Observable<IWallet> {
+    return this.http.get<IWallet>(`${this.userApiUrl}/wallet`);
+  }
+
+  getWalletTransactions(params: { page?: number; limit?: number; startDate?: string; endDate?: string }): Observable<IPaginatedResponse<IWalletTransaction>> {
+    let httpParams = new HttpParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        httpParams = httpParams.set(key, String(value));
+      }
+    });
+    return this.http.get<IPaginatedResponse<IWalletTransaction>>(`${this.userApiUrl}/wallet/transactions`, { params: httpParams });
+  }
+
+  addMoneyToWallet(amount: number): Observable<IWallet> {
+    return this.http.post<IWallet>(`${this.userApiUrl}/wallet/add`, { amount });
+  }
+
+  withdrawMoneyFromWallet(amount: number): Observable<IWallet> {
+    return this.http.post<IWallet>(`${this.userApiUrl}/wallet/withdraw`, { amount });
   }
 }

@@ -70,10 +70,10 @@ export const routes: Routes = [
                         path: 'transactions',
                         loadComponent: USER_ROUTES.TRANSACTION_HISTORY
                     },
-                    // {
-                    //     path: 'wallet',
-                    //     loadComponent: USER_ROUTES.WALLET
-                    // },
+                    {
+                        path: 'wallet',
+                        loadComponent: USER_ROUTES.WALLET
+                    },
                     // {
                     //     path: 'notifications',
                     //     loadComponent: USER_ROUTES.NOTIFICATIONS

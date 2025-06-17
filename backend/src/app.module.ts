@@ -23,6 +23,7 @@ import { ChatModule } from './chat/chat.module';
 import { NotificationModule } from './notification/notification.module';
 import { BidsModule } from './common/bids/bids.module';
 import { AiModule } from './ai/ai.module';
+import { WalletModule } from './wallet/wallet.module';
 
 @Module({
   imports: [
@@ -56,7 +57,7 @@ import { AiModule } from './ai/ai.module';
       inject: [ConfigService],
     }),
     // MongooseModule.forRoot(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/visualForge'),
-    AuthModule,UsersModule, DatabaseModule, AdminsModule, EditorsModule, UsersAuthModule, EditorsAuthModule, AdminsAuthModule, JwtConfigModule, PaymentModule, ChatModule, NotificationModule, BidsModule, AiModule
+    AuthModule,UsersModule, DatabaseModule, AdminsModule, EditorsModule, UsersAuthModule, EditorsAuthModule, AdminsAuthModule, JwtConfigModule, PaymentModule, ChatModule, NotificationModule, BidsModule, AiModule, WalletModule
   ],
   controllers: [AppController, UsersAuthController, TokenRefreshController],
   providers: [AppService, JwtService, TokenRefreshService, CloudinaryService],

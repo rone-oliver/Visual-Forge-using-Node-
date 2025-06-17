@@ -1,0 +1,256 @@
+:host {
+  display: block;
+  padding: 2rem;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.wallet-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.wallet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+
+  h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--color-primary);
+  }
+
+  .options-button {
+    color: var(--color-text);
+  }
+}
+
+.balance-card {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary-400));
+  color: white;
+  padding: 2.5rem;
+  border-radius: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 25px rgba(0, 0, 0, 0.2);
+  }
+
+  .balance-label {
+    font-size: 1.1rem;
+    opacity: 0.8;
+    margin-bottom: 0.5rem;
+  }
+
+  .balance-amount {
+    font-size: 3rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+
+  .wallet-icon mat-icon {
+    font-size: 4rem;
+    width: 4rem;
+    height: 4rem;
+    opacity: 0.3;
+  }
+}
+
+.wallet-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+
+  .action-btn {
+    padding: 1rem;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+
+    mat-icon {
+      font-size: 24px;
+      height: 24px;
+      width: 24px;
+      line-height: 1;
+    }
+
+    &.add-money {
+      background-color: var(--color-primary);
+      color: white;
+      &:hover {
+        background-color: var(--color-secondary-500);
+      }
+    }
+
+    &.withdraw {
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+      &:hover {
+        background-color: rgba(var(--color-surface), 0.1);
+      }
+    }
+  }
+}
+
+.transactions-section {
+  h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--color-neutral-200);
+    padding-bottom: 0.5rem;
+  }
+
+  .transaction-list {
+    display: flex;
+    flex-direction: column;
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 8px;
+    gap: 0.75rem;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: var(--color-neutral-300);
+      border-radius: 3px;
+    }
+  }
+
+  .no-transactions {
+    text-align: center;
+    padding: 3rem;
+    background-color: var(--color-surface);
+    border-radius: 12px;
+    color: var(--color-neutral-500);
+
+    mat-icon {
+      font-size: 3rem;
+      width: 3rem;
+      height: 3rem;
+      margin-bottom: 1rem;
+    }
+  }
+
+  .transaction-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background-color: var(--color-surface);
+    border-radius: 12px;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    cursor: pointer;
+
+    &:hover {
+      transform: translateX(5px);
+      background-color: var(--color-neutral-100);
+    }
+  }
+
+  .transaction-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    margin-right: 1rem;
+
+    &.credit {
+      background-color: rgba(16, 185, 129, 0.15);
+      color: var(--color-success);
+    }
+
+    &.debit {
+      background-color: rgba(239, 68, 68, 0.15);
+      color: var(--color-danger);
+    }
+  }
+
+  .transaction-details {
+    flex-grow: 1;
+    .transaction-party {
+      font-weight: 500;
+    }
+    .transaction-date {
+      font-size: 0.85rem;
+      color: var(--color-neutral-600);
+    }
+  }
+
+  .transaction-amount {
+    font-weight: 600;
+    font-size: 1.1rem;
+
+    &.credit {
+      color: var(--color-success);
+    }
+    &.debit {
+      color: var(--color-danger);
+    }
+  }
+}
+
+.state-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  padding: 40px 20px;
+  color: #757575;
+  text-align: center;
+
+  &.error-message {
+    color: var(--color-danger);
+    mat-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+      margin-bottom: 1rem;
+    }
+  }
+
+  &.empty-state {
+    mat-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+      margin-bottom: 1rem;
+    }
+  }
+}
+
+.load-more-container {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
