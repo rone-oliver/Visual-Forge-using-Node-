@@ -1,5 +1,7 @@
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
 import { Types } from "mongoose";
 import { Categories, EditorRequestStatus } from "src/common/models/editorRequest.schema";
+import { ReportStatus } from "src/common/models/report.schema";
 
 export interface GetAllUsersQueryDto {
   isEditor?: boolean;
@@ -42,4 +44,14 @@ export interface FormattedEditor {
     isVerified: boolean;
     isBlocked: boolean;
     socialLinks?: any;
+}
+
+export class UpdateReportDto {
+  @IsEnum(ReportStatus)
+  @IsNotEmpty()
+  status: ReportStatus;
+
+  @IsString()
+  @IsOptional()
+  resolution?: string;
 }

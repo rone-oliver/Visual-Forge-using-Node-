@@ -1,0 +1,28 @@
+<div class="admin-reports-container">
+    <h1 class="page-title">User Reports</h1>
+    <p class="page-subtitle">Review and manage user-submitted reports.</p>
+
+    @if(isLoading) {
+    <div class="loading-spinner">
+        <mat-spinner></mat-spinner>
+    </div>
+    }
+
+    @if (!isLoading && reports.length === 0) {
+    <div class="no-reports-message">
+        <p>🎉 No pending reports at the moment. Great job!</p>
+    </div>
+    }
+
+    @if(!isLoading && reports.length > 0){
+    <app-table
+        [data]="reports"
+        [columns]="tableColumns"
+        [loading]="isLoading"
+        (actionClick)="onTableAction($event)"
+        emptyMessage="No pending reports found."
+        [blockedStatusKey]="'reportedUserId.isBlocked'"
+    ></app-table>
+    }
+
+</div>

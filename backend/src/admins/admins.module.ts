@@ -8,6 +8,7 @@ import { EditorRequest, EditorRequestSchema } from 'src/common/models/editorRequ
 import { Editor, editorSchema } from 'src/editors/models/editor.schema';
 import { UsersModule } from 'src/users/users.module';
 import { IAdminsServiceToken } from './interfaces/admins.service.interface';
+import { Report, ReportSchema } from 'src/common/models/report.schema';
 
 @Module({
   providers: [
@@ -23,7 +24,8 @@ import { IAdminsServiceToken } from './interfaces/admins.service.interface';
       { name: Admin.name, schema: adminSchema },
       { name: User.name, schema: userSchema},
       { name: EditorRequest.name, schema: EditorRequestSchema},
-      { name: Editor.name, schema: editorSchema}
+      { name: Editor.name, schema: editorSchema},
+      { name: Report.name, schema: ReportSchema}
     ])
   ],
   exports: [

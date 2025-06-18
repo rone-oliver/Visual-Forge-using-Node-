@@ -33,19 +33,17 @@
             <tr *ngFor="let item of paginatedData" class="table-row" (click)="onRowClick(item)">
                 <td *ngFor="let column of columns">
                     <ng-container
-                        *ngIf="item[column.key] !== null && item[column.key] !== undefined && item[column.key] !== ''">
+                        *ngIf="getNestedProperty(item, column.key) !== null && getNestedProperty(item, column.key) !== undefined && getNestedProperty(item, column.key) !== ''">
                         <!-- Text content -->
                         <ng-container *ngIf="column.type === 'text' || !column.type">
                             {{ column.format ? column.format(getNestedProperty(item, column.key)) :
-                            getNestedProperty(item,
-                            column.key) }}
+                            getNestedProperty(item, column.key) }}
                         </ng-container>
 
                         <!-- Date content -->
                         <ng-container *ngIf="column.type === 'date'">
                             {{ column.format ? column.format(getNestedProperty(item, column.key)) :
-                            getNestedProperty(item,
-                            column.key) | customDate}}
+                            getNestedProperty(item, column.key) | customDate}}
                         </ng-container>
 
                         <!-- Image content -->
@@ -67,7 +65,7 @@
                         </ng-container>
                     </ng-container>
                     <ng-container
-                        *ngIf="(item[column.key] === null || item[column.key] === undefined || item[column.key] === '') && (column.type !== 'actions')">
+                        *ngIf="(getNestedProperty(item, column.key) === null || getNestedProperty(item, column.key) === undefined || getNestedProperty(item, column.key) === '') && (column.type !== 'actions')">
                         <span class="text-gray-500">{{ column.placeholder || defaultPlaceholder }}</span>
                     </ng-container>
                     <!-- Actions content -->
@@ -81,12 +79,17 @@
                                 (click)="onActionClick('delete', item, $event)">
                                 <lucide-icon [name]="icons.delete"></lucide-icon>
                             </button> -->
+                            <button *ngIf="getNestedProperty(item, 'canResolve') !== false" class="action-btn resolve"
+                                title="Resolve Report"
+                                (click)="onActionClick('resolve', item, $event)">
+                                <lucide-icon [name]="icons.resolve"></lucide-icon>
+                            </button>
                             <button *ngIf="getNestedProperty(item, 'canView') !== false" class="action-btn"
-                                [title]="item.isBlocked ? 'Unblock User' : 'Block User'"
+                                [title]="isItemBlocked(item) ? 'Unblock User' : 'Block User'"
                                 (click)="onActionClick('block', item, $event)">
-                                <lucide-icon *ngIf="!item.isBlocked" class="block-icon"
+                                <lucide-icon *ngIf="!isItemBlocked(item)" class="block-icon"
                                     [name]="icons.block"></lucide-icon>
-                                <lucide-icon *ngIf="item.isBlocked" class="unblock-icon"
+                                <lucide-icon *ngIf="isItemBlocked(item)" class="unblock-icon"
                                     [name]="icons.unblock"></lucide-icon>
                             </button>
                         </div>

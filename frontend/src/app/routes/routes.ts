@@ -21,7 +21,8 @@ export const USER_ROUTES = {
 export const ADMIN_ROUTES = {
     DASHBOARD: () => import('../components/admin/home/home.component').then(m => m.HomeComponent),
     USERS: () => import('../components/admin/user-section/user-section.component').then(m => m.UserSectionComponent),
-    EDITORS: () => import('../components/admin/editor-section/editor-section.component').then(m => m.EditorSectionComponent)
+    EDITORS: () => import('../components/admin/editor-section/editor-section.component').then(m => m.EditorSectionComponent),
+    REPORTS: () => import('../components/admin/reported-users/reported-users.component').then(m => m.ReportedUsersComponent)
 };
 
 export const EDITOR_ROUTES = {

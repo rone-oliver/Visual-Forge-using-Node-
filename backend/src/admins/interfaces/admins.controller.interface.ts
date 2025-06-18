@@ -1,5 +1,7 @@
 import { User } from "src/users/models/user.schema";
-import { FormattedEditor, FormattedEditorRequest, GetAllUsersQueryDto, GetEditorsQueryDto } from "../dto/admins.controller.dto";
+import { FormattedEditor, FormattedEditorRequest, GetAllUsersQueryDto, GetEditorsQueryDto, UpdateReportDto } from "../dto/admin.dto";
+import { SuccessResponseDto } from "src/users/dto/users.dto";
+import { Report } from "src/common/models/report.schema";
 
 export interface IAdminsController {
     getAllUsers(query: GetAllUsersQueryDto): Promise<User[]>;
@@ -7,5 +9,7 @@ export interface IAdminsController {
     approveRequest(req: Request, reqId: string): Promise<boolean>;
     rejectRequest(reqId: string, body: { reason: string }): Promise<boolean>;
     getEditors(query: GetEditorsQueryDto): Promise<FormattedEditor[]>;
-    blockUser(userId: string): Promise<boolean>;
+    blockUser(userId: string): Promise<SuccessResponseDto>;
+    getPendingReports(): Promise<Report[]>;
+    updateReport(reportId: string, updateDto: UpdateReportDto): Promise<Report>;
 }

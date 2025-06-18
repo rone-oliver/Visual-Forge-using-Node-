@@ -6,9 +6,12 @@ import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { User } from 'src/users/models/user.schema';
 import { IAdminsController } from './interfaces/admins.controller.interface';
-import { FormattedEditor, FormattedEditorRequest, GetAllUsersQueryDto, GetEditorsQueryDto } from './dto/admins.controller.dto';
+import { FormattedEditor, FormattedEditorRequest, GetAllUsersQueryDto, GetEditorsQueryDto, UpdateReportDto } from './dto/admin.dto';
 import { IAdminsService, IAdminsServiceToken } from './interfaces/admins.service.interface';
 import { Role } from 'src/common/enums/role.enum';
+import { SuccessResponseDto } from 'src/users/dto/users.dto';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Report } from 'src/common/models/report.schema';
 
 @Controller('admin')
 @UseGuards(AuthGuard, RolesGuard)
@@ -47,15 +50,36 @@ export class AdminsController implements IAdminsController {
 
     @Get('editors')
     @Roles(Role.ADMIN)
-    async getEditors(@Query() query:GetEditorsQueryDto): Promise<FormattedEditor[]>{
+    async getEditors(@Query() query: GetEditorsQueryDto): Promise<FormattedEditor[]> {
         this.logger.log('Attempting to fetch editors with query:', query);
         return await this.adminService.getEditors(query);
     }
 
     @Patch('users/:userId/block')
+    @ApiOperation({ summary: 'Block a user' })
+    @ApiResponse({ status: 200, description: 'User blocked successfully.', type: SuccessResponseDto })
     @Roles(Role.ADMIN)
-    async blockUser(@Param('userId') userId: string): Promise<boolean> {
+    async blockUser(@Param('userId') userId: string): Promise<SuccessResponseDto> {
         this.logger.log(`Attempting to block user with ID: ${userId}`);
         return await this.adminService.blockUser(new Types.ObjectId(userId));
+    }
+
+    @Get('reports/pending')
+    @ApiOperation({ summary: 'Get all pending reports' })
+    @ApiResponse({ status: 200, description: 'A list of pending reports.', type: [Report] })
+    @Roles(Role.ADMIN)
+    async getPendingReports(): Promise<Report[]> {
+        return await this.adminService.getPendingReports();
+    }
+
+    @Patch('reports/:reportId')
+    @ApiOperation({ summary: 'Update a report status and resolution' })
+    @ApiResponse({ status: 200, description: 'The updated report.', type: Report })
+    @Roles(Role.ADMIN)
+    async updateReport(
+        @Param('reportId') reportId: string,
+        @Body() updateDto: UpdateReportDto,
+    ): Promise<Report> {
+        return await this.adminService.updateReport(reportId, updateDto);
     }
 }

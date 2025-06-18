@@ -46,6 +46,10 @@ export const routes: Routes = [
             {
                 path:'editors', 
                 loadComponent: ADMIN_ROUTES.EDITORS
+            },
+            {
+                path:'reports', 
+                loadComponent: ADMIN_ROUTES.REPORTS
             }
         ]
     },

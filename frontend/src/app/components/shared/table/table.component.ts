@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '../../../pipes/date.pipe';
-import { LucideAngularModule, CheckCircle, XCircle, Edit, Trash, Ban, Check} from 'lucide-angular';
+import { LucideAngularModule, CheckCircle, XCircle, Edit, Trash, Ban, Check, ShieldCheck} from 'lucide-angular';
 import { MediaProtectionDirective } from '../../../directives/media-protection.directive';
 
 export interface TableColumn {
@@ -31,6 +31,7 @@ export class TableComponent {
   @Input() loading: boolean = false;
 
   @Input() emptyMessage: string = 'No data available';
+  @Input() blockedStatusKey: string = 'isBlocked'; // Default key
 
   @Output() rowClick = new EventEmitter<any>();
   @Output() actionClick = new EventEmitter<{ action: string, item: any}>();
@@ -57,6 +58,7 @@ export class TableComponent {
     delete: Trash,
     block: Ban,
     unblock: Check,
+    resolve: ShieldCheck
   }
 
   onRowClick(item: any): void {
@@ -110,7 +112,14 @@ export class TableComponent {
   }
   
   // Helper to get nested properties like 'user.name'
+  isItemBlocked(item: any): boolean {
+    return this.getNestedProperty(item, this.blockedStatusKey);
+  }
+
   getNestedProperty(obj: any, path: string): any {
+    if (!path) {
+      return undefined;
+    }
     return path.split('.').reduce((o, p) => (o ? o[p] : null), obj);
   }
 }

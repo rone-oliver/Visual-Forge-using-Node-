@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from 'src/users/models/user.schema';
 import { Admin, AdminDocument } from './models/admin.schema';
@@ -7,7 +7,9 @@ import * as bcrypt from 'bcrypt';
 import { EditorRequest, EditorRequestDocument, EditorRequestStatus } from 'src/common/models/editorRequest.schema';
 import { Editor, EditorDocument } from 'src/editors/models/editor.schema';
 import { IAdminsService } from './interfaces/admins.service.interface';
-import { FormattedEditor, FormattedEditorRequest, GetAllUsersQueryDto, GetEditorsQueryDto } from './dto/admins.controller.dto';
+import { FormattedEditor, FormattedEditorRequest, GetAllUsersQueryDto, GetEditorsQueryDto, UpdateReportDto } from './dto/admin.dto';
+import { Report, ReportDocument, ReportStatus } from 'src/common/models/report.schema';
+import { SuccessResponseDto } from 'src/users/dto/users.dto';
 
 @Injectable()
 export class AdminsService implements IAdminsService {
@@ -18,6 +20,7 @@ export class AdminsService implements IAdminsService {
         @InjectModel(User.name) private userModel: Model<UserDocument>,
         @InjectModel(EditorRequest.name) private editorRequestModel: Model<EditorRequestDocument>,
         @InjectModel(Editor.name) private editorModel: Model<EditorDocument>,
+        @InjectModel(Report.name) private reportModel: Model<ReportDocument>,
     ) { };
 
     async findOne(filter: Partial<Admin>): Promise<Admin | null> {
@@ -101,11 +104,11 @@ export class AdminsService implements IAdminsService {
         try {
             this.logger.log('Fetching editor with these query:', query);
 
-            const pipeline:any[] = [];
+            const pipeline: any[] = [];
 
             const matchStage: any = {};
 
-            const categoryFilters:string[] = [];
+            const categoryFilters: string[] = [];
             if (query.video === 'true') categoryFilters.push('Video');
             if (query.image === 'true') categoryFilters.push('Image');
             if (query.audio === 'true') categoryFilters.push('Audio');
@@ -191,18 +194,38 @@ export class AdminsService implements IAdminsService {
         }
     }
 
-    async blockUser(userId: Types.ObjectId): Promise<boolean> {
+    async blockUser(userId: Types.ObjectId): Promise<SuccessResponseDto> {
         try {
             // const user = await this.userModel.findByIdAndUpdate(userId, { isBlocked: true });
             const user = await this.userModel.findOne({ _id: userId });
             if (!user) {
-                return false;
+                return { success: false, message: 'User not found' };
             }
             await this.userModel.findOneAndUpdate({ _id: user._id }, { isBlocked: !user.isBlocked })
-            return true;
+            return {
+                success: true,
+                message: 'User blocked successfully'
+            };
         } catch (error) {
             this.logger.error(`Error blocking user: ${error.message}`);
             throw new HttpException('Failed to block user', HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    async getPendingReports(): Promise<Report[]> {
+        return this.reportModel
+            .find({ status: ReportStatus.PENDING })
+            .populate('reporterId', 'username email')
+            .populate('reportedUserId', 'username email isBlocked')
+            .sort({ createdAt: -1 })
+            .exec();
+    }
+
+    async updateReport(reportId: string, updateDto: UpdateReportDto): Promise<Report> {
+        const report = await this.reportModel.findByIdAndUpdate(reportId, updateDto, { new: true });
+        if (!report) {
+            throw new NotFoundException(`Report with ID "${reportId}" not found`);
+        }
+        return report;
     }
 }

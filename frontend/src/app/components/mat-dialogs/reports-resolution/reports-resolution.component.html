@@ -1,0 +1,13 @@
+<h1 mat-dialog-title>Resolve Report</h1>
+<div mat-dialog-content>
+    <p>Please provide resolution notes for resolving this report.</p>
+    <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Resolution Notes</mat-label>
+        <textarea matInput [(ngModel)]="resolutionText" rows="4" required></textarea>
+    </mat-form-field>
+</div>
+<div mat-dialog-actions align="end">
+    <button mat-button (click)="onCancel()">Cancel</button>
+    <button mat-flat-button color="primary" [mat-dialog-close]="resolutionText"
+        [disabled]="!resolutionText.trim()">Resolve</button>
+</div>
