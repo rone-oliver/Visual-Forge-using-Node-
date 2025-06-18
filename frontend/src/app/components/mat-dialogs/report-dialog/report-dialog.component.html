@@ -1,0 +1,48 @@
+<h2 mat-dialog-title>Report {{ data.user.username }}</h2>
+
+<mat-dialog-content class="report-dialog-content">
+  <div class="user-info-section">
+    <img [src]="data.user.profileImage ?? 'assets/images/man.png'" alt="{{ data.user.username }}" class="profile-image">
+    <span class="username">{{ data.user.username }}</span>
+  </div>
+
+  <form [formGroup]="reportForm" (ngSubmit)="onSubmit()" class="report-form">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Reason for Report</mat-label>
+      <mat-select formControlName="reason" required>
+        <mat-option *ngFor="let reason of filteredReasons" [value]="reason.value">
+          {{ reason.label }}
+        </mat-option>
+      </mat-select>
+      <mat-error *ngIf="reportForm.get('reason')?.invalid && reportForm.get('reason')?.touched">
+        Please select a reason.
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field *ngIf="showOtherReason" appearance="outline" class="full-width">
+      <mat-label>Please specify the reason</mat-label>
+      <textarea matInput formControlName="otherReason" rows="3" required maxlength="500"></textarea>
+      <mat-hint align="end">{{reportForm.get('otherReason')?.value?.length || 0}}/500</mat-hint>
+      <mat-error *ngIf="reportForm.get('otherReason')?.invalid && reportForm.get('otherReason')?.touched">
+        Reason description is required.
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Additional Context (Optional)</mat-label>
+      <textarea matInput formControlName="additionalContext" rows="4" maxlength="1000"></textarea>
+      <mat-hint align="end">{{reportForm.get('additionalContext')?.value?.length || 0}}/1000</mat-hint>
+    </mat-form-field>
+
+    <div class="disclaimer mat-small">
+      <p>Please note that false reports may result in account restrictions. All reports are reviewed by our team.</p>
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()" class="cancel-button">Cancel</button>
+  <button mat-raised-button color="warn" type="submit" (click)="onSubmit()" [disabled]="reportForm.invalid" class="submit-button">
+    Submit Report
+  </button>
+</mat-dialog-actions>

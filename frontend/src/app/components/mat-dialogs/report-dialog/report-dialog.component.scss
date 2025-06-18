@@ -1,0 +1,146 @@
+.report-dialog-content {
+  padding: 16px 24px; // Consistent padding inside content area
+  display: flex;
+  flex-direction: column;
+  gap: 20px; // Spacing between sections
+
+  // User Information Section
+  .user-info-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px; // Space before the form
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--color-neutral-200); // Subtle separator
+
+    .profile-image {
+      width: 48px; // Slightly larger for better visibility
+      height: 48px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--color-primary);
+    }
+
+    .username {
+      color: var(--color-text);
+      font-weight: 600; // A bit bolder
+      font-size: 1.1rem; // Slightly larger text
+    }
+  }
+
+  .report-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; 
+
+    .full-width {
+      width: 100%;
+    }
+
+    .disclaimer {
+      padding: 12px 16px;
+      background: var(--color-neutral-100);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: var(--color-neutral-600);
+      text-align: center;
+    }
+  }
+}
+
+// Styling for the action buttons in the dialog footer
+mat-dialog-actions {
+  padding: 16px 24px; // Match content horizontal padding
+  justify-content: flex-end; // Align buttons to the right
+  gap: 12px; // Spacing between buttons
+
+  .cancel-button {
+    color: var(--color-text);
+  }
+
+  .submit-button {
+    background: var(--color-danger);
+    color: white;
+
+    &:hover {
+      background: var(--color-danger-dark); // Assumes you have a darker shade var
+    }
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+  }
+}
+
+// Keyframe for animation (can remain as is)
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+// Dark mode support (adjusted variable usage)
+@media (prefers-color-scheme: dark) {
+  .report-dialog-content {
+    background: var(--color-background-dark); // Use your dark mode background var
+    color: var(--color-text-dark); // Use your dark mode text var
+
+    .user-info-section {
+      border-bottom-color: var(--color-neutral-700); // Darker border
+    }
+
+    .username {
+      color: var(--color-text-dark);
+    }
+
+    .disclaimer {
+      background: var(--color-neutral-800);
+      color: var(--color-neutral-400);
+    }
+  }
+
+  mat-dialog-actions {
+    background: var(--color-background-dark); // Match dialog background
+  }
+
+  .submit-button {
+    &:hover {
+      background: rgba(var(--color-danger), 0.8); // Adjusted hover for dark mode
+    }
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .report-dialog-container {
+    background: var(--color-background);
+    box-shadow: 0 2px 12px rgba(255, 255, 255, 0.1);
+
+    .disclaimer {
+      background: var(--color-neutral-800);
+      color: var(--color-neutral-400);
+    }
+
+    .submit-button {
+      &:hover {
+        background: rgba(var(--color-danger), 0.9);
+      }
+    }
+  }
+}

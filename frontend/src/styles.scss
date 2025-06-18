@@ -152,6 +152,11 @@
     .mat-mdc-form-field-infix {
       border: none !important;
     }
+
+    .mat-mdc-form-field-hint {
+      color: var(--color-text);
+      font-size: 0.75rem;
+    }
   }
 
   /* Fix vertical line issue in mat-input fields globally */

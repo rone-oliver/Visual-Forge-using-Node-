@@ -15,6 +15,7 @@ import { NotificationModule } from 'src/notification/notification.module';
 import { Bid, BidSchema } from 'src/common/bids/models/bids.schema';
 import { BidsModule } from 'src/common/bids/bids.module';
 import { IUsersServiceToken } from './interfaces/users.service.interface';
+import { Report, ReportSchema } from 'src/common/models/report.schema';
 
 @Module({
   controllers: [UsersController],
@@ -33,7 +34,8 @@ import { IUsersServiceToken } from './interfaces/users.service.interface';
       { name: Quotation.name , schema: QuotationSchema},
       { name: Works.name, schema: workSchema},
       { name: Transaction.name, schema: TransactionSchema},
-      { name: Bid.name, schema: BidSchema}
+      { name: Bid.name, schema: BidSchema},
+      { name: Report.name, schema: ReportSchema },
     ]),
     PaymentModule, BidsModule,
     forwardRef(()=> NotificationModule)

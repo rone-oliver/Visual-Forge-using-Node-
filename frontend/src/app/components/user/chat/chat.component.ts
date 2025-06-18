@@ -15,6 +15,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { UserSearchComponent } from '../../mat-dialogs/user-search/user-search.component';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MediaProtectionDirective } from '../../../directives/media-protection.directive';
+import { ReportContext, ReportDialogComponent } from '../../mat-dialogs/report-dialog/report-dialog.component';
+import { UserService } from '../../../services/user/user.service';
 
 interface Recipient {
   id: string;
@@ -65,7 +67,7 @@ export class ChatComponent implements OnInit, AfterViewChecked, OnDestroy {
     private snackBar: MatSnackBar,
     private viewContainerRef: ViewContainerRef,
     private chatService: ChatService,
-    private authService: AuthService,
+    private userService: UserService,
     private dialog: MatDialog,
   ) { }
 
@@ -582,8 +584,46 @@ export class ChatComponent implements OnInit, AfterViewChecked, OnDestroy {
   }
 
   reportUser(): void {
-    this.snackBar.open('User reporting is not implemented in this demo', 'OK', {
-      duration: 3000,
+    const user = {
+      username: this.recipient?.username || '',
+      profileImage: this.recipient?.avatarUrl || ''
+    };
+
+    const dialogRef = this.dialog.open(ReportDialogComponent, {
+      data: {
+        title: 'Report User',
+        user,
+        context: ReportContext.CHAT
+      },
+      panelClass: 'profile-edit-dialog'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && this.recipient) {
+        const reportPayload = {
+          reportedUserId: this.recipient.id,
+          context: result.context,
+          reason: result.reason.trim(),
+          additionalContext: result.additionalContext?.trim(),
+        };
+
+        this.userService.reportUser(reportPayload).subscribe(
+          () => {
+            this.snackBar.open('Report submitted successfully.', 'Close', {
+              duration: 3000,
+            });
+          },
+          (error) => {
+            this.snackBar.open(
+              error?.error?.message || 'Failed to submit report. Please try again.',
+              'Close',
+              {
+                duration: 5000,
+              },
+            );
+          },
+        );
+      }
     });
   }
 

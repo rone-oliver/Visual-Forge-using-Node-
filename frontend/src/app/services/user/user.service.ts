@@ -279,4 +279,13 @@ export class UserService {
   withdrawMoneyFromWallet(amount: number): Observable<IWallet> {
     return this.http.post<IWallet>(`${this.userApiUrl}/wallet/withdraw`, { amount });
   }
+
+  reportUser(reportData: {
+    reportedUserId: string;
+    context: 'chat' | 'quotation';
+    reason: string;
+    additionalContext?: string;
+  }): Observable<any> {
+    return this.http.post(`${this.userApiUrl}/reports`, reportData);
+  }
 }

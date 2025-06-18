@@ -42,9 +42,11 @@ import {
     PaginatedTransactionsResponseDto,
     EditorPublicProfileResponseDto,
     GetPublicEditorsDto,
-    PaginatedPublicEditorsDto
+    PaginatedPublicEditorsDto,
+    ReportUserDto
 } from './dto/users.dto';
 import { NotificationType } from 'src/notification/models/notification.schema';
+import { Report, ReportDocument } from 'src/common/models/report.schema';
 
 @Injectable()
 export class UsersService implements IUsersService {
@@ -56,7 +58,7 @@ export class UsersService implements IUsersService {
         @InjectModel(Quotation.name) private quotationModel: Model<QuotationDocument>,
         @InjectModel(Works.name) private workModel: Model<WorksDocument>,
         @InjectModel(Transaction.name) private transactionModel: Model<TransactionDocument>,
-        @InjectModel(Bid.name) private bidModel: Model<BidDocument>,
+        @InjectModel(Report.name) private reportModel: Model<ReportDocument>,
         private cloudinaryService: CloudinaryService,
         private notificationService: NotificationService,
         private bidsService: BidsService,
@@ -917,5 +919,21 @@ export class UsersService implements IUsersService {
           page,
           limit,
         };
+    }
+
+    async reportUser(reportDto: ReportUserDto, reporterId: string): Promise<SuccessResponseDto> {
+        try {
+            await this.reportModel.create({
+                reporterId: new Types.ObjectId(reporterId),
+                reportedUserId: new Types.ObjectId(reportDto.reportedUserId),
+                context: reportDto.context.trim(),
+                reason: reportDto.reason.trim(),
+                additionalContext: reportDto.additionalContext?.trim(),
+            })
+            return { success: true, message: 'Report submitted successfully' };
+        } catch (error) {
+            this.logger.error(`Error reporting user: ${error.message}`);
+            throw error;
+        }
     }
 }

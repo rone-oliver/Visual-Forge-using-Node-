@@ -27,7 +27,8 @@ import {
     PaginatedTransactionsResponseDto,
     EditorPublicProfileResponseDto,
     GetPublicEditorsDto,
-    PaginatedPublicEditorsDto
+    PaginatedPublicEditorsDto,
+    ReportUserDto
 } from '../dto/users.dto';
 import { User } from '../models/user.schema';
 import { PaymentType } from 'src/common/models/transaction.schema';
@@ -108,6 +109,8 @@ export interface IUsersService {
     createUser(user: Partial<User>): Promise<User>;
     updateOne(filter: Partial<User>, update: Partial<User>): Promise<void>;
     updatePassword(userId: Types.ObjectId, password: string): Promise<boolean>; // Covered by ResetPasswordDto
+
+    reportUser(reportDto: ReportUserDto, reporterId: string): Promise<SuccessResponseDto>;
 
     // Internal or less-exposed methods (might not need DTOs if purely internal, but good for consistency)
 

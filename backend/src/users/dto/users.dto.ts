@@ -20,6 +20,7 @@ import {
     Max,
     IsUrl,
     IsObject,
+    IsIn,
 } from 'class-validator';
 import { Types } from 'mongoose';
 import { Gender, Language } from '../models/user.schema';
@@ -27,6 +28,7 @@ import { QuotationStatus, OutputType, FileType } from '../../common/models/quota
 import { BidStatus } from '../../common/bids/models/bids.schema';
 import { PaymentType, PaymentStatus, PaymentMethod } from '../../common/models/transaction.schema';
 import { EditorDetailsDto } from 'src/editors/dto/editors.dto'; // Assuming this exists and is relevant
+import { ReportContext } from 'src/common/models/report.schema';
 
 // --- Enums (Re-exported for DTO usage if not directly imported in service/controller) ---
 export { Gender, Language, QuotationStatus, OutputType, FileType, BidStatus, PaymentType, PaymentStatus, PaymentMethod };
@@ -1239,4 +1241,23 @@ export class PaginatedPublicEditorsDto {
 
     @ApiProperty({ description: 'Number of items per page' })
     limit: number;
+}
+
+export class ReportUserDto {
+  @IsString()
+  @IsNotEmpty()
+  reportedUserId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsIn([ReportContext.CHAT, ReportContext.QUOTATION])
+  context: ReportContext;
+
+  @IsString()
+  @IsNotEmpty()
+  reason: string;
+
+  @IsString()
+  @IsOptional()
+  additionalContext?: string;
 }

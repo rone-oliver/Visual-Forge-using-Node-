@@ -30,11 +30,13 @@ import {
     UserProfileResponseDto,
     EditorPublicProfileResponseDto,
     GetPublicEditorsDto,
-    PaginatedPublicEditorsDto
+    PaginatedPublicEditorsDto,
+    ReportUserDto
 } from './dto/users.dto';
 import { IUsersService, IUsersServiceToken } from './interfaces/users.service.interface';
 import { IUsersController } from './interfaces/users.controller.interface';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { GetUser } from 'src/auth/decorators/get-user.decorator';
 // import { Public } from 'src/common/decorators/public.decorator';
 
 export interface GetQuotationsParams {
@@ -379,5 +381,13 @@ export class UsersController implements IUsersController {
         @Query() query: GetPublicEditorsDto,
     ): Promise<PaginatedPublicEditorsDto> {
         return this.userService.getPublicEditors(query);
+    }
+
+    @Post('reports')
+    async reportUser(
+        @Body() reportDto: ReportUserDto,
+        @GetUser('userId') userId: string,
+    ): Promise<SuccessResponseDto>{
+        return this.userService.reportUser(reportDto, userId);
     }
 }

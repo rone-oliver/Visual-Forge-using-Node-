@@ -26,9 +26,12 @@ import {
     EditorPublicProfileResponseDto,
     GetPublicEditorsDto,
     PaginatedPublicEditorsDto,
+    ReportUserDto,
 } from '../dto/users.dto';
 import { BidResponseDto } from '../dto/users.dto';
 import { FileUploadResult } from 'src/common/cloudinary/cloudinary.service'; 
+import { User } from '../models/user.schema';
+import { Types } from 'mongoose';
 
 export interface IUsersController {
     getUserProfile(req: Request): Promise<UserProfileResponseDto>;
@@ -98,4 +101,6 @@ export interface IUsersController {
     ): Promise<SuccessResponseDto>;
 
     acceptBid(bidId: string, req: Request): Promise<BidResponseDto>;
+
+    reportUser(reportDto: ReportUserDto, userId: string): Promise<SuccessResponseDto>;
 }
