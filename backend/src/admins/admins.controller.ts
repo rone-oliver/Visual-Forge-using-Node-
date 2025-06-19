@@ -6,7 +6,7 @@ import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { User } from 'src/users/models/user.schema';
 import { IAdminsController } from './interfaces/admins.controller.interface';
-import { FormattedEditor, FormattedEditorRequest, GetAllUsersQueryDto, GetEditorsQueryDto, UpdateReportDto } from './dto/admin.dto';
+import { DashboardResponseDto, FormattedEditor, FormattedEditorRequest, GetAllUsersQueryDto, GetEditorsQueryDto, UpdateReportDto } from './dto/admin.dto';
 import { IAdminsService, IAdminsServiceToken } from './interfaces/admins.service.interface';
 import { Role } from 'src/common/enums/role.enum';
 import { SuccessResponseDto } from 'src/users/dto/users.dto';
@@ -81,5 +81,12 @@ export class AdminsController implements IAdminsController {
         @Body() updateDto: UpdateReportDto,
     ): Promise<Report> {
         return await this.adminService.updateReport(reportId, updateDto);
+    }
+
+    @Get('dashboard')
+    @Roles(Role.ADMIN)
+    async getDashboardData(): Promise<DashboardResponseDto> {
+        this.logger.log('Attempting to fetch dashboard data');
+        return await this.adminService.getDashboardData();
     }
 }

@@ -1,5 +1,5 @@
 import { User } from "src/users/models/user.schema";
-import { FormattedEditor, FormattedEditorRequest, GetAllUsersQueryDto, GetEditorsQueryDto, UpdateReportDto } from "../dto/admin.dto";
+import { DashboardResponseDto, FormattedEditor, FormattedEditorRequest, GetAllUsersQueryDto, GetEditorsQueryDto, UpdateReportDto } from "../dto/admin.dto";
 import { SuccessResponseDto } from "src/users/dto/users.dto";
 import { Report } from "src/common/models/report.schema";
 
@@ -12,4 +12,5 @@ export interface IAdminsController {
     blockUser(userId: string): Promise<SuccessResponseDto>;
     getPendingReports(): Promise<Report[]>;
     updateReport(reportId: string, updateDto: UpdateReportDto): Promise<Report>;
+    getDashboardData(): Promise<DashboardResponseDto>;
 }

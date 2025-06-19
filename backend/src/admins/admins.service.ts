@@ -7,9 +7,10 @@ import * as bcrypt from 'bcrypt';
 import { EditorRequest, EditorRequestDocument, EditorRequestStatus } from 'src/common/models/editorRequest.schema';
 import { Editor, EditorDocument } from 'src/editors/models/editor.schema';
 import { IAdminsService } from './interfaces/admins.service.interface';
-import { FormattedEditor, FormattedEditorRequest, GetAllUsersQueryDto, GetEditorsQueryDto, UpdateReportDto } from './dto/admin.dto';
+import { DashboardResponseDto, FormattedEditor, FormattedEditorRequest, GetAllUsersQueryDto, GetEditorsQueryDto, UpdateReportDto } from './dto/admin.dto';
 import { Report, ReportDocument, ReportStatus } from 'src/common/models/report.schema';
 import { SuccessResponseDto } from 'src/users/dto/users.dto';
+import { Quotation, QuotationDocument, QuotationStatus } from 'src/common/models/quotation.schema';
 
 @Injectable()
 export class AdminsService implements IAdminsService {
@@ -21,6 +22,7 @@ export class AdminsService implements IAdminsService {
         @InjectModel(EditorRequest.name) private editorRequestModel: Model<EditorRequestDocument>,
         @InjectModel(Editor.name) private editorModel: Model<EditorDocument>,
         @InjectModel(Report.name) private reportModel: Model<ReportDocument>,
+        @InjectModel(Quotation.name) private quotationModel: Model<QuotationDocument>,
     ) { };
 
     async findOne(filter: Partial<Admin>): Promise<Admin | null> {
@@ -227,5 +229,47 @@ export class AdminsService implements IAdminsService {
             throw new NotFoundException(`Report with ID "${reportId}" not found`);
         }
         return report;
+    }
+
+    async getDashboardData(): Promise<DashboardResponseDto> {
+        try {
+            const totalUsers = await this.userModel.countDocuments();
+            const totalEditors = await this.editorModel.countDocuments();
+            const totalReports = await this.reportModel.countDocuments();
+            const totalEditorRequests = await this.editorRequestModel.countDocuments();
+            const totalQuotations = await this.quotationModel.countDocuments();
+
+            const quotationsByStatus = await this.quotationModel.aggregate([
+                { $group: { _id: '$status', count: { $sum: 1 } } }
+            ]);
+            const statusCounts = {
+                [QuotationStatus.PUBLISHED]: 0,
+                [QuotationStatus.ACCEPTED]: 0,
+                [QuotationStatus.COMPLETED]: 0,
+                [QuotationStatus.EXPIRED]: 0,
+                [QuotationStatus.CANCELLED]: 0,
+            };
+            quotationsByStatus.forEach(status => {
+                statusCounts[status._id] = status.count;
+            });
+
+            return {
+                totalUsers,
+                totalEditors,
+                totalReports,
+                totalEditorRequests,
+                totalQuotations,
+                quotationsByStatus: {
+                    Published: statusCounts.Published,
+                    Accepted: statusCounts.Accepted,
+                    Completed: statusCounts.Completed,
+                    Expired: statusCounts.Expired,
+                    Cancelled: statusCounts.Cancelled,
+                }
+            };
+        } catch (error) {
+            this.logger.error(`Error fetching dashboard data: ${error.message}`);
+            throw new HttpException('Failed to fetch dashboard data', HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

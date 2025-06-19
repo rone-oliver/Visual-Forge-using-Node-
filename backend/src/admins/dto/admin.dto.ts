@@ -55,3 +55,18 @@ export class UpdateReportDto {
   @IsOptional()
   resolution?: string;
 }
+
+export interface DashboardResponseDto {
+  totalUsers: number;
+  totalEditors: number;
+  totalReports: number;
+  totalQuotations: number;
+  totalEditorRequests: number;
+  quotationsByStatus: {
+    Published: number;
+    Accepted: number;
+    Completed: number;
+    Expired: number;
+    Cancelled: number;
+  };
+}

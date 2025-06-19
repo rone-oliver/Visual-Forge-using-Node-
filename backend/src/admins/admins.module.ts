@@ -9,6 +9,7 @@ import { Editor, editorSchema } from 'src/editors/models/editor.schema';
 import { UsersModule } from 'src/users/users.module';
 import { IAdminsServiceToken } from './interfaces/admins.service.interface';
 import { Report, ReportSchema } from 'src/common/models/report.schema';
+import { Quotation, QuotationSchema } from 'src/common/models/quotation.schema';
 
 @Module({
   providers: [
@@ -25,7 +26,8 @@ import { Report, ReportSchema } from 'src/common/models/report.schema';
       { name: User.name, schema: userSchema},
       { name: EditorRequest.name, schema: EditorRequestSchema},
       { name: Editor.name, schema: editorSchema},
-      { name: Report.name, schema: ReportSchema}
+      { name: Report.name, schema: ReportSchema},
+      { name: Quotation.name, schema: QuotationSchema}
     ])
   ],
   exports: [

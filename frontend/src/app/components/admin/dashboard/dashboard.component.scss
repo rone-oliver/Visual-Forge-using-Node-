@@ -1,0 +1,112 @@
+.admin-dashboard {
+  background-color: var(--admin-color-background);
+  color: var(--admin-color-text);
+
+  .heading {
+    color: var(--admin-color-text);
+  }
+
+  .card {
+    background-color: var(--admin-color-surface);
+    border: 1px solid var(--admin-color-border);
+    border-radius: 0.75rem;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .card-header {
+      background-color: var(--admin-color-background);
+      border-bottom: 1px solid var(--admin-color-border);
+      padding-left: 1rem;
+      .text-primary {
+        color: var(--admin-color-primary) !important;
+      }
+    }
+
+    .text-gray-800 {
+      color: var(--admin-color-text) !important;
+    }
+
+    .text-gray-300 {
+      color: var(--admin-color-secondary) !important;
+    }
+
+    &.border-left-primary {
+      border-left: 0.25rem solid var(--admin-color-primary) !important;
+    }
+    &.border-left-success {
+      border-left: 0.25rem solid #1cc88a !important;
+    }
+    &.border-left-info {
+      border-left: 0.25rem solid #36b9cc !important;
+    }
+    &.border-left-warning {
+      border-left: 0.25rem solid #f6c23e !important;
+    }
+
+    .card-body {
+      padding: 1.25rem;
+      flex-grow: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    .card-main-content {
+      display: flex;
+      width: 100%;
+      justify-content: space-between;
+      align-items: center;
+    }
+  }
+
+  .chart-pie, .chart-bar {
+    position: relative;
+    height: 300px;
+    width: 100%;
+  }
+
+  .stat-cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+  }
+
+  .stat-card {
+    flex: 1 1 250px;
+    min-width: 250px;
+    display: flex;
+
+    .card {
+      padding-left: 1rem;
+    }
+  }
+
+  .charts-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+  }
+
+  .chart-wrapper {
+    flex: 1 1 400px;
+    min-width: 400px;
+  }
+
+  .dashboard-icon {
+    font-size: 2rem;
+    height: 2rem;
+    width: 2rem;
+  }
+}
+@media (max-width: 768px) {
+  .admin-dashboard .chart-pie, .admin-dashboard .chart-bar {
+    height: 250px;
+  }
+}

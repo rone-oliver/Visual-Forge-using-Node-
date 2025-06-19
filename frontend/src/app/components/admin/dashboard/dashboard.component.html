@@ -1,0 +1,110 @@
+@if(dashboardData){
+<div class="admin-dashboard p-4">
+
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="heading text-3xl mb-0 text-gray-800">Dashboard</h1>
+    </div>
+
+    <!-- Stat Cards -->
+    <div class="stat-cards-container">
+        <div class="stat-card">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="card-main-content">
+                        <div class="card-text">
+                            <div class="text-xl font-weight-bold text-primary text-uppercase mb-1">Total Users</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ dashboardData.totalUsers }}</div>
+                        </div>
+                        <div class="card-icon">
+                            <mat-icon class="dashboard-icon text-gray-300">group</mat-icon>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="card-main-content">
+                        <div class="card-text">
+                            <div class="text-xl font-weight-bold text-success text-uppercase mb-1">Total Editors</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ dashboardData.totalEditors }}</div>
+                        </div>
+                        <div class="card-icon">
+                            <mat-icon class="dashboard-icon text-gray-300">verified_user</mat-icon>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="card-main-content">
+                        <div class="card-text">
+                            <div class="text-xl font-weight-bold text-info text-uppercase mb-1">Total Reports</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ dashboardData.totalReports }}</div>
+                        </div>
+                        <div class="card-icon">
+                            <mat-icon class="dashboard-icon text-gray-300">article</mat-icon>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="card-main-content">
+                        <div class="card-text">
+                            <div class="text-xl font-weight-bold text-warning text-uppercase mb-1">Pending Editor
+                                Requests</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ dashboardData.totalEditorRequests }}
+                            </div>
+                        </div>
+                        <div class="card-icon">
+                            <mat-icon class="dashboard-icon text-gray-300">person_add</mat-icon>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-container">
+        <div class="chart-wrapper">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">User Role Distribution</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-pie pt-4">
+                        <canvas baseChart [data]="userDoughnutChartData" [options]="userDoughnutChartOptions"
+                            [type]="'doughnut'"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-wrapper">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Quotation Status</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-bar pt-4">
+                        <canvas baseChart [data]="quotationBarChartData" [options]="quotationBarChartOptions"
+                            [type]="'bar'"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+}
