@@ -216,6 +216,8 @@ export class UserRegisterComponent implements OnInit {
       next: (response) => {
         if (response) {
           this.successMessage = 'Email verified successfully';
+          localStorage.removeItem(this.EMAIL_STORAGE_KEY);
+          localStorage.removeItem(this.COUNTDOWN_STORAGE_KEY);
           setTimeout(() => {
             this.router.navigate(['/auth/login'])
           }, 1000)
