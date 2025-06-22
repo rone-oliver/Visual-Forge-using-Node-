@@ -28,5 +28,7 @@ export const ADMIN_ROUTES = {
 export const EDITOR_ROUTES = {
     PUBLISHED_QUOTATIONS: () => import('../components/editor/quotation/quotation.component').then(m => m.QuotationComponent),
     ACCEPTED_QUOTATIONS: () => import('../components/editor/accepted-quotation/accepted-quotation.component').then(m => m.AcceptedQuotationComponent),
-    WORKS_HISTORY: () => import('../components/editor/works-history/works-history.component').then(m => m.WorksHistoryComponent)
+    WORKS_HISTORY: () => import('../components/editor/works-history/works-history.component').then(m => m.WorksHistoryComponent),
+    COMMUNITY_CHAT: () => import('../components/editor/community/chat/chat.component').then(m => m.ChatComponent),
+    COMMUNITIES: () => import('../components/editor/community/communities/communities.component').then(m => m.CommunitiesComponent)
 };

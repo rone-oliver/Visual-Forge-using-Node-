@@ -1,0 +1,60 @@
+<div class="community-chat-container">
+  <div class="community-chat-container">
+    <div class="chat-header">
+      <div class="back-button">
+        <button mat-icon-button (click)="goBack()">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+      </div>
+      <div class="header-content">
+        @if(community){
+        <h2>{{ community.name }}</h2>
+        <div class="member-names">Members: {{ getMemberNames() }}</div>
+        }
+      </div>
+      <div class="header-actions">
+        @if(community){
+        <button mat-icon-button [matMenuTriggerFor]="menu">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+        <mat-menu #menu="matMenu" panelClass="options-menu">
+          <button mat-menu-item (click)="leaveCommunity()">
+            <mat-icon>exit_to_app</mat-icon>
+            <span>Leave community</span>
+          </button>
+          <button mat-menu-item (click)="reportCommunity()">
+            <mat-icon>flag</mat-icon>
+            <span>Report Group</span>
+          </button>
+        </mat-menu>
+        }
+      </div>
+    </div>
+
+    <div #messagesContainer class="messages-container">
+      @if (messages.length > 0) {
+      @for (message of messages; track $index) {
+      <div class="message" [class]="{'outgoing': isMyMessage(message), 'incoming': !isMyMessage(message)}">
+        <div class="message-content">
+          @if (!isMyMessage(message)) {
+          <div class="sender-name">{{ message.sender.fullname }}</div>
+          }
+          <p>{{ message.content }}</p>
+          <span class="timestamp">{{ message.createdAt | date:'shortTime' }}</span>
+        </div>
+      </div>
+      }
+      } @else {
+      <div class="empty-chat-placeholder">
+        <mat-icon>chat_bubble_outline</mat-icon>
+        <p>No messages yet. Be the first to start the conversation!</p>
+      </div>
+      }
+    </div>
+
+    <div class="input-container">
+      <input type="text" [(ngModel)]="newMessageContent" (keyup.enter)="sendMessage()" placeholder="Type a message...">
+      <button (click)="sendMessage()" [disabled]="!newMessageContent.trim()">Send</button>
+    </div>
+  </div>
+</div>

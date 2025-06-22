@@ -1,0 +1,22 @@
+<h2 mat-dialog-title>Create New Community</h2>
+<mat-dialog-content>
+    <form [formGroup]="createCommunityForm">
+        <mat-form-field appearance="fill">
+            <mat-label>Community Name</mat-label>
+            <input matInput formControlName="name" required>
+            <mat-error *ngIf="createCommunityForm.get('name')?.hasError('required')">
+                Community name is required
+            </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+            <mat-label>Description (Optional)</mat-label>
+            <textarea matInput formControlName="description"></textarea>
+        </mat-form-field>
+    </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+    <button mat-button (click)="onCancel()">Cancel</button>
+    <button mat-raised-button color="primary" [disabled]="!createCommunityForm.valid"
+        (click)="onCreate()">Create</button>
+</mat-dialog-actions>

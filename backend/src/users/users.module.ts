@@ -40,6 +40,6 @@ import { Report, ReportSchema } from 'src/common/models/report.schema';
     PaymentModule, BidsModule,
     forwardRef(()=> NotificationModule)
   ],
-  exports: [IUsersServiceToken]
+  exports: [IUsersServiceToken,]
 })
 export class UsersModule {}

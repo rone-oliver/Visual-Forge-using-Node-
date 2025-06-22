@@ -134,6 +134,14 @@ export const routes: Routes = [
             {
                 path:'works/history', 
                 loadComponent: EDITOR_ROUTES.WORKS_HISTORY
+            },
+            {
+                path: 'community/:id',
+                loadComponent: EDITOR_ROUTES.COMMUNITY_CHAT
+            },
+            {
+                path: 'community',
+                loadComponent: EDITOR_ROUTES.COMMUNITIES
             }
         ]
     }

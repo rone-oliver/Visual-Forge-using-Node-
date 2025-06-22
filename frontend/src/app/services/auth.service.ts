@@ -348,6 +348,20 @@ export class AuthService {
     return !!token && this._isTokenValid(token);
   }
 
+  getUserId(userType: 'User' | 'Admin' = 'User'): string | null {
+    const token = this.getAccessToken(userType);
+    if (token) {
+        try {
+            const payload = this.extractJwtPayload(token);
+            return payload.userId;
+        } catch (error) {
+            console.error('Error extracting user ID from token:', error);
+            return null;
+        }
+    }
+    return null;
+  }
+
   hasRole(role: string, userType: 'User' | 'Admin'): boolean {
     const token = this.tokenService.getToken(userType);
     if (!token) return false;

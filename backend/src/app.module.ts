@@ -24,10 +24,13 @@ import { NotificationModule } from './notification/notification.module';
 import { BidsModule } from './common/bids/bids.module';
 import { AiModule } from './ai/ai.module';
 import { WalletModule } from './wallet/wallet.module';
+import { CommunityModule } from './community/community.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
     ConfigModule.forRoot({isGlobal: true,envFilePath:'.env',}),
+    EventEmitterModule.forRoot(),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
@@ -57,7 +60,7 @@ import { WalletModule } from './wallet/wallet.module';
       inject: [ConfigService],
     }),
     // MongooseModule.forRoot(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/visualForge'),
-    AuthModule,UsersModule, DatabaseModule, AdminsModule, EditorsModule, UsersAuthModule, EditorsAuthModule, AdminsAuthModule, JwtConfigModule, PaymentModule, ChatModule, NotificationModule, BidsModule, AiModule, WalletModule
+    AuthModule,UsersModule, DatabaseModule, AdminsModule, EditorsModule, UsersAuthModule, EditorsAuthModule, AdminsAuthModule, JwtConfigModule, PaymentModule, ChatModule, NotificationModule, BidsModule, AiModule, WalletModule, CommunityModule
   ],
   controllers: [AppController, UsersAuthController, TokenRefreshController],
   providers: [AppService, JwtService, TokenRefreshService, CloudinaryService],

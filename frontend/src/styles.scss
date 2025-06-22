@@ -189,4 +189,24 @@
       }
     }
   }
+
+  .options-menu {
+    .mat-mdc-menu-panel.options-menu {
+      background-color: var(--color-surface) !important;
+      border: 1px solid var(--color-neutral-200);
+      border-radius: 8px !important;
+  
+      .mat-mdc-menu-item {
+        color: var(--color-text);
+  
+        .mat-icon {
+          color: var(--color-text);
+        }
+  
+        &:hover:not([disabled]) {
+          background-color: var(--color-neutral-100) !important;
+        }
+      }
+    }
+  }
 }

@@ -26,7 +26,7 @@
             <div [routerLink]="['/user/profile']" class="icon-button">
                 <mat-icon>person</mat-icon>
             </div>
-            <div *ngIf="userRole === 'Editor'" class="icon-button">
+            <div *ngIf="userRole === 'Editor'" [routerLink]="['/editor/community']" class="icon-button">
                 <mat-icon>groups</mat-icon>
             </div>
         </ng-container>
