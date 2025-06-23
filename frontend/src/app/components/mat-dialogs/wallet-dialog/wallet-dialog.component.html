@@ -8,22 +8,36 @@
 
   <mat-dialog-content class="dialog-content">
     <form [formGroup]="form" (ngSubmit)="onSubmit()">
-      <p *ngIf="data.type === 'add'">Select an amount or enter a custom amount to add.</p>
-      <p *ngIf="data.type === 'withdraw'">Enter the amount you wish to withdraw.</p>
+      @if (data.type === 'add') {
+        <p>Select an amount or enter a custom amount to add.</p>
+      }
+      @if (data.type === 'withdraw') {
+        <p>Enter the amount you wish to withdraw.</p>
+      }
 
-      <div *ngIf="data.type === 'add'" class="quick-add-buttons">
-        <button *ngFor="let amount of quickAddAmounts" type="button" mat-stroked-button (click)="setAmount(amount)">
-          ₹{{ amount }}
-        </button>
-      </div>
+      @if (data.type === 'add') {
+        <div class="quick-add-buttons">
+          @for (amount of quickAddAmounts; track amount) {
+            <button type="button" mat-stroked-button (click)="setAmount(amount)">
+              ₹{{ amount }}
+            </button>
+          }
+        </div>
+      }
 
       <mat-form-field appearance="outline" class="amount-input">
         <mat-label>Amount</mat-label>
         <span matPrefix>&nbsp;₹&nbsp;</span>
         <input matInput type="number" placeholder="0.00" formControlName="amount" required>
-        <mat-error *ngIf="form.get('amount')?.hasError('required')">Amount is required.</mat-error>
-        <mat-error *ngIf="form.get('amount')?.hasError('min')">Amount must be positive.</mat-error>
-        <mat-error *ngIf="form.get('amount')?.hasError('pattern')">Invalid amount format.</mat-error>
+        @if (form.get('amount')?.hasError('required')) {
+          <mat-error>Amount is required.</mat-error>
+        }
+        @if (form.get('amount')?.hasError('min')) {
+          <mat-error>Amount must be positive.</mat-error>
+        }
+        @if (form.get('amount')?.hasError('pattern')) {
+          <mat-error>Invalid amount format.</mat-error>
+        }
       </mat-form-field>
     </form>
   </mat-dialog-content>

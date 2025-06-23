@@ -1,110 +1,123 @@
 <div class="min-h-screen bg-gray-50 flex items-center justify-center">
-    <div class="w-full max-w-md">
-        <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-indigo-600 mb-2">Visual Forge</h1>
-            <h2 class="text-2xl font-semibold text-gray-800">Welcome Back!</h2>
-            <p class="text-gray-600 mt-2">Sign in to continue your journey</p>
-        </div>
-        <div *ngIf="successMessage" class="success-message-container">
-            <div class="success-icon">
-                <mat-icon>check_circle_outline</mat-icon>
-            </div>
-            <div class="success-text">
-                {{ successMessage }}
-            </div>
-        </div>
-
-        <div *ngIf="errorMessage" class="error-message-container">
-            <div class="error-icon">
-                <mat-icon>error_outline</mat-icon>
-            </div>
-            <div class="error-text">
-                {{ errorMessage }}
-            </div>
-        </div>
-        
-        <!-- Normal Login Form -->
-        <div *ngIf="!showForgotPassword">
-            <app-form [formControls]="loginControls" [submitButtonLabel]="'Login'"
-                (formSubmit)="onFormSubmit($event)"></app-form>
-            
-            <div class="flex justify-between items-center mt-4">
-                <button (click)="toggleForgotPassword()" 
-                    class="text-sm text-indigo-600 hover:text-indigo-800 font-medium transition-colors">
-                    Forgot Password?
-                </button>
-                <p  class="text-sm text-gray-600">Just joining?
-                    <a [routerLink]="['/auth/register']" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium transition-colors">
-                        Register here
-                    </a>
-                </p>
-            </div>
-        </div>
-        
-        <!-- Forgot Password Form -->
-        <div *ngIf="showForgotPassword" class="bg-white p-6 rounded-lg shadow-md">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-medium text-gray-900">Reset Password</h3>
-                <button (click)="toggleForgotPassword()" class="text-gray-500 hover:text-gray-700">
-                    <mat-icon>close</mat-icon>
-                </button>
-            </div>
-            
-            <!-- Email Step -->
-            <div *ngIf="forgotPasswordStep === 'email'">
-                <app-form [formControls]="emailControls" 
-                          [submitButtonLabel]="'Send OTP'"
-                          (formSubmit)="onEmailSubmit($event)"></app-form>
-            </div>
-            
-            <!-- OTP Step -->
-            <div *ngIf="forgotPasswordStep === 'otp'">
-                <app-form [formControls]="otpControls" 
-                          [submitButtonLabel]="'Verify OTP'"
-                          (formSubmit)="onOtpSubmit($event)"></app-form>
-                
-                <div class="flex justify-between items-center mt-2 mb-4">
-                    <div *ngIf="!canResendOtp" class="text-sm text-gray-500">
-                        Resend available in {{otpCountdown}} seconds
-                    </div>
-                    <button *ngIf="canResendOtp" type="button" 
-                            (click)="sendPasswordResetOtp('resend')" 
-                            class="text-sm text-indigo-600 hover:text-indigo-800">
-                        Resend OTP
-                    </button>
-                </div>
-            </div>
-            
-            <!-- New Password Step -->
-            <div *ngIf="forgotPasswordStep === 'newPassword'">
-                <app-form [formControls]="newPasswordControls" 
-                          [submitButtonLabel]="'Reset Password'"
-                          (formSubmit)="onNewPasswordSubmit($event)"></app-form>
-            </div>
-            
-            <div class="text-center mt-4">
-                <button type="button" (click)="toggleForgotPassword()" 
-                        class="text-sm text-gray-600 hover:text-gray-800">
-                    Back to Login
-                </button>
-            </div>
-        </div>
-        
-        <div *ngIf="!showForgotPassword" class="mt-6 w-full">
-            <!-- Divider -->
-            <div class="relative">
-                <div class="absolute inset-0 flex items-center">
-                    <div class="w-full border-t border-gray-300 dark:border-gray-700"></div>
-                </div>
-                <div class="relative flex justify-center text-sm">
-                    <span class="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">Or continue with</span>
-                </div>
-            </div>
-        
-            <!-- Google Sign-In Container -->
-            <div class="mt-6 flex justify-center">
-                <div id="googleSignInDiv" class="g_id_signin"></div>
-            </div>
-        </div>
+  <div class="w-full max-w-md">
+    <div class="text-center mb-8">
+      <h1 class="text-4xl font-bold text-indigo-600 mb-2">Visual Forge</h1>
+      <h2 class="text-2xl font-semibold text-gray-800">Welcome Back!</h2>
+      <p class="text-gray-600 mt-2">Sign in to continue your journey</p>
     </div>
+    @if (successMessage) {
+      <div class="success-message-container">
+        <div class="success-icon">
+          <mat-icon>check_circle_outline</mat-icon>
+        </div>
+        <div class="success-text">
+          {{ successMessage }}
+        </div>
+      </div>
+    }
+
+    @if (errorMessage) {
+      <div class="error-message-container">
+        <div class="error-icon">
+          <mat-icon>error_outline</mat-icon>
+        </div>
+        <div class="error-text">
+          {{ errorMessage }}
+        </div>
+      </div>
+    }
+
+    <!-- Normal Login Form -->
+    @if (!showForgotPassword) {
+      <div>
+        <app-form [formControls]="loginControls" [submitButtonLabel]="'Login'"
+        (formSubmit)="onFormSubmit($event)"></app-form>
+        <div class="flex justify-between items-center mt-4">
+          <button (click)="toggleForgotPassword()"
+            class="text-sm text-indigo-600 hover:text-indigo-800 font-medium transition-colors">
+            Forgot Password?
+          </button>
+          <p  class="text-sm text-gray-600">Just joining?
+            <a [routerLink]="['/auth/register']" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium transition-colors">
+              Register here
+            </a>
+          </p>
+        </div>
+      </div>
+    }
+
+    <!-- Forgot Password Form -->
+    @if (showForgotPassword) {
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-medium text-gray-900">Reset Password</h3>
+          <button (click)="toggleForgotPassword()" class="text-gray-500 hover:text-gray-700">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <!-- Email Step -->
+        @if (forgotPasswordStep === 'email') {
+          <div>
+            <app-form [formControls]="emailControls"
+              [submitButtonLabel]="'Send OTP'"
+            (formSubmit)="onEmailSubmit($event)"></app-form>
+          </div>
+        }
+        <!-- OTP Step -->
+        @if (forgotPasswordStep === 'otp') {
+          <div>
+            <app-form [formControls]="otpControls"
+              [submitButtonLabel]="'Verify OTP'"
+            (formSubmit)="onOtpSubmit($event)"></app-form>
+            <div class="flex justify-between items-center mt-2 mb-4">
+              @if (!canResendOtp) {
+                <div class="text-sm text-gray-500">
+                  Resend available in {{otpCountdown}} seconds
+                </div>
+              }
+              @if (canResendOtp) {
+                <button type="button"
+                  (click)="sendPasswordResetOtp('resend')"
+                  class="text-sm text-indigo-600 hover:text-indigo-800">
+                  Resend OTP
+                </button>
+              }
+            </div>
+          </div>
+        }
+        <!-- New Password Step -->
+        @if (forgotPasswordStep === 'newPassword') {
+          <div>
+            <app-form [formControls]="newPasswordControls"
+              [submitButtonLabel]="'Reset Password'"
+            (formSubmit)="onNewPasswordSubmit($event)"></app-form>
+          </div>
+        }
+        <div class="text-center mt-4">
+          <button type="button" (click)="toggleForgotPassword()"
+            class="text-sm text-gray-600 hover:text-gray-800">
+            Back to Login
+          </button>
+        </div>
+      </div>
+    }
+
+    @if (!showForgotPassword) {
+      <div class="mt-6 w-full">
+        <!-- Divider -->
+        <div class="relative">
+          <div class="absolute inset-0 flex items-center">
+            <div class="w-full border-t border-gray-300 dark:border-gray-700"></div>
+          </div>
+          <div class="relative flex justify-center text-sm">
+            <span class="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">Or continue with</span>
+          </div>
+        </div>
+        <!-- Google Sign-In Container -->
+        <div class="mt-6 flex justify-center">
+          <div id="googleSignInDiv" class="g_id_signin"></div>
+        </div>
+      </div>
+    }
+  </div>
 </div>

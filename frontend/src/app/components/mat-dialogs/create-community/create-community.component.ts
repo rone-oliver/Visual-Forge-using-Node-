@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { CommunityService } from '../../../services/community/community-chat.service';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { CommonModule } from '@angular/common';
+
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 
@@ -14,9 +14,8 @@ import { MatButtonModule } from '@angular/material/button';
     MatButtonModule,
     MatDialogModule,
     MatFormFieldModule,
-    ReactiveFormsModule,
-    CommonModule
-  ],
+    ReactiveFormsModule
+],
   templateUrl: './create-community.component.html',
   styleUrls: ['./create-community.component.scss']
 })

@@ -12,45 +12,59 @@
     <mat-form-field appearance="outline" class="search-field">
       <mat-label>Search users</mat-label>
       <input matInput [(ngModel)]="searchQuery" (input)="onSearchChange()" placeholder="Search by name or email">
-      <button *ngIf="searchQuery" matSuffix mat-icon-button aria-label="Clear" (click)="clearSearch()">
-        <mat-icon>close</mat-icon>
-      </button>
+      @if (searchQuery) {
+        <button matSuffix mat-icon-button aria-label="Clear" (click)="clearSearch()">
+          <mat-icon>close</mat-icon>
+        </button>
+      }
       <mat-icon matPrefix>search</mat-icon>
     </mat-form-field>
   </div>
 
   <!-- Loading Spinner -->
-  <div *ngIf="isLoading" class="loading-container">
-    <mat-spinner diameter="40"></mat-spinner>
-    <p>Loading users...</p>
-  </div>
+  @if (isLoading) {
+    <div class="loading-container">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Loading users...</p>
+    </div>
+  }
 
   <!-- Empty State -->
-  <div *ngIf="!isLoading && filteredUsers.length === 0" class="empty-state">
-    <mat-icon>person_search</mat-icon>
-    <p>No users found</p>
-  </div>
+  @if (!isLoading && filteredUsers.length === 0) {
+    <div class="empty-state">
+      <mat-icon>person_search</mat-icon>
+      <p>No users found</p>
+    </div>
+  }
 
   <!-- User List -->
-  <div *ngIf="!isLoading && filteredUsers.length > 0" class="user-list">
-    <div *ngFor="let user of filteredUsers" class="user-item" (click)="selectUser(user)">
-      <div class="user-avatar">
-        <img *ngIf="user.profileImage" [src]="user.profileImage" alt="{{ user.username }}'s avatar" appMediaProtection>
-        <div *ngIf="!user.profileImage" class="avatar-placeholder">
-          {{ getInitials(user.username) }}
+  @if (!isLoading && filteredUsers.length > 0) {
+    <div class="user-list">
+      @for (user of filteredUsers; track user) {
+        <div class="user-item" (click)="selectUser(user)">
+          <div class="user-avatar">
+            @if (user.profileImage) {
+              <img [src]="user.profileImage" alt="{{ user.username }}'s avatar" appMediaProtection>
+            }
+            @if (!user.profileImage) {
+              <div class="avatar-placeholder">
+                {{ getInitials(user.username) }}
+              </div>
+            }
+            @if (user.isOnline) {
+              <div class="online-indicator"></div>
+            }
+          </div>
+          <div class="user-info">
+            <h3 class="user-name">{{ user.username }}</h3>
+            <p class="user-email">{{ user.email }}</p>
+          </div>
+          <button mat-flat-button color="primary" class="hi-button" (click)="sendHi(user, $event)" matTooltip="Send a greeting">
+            <mat-icon>waving_hand</mat-icon>
+            <span>Hi!</span>
+          </button>
         </div>
-        <div *ngIf="user.isOnline" class="online-indicator"></div>
-      </div>
-      
-      <div class="user-info">
-        <h3 class="user-name">{{ user.username }}</h3>
-        <p class="user-email">{{ user.email }}</p>
-      </div>
-      
-      <button mat-flat-button color="primary" class="hi-button" (click)="sendHi(user, $event)" matTooltip="Send a greeting">
-        <mat-icon>waving_hand</mat-icon>
-        <span>Hi!</span>
-      </button>
+      }
     </div>
-  </div>
+  }
 </div>

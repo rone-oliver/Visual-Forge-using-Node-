@@ -1,66 +1,75 @@
 <div class="file-modal-container">
-    <div class="file-modal-header">
-        <h2>{{ data.fileType | titlecase }} Files</h2>
-        <button class="close-button" (click)="close()">
-            <mat-icon>cancel</mat-icon>
-        </button>
-    </div>
-    <div class="file-modal-content">
-        <div *ngIf="data.files.length === 0" class="no-files">
-            No {{ data.fileType }} files available
-        </div>
-        <div *ngFor="let file of data.files" class="file-card">
-            <div class="file-info">
-                <div class="info">
-                    <div class="file-name">{{ file.fileName }}</div>
-                    <div class="file-details">
-                        <span>Size: {{ formatFileSize(file.size) }}</span>
-                        <span>Type: {{ file.mimeType }}</span>
-                        <span>Uploaded: {{ file.uploadedAt | date }}</span>
-                    </div>
-                </div>
-                <!-- Download button for all file types -->
-                <div class="download-section">
-                    <button class="download-btn" 
-                            (click)="downloadFile(file)" 
-                            [disabled]="isDownloading[file.fileName]">
-                        <ng-container *ngIf="!isDownloading[file.fileName]">
-                            <mat-icon>download</mat-icon>
-                            <span>Download</span>
-                        </ng-container>
-                        <ng-container *ngIf="isDownloading[file.fileName]">
-                            <mat-progress-spinner
-                                mode="determinate"
-                                [value]="downloadProgress[file.fileName]"
-                                diameter="20">
-                            </mat-progress-spinner>
-                            <span>{{ downloadProgress[file.fileName] }}%</span>
-                        </ng-container>
-                    </button>
-                </div>
+  <div class="file-modal-header">
+    <h2>{{ data.fileType | titlecase }} Files</h2>
+    <button class="close-button" (click)="close()">
+      <mat-icon>cancel</mat-icon>
+    </button>
+  </div>
+  <div class="file-modal-content">
+    @if (data.files.length === 0) {
+      <div class="no-files">
+        No {{ data.fileType }} files available
+      </div>
+    }
+    @for (file of data.files; track file) {
+      <div class="file-card">
+        <div class="file-info">
+          <div class="info">
+            <div class="file-name">{{ file.fileName }}</div>
+            <div class="file-details">
+              <span>Size: {{ formatFileSize(file.size) }}</span>
+              <span>Type: {{ file.mimeType }}</span>
+              <span>Uploaded: {{ file.uploadedAt | date }}</span>
             </div>
-            <div class="file-preview">
-                <!-- Image preview -->
-                <img *ngIf="file.fileType === 'image'" [src]="file.url" [alt]="file.fileName" class="image-preview" appMediaProtection>
-
-                <!-- Audio preview -->
-                <audio *ngIf="file.fileType === 'audio'" controls>
-                    <source [src]="file.url" [type]="file.mimeType">
-                    Your browser does not support the audio element.
-                </audio>
-
-                <!-- Video preview -->
-                <video *ngIf="file.fileType === 'video'" controls class="video-preview" appMediaProtection>
-                    <source [src]="file.url" [type]="file.mimeType">
-                    Your browser does not support the video element.
-                </video>
-
-                <!-- Document preview (just a link) -->
-                <div *ngIf="file.fileType === 'document'" class="document-preview">
-                    <mat-icon>description</mat-icon>
-                    <a [href]="file.url" target="_blank">View Document</a>
-                </div>
-            </div>
+          </div>
+          <!-- Download button for all file types -->
+          <div class="download-section">
+            <button class="download-btn"
+              (click)="downloadFile(file)"
+              [disabled]="isDownloading[file.fileName]">
+              @if (!isDownloading[file.fileName]) {
+                <mat-icon>download</mat-icon>
+                <span>Download</span>
+              }
+              @if (isDownloading[file.fileName]) {
+                <mat-progress-spinner
+                  mode="determinate"
+                  [value]="downloadProgress[file.fileName]"
+                  diameter="20">
+                </mat-progress-spinner>
+                <span>{{ downloadProgress[file.fileName] }}%</span>
+              }
+            </button>
+          </div>
         </div>
-    </div>
+        <div class="file-preview">
+          <!-- Image preview -->
+          @if (file.fileType === 'image') {
+            <img [src]="file.url" [alt]="file.fileName" class="image-preview" appMediaProtection>
+          }
+          <!-- Audio preview -->
+          @if (file.fileType === 'audio') {
+            <audio controls>
+              <source [src]="file.url" [type]="file.mimeType">
+              Your browser does not support the audio element.
+            </audio>
+          }
+          <!-- Video preview -->
+          @if (file.fileType === 'video') {
+            <video controls class="video-preview" appMediaProtection>
+              <source [src]="file.url" [type]="file.mimeType">
+              Your browser does not support the video element.
+            </video>
+          }
+          <!-- Document preview (just a link) -->
+          @if (file.fileType === 'document') {
+            <div class="document-preview">
+              <mat-icon>description</mat-icon>
+              <a [href]="file.url" target="_blank">View Document</a>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
 </div>

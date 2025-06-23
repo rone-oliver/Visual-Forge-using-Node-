@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Activity, Hourglass, LucideAngularModule, Zap } from 'lucide-angular';
 import { Search, Funnel, ChevronDown, ShareIcon, Plus, Clock, Star, X, X as XIcon, Check } from 'lucide-angular';
@@ -17,16 +17,16 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 @Component({
   selector: 'app-editor-section',
   imports: [
-    ReactiveFormsModule, 
-    CommonModule, 
-    FormsModule, 
-    MatIconModule, 
-    MatCheckboxModule, 
+    ReactiveFormsModule,
+    FormsModule,
+    MatIconModule,
+    MatCheckboxModule,
     MatSelectModule,
     MatFormFieldModule,
-    LucideAngularModule, 
-    DatePipe, 
-    TableComponent],
+    LucideAngularModule,
+    DatePipe,
+    TableComponent
+],
   templateUrl: './editor-section.component.html',
   styleUrl: './editor-section.component.scss'
 })

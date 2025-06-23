@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { CommunityService } from '../../../../services/community/community-chat.service';
 import { CreateCommunityComponent } from '../../../mat-dialogs/create-community/create-community.component';
 import { MatIconModule } from '@angular/material/icon';
-import { CommonModule } from '@angular/common';
+
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -14,7 +14,7 @@ import { Community } from '../../../../interfaces/community.interface';
 
 @Component({
   selector: 'app-communities',
-  imports: [MatIconModule,CommonModule,MatButtonModule,MatCardModule,MatProgressSpinnerModule],
+  imports: [MatIconModule, MatButtonModule, MatCardModule, MatProgressSpinnerModule],
   templateUrl: './communities.component.html',
   styleUrl: './communities.component.scss'
 })

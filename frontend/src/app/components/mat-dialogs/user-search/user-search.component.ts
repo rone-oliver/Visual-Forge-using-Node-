@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -29,7 +29,6 @@ export interface UserSearchDialogData {
   selector: 'app-user-search',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     MatDialogModule,
     MatButtonModule,
@@ -38,8 +37,8 @@ export interface UserSearchDialogData {
     MatFormFieldModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
-    MediaProtectionDirective,
-  ],
+    MediaProtectionDirective
+],
   templateUrl: './user-search.component.html',
   styleUrls: ['./user-search.component.scss']
 })

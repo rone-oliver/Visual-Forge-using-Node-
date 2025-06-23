@@ -1,100 +1,120 @@
 <div class="bid-dialog-container">
-    <div class="dialog-header">
-        <h2 class="dialog-title">Bids for "{{ data.quotation.title }}"</h2>
-        <button class="close-button" (click)="close()">
-            <mat-icon>cancel</mat-icon>
-        </button>
-    </div>
+  <div class="dialog-header">
+    <h2 class="dialog-title">Bids for "{{ data.quotation.title }}"</h2>
+    <button class="close-button" (click)="close()">
+      <mat-icon>cancel</mat-icon>
+    </button>
+  </div>
 
-    <!-- Quotation Summary -->
-    <div class="quotation-summary">
-        <div class="budget-badge">${{ data.quotation.estimatedBudget }}</div>
-        <p class="quotation-description">{{ data.quotation.description }}</p>
-        <div class="quotation-metadata">
-            <div class="metadata-item">
-                <span class="metadata-label">Theme</span>
-                <span class="metadata-value">{{ data.quotation.theme }}</span>
-            </div>
-            <div class="metadata-item">
-                <span class="metadata-label">Output Type</span>
-                <span class="metadata-value">{{ data.quotation.outputType }}</span>
-            </div>
-            <div class="metadata-item deadline">
-                <span class="metadata-label">Due Date</span>
-                <span class="metadata-value">{{ data.quotation.dueDate ? (data.quotation.dueDate | localDate:'medium'): 'N/A' }}</span>
-            </div>
-        </div>
+  <!-- Quotation Summary -->
+  <div class="quotation-summary">
+    <div class="budget-badge">${{ data.quotation.estimatedBudget }}</div>
+    <p class="quotation-description">{{ data.quotation.description }}</p>
+    <div class="quotation-metadata">
+      <div class="metadata-item">
+        <span class="metadata-label">Theme</span>
+        <span class="metadata-value">{{ data.quotation.theme }}</span>
+      </div>
+      <div class="metadata-item">
+        <span class="metadata-label">Output Type</span>
+        <span class="metadata-value">{{ data.quotation.outputType }}</span>
+      </div>
+      <div class="metadata-item deadline">
+        <span class="metadata-label">Due Date</span>
+        <span class="metadata-value">{{ data.quotation.dueDate ? (data.quotation.dueDate | localDate:'medium'): 'N/A' }}</span>
+      </div>
     </div>
+  </div>
 
-    <!-- Loading State -->
-    <div class="loading-container" *ngIf="loading">
-        <mat-spinner diameter="40" color="accent"></mat-spinner>
-        <p>Loading bids...</p>
+  <!-- Loading State -->
+  @if (loading) {
+    <div class="loading-container">
+      <mat-spinner diameter="40" color="accent"></mat-spinner>
+      <p>Loading bids...</p>
     </div>
+  }
 
-    <!-- Error State -->
-    <div class="error-container" *ngIf="error && !loading">
-        <mat-icon class="error-icon">error_outline</mat-icon>
-        <p>{{ error }}</p>
-        <button mat-raised-button color="primary" (click)="loadBids()">Try Again</button>
+  <!-- Error State -->
+  @if (error && !loading) {
+    <div class="error-container">
+      <mat-icon class="error-icon">error_outline</mat-icon>
+      <p>{{ error }}</p>
+      <button mat-raised-button color="primary" (click)="loadBids()">Try Again</button>
     </div>
+  }
 
-    <!-- No Bids State -->
-    <div class="no-bids-container" *ngIf="bids.length === 0 && !loading && !error">
-        <mat-icon class="no-bids-icon">search_off</mat-icon>
-        <p>No bids have been placed on this quotation yet.</p>
-        <p class="hint-text">Check back later or adjust your quotation details to attract more editors.</p>
-        <button mat-stroked-button color="primary" (click)="loadBids()">
-            <mat-icon>refresh</mat-icon>
-            Refresh
-        </button>
+  <!-- No Bids State -->
+  @if (bids.length === 0 && !loading && !error) {
+    <div class="no-bids-container">
+      <mat-icon class="no-bids-icon">search_off</mat-icon>
+      <p>No bids have been placed on this quotation yet.</p>
+      <p class="hint-text">Check back later or adjust your quotation details to attract more editors.</p>
+      <button mat-stroked-button color="primary" (click)="loadBids()">
+        <mat-icon>refresh</mat-icon>
+        Refresh
+      </button>
     </div>
+  }
 
-    <!-- Bids List -->
-    <div class="bids-list" *ngIf="bids.length > 0 && !loading">
-        <h3 class="section-title">Editor Bids ({{ bids.length }})</h3>
-        
-        <div class="bid-card" *ngFor="let bid of bids">
-            <div class="bid-header">
-                <div class="editor-info">
-                    <div class="editor-avatar" *ngIf="bid.editor">
-                        <img *ngIf="bid.editor.profileImage" [src]="bid.editor.profileImage" [alt]="bid.editor.fullname" appMediaProtection>
-                        <div *ngIf="!bid.editor.profileImage" class="avatar-placeholder">
-                            {{ bid.editor.fullname.charAt(0) }}
-                        </div>
+  <!-- Bids List -->
+  @if (bids.length > 0 && !loading) {
+    <div class="bids-list">
+      <h3 class="section-title">Editor Bids ({{ bids.length }})</h3>
+      @for (bid of bids; track bid) {
+        <div class="bid-card">
+          <div class="bid-header">
+            <div class="editor-info">
+              @if (bid.editor) {
+                <div class="editor-avatar">
+                  @if (bid.editor.profileImage) {
+                    <img [src]="bid.editor.profileImage" [alt]="bid.editor.fullname" appMediaProtection>
+                  }
+                  @if (!bid.editor.profileImage) {
+                    <div class="avatar-placeholder">
+                      {{ bid.editor.fullname.charAt(0) }}
                     </div>
-                    <div class="editor-details">
-                        <h3 class="editor-name">{{ bid.editor?.fullname || 'Unknown Editor' }}</h3>
-                        <span class="bid-date">Bid placed on {{ bid.createdAt ? (bid.createdAt | localDate:'medium'): 'N/A' }}</span>
-                    </div>
+                  }
                 </div>
-                <div class="bid-status" [ngClass]="getStatusClass(bid.status)">
-                    {{ bid.status }}
-                </div>
+              }
+              <div class="editor-details">
+                <h3 class="editor-name">{{ bid.editor?.fullname || 'Unknown Editor' }}</h3>
+                <span class="bid-date">Bid placed on {{ bid.createdAt ? (bid.createdAt | localDate:'medium'): 'N/A' }}</span>
+              </div>
             </div>
-            
-            <div class="bid-content">
-                <div class="bid-amount">${{ bid.bidAmount }}</div>
-                <p class="bid-notes" *ngIf="bid.notes">{{ bid.notes }}</p>
-                <p class="no-notes" *ngIf="!bid.notes">No additional notes from the editor.</p>
+            <div class="bid-status" [ngClass]="getStatusClass(bid.status)">
+              {{ bid.status }}
             </div>
-            
-            <div class="bid-actions" *ngIf="bid.status === 'Pending' && data.quotation.status === 'Published'">
-                <button 
-                    mat-raised-button 
-                    color="primary" 
-                    class="accept-button"
-                    (click)="acceptBid(bid._id)">
-                    <mat-icon>check_circle</mat-icon>
-                    Accept This Bid
-                </button>
-                <p class="action-hint">Accepting this bid will assign this editor to your quotation.</p>
+          </div>
+          <div class="bid-content">
+            <div class="bid-amount">${{ bid.bidAmount }}</div>
+            @if (bid.notes) {
+              <p class="bid-notes">{{ bid.notes }}</p>
+            }
+            @if (!bid.notes) {
+              <p class="no-notes">No additional notes from the editor.</p>
+            }
+          </div>
+          @if (bid.status === 'Pending' && data.quotation.status === 'Published') {
+            <div class="bid-actions">
+              <button
+                mat-raised-button
+                color="primary"
+                class="accept-button"
+                (click)="acceptBid(bid._id)">
+                <mat-icon>check_circle</mat-icon>
+                Accept This Bid
+              </button>
+              <p class="action-hint">Accepting this bid will assign this editor to your quotation.</p>
             </div>
-            
-            <div class="accepted-message" *ngIf="bid.status === 'Accepted'">
-                <mat-icon class="accepted-icon">check_circle</mat-icon>
-                <span>You've accepted this bid. The editor has been assigned to your quotation.</span>
+          }
+          @if (bid.status === 'Accepted') {
+            <div class="accepted-message">
+              <mat-icon class="accepted-icon">check_circle</mat-icon>
+              <span>You've accepted this bid. The editor has been assigned to your quotation.</span>
             </div>
+          }
         </div>
+      }
     </div>
+  }
 </div>

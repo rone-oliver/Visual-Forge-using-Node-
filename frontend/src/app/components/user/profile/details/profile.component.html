@@ -1,217 +1,221 @@
-<div class="user-profile-container" *ngIf="user">
+@if (user) {
+  <div class="user-profile-container">
     <div class="profile-header">
-        <div class="cover-photo"></div>
-
-        <div class="profile-info">
-            <div class="avatar-container">
-                <div class="avatar">
-                    <ng-container *ngIf="user.profileImage; else defaultAvatar">
-                        <img [src]="user.profileImage" [alt]="user.fullname || 'User Avatar'" appMediaProtection>
-                    </ng-container>
-                    <ng-template #defaultAvatar>
-                        <mat-icon>person</mat-icon>
-                    </ng-template>
-
-                    <!-- Edit icon overlay -->
-                    <label>
-                        <div class="edit-overlay">
-                            <mat-icon>edit</mat-icon>
-                        </div>
-                        <!-- Hidden file input -->
-                        <input type="file" #fileInput style="display: none" accept="image/*"
-                            (change)="onFileSelected($event)">
-                    </label>
-                </div>
+      <div class="cover-photo"></div>
+      <div class="profile-info">
+        <div class="avatar-container">
+          <div class="avatar">
+            @if (user.profileImage) {
+              <img [src]="user.profileImage" [alt]="user.fullname || 'User Avatar'" appMediaProtection>
+            } @else {
+              <mat-icon>person</mat-icon>
+            }
+            <!-- Edit icon overlay -->
+            <label>
+              <div class="edit-overlay">
+                <mat-icon>edit</mat-icon>
+              </div>
+              <!-- Hidden file input -->
+              <input type="file" #fileInput style="display: none" accept="image/*"
+                (change)="onFileSelected($event)">
+              </label>
             </div>
-
-            <div *ngIf="selectedFile" class="image-upload-dialog">
-                <div class="dialog-content">
-                    <h3>Update Profile Picture</h3>
-                    <div class="image-preview">
-                        <img [src]="previewUrl" alt="Preview" appMediaProtection>
-                    </div>
-                    <div class="dialog-actions">
-                        <button class="cancel-btn" (click)="cancelUpload()">Cancel</button>
-                        <button class="upload-btn" (click)="uploadImage()">Update</button>
-                    </div>
+          </div>
+          @if (selectedFile) {
+            <div class="image-upload-dialog">
+              <div class="dialog-content">
+                <h3>Update Profile Picture</h3>
+                <div class="image-preview">
+                  <img [src]="previewUrl" alt="Preview" appMediaProtection>
                 </div>
+                <div class="dialog-actions">
+                  <button class="cancel-btn" (click)="cancelUpload()">Cancel</button>
+                  <button class="upload-btn" (click)="uploadImage()">Update</button>
+                </div>
+              </div>
             </div>
-
-            <div class="user-name-container">
-                <h1 class="user-name">{{user.fullname || 'User Name'}}</h1>
-                <span class="username">{{user.username || 'username'}}</span>
+          }
+          <div class="user-name-container">
+            <h1 class="user-name">{{user.fullname || 'User Name'}}</h1>
+            <span class="username">{{user.username || 'username'}}</span>
+          </div>
+          @if (user.isEditor) {
+            <div class="user-stats">
+              <div class="stat-item">
+                <span class="stat-value">{{user.editorDetails?.score || 0}}</span>
+                <span class="stat-label">Score</span>
+              </div>
+              <div class="stat-divider"></div>
+              <div class="stat-item">
+                <span class="stat-value">{{user.editorDetails?.ratingsCount || 0}}</span>
+                <span class="stat-label">Ratings</span>
+              </div>
+              <div class="stat-divider"></div>
+              <div class="stat-item">
+                <span class="stat-value">{{user.editorDetails?.averageRating || 0}}</span>
+                <span class="stat-label">Avg. Rating</span>
+              </div>
+              <div class="stat-divider"></div>
+              <div class="stat-item">
+                <!-- <span class="stat-value">{{user.followers || 0}}</span> -->
+                <span class="stat-label">Followers</span>
+              </div>
+              <div class="stat-divider"></div>
+              <div class="stat-item">
+                <!-- <span class="stat-value">{{user.following || 0}}</span> -->
+                <span class="stat-label">Following</span>
+              </div>
+              <div class="stat-divider"></div>
+              <div class="stat-item">
+                <!-- <span class="stat-value">{{user.posts || 0}}</span> -->
+                <span class="stat-label">Posts</span>
+              </div>
             </div>
-
-            <div class="user-stats" *ngIf="user.isEditor">
-                <div class="stat-item">
-                    <span class="stat-value">{{user.editorDetails?.score || 0}}</span>
-                    <span class="stat-label">Score</span>
-                </div>
-                <div class="stat-divider"></div>
-                <div class="stat-item">
-                    <span class="stat-value">{{user.editorDetails?.ratingsCount || 0}}</span>
-                    <span class="stat-label">Ratings</span>
-                </div>
-                <div class="stat-divider"></div>
-                <div class="stat-item">
-                    <span class="stat-value">{{user.editorDetails?.averageRating || 0}}</span>
-                    <span class="stat-label">Avg. Rating</span>
-                </div>
-                <div class="stat-divider"></div>
-                <div class="stat-item">
-                    <!-- <span class="stat-value">{{user.followers || 0}}</span> -->
-                    <span class="stat-label">Followers</span>
-                </div>
-                <div class="stat-divider"></div>
-                <div class="stat-item">
-                    <!-- <span class="stat-value">{{user.following || 0}}</span> -->
-                    <span class="stat-label">Following</span>
-                </div>
-                <div class="stat-divider"></div>
-                <div class="stat-item">
-                    <!-- <span class="stat-value">{{user.posts || 0}}</span> -->
-                    <span class="stat-label">Posts</span>
-                </div>
-            </div>
+          }
         </div>
         <button class="edit-profile-btn fab" (click)="openEditProfileModal()" mat-fab
-            color="primary" aria-label="Edit Profile">
-            <mat-icon>edit</mat-icon><span>Edit Profile</span>
+          color="primary" aria-label="Edit Profile">
+          <mat-icon>edit</mat-icon><span>Edit Profile</span>
         </button>
-    </div>
-
-    <div class="profile-content">
+      </div>
+      <div class="profile-content">
         <div class="info-section">
-            <h2 class="section-title">User Information</h2>
-
-            <div class="info-grid">
-                <div class="info-item">
-                    <span class="info-label">Email</span>
-                    <span class="info-value">{{user.email || 'Not provided'}}</span>
-                </div>
-
-                <div class="info-item">
-                    <span class="info-label">Phone</span>
-                    <span class="info-value">{{user.mobileNumber || 'Not provided'}}</span>
-                </div>
-
-                <div class="info-item">
-                    <span class="info-label">Language</span>
-                    <span class="info-value">{{user.language || 'Not provided'}}</span>
-                </div>
-
-                <div class="info-item">
-                    <span class="info-label">Member Since</span>
-                    <span class="info-value">{{user.createdAt | customDate }}</span>
-                </div>
-
-                <div class="info-item">
-                    <span class="info-label">Gender</span>
-                    <span class="info-value">{{user.gender || 'Not provided'}}</span>
-                </div>
-
-                <div class="info-item">
-                    <span class="info-label">Role</span>
-                    <span class="info-value role-badge" [ngClass]="{'editor-role': user.isEditor}">
-                        {{user.isEditor ? 'Editor' : 'User'}}
-                    </span>
-                </div>
+          <h2 class="section-title">User Information</h2>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Email</span>
+              <span class="info-value">{{user.email || 'Not provided'}}</span>
             </div>
-
-            <div class="reset-password-container">
-                <button class="reset-password-btn" (click)="openResetPasswordDialog()">
-                    <mat-icon>lock_reset</mat-icon>
-                    <span>Reset Password</span>
-                </button>
+            <div class="info-item">
+              <span class="info-label">Phone</span>
+              <span class="info-value">{{user.mobileNumber || 'Not provided'}}</span>
             </div>
+            <div class="info-item">
+              <span class="info-label">Language</span>
+              <span class="info-value">{{user.language || 'Not provided'}}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Member Since</span>
+              <span class="info-value">{{user.createdAt | customDate }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Gender</span>
+              <span class="info-value">{{user.gender || 'Not provided'}}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Role</span>
+              <span class="info-value role-badge" [ngClass]="{'editor-role': user.isEditor}">
+                {{user.isEditor ? 'Editor' : 'User'}}
+              </span>
+            </div>
+          </div>
+          <div class="reset-password-container">
+            <button class="reset-password-btn" (click)="openResetPasswordDialog()">
+              <mat-icon>lock_reset</mat-icon>
+              <span>Reset Password</span>
+            </button>
+          </div>
         </div>
-
-        <div class="info-section" *ngIf="user.isEditor && user.editorDetails">
+        @if (user.isEditor && user.editorDetails) {
+          <div class="info-section">
             <h2 class="section-title">Editor Information</h2>
-
             <div class="info-grid">
-                <div class="info-item" *ngIf="user.editorDetails?.category?.length">
-                    <span class="info-label">Categories</span>
-                    <div class="categories-container">
-                        <span class="category-badge" *ngFor="let category of user.editorDetails?.category">
-                            {{category}}
-                        </span>
-                    </div>
-                </div>
-
+              @if (user.editorDetails?.category?.length) {
                 <div class="info-item">
-                    <span class="info-label">Editor Since</span>
-                    <span class="info-value">{{user.editorDetails.createdAt | customDate}}</span>
+                  <span class="info-label">Categories</span>
+                  <div class="categories-container">
+                    @for (category of user.editorDetails?.category; track category) {
+                      <span class="category-badge">
+                        {{category}}
+                      </span>
+                    }
+                  </div>
                 </div>
-
-                <div class="info-item">
-                    <span class="info-label">Average Rating</span>
-                    <div class="rating-display">
-                        <span class="rating-value">{{user.editorDetails.averageRating || 0}}/5</span>
-                        <span class="rating-count">({{user.editorDetails.ratingsCount || 0}} ratings)</span>
-                    </div>
+              }
+              <div class="info-item">
+                <span class="info-label">Editor Since</span>
+                <span class="info-value">{{user.editorDetails.createdAt | customDate}}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Average Rating</span>
+                <div class="rating-display">
+                  <span class="rating-value">{{user.editorDetails.averageRating || 0}}/5</span>
+                  <span class="rating-count">({{user.editorDetails.ratingsCount || 0}} ratings)</span>
                 </div>
-
-                <div class="info-item">
-                    <span class="info-label">Score</span>
-                    <span class="info-value score-value">{{user.editorDetails.score || 0}} points</span>
-                </div>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Score</span>
+                <span class="info-value score-value">{{user.editorDetails.score || 0}} points</span>
+              </div>
             </div>
-
-            <div class="social-links" *ngIf="hasSocialLinks(user.editorDetails?.socialLinks)">
+            @if (hasSocialLinks(user.editorDetails?.socialLinks)) {
+              <div class="social-links">
                 <h3 class="subsection-title">Social Links</h3>
                 <div class="social-links-grid">
-                    <a *ngIf="user.editorDetails?.socialLinks?.website" [href]="user.editorDetails.socialLinks?.website"
-                        target="_blank" class="social-link website">
-                        <mat-icon>language</mat-icon>
-                        <span>Website</span>
+                  @if (user.editorDetails?.socialLinks?.website) {
+                    <a [href]="user.editorDetails.socialLinks?.website"
+                      target="_blank" class="social-link website">
+                      <mat-icon>language</mat-icon>
+                      <span>Website</span>
                     </a>
-                    <a *ngIf="user.editorDetails?.socialLinks?.linkedIn"
-                        [href]="user.editorDetails.socialLinks?.linkedIn" target="_blank" class="social-link linkedin">
-                        <mat-icon>work</mat-icon>
-                        <span>LinkedIn</span>
+                  }
+                  @if (user.editorDetails?.socialLinks?.linkedIn) {
+                    <a
+                      [href]="user.editorDetails.socialLinks?.linkedIn" target="_blank" class="social-link linkedin">
+                      <mat-icon>work</mat-icon>
+                      <span>LinkedIn</span>
                     </a>
-                    <a *ngIf="user.editorDetails?.socialLinks?.instagram"
-                        [href]="user.editorDetails.socialLinks?.instagram" target="_blank"
-                        class="social-link instagram">
-                        <mat-icon>photo_camera</mat-icon>
-                        <span>Instagram</span>
+                  }
+                  @if (user.editorDetails?.socialLinks?.instagram) {
+                    <a
+                      [href]="user.editorDetails.socialLinks?.instagram" target="_blank"
+                      class="social-link instagram">
+                      <mat-icon>photo_camera</mat-icon>
+                      <span>Instagram</span>
                     </a>
-                    <a *ngIf="user.editorDetails?.socialLinks?.facebook"
-                        [href]="user.editorDetails.socialLinks?.facebook" target="_blank" class="social-link facebook">
-                        <mat-icon>thumb_up</mat-icon>
-                        <span>Facebook</span>
+                  }
+                  @if (user.editorDetails?.socialLinks?.facebook) {
+                    <a
+                      [href]="user.editorDetails.socialLinks?.facebook" target="_blank" class="social-link facebook">
+                      <mat-icon>thumb_up</mat-icon>
+                      <span>Facebook</span>
                     </a>
-                    <a *ngIf="user.editorDetails?.socialLinks?.pinterest"
-                        [href]="user.editorDetails.socialLinks?.pinterest" target="_blank"
-                        class="social-link pinterest">
-                        <mat-icon>push_pin</mat-icon>
-                        <span>Pinterest</span>
+                  }
+                  @if (user.editorDetails?.socialLinks?.pinterest) {
+                    <a
+                      [href]="user.editorDetails.socialLinks?.pinterest" target="_blank"
+                      class="social-link pinterest">
+                      <mat-icon>push_pin</mat-icon>
+                      <span>Pinterest</span>
                     </a>
+                  }
                 </div>
-            </div>
-        </div>
-
+              </div>
+            }
+          </div>
+        }
         <div class="info-section">
-            <h2 class="section-title">About</h2>
-            <p class="about-text">{{user.about || 'No information provided.'}}</p>
+          <h2 class="section-title">About</h2>
+          <p class="about-text">{{user.about || 'No information provided.'}}</p>
         </div>
-
-        <div class="editor-request-container" *ngIf="!user.isEditor">
+        @if (!user.isEditor) {
+          <div class="editor-request-container">
             <button class="editor-request-button" (click)="requestEditorStatus()"
-                [disabled]="editorRequestStatus === 'Pending'" [class.pending]="editorRequestStatus === 'Pending'">
-                <span class="button-text">
-                    {{ editorRequestStatus === 'Pending'
-                    ? 'Pending Approval'
-                    : 'Wish to be an Editor?' }}
-                </span>
-                <div class="animated-bg"></div>
+              [disabled]="editorRequestStatus === 'Pending'" [class.pending]="editorRequestStatus === 'Pending'">
+              <span class="button-text">
+                {{ editorRequestStatus === 'Pending'
+                ? 'Pending Approval'
+                : 'Wish to be an Editor?' }}
+              </span>
+              <div class="animated-bg"></div>
             </button>
             <p class="editor-info">
-                {{ editorRequestStatus === 'Pending'
-                ? 'Your request is being reviewed by our admins.'
-                : 'Editors can create and publish content, manage community posts, and get priority support.' }}
+              {{ editorRequestStatus === 'Pending'
+              ? 'Your request is being reviewed by our admins.'
+              : 'Editors can create and publish content, manage community posts, and get priority support.' }}
             </p>
-        </div>
+          </div>
+        }
+      </div>
     </div>
-</div>
+  }

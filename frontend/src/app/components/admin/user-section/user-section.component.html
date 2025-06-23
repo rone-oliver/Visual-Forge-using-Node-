@@ -1,78 +1,80 @@
 <div class="users-container">
-    <div class="users-header">
-        <h1 class="users-title">Users</h1>
-        <!-- <div class="users-actions">
-            <button class="action-button export-button">
-                <span>Export data</span>
-                <mat-icon>file_download</mat-icon>
-            </button>
-            <button class="action-button create-button">
-                <span>Create report</span>
-            </button>
-        </div> -->
-    </div>
+  <div class="users-header">
+    <h1 class="users-title">Users</h1>
+    <!-- <div class="users-actions">
+    <button class="action-button export-button">
+      <span>Export data</span>
+      <mat-icon>file_download</mat-icon>
+    </button>
+    <button class="action-button create-button">
+      <span>Create report</span>
+    </button>
+  </div> -->
+</div>
 
-    <div class="users-filters-container">
-        <div class="search-container">
-            <mat-icon class="search-icon">search</mat-icon>
-            <input type="text" [formControl]="searchControl" placeholder="Search Users..." class="search-input">
-        </div>
+<div class="users-filters-container">
+  <div class="search-container">
+    <mat-icon class="search-icon">search</mat-icon>
+    <input type="text" [formControl]="searchControl" placeholder="Search Users..." class="search-input">
+  </div>
 
-        <!-- <div class="active-filters">
-            <div class="filter-chip">
-                <span>Male</span>
-                <mat-icon>close</mat-icon>
-            </div>
-            <div class="filter-chip">
-                <span>Age < 30</span>
-                <mat-icon>close</mat-icon>
-            </div>
-        </div> -->
+  <!-- <div class="active-filters">
+  <div class="filter-chip">
+    <span>Male</span>
+    <mat-icon>close</mat-icon>
+  </div>
+  <div class="filter-chip">
+    <span>Age < 30</span>
+    <mat-icon>close</mat-icon>
+  </div>
+</div> -->
 
-        <div class="filter-toggle">
-            <mat-slide-toggle (toggleChange)="onHideEditorsChange()" [(ngModel)]="hideEditors" color="primary">
-                Hide Editors
-            </mat-slide-toggle>
-        </div>
+<div class="filter-toggle">
+  <mat-slide-toggle (toggleChange)="onHideEditorsChange()" [(ngModel)]="hideEditors" color="primary">
+    Hide Editors
+  </mat-slide-toggle>
+</div>
 
-    </div>
+</div>
 
-    <div class="filters-row">
-        <mat-form-field appearance="fill" color="primary" class="filter-mat-select">
-            <mat-label>Gender</mat-label>
-            <mat-select (selectionChange)="onGenderChange()" [(ngModel)]="selectedGender">
-                <mat-option [value]="''">All</mat-option>
-                <mat-option value="male">Male</mat-option>
-                <mat-option value="female">Female</mat-option>
-                <mat-option value="others">Others</mat-option>
-            </mat-select>
-        </mat-form-field>
+<div class="filters-row">
+  <mat-form-field appearance="fill" color="primary" class="filter-mat-select">
+    <mat-label>Gender</mat-label>
+    <mat-select (selectionChange)="onGenderChange()" [(ngModel)]="selectedGender">
+      <mat-option [value]="''">All</mat-option>
+      <mat-option value="male">Male</mat-option>
+      <mat-option value="female">Female</mat-option>
+      <mat-option value="others">Others</mat-option>
+    </mat-select>
+  </mat-form-field>
 
-        <!-- <mat-form-field appearance="fill" color="primary" class="filter-mat-select">
-            <mat-label>Age</mat-label>
-            <mat-select [(ngModel)]="selectedAge">
-                <mat-option [value]="''">All</mat-option>
-                <mat-option value="below18">Below 18</mat-option>
-                <mat-option value="18to30">Between 18 and 30</mat-option>
-                <mat-option value="30to60">Between 30 and 60</mat-option>
-                <mat-option value="above60">Above 60</mat-option>
-            </mat-select>
-        </mat-form-field> -->
+  <!-- <mat-form-field appearance="fill" color="primary" class="filter-mat-select">
+  <mat-label>Age</mat-label>
+  <mat-select [(ngModel)]="selectedAge">
+    <mat-option [value]="''">All</mat-option>
+    <mat-option value="below18">Below 18</mat-option>
+    <mat-option value="18to30">Between 18 and 30</mat-option>
+    <mat-option value="30to60">Between 30 and 60</mat-option>
+    <mat-option value="above60">Above 60</mat-option>
+  </mat-select>
+</mat-form-field> -->
 
-        <mat-form-field appearance="fill" color="primary" class="filter-mat-select">
-            <mat-label>Beh. Rating</mat-label>
-            <mat-select (selectionChange)="onBehRatingChange()" [(ngModel)]="selectedBehRating">
-                <mat-option [value]="null">All</mat-option>
-                <mat-option *ngFor="let rating of [1,2,3,4,5]" [value]="rating">
-                    <mat-icon>star</mat-icon>{{ rating }}
-                </mat-option>
-            </mat-select>
-        </mat-form-field>
-    </div>
+<mat-form-field appearance="fill" color="primary" class="filter-mat-select">
+  <mat-label>Beh. Rating</mat-label>
+  <mat-select (selectionChange)="onBehRatingChange()" [(ngModel)]="selectedBehRating">
+    <mat-option [value]="null">All</mat-option>
+    @for (rating of [1,2,3,4,5]; track rating) {
+      <mat-option [value]="rating">
+        <mat-icon>star</mat-icon>{{ rating }}
+      </mat-option>
+    }
+  </mat-select>
+</mat-form-field>
+</div>
 
-    <div class="content-area">
-        <app-table [data]="users" [columns]="userColumns" [loading]="loading" (rowClick)="onUserClick($event)"
-            (actionClick)="onUserAction($event)">
-        </app-table>
-    </div>
+<div class="content-area">
+  <app-table [data]="users" [columns]="userColumns" [loading]="loading" (rowClick)="onUserClick($event)"
+    (actionClick)="onUserAction($event)">
+  </app-table>
+</div>
 </div>

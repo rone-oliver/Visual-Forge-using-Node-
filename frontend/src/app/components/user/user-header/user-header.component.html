@@ -1,96 +1,129 @@
 <header class="header bg-background-light dark:bg-background-dark transition-colors duration-200">
-    <div class="logo text-text-light dark:text-text-dark">
-        <img src="Brand_icon.png" alt="Brand Icon" class="brand-icon" appMediaProtection>
-        <span>Visual Forge</span>
-    </div>
+  <div class="logo text-text-light dark:text-text-dark">
+    <img src="Brand_icon.png" alt="Brand Icon" class="brand-icon" appMediaProtection>
+    <span>Visual Forge</span>
+  </div>
 
-    <nav class="nav-links">
-        <a routerLink="/user" class="text-text-light dark:text-text-dark">Home</a>
-        <a routerLink="/user/works" class="text-text-light dark:text-text-dark">Works</a>
-        <a routerLink="/user/quotations" class="text-text-light dark:text-text-dark">Quotations</a>
-        <a *ngIf="userRole === 'Editor'" routerLink="/editor/published-quotations" class="text-text-light dark:text-text-dark">Find Quotations</a>
-        <a routerLink="/user/support" class="text-text-light dark:text-text-dark">Support</a>
-    </nav>
+  <nav class="nav-links">
+    <a routerLink="/user" class="text-text-light dark:text-text-dark">Home</a>
+    <a routerLink="/user/works" class="text-text-light dark:text-text-dark">Works</a>
+    <a routerLink="/user/quotations" class="text-text-light dark:text-text-dark">Quotations</a>
+    @if (userRole === 'Editor') {
+      <a routerLink="/editor/published-quotations" class="text-text-light dark:text-text-dark">Find Quotations</a>
+    }
+    <a routerLink="/user/support" class="text-text-light dark:text-text-dark">Support</a>
+  </nav>
 
-    <div class="header-actions">
-        <ng-container *ngIf="isAuthenticated">
-            <div class="icon-button text-text-light dark:text-text-dark" (click)="openNotificationsOverlay($event)">
-                <mat-icon>notifications</mat-icon>
-                <span *ngIf="unreadNotificationsCount > 0" class="notification-badge">
-                    {{ unreadNotificationsCount > 99 ? '99+' : unreadNotificationsCount }}
-                </span>
-            </div>
-            <div [routerLink]="['/user/messaging']" class="icon-button">
-                <mat-icon>chat</mat-icon>
-            </div>
-            <div [routerLink]="['/user/profile']" class="icon-button">
-                <mat-icon>person</mat-icon>
-            </div>
-            <div *ngIf="userRole === 'Editor'" [routerLink]="['/editor/community']" class="icon-button">
-                <mat-icon>groups</mat-icon>
-            </div>
-        </ng-container>
-        <button (click)="themeService.toggleTheme()"
-            class="icon-button p-2 rounded-lg bg-gray-500 dark:bg-gray-700 text-text-light dark:text-text-dark">
-            <span *ngIf="themeService.isUserDarkTheme$ | async; else lightIcon">🌞</span>
-            <ng-template #lightIcon>🌙</ng-template>
-        </button>
-        <div *ngIf="!isAuthenticated" class="auth-buttons">
-            <a routerLink="/auth/login" class="btn btn-signin bg-primary-light dark:bg-primary-dark text-white">Sign in</a>
-            <a routerLink="/auth/register" class="btn btn-signup border-2 border-primary-light dark:border-primary-dark text-text-light dark:text-text-dark">Sign up</a>
+  <div class="header-actions">
+    @if (isAuthenticated) {
+      <div class="icon-button text-text-light dark:text-text-dark" (click)="openNotificationsOverlay($event)">
+        <mat-icon>notifications</mat-icon>
+        @if (unreadNotificationsCount > 0) {
+          <span class="notification-badge">
+            {{ unreadNotificationsCount > 99 ? '99+' : unreadNotificationsCount }}
+          </span>
+        }
+      </div>
+      <div [routerLink]="['/user/messaging']" class="icon-button">
+        <mat-icon>chat</mat-icon>
+      </div>
+      <div [routerLink]="['/user/profile']" class="icon-button">
+        <mat-icon>person</mat-icon>
+      </div>
+      @if (userRole === 'Editor') {
+        <div [routerLink]="['/editor/community']" class="icon-button">
+          <mat-icon>groups</mat-icon>
         </div>
-        <button *ngIf="isAuthenticated" (click)="logout()" class="icon-button">
-            <mat-icon>logout</mat-icon>
-        </button>
-    </div>
+      }
+    }
+    <button (click)="themeService.toggleTheme()"
+      class="icon-button p-2 rounded-lg bg-gray-500 dark:bg-gray-700 text-text-light dark:text-text-dark">
+      @if (themeService.isUserDarkTheme$ | async) {
+        <span>🌞</span>
+      } @else {
+        🌙
+      }
+      <ng-template #lightIcon>🌙</ng-template>
+    </button>
+    @if (!isAuthenticated) {
+      <div class="auth-buttons">
+        <a routerLink="/auth/login" class="btn btn-signin bg-primary-light dark:bg-primary-dark text-white">Sign in</a>
+        <a routerLink="/auth/register" class="btn btn-signup border-2 border-primary-light dark:border-primary-dark text-text-light dark:text-text-dark">Sign up</a>
+      </div>
+    }
+    @if (isAuthenticated) {
+      <button (click)="logout()" class="icon-button">
+        <mat-icon>logout</mat-icon>
+      </button>
+    }
+  </div>
 </header>
 
 <ng-template #notificationsOverlayTemplate>
-    <div class="notifications-overlay">
-        <div class="notifications-header">
-            <h3>Notifications</h3>
-            <button mat-button (click)="markAllNotificationsAsRead()" *ngIf="notifications?.length && hasUnreadNotifications">
-                Mark all as read
-            </button>
-        </div>
-        
-        <div class="notifications-content">
-            <ng-container *ngIf="notifications?.length; else noNotifications">
-                <div class="notification-item" *ngFor="let notification of notifications" 
-                     [ngClass]="{'unread': notification.unread}"
-                     (click)="handleNotificationClick(notification)">
-                    <div class="notification-icon" [ngClass]="notification.type">
-                        <mat-icon *ngIf="notification.type === 'chat'">chat</mat-icon>
-                        <mat-icon *ngIf="notification.type === 'work'">work</mat-icon>
-                        <mat-icon *ngIf="notification.type === 'payment'">payments</mat-icon>
-                        <mat-icon *ngIf="notification.type === 'general'">notifications</mat-icon>
-                    </div>
-                    <div class="notification-content">
-                        <p class="notification-message">{{ notification.message }}</p>
-                        <p class="notification-time">{{ notification.createdAt | date:'short' }}</p>
-                    </div>
-                    <div class="notification-actions">
-                        <button *ngIf="notification.unread" mat-icon-button class="notification-action mark-read-btn" 
-                                (click)="$event.stopPropagation(); markNotificationAsRead(notification._id)">
-                            <mat-icon>task_alt</mat-icon>
-                        </button>
-                        <button mat-icon-button class="notification-action delete-btn" 
-                                (click)="$event.stopPropagation(); deleteNotification(notification._id)">
-                            <mat-icon>remove</mat-icon>
-                        </button>
-                    </div>
-                </div>
-            </ng-container>
-            <ng-template #noNotifications>
-                <div class="no-notifications">
-                    <mat-icon>notifications_off</mat-icon>
-                    <p>No notifications</p>
-                </div>
-            </ng-template>
-        </div>
-        
-        <div class="notifications-footer">
-            <a routerLink="/user/notifications" (click)="closeNotificationsOverlay()">View all notifications</a>
-        </div>
+  <div class="notifications-overlay">
+    <div class="notifications-header">
+      <h3>Notifications</h3>
+      @if (notifications?.length && hasUnreadNotifications) {
+        <button mat-button (click)="markAllNotificationsAsRead()">
+          Mark all as read
+        </button>
+      }
     </div>
+
+    <div class="notifications-content">
+      @if (notifications?.length) {
+        @for (notification of notifications; track notification) {
+          <div class="notification-item"
+            [ngClass]="{'unread': notification.unread}"
+            (click)="handleNotificationClick(notification)">
+            <div class="notification-icon" [ngClass]="notification.type">
+              @if (notification.type === 'chat') {
+                <mat-icon>chat</mat-icon>
+              }
+              @if (notification.type === 'work') {
+                <mat-icon>work</mat-icon>
+              }
+              @if (notification.type === 'payment') {
+                <mat-icon>payments</mat-icon>
+              }
+              @if (notification.type === 'general') {
+                <mat-icon>notifications</mat-icon>
+              }
+            </div>
+            <div class="notification-content">
+              <p class="notification-message">{{ notification.message }}</p>
+              <p class="notification-time">{{ notification.createdAt | date:'short' }}</p>
+            </div>
+            <div class="notification-actions">
+              @if (notification.unread) {
+                <button mat-icon-button class="notification-action mark-read-btn"
+                  (click)="$event.stopPropagation(); markNotificationAsRead(notification._id)">
+                  <mat-icon>task_alt</mat-icon>
+                </button>
+              }
+              <button mat-icon-button class="notification-action delete-btn"
+                (click)="$event.stopPropagation(); deleteNotification(notification._id)">
+                <mat-icon>remove</mat-icon>
+              </button>
+            </div>
+          </div>
+        }
+      } @else {
+        <div class="no-notifications">
+          <mat-icon>notifications_off</mat-icon>
+          <p>No notifications</p>
+        </div>
+      }
+      <ng-template #noNotifications>
+        <div class="no-notifications">
+          <mat-icon>notifications_off</mat-icon>
+          <p>No notifications</p>
+        </div>
+      </ng-template>
+    </div>
+
+    <div class="notifications-footer">
+      <a routerLink="/user/notifications" (click)="closeNotificationsOverlay()">View all notifications</a>
+    </div>
+  </div>
 </ng-template>

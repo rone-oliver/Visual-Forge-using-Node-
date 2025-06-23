@@ -1,28 +1,33 @@
 <div class="profile-card">
   <div class="card-header">
-    <div class="verified-badge" *ngIf="user.isVerified">
-      <mat-icon>verified</mat-icon>
-      <span>Verified</span>
-    </div>
+    @if (user.isVerified) {
+      <div class="verified-badge">
+        <mat-icon>verified</mat-icon>
+        <span>Verified</span>
+      </div>
+    }
   </div>
 
   <div class="card-body">
     <div class="avatar-section">
-      <ng-container *ngIf="user.profileImage; else defaultAvatar">
+      @if (user.profileImage) {
         <img [src]="user.profileImage" alt="Editor profile image" class="avatar" appMediaProtection>
-      </ng-container>
-      <ng-template #defaultAvatar>
+      } @else {
         <div class="default-avatar">
           <mat-icon>person</mat-icon>
         </div>
-      </ng-template>
+      }
     </div>
     <h2 class="fullname">{{ user.fullname }}</h2>
     <p class="username">&#64;{{ user.username }}</p>
 
-    <div class="categories" *ngIf="user.categories?.length">
-      <span *ngFor="let category of user.categories" class="category-chip">{{ category }}</span>
-    </div>
+    @if (user.categories?.length) {
+      <div class="categories">
+        @for (category of user.categories; track category) {
+          <span class="category-chip">{{ category }}</span>
+        }
+      </div>
+    }
   </div>
 
   <div class="card-footer">

@@ -1,87 +1,106 @@
 <div class="works-history-container">
-    <div class="header-section">
-        <h1 class="page-title">Completed Works</h1>
-        <div class="search-container">
-            <mat-form-field appearance="fill" class="search-field">
-                <mat-icon matPrefix>search</mat-icon>
-                <input matInput type="text" placeholder="Search works..." [(ngModel)]="searchQuery"
-                    (input)="searchWorks()">
-                <button *ngIf="searchQuery" matSuffix mat-icon-button aria-label="Clear" (click)="clearSearch()">
-                    <mat-icon>close</mat-icon>
-                </button>
-            </mat-form-field>
-        </div>
+  <div class="header-section">
+    <h1 class="page-title">Completed Works</h1>
+    <div class="search-container">
+      <mat-form-field appearance="fill" class="search-field">
+        <mat-icon matPrefix>search</mat-icon>
+        <input matInput type="text" placeholder="Search works..." [(ngModel)]="searchQuery"
+          (input)="searchWorks()">
+        @if (searchQuery) {
+          <button matSuffix mat-icon-button aria-label="Clear" (click)="clearSearch()">
+            <mat-icon>close</mat-icon>
+          </button>
+        }
+      </mat-form-field>
     </div>
+  </div>
 
-    <!-- Loading State -->
-    <div *ngIf="isLoading" class="loading-container">
-        <mat-icon class="spin">refresh</mat-icon>
-        <p>Loading your completed works...</p>
+  <!-- Loading State -->
+  @if (isLoading) {
+    <div class="loading-container">
+      <mat-icon class="spin">refresh</mat-icon>
+      <p>Loading your completed works...</p>
     </div>
+  }
 
-    <!-- Empty State -->
-    <div *ngIf="!isLoading && filteredWorks.length === 0" class="empty-state">
-        <mat-icon>work_off</mat-icon>
-        <h2>No completed works found</h2>
-        <p *ngIf="searchQuery">Try adjusting your search criteria</p>
-        <p *ngIf="!searchQuery">You haven't completed any works yet</p>
+  <!-- Empty State -->
+  @if (!isLoading && filteredWorks.length === 0) {
+    <div class="empty-state">
+      <mat-icon>work_off</mat-icon>
+      <h2>No completed works found</h2>
+      @if (searchQuery) {
+        <p>Try adjusting your search criteria</p>
+      }
+      @if (!searchQuery) {
+        <p>You haven't completed any works yet</p>
+      }
     </div>
+  }
 
-    <!-- Works Grid -->
-    <div *ngIf="!isLoading && filteredWorks.length > 0" class="works-grid">
-        <div *ngFor="let work of filteredWorks" class="work-card-wrapper">
-            <div class="work-card">
-                <div class="work-card-header">
-                    <h3 class="work-title">{{ work.title }}</h3>
-                    <span class="work-date">{{ work.completedAt || null | localDate }}</span>
-                </div>
-                <div class="work-card-content">
-                    <p class="work-description">{{ work.description }}</p>
-
-                    <!-- User's Attached Files -->
-                    <div class="work-files user-files" *ngIf="work.attachedFiles && work.attachedFiles.length > 0">
-                        <h4>Client Files</h4>
-                        <div class="file-badges">
-                        <ng-container
-                            *ngFor="let fileType of [FileType.IMAGE, FileType.VIDEO, FileType.DOCUMENT, FileType.AUDIO]">
-                                <div class="file-badge" *ngIf="countAttachedFilesByType(work, fileType) > 0"
-                                    (click)="openAttachedFileModal(work, fileType)">
-                                    <mat-icon>
-                                        {{ fileType === FileType.IMAGE ? 'image' :
-                                        fileType === FileType.VIDEO ? 'videocam' :
-                                        fileType === FileType.AUDIO ? 'audiotrack' : 'description' }}
-                                    </mat-icon>
-                                    <span>{{ countAttachedFilesByType(work, fileType) }}</span>
-                                </div>
-                            </ng-container>
-                        </div>
-                    </div>
-
-                    <div class="work-response" *ngIf="work.comments">
-                        <h4>Your Comment</h4>
-                        <p>{{ work.comments }}</p>
-                    </div>
-                    
-                    <!-- Editor's Final Files -->
-                    <div class="work-files editor-files" *ngIf="work.finalFiles && work.finalFiles.length > 0">
-                        <h4>Your Submitted Files</h4>
-                        <div class="file-badges">
-                        <ng-container
-                            *ngFor="let fileType of [FileType.IMAGE, FileType.VIDEO, FileType.DOCUMENT, FileType.AUDIO]">
-                                <div class="file-badge" *ngIf="countFilesByType(work, fileType) > 0"
-                                    (click)="openFileModal(work, fileType)">
-                                    <mat-icon>
-                                        {{ fileType === FileType.IMAGE ? 'image' :
-                                        fileType === FileType.VIDEO ? 'videocam' :
-                                        fileType === FileType.AUDIO ? 'audiotrack' : 'description' }}
-                                    </mat-icon>
-                                    <span>{{ countFilesByType(work, fileType) }}</span>
-                                </div>
-                            </ng-container>
-                        </div>
-                    </div>
-                </div>
+  <!-- Works Grid -->
+  @if (!isLoading && filteredWorks.length > 0) {
+    <div class="works-grid">
+      @for (work of filteredWorks; track work) {
+        <div class="work-card-wrapper">
+          <div class="work-card">
+            <div class="work-card-header">
+              <h3 class="work-title">{{ work.title }}</h3>
+              <span class="work-date">{{ work.completedAt || null | localDate }}</span>
             </div>
+            <div class="work-card-content">
+              <p class="work-description">{{ work.description }}</p>
+              <!-- User's Attached Files -->
+              @if (work.attachedFiles && work.attachedFiles.length > 0) {
+                <div class="work-files user-files">
+                  <h4>Client Files</h4>
+                  <div class="file-badges">
+                    @for (fileType of [FileType.IMAGE, FileType.VIDEO, FileType.DOCUMENT, FileType.AUDIO]; track fileType) {
+                      @if (countAttachedFilesByType(work, fileType) > 0) {
+                        <div class="file-badge"
+                          (click)="openAttachedFileModal(work, fileType)">
+                          <mat-icon>
+                            {{ fileType === FileType.IMAGE ? 'image' :
+                            fileType === FileType.VIDEO ? 'videocam' :
+                            fileType === FileType.AUDIO ? 'audiotrack' : 'description' }}
+                          </mat-icon>
+                          <span>{{ countAttachedFilesByType(work, fileType) }}</span>
+                        </div>
+                      }
+                    }
+                  </div>
+                </div>
+              }
+              @if (work.comments) {
+                <div class="work-response">
+                  <h4>Your Comment</h4>
+                  <p>{{ work.comments }}</p>
+                </div>
+              }
+              <!-- Editor's Final Files -->
+              @if (work.finalFiles && work.finalFiles.length > 0) {
+                <div class="work-files editor-files">
+                  <h4>Your Submitted Files</h4>
+                  <div class="file-badges">
+                    @for (fileType of [FileType.IMAGE, FileType.VIDEO, FileType.DOCUMENT, FileType.AUDIO]; track fileType) {
+                      @if (countFilesByType(work, fileType) > 0) {
+                        <div class="file-badge"
+                          (click)="openFileModal(work, fileType)">
+                          <mat-icon>
+                            {{ fileType === FileType.IMAGE ? 'image' :
+                            fileType === FileType.VIDEO ? 'videocam' :
+                            fileType === FileType.AUDIO ? 'audiotrack' : 'description' }}
+                          </mat-icon>
+                          <span>{{ countFilesByType(work, fileType) }}</span>
+                        </div>
+                      }
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
         </div>
+      }
     </div>
+  }
 </div>

@@ -71,20 +71,21 @@
           Shared Tutorials
         </ng-template>
         <div class="tab-content tutorials-grid">
-          <ng-container *ngIf="profile.sharedTutorials.length > 0; else noTutorials">
-            <div class="tutorial-card" *ngFor="let tutorial of profile.sharedTutorials; let i = index">
-              <img src="https://www.placehold.co/300x200" alt="Tutorial Thumbnail" class="thumbnail" appMediaProtection/>
-              <div class="play-icon">
-                <mat-icon>play_circle_filled</mat-icon>
+          @if (profile.sharedTutorials.length > 0) {
+            @for (tutorial of profile.sharedTutorials; track tutorial; let i = $index) {
+              <div class="tutorial-card">
+                <img src="https://www.placehold.co/300x200" alt="Tutorial Thumbnail" class="thumbnail" appMediaProtection/>
+                <div class="play-icon">
+                  <mat-icon>play_circle_filled</mat-icon>
+                </div>
               </div>
-            </div>
-          </ng-container>
-          <ng-template #noTutorials>
+            }
+          } @else {
             <div class="empty-state">
               <mat-icon>video_library</mat-icon>
               <span>No tutorials shared yet.</span>
             </div>
-          </ng-template>
+          }
         </div>
       </mat-tab>
 
@@ -94,17 +95,16 @@
           Tips & Tricks
         </ng-template>
         <div class="tab-content tips-section">
-          <ng-container *ngIf="profile.tipsAndTricks; else noTips">
+          @if (profile.tipsAndTricks) {
             <div class="content-wrapper">
               <p>{{ profile.tipsAndTricks }}</p>
             </div>
-          </ng-container>
-          <ng-template #noTips>
+          } @else {
             <div class="empty-state">
               <mat-icon>lightbulb_outline</mat-icon>
               <span>No tips and tricks shared yet.</span>
             </div>
-          </ng-template>
+          }
         </div>
       </mat-tab>
 
@@ -114,17 +114,16 @@
           About
         </ng-template>
         <div class="tab-content about-section">
-          <ng-container *ngIf="profile.about; else noAbout">
+          @if (profile.about) {
             <div class="content-wrapper">
               <p>{{ profile.about }}</p>
             </div>
-          </ng-container>
-          <ng-template #noAbout>
+          } @else {
             <div class="empty-state">
               <mat-icon>info_outline</mat-icon>
               <span>No information provided.</span>
             </div>
-          </ng-template>
+          }
         </div>
       </mat-tab>
     </mat-tab-group>

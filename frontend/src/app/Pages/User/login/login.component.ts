@@ -4,7 +4,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { AuthService } from '../../../services/auth.service';
 import { Router, RouterModule } from '@angular/router';
 import { environment } from '../../../../environments/environment';
-import { CommonModule } from '@angular/common';
+
 import { MatIconModule } from '@angular/material/icon';
 import { GoogleAuthService } from '../../../services/shared/google-auth.service';
 import { interval, Subscription, takeWhile } from 'rxjs';
@@ -30,10 +30,9 @@ declare global {
   imports: [
     FormComponent,
     RouterModule,
-    CommonModule,
     MatIconModule,
-    ReactiveFormsModule,
-  ],
+    ReactiveFormsModule
+],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })

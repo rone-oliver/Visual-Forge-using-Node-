@@ -1,199 +1,227 @@
 <div class="accepted-quotations-container">
-    <!-- Left Panel - Quotation List -->
-    <div class="quotations-list-panel">
-        <div class="search-container">
-            <div class="flex justify-between items-center mb-3">
-                <h3 class="panel-title">Accepted Quotations</h3>
-                <button type="button" class="history-btn" (click)="viewWorksHistory()">
-                    <div class="history-btn-content">
-                        <mat-icon>history</mat-icon>
-                        <span>Works History</span>
-                    </div>
-                </button>
-            </div>
-            <mat-form-field appearance="fill" class="search-field">
-                <mat-icon matPrefix>search</mat-icon>
-                <input matInput type="text" placeholder="Search Quotations" [ngModel]="searchQuery" (ngModelChange)="onSearchChange($event)">
-            </mat-form-field>
-        </div>
-
-        <div class="quotations-list">
-            <div *ngIf="isLoading" class="loading-indicator">
-                <mat-icon class="spin">refresh</mat-icon>
-                <span>Loading quotations...</span>
-            </div>
-
-            <div *ngIf="!isLoading && acceptedQuotations.length === 0" class="empty-state">
-                <mat-icon>inbox</mat-icon>
-                <p>No quotations found</p>
-            </div>
-
-            <div *ngFor="let quotation of acceptedQuotations" class="quotation-item"
-                [class.selected]="selectedQuotation?._id === quotation._id" (click)="selectQuotation(quotation)"
-                matRipple>
-                <div class="quotation-thumbnail">
-                    <img [src]="quotation.imageUrl || 'https://placehold.co/400'" alt="Thumbnail" appMediaProtection>
-                </div>
-                <div class="quotation-info">
-                    <h3 class="quotation-title">{{ quotation.title }}</h3>
-                </div>
-            </div>
-
-            <div *ngIf="hasMore && !isLoading" class="load-more-container">
-                <button mat-flat-button color="accent" (click)="loadMore()" [disabled]="isLoadingMore">
-                    <span *ngIf="!isLoadingMore">Load More</span>
-                    <mat-spinner *ngIf="isLoadingMore" diameter="20"></mat-spinner>
-                </button>
-            </div>
-        </div>
+  <!-- Left Panel - Quotation List -->
+  <div class="quotations-list-panel">
+    <div class="search-container">
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="panel-title">Accepted Quotations</h3>
+        <button type="button" class="history-btn" (click)="viewWorksHistory()">
+          <div class="history-btn-content">
+            <mat-icon>history</mat-icon>
+            <span>Works History</span>
+          </div>
+        </button>
+      </div>
+      <mat-form-field appearance="fill" class="search-field">
+        <mat-icon matPrefix>search</mat-icon>
+        <input matInput type="text" placeholder="Search Quotations" [ngModel]="searchQuery" (ngModelChange)="onSearchChange($event)">
+      </mat-form-field>
     </div>
 
-    <!-- Right Panel - Quotation Details -->
-    <div class="quotation-details-panel">
-        <div *ngIf="!selectedQuotation" class="no-selection">
-            <mat-icon>description</mat-icon>
-            <p>Select a quotation to view details</p>
+    <div class="quotations-list">
+      @if (isLoading) {
+        <div class="loading-indicator">
+          <mat-icon class="spin">refresh</mat-icon>
+          <span>Loading quotations...</span>
         </div>
+      }
 
-        <div *ngIf="selectedQuotation" class="quotation-details">
-            <!-- Header with Title and Date -->
-            <div class="details-header">
-                <h2 class="details-title">{{ selectedQuotation.title }}</h2>
-                <span class="details-date">Posted on: {{ selectedQuotation.createdAt ? (selectedQuotation.createdAt |
-                    localDate: 'medium') : 'N/A' }}</span>
-            </div>
-
-            <!-- Description Section -->
-            <div class="details-section">
-                <p class="details-description">{{ selectedQuotation.description }}</p>
-            </div>
-
-            <!-- Metadata Section -->
-            <div class="details-metadata">
-                <div class="metadata-item">
-                    <span class="metadata-label">Theme:</span>
-                    <span class="metadata-value">{{ selectedQuotation.theme }}</span>
-                </div>
-
-                <div class="metadata-item">
-                    <span class="metadata-label">Category:</span>
-                    <span class="metadata-value">{{ selectedQuotation.outputType }}</span>
-                </div>
-
-                <div class="metadata-item">
-                    <span class="metadata-label">Last Date:</span>
-                    <span class="metadata-value">{{ selectedQuotation.dueDate ? (selectedQuotation.dueDate | localDate:
-                        'medium') : 'No deadline' }}</span>
-                </div>
-
-                <div class="file-attachments metadata-item"
-                    *ngIf="selectedQuotation.attachedFiles && selectedQuotation.attachedFiles.length > 0">
-                    <h3 class="section-title">Attached Files</h3>
-                    <div class="file-type-badges">
-                        <!-- Image Files -->
-                        <div class="file-badge" *ngIf="countFilesByType(FileType.IMAGE) > 0"
-                            (click)="openFileModal(FileType.IMAGE)">
-                            <mat-icon>image</mat-icon>
-                            <span>{{ countFilesByType(FileType.IMAGE) }}</span>
-                        </div>
-
-                        <!-- Video Files -->
-                        <div class="file-badge" *ngIf="countFilesByType(FileType.VIDEO) > 0"
-                            (click)="openFileModal(FileType.VIDEO)">
-                            <mat-icon>videocam</mat-icon>
-                            <span>{{ countFilesByType(FileType.VIDEO) }}</span>
-                        </div>
-
-                        <!-- Audio Files -->
-                        <div class="file-badge" *ngIf="countFilesByType(FileType.AUDIO) > 0"
-                            (click)="openFileModal(FileType.AUDIO)">
-                            <mat-icon>audiotrack</mat-icon>
-                            <span>{{ countFilesByType(FileType.AUDIO) }}</span>
-                        </div>
-
-                        <!-- Document Files -->
-                        <div class="file-badge" *ngIf="countFilesByType(FileType.DOCUMENT) > 0"
-                            (click)="openFileModal(FileType.DOCUMENT)">
-                            <mat-icon>description</mat-icon>
-                            <span>{{ countFilesByType(FileType.DOCUMENT) }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Response Section -->
-            <div class="response-section">
-                <h3 class="section-title">Response</h3>
-
-                <div class="response-content">
-                    <div class="upload-section">
-                        <label for="fileUpload" class="upload-btn-label">
-                            <div class="upload-btn-content">
-                                <mat-icon>attach_file_add</mat-icon>
-                                <span>Attach Edited Files</span>
-                            </div>
-                            <input type="file" 
-                               id="fileUpload" 
-                               class="file-input" 
-                               (change)="onFileSelected($event)"
-                               multiple hidden>
-                        </label>
-                        <span class="upload-hint">Upload your completed work files here</span>
-                    </div>
-
-                    <!-- Selected files list -->
-                    <div *ngIf="selectedFiles.length > 0" class="mt-4">
-                        <div class="flex justify-between items-center mb-2">
-                            <h4 class="font-semibold text-text">Selected Files ({{ selectedFiles.length }}/{{ maxFiles }})</h4>
-                            <button type="button" class="upload-btn-label" 
-                                (click)="uploadFinalFiles()" [disabled]="isUploading">
-                                <div class="upload-btn-content">
-                                    <mat-icon *ngIf="!isUploading">upload_file</mat-icon>
-                                    <mat-icon *ngIf="isUploading" class="rotating-icon">refresh</mat-icon>
-                                    <span *ngIf="!isUploading">Upload Selected Files</span>
-                                    <span *ngIf="isUploading">Uploading...</span>
-                                </div>
-                            </button>
-                        </div>
-                        <div class="flex flex-wrap gap-2">
-                            <div *ngFor="let file of selectedFiles; let i = index"
-                                class="file-item-pending rounded p-2 flex items-center">
-                                <span class="truncate max-w-xs text-text">{{ file.name }}</span>
-                                <button type="button" class="ml-2 text-grey-500 flex items-center" (click)="removeFile(i)">
-                                    <mat-icon class="align-middle">cancel</mat-icon>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Uploaded files -->
-                    <div *ngIf="uploadedFiles.length > 0" class="mt-4">
-                        <h4 class="font-semibold mb-2 text-text">Uploaded Files ({{ uploadedFiles.length }})</h4>
-                        <div class="flex flex-wrap gap-2">
-                            <div *ngFor="let file of uploadedFiles" 
-                                class="file-item-uploaded rounded p-2 flex items-center">
-                                <span class="truncate max-w-xs text-text">{{ file.fileName }}</span>
-                                <a [href]="file.url" target="_blank" class="ml-2 file-link flex items-center">
-                                    <mat-icon class="align-middle">open_in_new</mat-icon>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="response-input">
-                        <mat-form-field appearance="fill" class="response-field">
-                            <mat-label>Additional Details</mat-label>
-                            <textarea matInput rows="4" [(ngModel)]="responseText"
-                                placeholder="Enter additional details about your work..."></textarea>
-                        </mat-form-field>
-
-                        <button mat-raised-button color="primary" class="submit-btn" [disabled]="!responseText.trim() || uploadedFiles.length === 0"
-                            (click)="submitResponse()">
-                            Submit Response
-                        </button>
-                    </div>
-                </div>
-            </div>
+      @if (!isLoading && acceptedQuotations.length === 0) {
+        <div class="empty-state">
+          <mat-icon>inbox</mat-icon>
+          <p>No quotations found</p>
         </div>
+      }
+
+      @for (quotation of acceptedQuotations; track quotation) {
+        <div class="quotation-item"
+          [class.selected]="selectedQuotation?._id === quotation._id" (click)="selectQuotation(quotation)"
+          matRipple>
+          <div class="quotation-thumbnail">
+            <img [src]="quotation.imageUrl || 'https://placehold.co/400'" alt="Thumbnail" appMediaProtection>
+          </div>
+          <div class="quotation-info">
+            <h3 class="quotation-title">{{ quotation.title }}</h3>
+          </div>
+        </div>
+      }
+
+      @if (hasMore && !isLoading) {
+        <div class="load-more-container">
+          <button mat-flat-button color="accent" (click)="loadMore()" [disabled]="isLoadingMore">
+            @if (!isLoadingMore) {
+              <span>Load More</span>
+            }
+            @if (isLoadingMore) {
+              <mat-spinner diameter="20"></mat-spinner>
+            }
+          </button>
+        </div>
+      }
     </div>
+  </div>
+
+  <!-- Right Panel - Quotation Details -->
+  <div class="quotation-details-panel">
+    @if (!selectedQuotation) {
+      <div class="no-selection">
+        <mat-icon>description</mat-icon>
+        <p>Select a quotation to view details</p>
+      </div>
+    }
+
+    @if (selectedQuotation) {
+      <div class="quotation-details">
+        <!-- Header with Title and Date -->
+        <div class="details-header">
+          <h2 class="details-title">{{ selectedQuotation.title }}</h2>
+          <span class="details-date">Posted on: {{ selectedQuotation.createdAt ? (selectedQuotation.createdAt |
+          localDate: 'medium') : 'N/A' }}</span>
+        </div>
+        <!-- Description Section -->
+        <div class="details-section">
+          <p class="details-description">{{ selectedQuotation.description }}</p>
+        </div>
+        <!-- Metadata Section -->
+        <div class="details-metadata">
+          <div class="metadata-item">
+            <span class="metadata-label">Theme:</span>
+            <span class="metadata-value">{{ selectedQuotation.theme }}</span>
+          </div>
+          <div class="metadata-item">
+            <span class="metadata-label">Category:</span>
+            <span class="metadata-value">{{ selectedQuotation.outputType }}</span>
+          </div>
+          <div class="metadata-item">
+            <span class="metadata-label">Last Date:</span>
+            <span class="metadata-value">{{ selectedQuotation.dueDate ? (selectedQuotation.dueDate | localDate:
+            'medium') : 'No deadline' }}</span>
+          </div>
+          @if (selectedQuotation.attachedFiles && selectedQuotation.attachedFiles.length > 0) {
+            <div class="file-attachments metadata-item"
+              >
+              <h3 class="section-title">Attached Files</h3>
+              <div class="file-type-badges">
+                <!-- Image Files -->
+                @if (countFilesByType(FileType.IMAGE) > 0) {
+                  <div class="file-badge"
+                    (click)="openFileModal(FileType.IMAGE)">
+                    <mat-icon>image</mat-icon>
+                    <span>{{ countFilesByType(FileType.IMAGE) }}</span>
+                  </div>
+                }
+                <!-- Video Files -->
+                @if (countFilesByType(FileType.VIDEO) > 0) {
+                  <div class="file-badge"
+                    (click)="openFileModal(FileType.VIDEO)">
+                    <mat-icon>videocam</mat-icon>
+                    <span>{{ countFilesByType(FileType.VIDEO) }}</span>
+                  </div>
+                }
+                <!-- Audio Files -->
+                @if (countFilesByType(FileType.AUDIO) > 0) {
+                  <div class="file-badge"
+                    (click)="openFileModal(FileType.AUDIO)">
+                    <mat-icon>audiotrack</mat-icon>
+                    <span>{{ countFilesByType(FileType.AUDIO) }}</span>
+                  </div>
+                }
+                <!-- Document Files -->
+                @if (countFilesByType(FileType.DOCUMENT) > 0) {
+                  <div class="file-badge"
+                    (click)="openFileModal(FileType.DOCUMENT)">
+                    <mat-icon>description</mat-icon>
+                    <span>{{ countFilesByType(FileType.DOCUMENT) }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+        <!-- Response Section -->
+        <div class="response-section">
+          <h3 class="section-title">Response</h3>
+          <div class="response-content">
+            <div class="upload-section">
+              <label for="fileUpload" class="upload-btn-label">
+                <div class="upload-btn-content">
+                  <mat-icon>attach_file_add</mat-icon>
+                  <span>Attach Edited Files</span>
+                </div>
+                <input type="file"
+                  id="fileUpload"
+                  class="file-input"
+                  (change)="onFileSelected($event)"
+                  multiple hidden>
+              </label>
+              <span class="upload-hint">Upload your completed work files here</span>
+            </div>
+            <!-- Selected files list -->
+            @if (selectedFiles.length > 0) {
+              <div class="mt-4">
+                <div class="flex justify-between items-center mb-2">
+                  <h4 class="font-semibold text-text">Selected Files ({{ selectedFiles.length }}/{{ maxFiles }})</h4>
+                  <button type="button" class="upload-btn-label"
+                    (click)="uploadFinalFiles()" [disabled]="isUploading">
+                    <div class="upload-btn-content">
+                      @if (!isUploading) {
+                        <mat-icon>upload_file</mat-icon>
+                      }
+                      @if (isUploading) {
+                        <mat-icon class="rotating-icon">refresh</mat-icon>
+                      }
+                      @if (!isUploading) {
+                        <span>Upload Selected Files</span>
+                      }
+                      @if (isUploading) {
+                        <span>Uploading...</span>
+                      }
+                    </div>
+                  </button>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  @for (file of selectedFiles; track file; let i = $index) {
+                    <div
+                      class="file-item-pending rounded p-2 flex items-center">
+                      <span class="truncate max-w-xs text-text">{{ file.name }}</span>
+                      <button type="button" class="ml-2 text-grey-500 flex items-center" (click)="removeFile(i)">
+                        <mat-icon class="align-middle">cancel</mat-icon>
+                      </button>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+            <!-- Uploaded files -->
+            @if (uploadedFiles.length > 0) {
+              <div class="mt-4">
+                <h4 class="font-semibold mb-2 text-text">Uploaded Files ({{ uploadedFiles.length }})</h4>
+                <div class="flex flex-wrap gap-2">
+                  @for (file of uploadedFiles; track file) {
+                    <div
+                      class="file-item-uploaded rounded p-2 flex items-center">
+                      <span class="truncate max-w-xs text-text">{{ file.fileName }}</span>
+                      <a [href]="file.url" target="_blank" class="ml-2 file-link flex items-center">
+                        <mat-icon class="align-middle">open_in_new</mat-icon>
+                      </a>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+            <div class="response-input">
+              <mat-form-field appearance="fill" class="response-field">
+                <mat-label>Additional Details</mat-label>
+                <textarea matInput rows="4" [(ngModel)]="responseText"
+                placeholder="Enter additional details about your work..."></textarea>
+              </mat-form-field>
+              <button mat-raised-button color="primary" class="submit-btn" [disabled]="!responseText.trim() || uploadedFiles.length === 0"
+                (click)="submitResponse()">
+                Submit Response
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
 </div>

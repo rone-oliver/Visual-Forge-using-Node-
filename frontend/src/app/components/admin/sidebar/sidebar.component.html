@@ -1,103 +1,106 @@
 <div class="sidebar bg-navy dark:bg-navy text-white">
-    <!-- Logo -->
-    <div class="sidebar-header">
-        <div class="logo">
-            <img src="Brand_icon.png" alt="Brand Icon" class="brand-icon" appMediaProtection>
-            <span>Visual Forge</span>
-        </div>
-        <button (click)="themeService.toggleAdminTheme()"
-            class="icon-button p-2 rounded-lg bg-gray-500 dark:bg-gray-700 text-text-light dark:text-text-dark">
-            <span *ngIf="themeService.isAdminDarkTheme$ | async; else lightIcon">🌞</span>
-            <ng-template #lightIcon>🌙</ng-template>
-        </button>
+  <!-- Logo -->
+  <div class="sidebar-header">
+    <div class="logo">
+      <img src="Brand_icon.png" alt="Brand Icon" class="brand-icon" appMediaProtection>
+      <span>Visual Forge</span>
     </div>
+    <button (click)="themeService.toggleAdminTheme()"
+      class="icon-button p-2 rounded-lg bg-gray-500 dark:bg-gray-700 text-text-light dark:text-text-dark">
+      @if (themeService.isAdminDarkTheme$ | async) {
+        <span>🌞</span>
+      } @else {
+        🌙
+      }
+    </button>
+  </div>
 
-    <!-- Search Bar -->
-    <div class="search-container">
-        <div class="search-wrapper">
-            <mat-icon class="search-icon">search</mat-icon>
-            <input type="text" placeholder="Search for..." class="search-input">
-        </div>
+  <!-- Search Bar -->
+  <div class="search-container">
+    <div class="search-wrapper">
+      <mat-icon class="search-icon">search</mat-icon>
+      <input type="text" placeholder="Search for..." class="search-input">
     </div>
+  </div>
 
-    <!-- Main Menu Items -->
-    <nav class="sidebar-nav">
-        <ul class="menu-items">
-            <li class="menu-item" [class.active]="activeTab === 'dashboard'"
-            (click)="toggleFilter('dashboard')">
-                <a [routerLink]="['/admin/dashboard']" class="menu-link">
-                    <mat-icon class="menu-icon">dashboard</mat-icon>
-                    <span class="menu-text">Dashboard</span>
-                    <mat-icon class="expand-icon">chevron_right</mat-icon>
-                </a>
-            </li>
-            <li class="menu-item" [class.active]="activeTab === 'editors'"
-            (click)="toggleFilter('editors')">
-                <a [routerLink]="['/admin/editors']" class="menu-link">
-                    <mat-icon class="menu-icon">edit</mat-icon>
-                    <span class="menu-text">Editors</span>
-                    <mat-icon class="expand-icon">chevron_right</mat-icon>
-                </a>
-            </li>
-            <li class="menu-item" [class.active]="activeTab === 'users'"
-            (click)="toggleFilter('users')">
-                <a [routerLink]="['/admin/users']" class="menu-link">
-                    <mat-icon class="menu-icon">people</mat-icon>
-                    <span class="menu-text">Users</span>
-                    <mat-icon class="expand-icon">chevron_right</mat-icon>
-                </a>
-            </li>
-            <li class="menu-item" [class.active]="activeTab === 'programs'"
-            (click)="toggleFilter('programs')">
-                <a [routerLink]="['/admin/programs']" class="menu-link">
-                    <mat-icon class="menu-icon">campaign</mat-icon>
-                    <span class="menu-text">Programs</span>
-                    <mat-icon class="expand-icon">chevron_right</mat-icon>
-                </a>
-            </li>
-            <li class="menu-item" [class.active]="activeTab === 'activities'"
-            (click)="toggleFilter('activities')">
-                <a [routerLink]="['/admin/activities']" class="menu-link">
-                    <mat-icon class="menu-icon">admin_panel_settings</mat-icon>
-                    <span class="menu-text">Admin Activities</span>
-                    <mat-icon class="expand-icon">chevron_right</mat-icon>
-                </a>
-            </li>
-            <li class="menu-item" [class.active]="activeTab === 'reports'"
-            (click)="toggleFilter('reports')">
-                <a [routerLink]="['/admin/reports']" class="menu-link">
-                    <mat-icon class="menu-icon">report</mat-icon>
-                    <span class="menu-text">Reported Users</span>
-                    <mat-icon class="expand-icon">chevron_right</mat-icon>
-                </a>
-            </li>
-        </ul>
-    </nav>
-
-    <!-- Bottom Section -->
-    <div class="sidebar-footer">
-        <a [routerLink]="['/admin/settings']" class="menu-link" [class.active]="activeTab === 'settings'"
-        (click)="toggleFilter('settings')">
-            <mat-icon class="menu-icon">settings</mat-icon>
-            <span class="menu-text">Settings</span>
-            <mat-icon class="expand-icon">chevron_right</mat-icon>
+  <!-- Main Menu Items -->
+  <nav class="sidebar-nav">
+    <ul class="menu-items">
+      <li class="menu-item" [class.active]="activeTab === 'dashboard'"
+        (click)="toggleFilter('dashboard')">
+        <a [routerLink]="['/admin/dashboard']" class="menu-link">
+          <mat-icon class="menu-icon">dashboard</mat-icon>
+          <span class="menu-text">Dashboard</span>
+          <mat-icon class="expand-icon">chevron_right</mat-icon>
         </a>
-        <div class="user-profile">
-            <div class="avatar">
-                <img src="assets/images/man.png" alt="User Avatar" appMediaProtection>
-            </div>
-            <div class="user-info">
-                <div class="user-name">John Carter</div>
-                <div class="user-role">Account settings</div>
-            </div>
-            <mat-icon class="expand-icon">chevron_right</mat-icon>
-        </div>
-        <div class="menu-item">
-            <a (click)="logout()" class="menu-link">
-                <mat-icon class="menu-icon">logout</mat-icon>
-                <span class="menu-text">Logout</span>
-                <mat-icon class="expand-icon">chevron_right</mat-icon>
-            </a>
-        </div>
+      </li>
+      <li class="menu-item" [class.active]="activeTab === 'editors'"
+        (click)="toggleFilter('editors')">
+        <a [routerLink]="['/admin/editors']" class="menu-link">
+          <mat-icon class="menu-icon">edit</mat-icon>
+          <span class="menu-text">Editors</span>
+          <mat-icon class="expand-icon">chevron_right</mat-icon>
+        </a>
+      </li>
+      <li class="menu-item" [class.active]="activeTab === 'users'"
+        (click)="toggleFilter('users')">
+        <a [routerLink]="['/admin/users']" class="menu-link">
+          <mat-icon class="menu-icon">people</mat-icon>
+          <span class="menu-text">Users</span>
+          <mat-icon class="expand-icon">chevron_right</mat-icon>
+        </a>
+      </li>
+      <li class="menu-item" [class.active]="activeTab === 'programs'"
+        (click)="toggleFilter('programs')">
+        <a [routerLink]="['/admin/programs']" class="menu-link">
+          <mat-icon class="menu-icon">campaign</mat-icon>
+          <span class="menu-text">Programs</span>
+          <mat-icon class="expand-icon">chevron_right</mat-icon>
+        </a>
+      </li>
+      <li class="menu-item" [class.active]="activeTab === 'activities'"
+        (click)="toggleFilter('activities')">
+        <a [routerLink]="['/admin/activities']" class="menu-link">
+          <mat-icon class="menu-icon">admin_panel_settings</mat-icon>
+          <span class="menu-text">Admin Activities</span>
+          <mat-icon class="expand-icon">chevron_right</mat-icon>
+        </a>
+      </li>
+      <li class="menu-item" [class.active]="activeTab === 'reports'"
+        (click)="toggleFilter('reports')">
+        <a [routerLink]="['/admin/reports']" class="menu-link">
+          <mat-icon class="menu-icon">report</mat-icon>
+          <span class="menu-text">Reported Users</span>
+          <mat-icon class="expand-icon">chevron_right</mat-icon>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Bottom Section -->
+  <div class="sidebar-footer">
+    <a [routerLink]="['/admin/settings']" class="menu-link" [class.active]="activeTab === 'settings'"
+      (click)="toggleFilter('settings')">
+      <mat-icon class="menu-icon">settings</mat-icon>
+      <span class="menu-text">Settings</span>
+      <mat-icon class="expand-icon">chevron_right</mat-icon>
+    </a>
+    <div class="user-profile">
+      <div class="avatar">
+        <img src="assets/images/man.png" alt="User Avatar" appMediaProtection>
+      </div>
+      <div class="user-info">
+        <div class="user-name">John Carter</div>
+        <div class="user-role">Account settings</div>
+      </div>
+      <mat-icon class="expand-icon">chevron_right</mat-icon>
     </div>
+    <div class="menu-item">
+      <a (click)="logout()" class="menu-link">
+        <mat-icon class="menu-icon">logout</mat-icon>
+        <span class="menu-text">Logout</span>
+        <mat-icon class="expand-icon">chevron_right</mat-icon>
+      </a>
+    </div>
+  </div>
 </div>

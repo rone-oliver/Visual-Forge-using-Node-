@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
@@ -21,7 +21,6 @@ import { MediaProtectionDirective } from '../../../directives/media-protection.d
 @Component({
   selector: 'app-accepted-quotation',
   imports: [
-    CommonModule,
     FormsModule,
     MatIconModule,
     LocalDatePipe,
@@ -31,7 +30,7 @@ import { MediaProtectionDirective } from '../../../directives/media-protection.d
     MatRippleModule,
     MatProgressSpinnerModule,
     MediaProtectionDirective
-  ],
+],
   templateUrl: './accepted-quotation.component.html',
   styleUrl: './accepted-quotation.component.scss'
 })

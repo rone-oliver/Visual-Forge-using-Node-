@@ -13,172 +13,209 @@
         <mat-icon class="search-icon">search</mat-icon>
       </div>
     </div>
-    
+
     <div class="chat-list-scrollable">
-      <div class="chat-item" *ngFor="let chat of filteredChats" 
-           [ngClass]="{'active': chat._id === selectedChatId}"
-           (click)="selectChat(chat)">
-        <div class="chat-avatar">
-          <img *ngIf="chat.avatarUrl" [src]="chat.avatarUrl" alt="Avatar" appMediaProtection>
-          <div *ngIf="!chat.avatarUrl" class="avatar-placeholder">
-            {{ getInitials(chat.username) }}
+      @for (chat of filteredChats; track chat) {
+        <div class="chat-item"
+          [ngClass]="{'active': chat._id === selectedChatId}"
+          (click)="selectChat(chat)">
+          <div class="chat-avatar">
+            @if (chat.avatarUrl) {
+              <img [src]="chat.avatarUrl" alt="Avatar" appMediaProtection>
+            }
+            @if (!chat.avatarUrl) {
+              <div class="avatar-placeholder">
+                {{ getInitials(chat.username) }}
+              </div>
+            }
+            @if (chat.isOnline) {
+              <div class="online-indicator"></div>
+            }
           </div>
-          <div class="online-indicator" *ngIf="chat.isOnline"></div>
+          <div class="chat-info">
+            <div class="chat-name-time">
+              <h3 class="chat-name">{{ chat.username }}</h3>
+              <span class="chat-time">{{ getLastMessageTime(chat) }}</span>
+            </div>
+            <div class="chat-preview">
+              <p class="chat-last-message">{{ chat.lastMessage }}</p>
+              @if ((chat.unreadCount ?? 0) > 0) {
+                <div class="chat-badge">{{ chat.unreadCount }}</div>
+              }
+            </div>
+          </div>
         </div>
-        <div class="chat-info">
-          <div class="chat-name-time">
-            <h3 class="chat-name">{{ chat.username }}</h3>
-            <span class="chat-time">{{ getLastMessageTime(chat) }}</span>
-          </div>
-          <div class="chat-preview">
-            <p class="chat-last-message">{{ chat.lastMessage }}</p>
-            <div class="chat-badge" *ngIf="(chat.unreadCount ?? 0) > 0">{{ chat.unreadCount }}</div>
-          </div>
-        </div>
-      </div>
-      
+      }
+
       <!-- Empty state for chat list -->
-      <div class="empty-chat-list" *ngIf="filteredChats.length === 0">
-        <mat-icon>forum</mat-icon>
-        <p>No conversations found</p>
-      </div>
+      @if (filteredChats.length === 0) {
+        <div class="empty-chat-list">
+          <mat-icon>forum</mat-icon>
+          <p>No conversations found</p>
+        </div>
+      }
     </div>
   </div>
 
   <!-- Chat Content -->
   <div class="chat-content" [ngClass]="{'hidden-on-mobile': isMobile && !selectedChatId}">
     <!-- Empty state when no chat is selected -->
-    <div class="no-chat-selected" *ngIf="!selectedChatId">
-      <div class="empty-state-content">
-        <mat-icon>chat</mat-icon>
-        <h3>Select a conversation</h3>
-        <p>Choose a chat from the list to start messaging</p>
+    @if (!selectedChatId) {
+      <div class="no-chat-selected">
+        <div class="empty-state-content">
+          <mat-icon>chat</mat-icon>
+          <h3>Select a conversation</h3>
+          <p>Choose a chat from the list to start messaging</p>
+        </div>
       </div>
-    </div>
+    }
 
     <!-- Chat Container (only visible when a chat is selected) -->
-    <div class="chat-container" *ngIf="selectedChatId">
-      <!-- Chat Header -->
-      <div class="chat-header">
-        <div class="header-content">
-          <div class="recipient-info">
-            <button mat-icon-button class="back-button" *ngIf="isMobile" (click)="goBack()">
-              <mat-icon>arrow_back</mat-icon>
-            </button>
-            <div class="avatar" *ngIf="recipient">
-              <img *ngIf="recipient.avatarUrl" [src]="recipient.avatarUrl" alt="Avatar" appMediaProtection>
-              <div *ngIf="!recipient.avatarUrl" class="avatar-placeholder">
-                {{ getInitials(recipient.username) }}
+    @if (selectedChatId) {
+      <div class="chat-container">
+        <!-- Chat Header -->
+        <div class="chat-header">
+          <div class="header-content">
+            <div class="recipient-info">
+              @if (isMobile) {
+                <button mat-icon-button class="back-button" (click)="goBack()">
+                  <mat-icon>arrow_back</mat-icon>
+                </button>
+              }
+              @if (recipient) {
+                <div class="avatar">
+                  @if (recipient.avatarUrl) {
+                    <img [src]="recipient.avatarUrl" alt="Avatar" appMediaProtection>
+                  }
+                  @if (!recipient.avatarUrl) {
+                    <div class="avatar-placeholder">
+                      {{ getInitials(recipient.username) }}
+                    </div>
+                  }
+                </div>
+              }
+              <h2 class="recipient-name">{{ recipient?.username || 'Loading...' }}</h2>
+            </div>
+            <div class="header-actions">
+              <button mat-icon-button class="call-button" (click)="initiateCall()">
+                <mat-icon>call</mat-icon>
+              </button>
+              <button mat-icon-button [matMenuTriggerFor]="menu">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #menu="matMenu">
+                <button mat-menu-item (click)="clearChat()">
+                  <mat-icon>delete_sweep</mat-icon>
+                  <span>Clear chat</span>
+                </button>
+                <button mat-menu-item (click)="blockUser()">
+                  <mat-icon>block</mat-icon>
+                  <span>Block user</span>
+                </button>
+                <button mat-menu-item (click)="reportUser()">
+                  <mat-icon>flag</mat-icon>
+                  <span>Report user</span>
+                </button>
+              </mat-menu>
+            </div>
+          </div>
+        </div>
+        <!-- Chat Messages Area -->
+        <div class="messages-container" #messagesContainer style="overflow-y: auto;">
+          @if (messages.length > 0) {
+            <div class="messages-date-separator">
+              <span>{{ getMessageDateGroup(messages[0]) }}</span>
+            </div>
+          }
+          @for (message of messages; track trackByMessageId(i, message); let i = $index) {
+            <!-- Date separator when date changes -->
+            @if (i > 0 && shouldShowDateSeparator(messages[i-1], message)) {
+              <div class="messages-date-separator">
+                <span>{{ getMessageDateGroup(message) }}</span>
+              </div>
+            }
+            <div class="message" [ngClass]="{'outgoing': message.isOutgoing, 'incoming': !message.isOutgoing}">
+              <div class="message-content" [ngClass]="{'with-status': message.isOutgoing}">
+                {{ message.content }}
+                <div class="message-time">{{ getMessageTime(message) }}</div>
+                @if (message.isOutgoing) {
+                  <div class="message-status">
+                    @if (message.status === 'sent') {
+                      <mat-icon class="status-icon" [inline]="true">done</mat-icon>
+                    }
+                    @if (message.status === 'delivered') {
+                      <mat-icon class="status-icon" [inline]="true">done_all</mat-icon>
+                    }
+                    @if (message.status === 'read') {
+                      <mat-icon class="status-icon read" [inline]="true">done_all</mat-icon>
+                    }
+                  </div>
+                }
               </div>
             </div>
-            <h2 class="recipient-name">{{ recipient?.username || 'Loading...' }}</h2>
-          </div>
-          <div class="header-actions">
-            <button mat-icon-button class="call-button" (click)="initiateCall()">
-              <mat-icon>call</mat-icon>
-            </button>
-            <button mat-icon-button [matMenuTriggerFor]="menu">
-              <mat-icon>more_vert</mat-icon>
-            </button>
-            <mat-menu #menu="matMenu">
-              <button mat-menu-item (click)="clearChat()">
-                <mat-icon>delete_sweep</mat-icon>
-                <span>Clear chat</span>
-              </button>
-              <button mat-menu-item (click)="blockUser()">
-                <mat-icon>block</mat-icon>
-                <span>Block user</span>
-              </button>
-              <button mat-menu-item (click)="reportUser()">
-                <mat-icon>flag</mat-icon>
-                <span>Report user</span>
-              </button>
-            </mat-menu>
-          </div>
-        </div>
-      </div>
-
-      <!-- Chat Messages Area -->
-      <div class="messages-container" #messagesContainer style="overflow-y: auto;">
-        <div class="messages-date-separator" *ngIf="messages.length > 0">
-          <span>{{ getMessageDateGroup(messages[0]) }}</span>
-        </div>
-        
-        <ng-container *ngFor="let message of messages; let i = index; trackBy: trackByMessageId">
-          <!-- Date separator when date changes -->
-          <div class="messages-date-separator" *ngIf="i > 0 && shouldShowDateSeparator(messages[i-1], message)">
-            <span>{{ getMessageDateGroup(message) }}</span>
-          </div>
-          
-          <div class="message" [ngClass]="{'outgoing': message.isOutgoing, 'incoming': !message.isOutgoing}">
-            <div class="message-content" [ngClass]="{'with-status': message.isOutgoing}">
-              {{ message.content }}
-              <div class="message-time">{{ getMessageTime(message) }}</div>
-              <div class="message-status" *ngIf="message.isOutgoing">
-                <mat-icon class="status-icon" *ngIf="message.status === 'sent'" [inline]="true">done</mat-icon>
-                <mat-icon class="status-icon" *ngIf="message.status === 'delivered'" [inline]="true">done_all</mat-icon>
-                <mat-icon class="status-icon read" *ngIf="message.status === 'read'" [inline]="true">done_all</mat-icon>
+            <!-- Add typing indicator after the last message if someone is typing -->
+            @if (i === messages.length - 1 && isTyping) {
+              <div class="typing-indicator-container">
+                <div class="typing-indicator">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
               </div>
+            }
+          }
+          <!-- Empty state -->
+          @if (messages.length === 0) {
+            <div class="empty-chat">
+              <div class="empty-illustration">
+                <mat-icon>chat</mat-icon>
+              </div>
+              <h3>Start a conversation</h3>
+              <p>Send a message to begin chatting with {{ recipient?.username }}</p>
             </div>
+          }
+        </div>
+        <!-- Smart Reply Suggestions -->
+        @if (smartReplySuggestions.length > 0) {
+          <div class="smart-reply-container">
+            @for (suggestion of smartReplySuggestions; track suggestion) {
+              <button (click)="sendSmartReply(suggestion)" class="smart-reply-btn">
+                {{ suggestion }}
+              </button>
+            }
           </div>
-          
-          <!-- Add typing indicator after the last message if someone is typing -->
-          <div class="typing-indicator-container" *ngIf="i === messages.length - 1 && isTyping">
-            <div class="typing-indicator">
-              <span></span>
-              <span></span>
-              <span></span>
-            </div>
+        }
+        <!-- Chat Input Area -->
+        <div class="input-container">
+          <button mat-icon-button class="attachment-button" (click)="openAttachmentMenu($event)">
+            <mat-icon>attach_file</mat-icon>
+          </button>
+          <div class="input-wrapper">
+            <textarea
+              class="message-input"
+              placeholder="Type your message here..."
+              [(ngModel)]="newMessage"
+              (keydown)="onKeyDown($event)"
+              (input)="onInput()"
+              #messageInput
+              rows="1"
+            ></textarea>
           </div>
-        </ng-container>
-        
-        <!-- Empty state -->
-        <div class="empty-chat" *ngIf="messages.length === 0">
-          <div class="empty-illustration">
-            <mat-icon>chat</mat-icon>
-          </div>
-          <h3>Start a conversation</h3>
-          <p>Send a message to begin chatting with {{ recipient?.username }}</p>
+          <button mat-icon-button class="emoji-button" (click)="openEmojiPicker($event)">
+            <mat-icon>sentiment_satisfied_alt</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            class="send-button"
+            [disabled]="!newMessage.trim()"
+            (click)="sendMessage()"
+            [ngClass]="{'active': newMessage.trim()}"
+            >
+            <mat-icon>send</mat-icon>
+          </button>
         </div>
       </div>
-
-      <!-- Smart Reply Suggestions -->
-      <div class="smart-reply-container" *ngIf="smartReplySuggestions.length > 0">
-        <button *ngFor="let suggestion of smartReplySuggestions" (click)="sendSmartReply(suggestion)" class="smart-reply-btn">
-          {{ suggestion }}
-        </button>
-      </div>
-
-      <!-- Chat Input Area -->
-      <div class="input-container">
-        <button mat-icon-button class="attachment-button" (click)="openAttachmentMenu($event)">
-          <mat-icon>attach_file</mat-icon>
-        </button>
-        <div class="input-wrapper">
-          <textarea
-            class="message-input"
-            placeholder="Type your message here..."
-            [(ngModel)]="newMessage"
-            (keydown)="onKeyDown($event)"
-            (input)="onInput()"
-            #messageInput
-            rows="1"
-          ></textarea>
-        </div>
-        <button mat-icon-button class="emoji-button" (click)="openEmojiPicker($event)">
-          <mat-icon>sentiment_satisfied_alt</mat-icon>
-        </button>
-        <button 
-          mat-icon-button 
-          class="send-button" 
-          [disabled]="!newMessage.trim()" 
-          (click)="sendMessage()"
-          [ngClass]="{'active': newMessage.trim()}"
-        >
-          <mat-icon>send</mat-icon>
-        </button>
-      </div>
-    </div>
+    }
   </div>
 </div>
 
@@ -205,7 +242,9 @@
   <div class="emoji-picker">
     <!-- This would be replaced with a proper emoji picker component -->
     <div class="emoji-grid">
-      <span *ngFor="let emoji of commonEmojis" (click)="selectEmoji(emoji)">{{ emoji }}</span>
+      @for (emoji of commonEmojis; track emoji) {
+        <span (click)="selectEmoji(emoji)">{{ emoji }}</span>
+      }
     </div>
   </div>
 </ng-template>

@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnInit, SimpleChanges,  } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormControl, Validators, ValidatorFn, AbstractControl } from '@angular/forms';
 import { AuthService } from '../../../services/auth.service';
 import { UserRegisterComponent } from '../../user/user-register/user-register.component';
@@ -18,7 +18,7 @@ interface FormControlConfig {
 
 @Component({
   selector: 'app-form',
-  imports: [FormsModule, CommonModule, ReactiveFormsModule, MatIconModule],
+  imports: [FormsModule, ReactiveFormsModule, MatIconModule],
   templateUrl: './form.component.html',
   styleUrl: './form.component.scss'
 })

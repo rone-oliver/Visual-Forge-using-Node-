@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { User, UserManagementService } from '../../../services/admin/user-management.service';
@@ -10,7 +10,7 @@ import { debounceTime } from 'rxjs';
 
 @Component({
   selector: 'app-user-section',
-  imports: [ReactiveFormsModule, TableComponent, FormsModule, MatSelectModule, CommonModule, MatIconModule, MatSlideToggleModule],
+  imports: [ReactiveFormsModule, TableComponent, FormsModule, MatSelectModule, MatIconModule, MatSlideToggleModule],
   templateUrl: './user-section.component.html',
   styleUrl: './user-section.component.scss'
 })

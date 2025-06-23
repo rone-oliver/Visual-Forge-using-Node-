@@ -31,38 +31,50 @@
     <h3>Recent Transactions</h3>
 
     <!-- Loading, Error, and Empty States -->
-    <div *ngIf="isLoading && transactions.length === 0" class="state-container">
-      <mat-spinner diameter="50"></mat-spinner>
-    </div>
+    @if (isLoading && transactions.length === 0) {
+      <div class="state-container">
+        <mat-spinner diameter="50"></mat-spinner>
+      </div>
+    }
 
-    <div *ngIf="!isLoading && transactions.length === 0 && !error" class="state-container empty-state">
-      <mat-icon>receipt_long</mat-icon>
-      <p>No recent transactions</p>
-    </div>
+    @if (!isLoading && transactions.length === 0 && !error) {
+      <div class="state-container empty-state">
+        <mat-icon>receipt_long</mat-icon>
+        <p>No recent transactions</p>
+      </div>
+    }
 
     <!-- Transaction List -->
-    <div class="transaction-list" *ngIf="transactions.length > 0">
-      <div *ngFor="let tx of transactions" class="transaction-item">
-        <div class="transaction-icon" [ngClass]="tx.type.toLowerCase()">
-          <mat-icon>{{ tx.type === 'credit' ? 'arrow_upward' : 'arrow_downward' }}</mat-icon>
-        </div>
-        <div class="transaction-details">
-          <p class="transaction-party">{{ tx.description }}</p>
-          <p class="transaction-date">{{ tx.createdAt | date:'mediumDate' }}</p>
-        </div>
-        <div class="transaction-amount" [ngClass]="tx.type.toLowerCase()">
-          {{ tx.type === 'credit' ? '+' : '-' }} ₹{{ tx.amount | number:'1.2-2' }}
-        </div>
+    @if (transactions.length > 0) {
+      <div class="transaction-list">
+        @for (tx of transactions; track tx) {
+          <div class="transaction-item">
+            <div class="transaction-icon" [ngClass]="tx.type.toLowerCase()">
+              <mat-icon>{{ tx.type === 'credit' ? 'arrow_upward' : 'arrow_downward' }}</mat-icon>
+            </div>
+            <div class="transaction-details">
+              <p class="transaction-party">{{ tx.description }}</p>
+              <p class="transaction-date">{{ tx.createdAt | date:'mediumDate' }}</p>
+            </div>
+            <div class="transaction-amount" [ngClass]="tx.type.toLowerCase()">
+              {{ tx.type === 'credit' ? '+' : '-' }} ₹{{ tx.amount | number:'1.2-2' }}
+            </div>
+          </div>
+        }
       </div>
-    </div>
+    }
 
     <!-- Load More Button and Spinner -->
-    <div *ngIf="canLoadMore && !isLoading && transactions.length > 0" class="load-more-container">
-      <button mat-stroked-button (click)="loadTransactions()">Load More</button>
-    </div>
-    <div *ngIf="isLoading && transactions.length > 0" class="state-container">
+    @if (canLoadMore && !isLoading && transactions.length > 0) {
+      <div class="load-more-container">
+        <button mat-stroked-button (click)="loadTransactions()">Load More</button>
+      </div>
+    }
+    @if (isLoading && transactions.length > 0) {
+      <div class="state-container">
         <mat-spinner diameter="30"></mat-spinner>
-    </div>
+      </div>
+    }
 
   </div>
 </div>

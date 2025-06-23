@@ -2,7 +2,7 @@ import { Component, Inject, OnInit, ViewEncapsulation } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { Language } from '../../../interfaces/user.interface';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { CommonModule } from '@angular/common';
+
 import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -17,13 +17,12 @@ import { FormsModule } from '@angular/forms';
     MatFormFieldModule,
     FormsModule,
     MatSelectModule,
-    CommonModule,
     MatInputModule,
     MatDialogModule,
     MatButtonModule,
     MatIconModule,
-    MatDividerModule,
-  ],
+    MatDividerModule
+],
   templateUrl: './profile-edit-modal.component.html',
   styleUrls: ['./profile-edit-modal.component.scss'],
   // This is important to allow our deep styles to affect Angular Material components

@@ -3,7 +3,7 @@ import { FormComponent } from '../../shared/form/form.component';
 import { AbstractControl, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { AuthService } from '../../../services/auth.service';
 import { Router, RouterModule } from '@angular/router';
-import { CommonModule } from '@angular/common';
+
 import { MatIconModule } from '@angular/material/icon';
 import { GoogleAuthService } from '../../../services/shared/google-auth.service';
 import { environment } from '../../../../environments/environment';
@@ -27,7 +27,7 @@ declare global {
 
 @Component({
   selector: 'app-user-register',
-  imports: [FormComponent, CommonModule, RouterModule, MatIconModule],
+  imports: [FormComponent, RouterModule, MatIconModule],
   templateUrl: './user-register.component.html',
   styleUrl: './user-register.component.scss'
 })

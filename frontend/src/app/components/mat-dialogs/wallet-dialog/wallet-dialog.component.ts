@@ -12,7 +12,7 @@ import { FormBuilder, FormGroup, Validators, FormsModule, ReactiveFormsModule } 
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { CommonModule } from '@angular/common';
+
 
 export interface WalletDialogData {
   type: 'add' | 'withdraw';
@@ -22,7 +22,6 @@ export interface WalletDialogData {
   selector: 'app-wallet-dialog',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     ReactiveFormsModule,
     MatFormFieldModule,
@@ -32,8 +31,8 @@ export interface WalletDialogData {
     MatDialogContent,
     MatDialogActions,
     MatDialogClose,
-    MatIconModule,
-  ],
+    MatIconModule
+],
   templateUrl: './wallet-dialog.component.html',
   styleUrl: './wallet-dialog.component.scss'
 })

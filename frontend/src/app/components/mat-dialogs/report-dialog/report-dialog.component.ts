@@ -6,7 +6,7 @@ import { MatOptionModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select'; // <-- Import MatSelectModule
 import { MatInputModule } from '@angular/material/input'; // <-- Import MatInputModule
 import { MatButtonModule } from '@angular/material/button'; // <-- Import MatButtonModule
-import { CommonModule } from '@angular/common';
+
 
 export enum ReportContext {
   CHAT = 'chat',
@@ -39,15 +39,14 @@ export interface ReportDialogResult {
   selector: 'app-report-dialog',
   // Make sure all Material modules used in the template are imported here
   imports: [
-    CommonModule,
     MatDialogModule,
-    MatFormFieldModule, // For mat-form-field
-    MatSelectModule,    // For mat-select
-    MatOptionModule,    // For mat-option
-    MatInputModule,     // For matInput (textarea)
-    MatButtonModule,    // For mat-button, mat-raised-button
-    ReactiveFormsModule // For formGroup
-  ],
+    MatFormFieldModule,
+    MatSelectModule,
+    MatOptionModule,
+    MatInputModule,
+    MatButtonModule,
+    ReactiveFormsModule
+],
   standalone: true, // Assuming this is a standalone component
   templateUrl: './report-dialog.component.html',
   styleUrl: './report-dialog.component.scss'

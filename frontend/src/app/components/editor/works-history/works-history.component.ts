@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
@@ -17,7 +17,6 @@ import { MatDialog } from '@angular/material/dialog';
 @Component({
   selector: 'app-works-history',
   imports: [
-    CommonModule,
     FormsModule,
     MatIconModule,
     MatInputModule,
@@ -25,7 +24,7 @@ import { MatDialog } from '@angular/material/dialog';
     MatButtonModule,
     MatRippleModule,
     LocalDatePipe
-  ],
+],
   templateUrl: './works-history.component.html',
   styleUrl: './works-history.component.scss'
 })

@@ -5,14 +5,14 @@ import { Works } from '../../../interfaces/completed-word.interface';
 import { User } from '../../../interfaces/user.interface';
 import { Editor } from '../../../interfaces/editor.interface';
 import { MatIconModule } from '@angular/material/icon';
-import { CommonModule } from '@angular/common';
+
 import { AudioVisualizerComponent } from '../../shared/audio-visualizer/audio-visualizer.component';
 import { MediaProtectionDirective } from '../../../directives/media-protection.directive';
 
 @Component({
   selector: 'app-works-card',
   standalone: true,
-  imports: [MatIconModule, CommonModule, AudioVisualizerComponent, MediaProtectionDirective],
+  imports: [MatIconModule, AudioVisualizerComponent, MediaProtectionDirective],
   templateUrl: './works-card.component.html',
   styleUrl: './works-card.component.scss',
   animations: [

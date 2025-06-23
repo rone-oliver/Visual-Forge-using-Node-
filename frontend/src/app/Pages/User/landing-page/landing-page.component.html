@@ -1,182 +1,186 @@
 <!-- editor-landing.component.html -->
 <div [ngClass]="{'dark': isDarkMode}" class="min-h-screen font-sans">
-    <!-- Main container with dark mode support -->
-    <div
-        class="bg-gradient-to-b from-amber-50 to-amber-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300 min-h-screen">
+  <!-- Main container with dark mode support -->
+  <div
+    class="bg-gradient-to-b from-amber-50 to-amber-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300 min-h-screen">
 
-        <!-- Header/Navigation -->
-        <app-user-header></app-user-header>
+    <!-- Header/Navigation -->
+    <app-user-header></app-user-header>
 
-        <!-- Hero Section -->
-        <section class="container mx-auto px-4 py-12 md:py-20">
-            <div class="flex flex-col md:flex-row items-center">
-                <div class="md:w-1/2 mb-10 md:mb-0" @fadeIn>
-                    <h1 class="text-3xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
-                        From Concept to Masterpiece. <br>
-                        <span class="text-amber-600 dark:text-amber-400">Find your perfect Editor.</span>
-                    </h1>
-                    <p class="text-lg text-gray-700 dark:text-gray-300 mb-8">
-                        Where Creativity and Expertise Converge
-                    </p>
-                    <button
-                        class="px-8 py-3 rounded-full bg-gradient-to-r from-amber-500 to-red-500 hover:from-amber-600 hover:to-red-600 text-white font-medium text-lg transform hover:scale-105 transition-all shadow-lg hover:shadow-xl">
-                        Start Today!
-                    </button>
+    <!-- Hero Section -->
+    <section class="container mx-auto px-4 py-12 md:py-20">
+      <div class="flex flex-col md:flex-row items-center">
+        <div class="md:w-1/2 mb-10 md:mb-0" @fadeIn>
+          <h1 class="text-3xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
+            From Concept to Masterpiece. <br>
+            <span class="text-amber-600 dark:text-amber-400">Find your perfect Editor.</span>
+          </h1>
+          <p class="text-lg text-gray-700 dark:text-gray-300 mb-8">
+            Where Creativity and Expertise Converge
+          </p>
+          <button
+            class="px-8 py-3 rounded-full bg-gradient-to-r from-amber-500 to-red-500 hover:from-amber-600 hover:to-red-600 text-white font-medium text-lg transform hover:scale-105 transition-all shadow-lg hover:shadow-xl">
+            Start Today!
+          </button>
+        </div>
+        <div class="md:w-1/2 relative" @staggered>
+          <div class="relative z-10 transform transition-all hover:rotate-1 hover:scale-105 duration-300">
+            <img src="assets/images/hero/home-hero-section.png" alt="Editor Illustration" class="w-full h-auto" appMediaProtection>
+          </div>
+          <div
+            class="absolute -top-4 -left-4 w-32 h-32 bg-amber-400 dark:bg-amber-600 rounded-full filter blur-3xl opacity-30 animate-pulse">
+          </div>
+          <div
+            class="absolute -bottom-8 -right-8 w-40 h-40 bg-red-400 dark:bg-red-600 rounded-full filter blur-3xl opacity-20 animate-pulse">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Trending Works Section -->
+    <section class="py-16 bg-gray-200 dark:bg-gray-850 transition-colors duration-300" @fadeIn>
+      <div class="container mx-auto px-4">
+        <h2 class="text-2xl md:text-3xl font-bold text-center mb-2 text-gray-900 dark:text-white">
+          Trending Works
+        </h2>
+        <p class="text-gray-600 dark:text-gray-400 text-center mb-12 italic">of the week</p>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-6">
+          @for (work of trendingWorks; track work) {
+            <div
+              class="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-md hover:shadow-xl transform hover:scale-105 transition-all duration-300">
+              <div class="relative">
+                <img [src]="work.image" [alt]="'Artwork by ' + work.editor"
+                  class="w-full h-48 object-cover" appMediaProtection>
+                  <div
+                    class="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" viewBox="0 0 20 20"
+                      fill="currentColor">
+                      <path fill-rule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clip-rule="evenodd" />
+                      </svg>
+                      {{ work.status }}
+                    </div>
+                  </div>
+                  <div class="p-4">
+                    <p class="text-gray-900 dark:text-white font-medium">{{ work.editor }}</p>
+                  </div>
                 </div>
-                <div class="md:w-1/2 relative" @staggered>
-                    <div class="relative z-10 transform transition-all hover:rotate-1 hover:scale-105 duration-300">
-                        <img src="assets/images/hero/home-hero-section.png" alt="Editor Illustration" class="w-full h-auto" appMediaProtection>
-                    </div>
-                    <div
-                        class="absolute -top-4 -left-4 w-32 h-32 bg-amber-400 dark:bg-amber-600 rounded-full filter blur-3xl opacity-30 animate-pulse">
-                    </div>
-                    <div
-                        class="absolute -bottom-8 -right-8 w-40 h-40 bg-red-400 dark:bg-red-600 rounded-full filter blur-3xl opacity-20 animate-pulse">
-                    </div>
-                </div>
+              }
             </div>
-        </section>
 
-        <!-- Trending Works Section -->
-        <section class="py-16 bg-gray-200 dark:bg-gray-850 transition-colors duration-300" @fadeIn>
-            <div class="container mx-auto px-4">
-                <h2 class="text-2xl md:text-3xl font-bold text-center mb-2 text-gray-900 dark:text-white">
-                    Trending Works
-                </h2>
-                <p class="text-gray-600 dark:text-gray-400 text-center mb-12 italic">of the week</p>
-
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-6">
-                    <div *ngFor="let work of trendingWorks"
-                        class="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-md hover:shadow-xl transform hover:scale-105 transition-all duration-300">
-                        <div class="relative">
-                            <img [src]="work.image" [alt]="'Artwork by ' + work.editor"
-                                class="w-full h-48 object-cover" appMediaProtection>
-                            <div
-                                class="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" viewBox="0 0 20 20"
-                                    fill="currentColor">
-                                    <path fill-rule="evenodd"
-                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                        clip-rule="evenodd" />
-                                </svg>
-                                {{ work.status }}
-                            </div>
-                        </div>
-                        <div class="p-4">
-                            <p class="text-gray-900 dark:text-white font-medium">{{ work.editor }}</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flex justify-center mt-10">
-                    <button
-                        class="px-6 py-2 bg-gray-700 dark:bg-gray-600 hover:bg-gray-800 dark:hover:bg-gray-500 text-white rounded-md transition-colors flex items-center">
-                        View More
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-2" viewBox="0 0 20 20"
-                            fill="currentColor">
-                            <path fill-rule="evenodd"
-                                d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z"
-                                clip-rule="evenodd" />
-                        </svg>
-                    </button>
-                </div>
+            <div class="flex justify-center mt-10">
+              <button
+                class="px-6 py-2 bg-gray-700 dark:bg-gray-600 hover:bg-gray-800 dark:hover:bg-gray-500 text-white rounded-md transition-colors flex items-center">
+                View More
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-2" viewBox="0 0 20 20"
+                  fill="currentColor">
+                  <path fill-rule="evenodd"
+                    d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z"
+                    clip-rule="evenodd" />
+                  </svg>
+                </button>
+              </div>
             </div>
-        </section>
+          </section>
 
-        <!-- Best Performers Section -->
-        <section
+          <!-- Best Performers Section -->
+          <section
             class="py-16 bg-gradient-to-b from-gray-100 to-white dark:from-gray-800 dark:to-gray-900 transition-colors duration-300"
             @staggered>
             <div class="container mx-auto px-4">
-                <h2 class="text-2xl md:text-3xl font-bold text-center mb-2 text-gray-900 dark:text-white">
-                    Best Performers
-                </h2>
-                <p class="text-gray-600 dark:text-gray-400 text-center mb-12 italic">of the month</p>
+              <h2 class="text-2xl md:text-3xl font-bold text-center mb-2 text-gray-900 dark:text-white">
+                Best Performers
+              </h2>
+              <p class="text-gray-600 dark:text-gray-400 text-center mb-12 italic">of the month</p>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-                    <div *ngFor="let editor of topEditors"
-                        class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-xl flex flex-col items-center transition-all duration-300 transform hover:scale-105 hover:rotate-1">
-                        <div
-                            class="w-24 h-24 rounded-full overflow-hidden border-4 border-amber-400 dark:border-amber-500 mb-4">
-                            <img [src]="editor.avatar" [alt]="editor.name" class="w-full h-full object-cover" appMediaProtection>
-                        </div>
-                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">{{ editor.name }}</h3>
-                        <div class="flex items-center mb-2">
-                            <span class="text-amber-500 mr-1">★</span>
-                            <span class="text-gray-700 dark:text-gray-300">{{ editor.rating }}</span>
-                        </div>
-                        <button
-                            class="mt-4 px-6 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-white rounded-md transition-colors">
-                            View Profile
-                        </button>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                @for (editor of topEditors; track editor) {
+                  <div
+                    class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-xl flex flex-col items-center transition-all duration-300 transform hover:scale-105 hover:rotate-1">
+                    <div
+                      class="w-24 h-24 rounded-full overflow-hidden border-4 border-amber-400 dark:border-amber-500 mb-4">
+                      <img [src]="editor.avatar" [alt]="editor.name" class="w-full h-full object-cover" appMediaProtection>
                     </div>
-                </div>
-
-                <div class="flex justify-center mt-10">
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">{{ editor.name }}</h3>
+                    <div class="flex items-center mb-2">
+                      <span class="text-amber-500 mr-1">★</span>
+                      <span class="text-gray-700 dark:text-gray-300">{{ editor.rating }}</span>
+                    </div>
                     <button
-                        class="px-6 py-2 bg-gray-700 dark:bg-gray-600 hover:bg-gray-800 dark:hover:bg-gray-500 text-white rounded-md transition-colors flex items-center">
-                        View More
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-2" viewBox="0 0 20 20"
-                            fill="currentColor">
-                            <path fill-rule="evenodd"
-                                d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z"
-                                clip-rule="evenodd" />
-                        </svg>
+                      class="mt-4 px-6 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-white rounded-md transition-colors">
+                      View Profile
                     </button>
-                </div>
-            </div>
-        </section>
+                  </div>
+                }
+              </div>
 
-        <!-- Exhibition Countdown Section -->
-        <section class="py-20 relative bg-gray-900 text-white" @fadeIn>
-            <div class="absolute inset-0 overflow-hidden">
+              <div class="flex justify-center mt-10">
+                <button
+                  class="px-6 py-2 bg-gray-700 dark:bg-gray-600 hover:bg-gray-800 dark:hover:bg-gray-500 text-white rounded-md transition-colors flex items-center">
+                  View More
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-2" viewBox="0 0 20 20"
+                    fill="currentColor">
+                    <path fill-rule="evenodd"
+                      d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z"
+                      clip-rule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <!-- Exhibition Countdown Section -->
+            <section class="py-20 relative bg-gray-900 text-white" @fadeIn>
+              <div class="absolute inset-0 overflow-hidden">
                 <div class="absolute inset-0 bg-gradient-to-b from-transparent to-gray-900 z-10"></div>
                 <img src="assets/images/backgrounds/program-poster.jpg" alt="Exhibition Background"
-                    class="w-full h-full object-cover opacity-20" appMediaProtection>
-            </div>
+                  class="w-full h-full object-cover opacity-20" appMediaProtection>
+                </div>
 
-            <div class="container mx-auto px-4 relative z-20">
-                <div class="text-center mb-16">
+                <div class="container mx-auto px-4 relative z-20">
+                  <div class="text-center mb-16">
                     <h3 class="text-lg text-amber-400 mb-2">It has finally started!</h3>
                     <h2
-                        class="text-3xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-red-400">
-                        Inkwell Global's
+                      class="text-3xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-red-400">
+                      Inkwell Global's
                     </h2>
                     <h2 class="text-4xl md:text-6xl font-bold mb-8">The Editor's Exhibition</h2>
 
                     <div class="flex justify-center space-x-4 md:space-x-8 mb-10">
-                        <div
-                            class="w-16 md:w-24 h-16 md:h-24 bg-gray-800 dark:bg-gray-700 rounded-lg flex flex-col items-center justify-center">
-                            <span class="text-2xl md:text-4xl font-bold">{{ countdown.days }}</span>
-                            <span class="text-xs md:text-sm text-gray-400">DAYS</span>
-                        </div>
-                        <div
-                            class="w-16 md:w-24 h-16 md:h-24 bg-gray-800 dark:bg-gray-700 rounded-lg flex flex-col items-center justify-center">
-                            <span class="text-2xl md:text-4xl font-bold">{{ countdown.hours }}</span>
-                            <span class="text-xs md:text-sm text-gray-400">HOURS</span>
-                        </div>
-                        <div
-                            class="w-16 md:w-24 h-16 md:h-24 bg-gray-800 dark:bg-gray-700 rounded-lg flex flex-col items-center justify-center">
-                            <span class="text-2xl md:text-4xl font-bold">{{ countdown.minutes }}</span>
-                            <span class="text-xs md:text-sm text-gray-400">MINUTES</span>
-                        </div>
-                        <div
-                            class="w-16 md:w-24 h-16 md:h-24 bg-gray-800 dark:bg-gray-700 rounded-lg flex flex-col items-center justify-center">
-                            <span class="text-2xl md:text-4xl font-bold">{{ countdown.seconds }}</span>
-                            <span class="text-xs md:text-sm text-gray-400">SECONDS</span>
-                        </div>
+                      <div
+                        class="w-16 md:w-24 h-16 md:h-24 bg-gray-800 dark:bg-gray-700 rounded-lg flex flex-col items-center justify-center">
+                        <span class="text-2xl md:text-4xl font-bold">{{ countdown.days }}</span>
+                        <span class="text-xs md:text-sm text-gray-400">DAYS</span>
+                      </div>
+                      <div
+                        class="w-16 md:w-24 h-16 md:h-24 bg-gray-800 dark:bg-gray-700 rounded-lg flex flex-col items-center justify-center">
+                        <span class="text-2xl md:text-4xl font-bold">{{ countdown.hours }}</span>
+                        <span class="text-xs md:text-sm text-gray-400">HOURS</span>
+                      </div>
+                      <div
+                        class="w-16 md:w-24 h-16 md:h-24 bg-gray-800 dark:bg-gray-700 rounded-lg flex flex-col items-center justify-center">
+                        <span class="text-2xl md:text-4xl font-bold">{{ countdown.minutes }}</span>
+                        <span class="text-xs md:text-sm text-gray-400">MINUTES</span>
+                      </div>
+                      <div
+                        class="w-16 md:w-24 h-16 md:h-24 bg-gray-800 dark:bg-gray-700 rounded-lg flex flex-col items-center justify-center">
+                        <span class="text-2xl md:text-4xl font-bold">{{ countdown.seconds }}</span>
+                        <span class="text-xs md:text-sm text-gray-400">SECONDS</span>
+                      </div>
                     </div>
 
                     <button
-                        class="px-8 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 rounded-full font-medium transform hover:scale-105 transition-all shadow-lg hover:shadow-xl text-lg">
-                        Register Now!
+                      class="px-8 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 rounded-full font-medium transform hover:scale-105 transition-all shadow-lg hover:shadow-xl text-lg">
+                      Register Now!
                     </button>
                     <p class="mt-4 text-gray-400">Earn your Global Editorial Acclaim</p>
+                  </div>
                 </div>
-            </div>
-        </section>
+              </section>
 
-        <!-- Footer -->
-        <app-user-footer></app-user-footer>
-    </div>
-</div>
+              <!-- Footer -->
+              <app-user-footer></app-user-footer>
+            </div>
+          </div>

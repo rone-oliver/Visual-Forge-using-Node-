@@ -6,7 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
-import { CommonModule } from '@angular/common';
+
 import { MatInputModule } from '@angular/material/input';
 @Component({
   selector: 'app-rating-modal',
@@ -17,9 +17,8 @@ import { MatInputModule } from '@angular/material/input';
     MatIconModule,
     FormsModule,
     MatFormFieldModule,
-    CommonModule,
-    MatInputModule,
-  ],
+    MatInputModule
+],
   templateUrl: './rating-modal.component.html',
   styleUrl: './rating-modal.component.scss'
 })

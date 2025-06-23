@@ -1,36 +1,42 @@
 <div class="community-list-page">
-    <div class="community-list-header">
-        <h2>Communities</h2>
-        <button mat-raised-button color="primary" (click)="openCreateCommunityDialog()">
-            <mat-icon>add</mat-icon>
-            Create Community
-        </button>
-    </div>
+  <div class="community-list-header">
+    <h2>Communities</h2>
+    <button mat-raised-button color="primary" (click)="openCreateCommunityDialog()">
+      <mat-icon>add</mat-icon>
+      Create Community
+    </button>
+  </div>
 
-    <div class="community-list-container">
-        <div *ngIf="isLoading" class="loading-spinner">
-            <mat-spinner></mat-spinner>
-        </div>
+  <div class="community-list-container">
+    @if (isLoading) {
+      <div class="loading-spinner">
+        <mat-spinner></mat-spinner>
+      </div>
+    }
 
-        <div *ngIf="!isLoading && communities.length === 0" class="empty-state">
-            <mat-icon>group_add</mat-icon>
-            <h3>No communities found</h3>
-            <p>Create a new community to start collaborating with other editors.</p>
-        </div>
+    @if (!isLoading && communities.length === 0) {
+      <div class="empty-state">
+        <mat-icon>group_add</mat-icon>
+        <h3>No communities found</h3>
+        <p>Create a new community to start collaborating with other editors.</p>
+      </div>
+    }
 
-        <mat-card *ngFor="let community of communities" class="community-card"
-            (click)="onCommunityClick(community)">
-            <mat-card-header>
-                <div mat-card-avatar class="community-avatar">{{ getInitials(community.name) }}</div>
-                <mat-card-title>{{ community.name }}</mat-card-title>
-                <mat-card-subtitle>{{ community.description }}</mat-card-subtitle>
-            </mat-card-header>
-            <mat-card-content>
-                <div class="member-count">
-                    <mat-icon>people</mat-icon>
-                    <span>{{ community.members.length }} members</span>
-                </div>
-            </mat-card-content>
-        </mat-card>
-    </div>
+    @for (community of communities; track community) {
+      <mat-card class="community-card"
+        (click)="onCommunityClick(community)">
+        <mat-card-header>
+          <div mat-card-avatar class="community-avatar">{{ getInitials(community.name) }}</div>
+          <mat-card-title>{{ community.name }}</mat-card-title>
+          <mat-card-subtitle>{{ community.description }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="member-count">
+            <mat-icon>people</mat-icon>
+            <span>{{ community.members.length }} members</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    }
+  </div>
 </div>

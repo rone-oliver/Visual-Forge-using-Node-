@@ -1,95 +1,121 @@
 <div class="work-card" [@cardHover]="cardState" (mouseenter)="onCardMouseEnter()" (mouseleave)="onCardMouseLeave()">
 
-    <!-- Main Card Content -->
-    <div class="work-card-content">
-        <!-- Preview Area -->
-        <div class="preview-area">
-            <div *ngIf="work.finalFiles.length > 0" class="file-preview">
-                <ng-container [ngSwitch]="getFileType(work.finalFiles[activeFileIndex].mimeType)">
-                    <img *ngSwitchCase="'image'" [src]="work.finalFiles[activeFileIndex].url" alt="Work preview"
-                        class="preview-content" appMediaProtection>
-                    <video *ngSwitchCase="'video'" controls class="preview-content" appMediaProtection>
-                        <source [src]="work.finalFiles[activeFileIndex].url" [type]="work.finalFiles[activeFileIndex].mimeType">
-                        Your browser does not support the video tag.
-                    </video>
-                    <div *ngSwitchCase="'audio'" class="audio-container">
-                        <app-audio-visualizer *ngIf="audioElementReady" [audioElement]="audioPlayerRef.nativeElement"></app-audio-visualizer>
-                        <audio #audioPlayer controls crossorigin="anonymous" class="preview-content audio-player" appMediaProtection>
-                            <source [src]="work.finalFiles[activeFileIndex].url" [type]="work.finalFiles[activeFileIndex].mimeType">
-                            Your browser does not support the audio element.
-                        </audio>
-                    </div>
-                    <div *ngSwitchDefault class="fallback-preview">
-                        <mat-icon>{{getFileIcon(work.finalFiles[activeFileIndex].mimeType)}}</mat-icon>
-                        <span>{{work.finalFiles[activeFileIndex].fileName}}</span>
-                    </div>
-                </ng-container>
-            </div>
-
-            <!-- Multiple Files Indicator -->
-            <div *ngIf="work.finalFiles.length > 1" class="multi-file-indicator">
-                <div class="file-dots">
-                    <span *ngFor="let file of work.finalFiles; let i = index" [class.active]="i === activeFileIndex"
-                        (click)="changeActiveFile(i)"></span>
-                </div>
-                <span class="file-count">{{activeFileIndex + 1}} / {{work.finalFiles.length}}</span>
-            </div>
+  <!-- Main Card Content -->
+  <div class="work-card-content">
+    <!-- Preview Area -->
+    <div class="preview-area">
+      @if (work.finalFiles.length > 0) {
+        <div class="file-preview">
+          @switch (getFileType(work.finalFiles[activeFileIndex].mimeType)) {
+            @case ('image') {
+              <img [src]="work.finalFiles[activeFileIndex].url" alt="Work preview"
+                class="preview-content" appMediaProtection>
+            }
+            @case ('video') {
+              <video controls class="preview-content" appMediaProtection>
+                <source [src]="work.finalFiles[activeFileIndex].url" [type]="work.finalFiles[activeFileIndex].mimeType">
+                Your browser does not support the video tag.
+              </video>
+            }
+            @case ('audio') {
+              <div class="audio-container">
+                @if (audioElementReady) {
+                  <app-audio-visualizer [audioElement]="audioPlayerRef.nativeElement"></app-audio-visualizer>
+                }
+                <audio #audioPlayer controls crossorigin="anonymous" class="preview-content audio-player" appMediaProtection>
+                  <source [src]="work.finalFiles[activeFileIndex].url" [type]="work.finalFiles[activeFileIndex].mimeType">
+                  Your browser does not support the audio element.
+                </audio>
+              </div>
+            }
+            @default {
+              <div class="fallback-preview">
+                <mat-icon>{{getFileIcon(work.finalFiles[activeFileIndex].mimeType)}}</mat-icon>
+                <span>{{work.finalFiles[activeFileIndex].fileName}}</span>
+              </div>
+            }
+          }
         </div>
+      }
 
-        <!-- Info Section -->
-        <div class="info-section">
-            <!-- Rating Display -->
-            <div class="rating">
-                <mat-icon *ngFor="let star of getRatingStars()" [class.filled]="star === 1">star</mat-icon>
-            </div>
-
-            <!-- Creator Info -->
-            <div class="creators">
-                <div class="creator editor" (click)="navigateToEditorProfile()">
-                    <div class="avatar">
-                        <img [src]="editor.profileImage || '../../../../assets/images/man.png'" alt="Editor avatar" appMediaProtection>
-                    </div>
-                    <div class="details">
-                        <span class="label">Editor</span>
-                        <span class="name">{{editor.fullname || 'Unknown Editor'}}</span>
-                    </div>
-                </div>
-
-                <div *ngIf="user" class="creator user" (click)="navigateToUserProfile()">
-                    <div class="avatar">
-                        <img [src]="user.profileImage || '../../../../assets/images/man.png'" alt="User avatar" appMediaProtection>
-                    </div>
-                    <div class="details">
-                        <span class="label">User</span>
-                        <span class="name">{{user.fullname || 'Anonymous User'}}</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Comments Section -->
-            <div *ngIf="work.comments" class="comments">
-                <p>{{work.comments}}</p>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="actions">
-                <button *ngIf="work.finalFiles.length > 1" mat-button class="show-files-btn"
-                    (click)="toggleFilePreview()">
-                    <mat-icon>{{filePreviewState === 'collapsed' ? 'expand_more' : 'expand_less'}}</mat-icon>
-                    {{filePreviewState === 'collapsed' ? 'Show all files' : 'Hide files'}}
-                </button>
-            </div>
+      <!-- Multiple Files Indicator -->
+      @if (work.finalFiles.length > 1) {
+        <div class="multi-file-indicator">
+          <div class="file-dots">
+            @for (file of work.finalFiles; track file; let i = $index) {
+              <span [class.active]="i === activeFileIndex"
+              (click)="changeActiveFile(i)"></span>
+            }
+          </div>
+          <span class="file-count">{{activeFileIndex + 1}} / {{work.finalFiles.length}}</span>
         </div>
+      }
     </div>
 
-    <!-- Expandable Files Preview -->
-    <div [@filePreviewExpand]="filePreviewState" class="files-list-container">
-        <div class="files-list">
-            <div *ngFor="let file of work.finalFiles; let i = index" class="file-item"
-                [class.active]="i === activeFileIndex" (click)="changeActiveFile(i)">
-                <mat-icon>{{getFileIcon(file.mimeType)}}</mat-icon>
-                <span class="file-name">{{file.fileName}}</span>
-            </div>
+    <!-- Info Section -->
+    <div class="info-section">
+      <!-- Rating Display -->
+      <div class="rating">
+        @for (star of getRatingStars(); track star) {
+          <mat-icon [class.filled]="star === 1">star</mat-icon>
+        }
+      </div>
+
+      <!-- Creator Info -->
+      <div class="creators">
+        <div class="creator editor" (click)="navigateToEditorProfile()">
+          <div class="avatar">
+            <img [src]="editor.profileImage || '../../../../assets/images/man.png'" alt="Editor avatar" appMediaProtection>
+          </div>
+          <div class="details">
+            <span class="label">Editor</span>
+            <span class="name">{{editor.fullname || 'Unknown Editor'}}</span>
+          </div>
         </div>
+
+        @if (user) {
+          <div class="creator user" (click)="navigateToUserProfile()">
+            <div class="avatar">
+              <img [src]="user.profileImage || '../../../../assets/images/man.png'" alt="User avatar" appMediaProtection>
+            </div>
+            <div class="details">
+              <span class="label">User</span>
+              <span class="name">{{user.fullname || 'Anonymous User'}}</span>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Comments Section -->
+      @if (work.comments) {
+        <div class="comments">
+          <p>{{work.comments}}</p>
+        </div>
+      }
+
+      <!-- Action Buttons -->
+      <div class="actions">
+        @if (work.finalFiles.length > 1) {
+          <button mat-button class="show-files-btn"
+            (click)="toggleFilePreview()">
+            <mat-icon>{{filePreviewState === 'collapsed' ? 'expand_more' : 'expand_less'}}</mat-icon>
+            {{filePreviewState === 'collapsed' ? 'Show all files' : 'Hide files'}}
+          </button>
+        }
+      </div>
     </div>
+  </div>
+
+  <!-- Expandable Files Preview -->
+  <div [@filePreviewExpand]="filePreviewState" class="files-list-container">
+    <div class="files-list">
+      @for (file of work.finalFiles; track file; let i = $index) {
+        <div class="file-item"
+          [class.active]="i === activeFileIndex" (click)="changeActiveFile(i)">
+          <mat-icon>{{getFileIcon(file.mimeType)}}</mat-icon>
+          <span class="file-name">{{file.fileName}}</span>
+        </div>
+      }
+    </div>
+  </div>
 </div>

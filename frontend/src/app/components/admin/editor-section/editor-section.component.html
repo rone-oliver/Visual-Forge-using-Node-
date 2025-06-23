@@ -1,124 +1,135 @@
 <div class="editors-admin-container">
-    <div class="header">
-        <h1 class="title">Editors</h1>
-        <div class="actions">
-            <button class="btn-export">
-                <lucide-icon [name]="icons.export"></lucide-icon>
-                <span>Export data</span>
-            </button>
-        </div>
+  <div class="header">
+    <h1 class="title">Editors</h1>
+    <div class="actions">
+      <button class="btn-export">
+        <lucide-icon [name]="icons.export"></lucide-icon>
+        <span>Export data</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="filters-section">
+    <div class="search-filter-row">
+      <div class="search-container">
+        <lucide-icon [name]="icons.search" class="search-icon"></lucide-icon>
+        <input type="search" [formControl]="searchControl" placeholder="Search Editors..." class="search-input">
+      </div>
     </div>
 
-    <div class="filters-section">
-        <div class="search-filter-row">
-            <div class="search-container">
-                <lucide-icon [name]="icons.search" class="search-icon"></lucide-icon>
-                <input type="search" [formControl]="searchControl" placeholder="Search Editors..." class="search-input">
-            </div>
-        </div>
+    <div class="filter-controls">
+      <!-- Category Filter -->
+      <div class="filter-select">
+        <mat-form-field appearance="outline">
+          <mat-label>Category</mat-label>
+          <mat-select [formControl]="categoryFilterControl" multiple (selectionChange)="onFilterChange()">
+            <mat-option value="video">Video</mat-option>
+            <mat-option value="image">Image</mat-option>
+            <mat-option value="audio">Audio</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
 
-        <div class="filter-controls">
-            <!-- Category Filter -->
-            <div class="filter-select">
-                <mat-form-field appearance="outline">
-                    <mat-label>Category</mat-label>
-                    <mat-select [formControl]="categoryFilterControl" multiple (selectionChange)="onFilterChange()">
-                        <mat-option value="video">Video</mat-option>
-                        <mat-option value="image">Image</mat-option>
-                        <mat-option value="audio">Audio</mat-option>
-                    </mat-select>
-                </mat-form-field>
-            </div>
+      <!-- Rating Filter -->
+      <div class="filter-select">
+        <mat-form-field appearance="outline">
+          <mat-label>Rating</mat-label>
+          <mat-select [formControl]="ratingFilterControl" (selectionChange)="onFilterChange()">
+            <mat-option [value]="0">All Ratings</mat-option>
+            <mat-option [value]="5">5+ <lucide-icon [name]="icons.star"></lucide-icon></mat-option>
+            <mat-option [value]="4">4+ <lucide-icon [name]="icons.star"></lucide-icon></mat-option>
+            <mat-option [value]="3">3+ <lucide-icon [name]="icons.star"></lucide-icon></mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
 
-            <!-- Rating Filter -->
-            <div class="filter-select">
-                <mat-form-field appearance="outline">
-                    <mat-label>Rating</mat-label>
-                    <mat-select [formControl]="ratingFilterControl" (selectionChange)="onFilterChange()">
-                        <mat-option [value]="0">All Ratings</mat-option>
-                        <mat-option [value]="5">5+ <lucide-icon [name]="icons.star"></lucide-icon></mat-option>
-                        <mat-option [value]="4">4+ <lucide-icon [name]="icons.star"></lucide-icon></mat-option>
-                        <mat-option [value]="3">3+ <lucide-icon [name]="icons.star"></lucide-icon></mat-option>
-                    </mat-select>
-                </mat-form-field>
-            </div>
+      <!-- Editor Requests Button -->
+      <button class="btn-editor-requests" (click)="toggleRequestsSidebar()">
+        <span>View editor requests</span>
+      </button>
+    </div>
+  </div>
 
-            <!-- Editor Requests Button -->
-            <button class="btn-editor-requests" (click)="toggleRequestsSidebar()">
-                <span>View editor requests</span>
-            </button>
-        </div>
+  <div class="content-area">
+    <app-table [data]="getEditors" [columns]="editorColumns" [loading]="loading" (rowClick)="onEditorClick($event)"
+      (actionClick)="onEditorAction($event)">
+    </app-table>
+  </div>
+
+  <!-- Editor Requests Sidebar -->
+  @if (sidebarVisible) {
+    <div class="sidebar-overlay" (click)="toggleRequestsSidebar()"></div>
+  }
+  <div class="sidebar" [class.visible]="sidebarVisible">
+    <div class="sidebar-header">
+      <h2>Editor Requests</h2>
+      <button class="btn-close" (click)="toggleRequestsSidebar()">
+        <lucide-icon [name]="icons.close"></lucide-icon>
+      </button>
     </div>
 
-    <div class="content-area">
-        <app-table [data]="getEditors" [columns]="editorColumns" [loading]="loading" (rowClick)="onEditorClick($event)"
-            (actionClick)="onEditorAction($event)">
-        </app-table>
-    </div>
-
-    <!-- Editor Requests Sidebar -->
-    <div class="sidebar-overlay" *ngIf="sidebarVisible" (click)="toggleRequestsSidebar()"></div>
-    <div class="sidebar" [class.visible]="sidebarVisible">
-        <div class="sidebar-header">
-            <h2>Editor Requests</h2>
-            <button class="btn-close" (click)="toggleRequestsSidebar()">
-                <lucide-icon [name]="icons.close"></lucide-icon>
-            </button>
+    <!-- Rejection Form -->
+    @if (currentRequest) {
+      <div class="rejection-form">
+        <h3>Reject Request</h3>
+        <p>Please provide a reason for rejecting {{ currentRequest.fullname }}'s request:</p>
+        <textarea class="rejection-reason" [(ngModel)]="rejectionReason" placeholder="Enter rejection reason..."
+        rows="4"></textarea>
+        <div class="action-buttons">
+          <button class="btn-cancel" (click)="cancelRejection()">Cancel</button>
+          <button class="btn-reject" [disabled]="!rejectionReason.trim()" (click)="confirmRejection()">
+            Confirm Rejection
+          </button>
         </div>
+      </div>
+    }
 
-        <!-- Rejection Form -->
-        <div class="rejection-form" *ngIf="currentRequest">
-            <h3>Reject Request</h3>
-            <p>Please provide a reason for rejecting {{ currentRequest.fullname }}'s request:</p>
-
-            <textarea class="rejection-reason" [(ngModel)]="rejectionReason" placeholder="Enter rejection reason..."
-                rows="4"></textarea>
-
-            <div class="action-buttons">
-                <button class="btn-cancel" (click)="cancelRejection()">Cancel</button>
-                <button class="btn-reject" [disabled]="!rejectionReason.trim()" (click)="confirmRejection()">
-                    Confirm Rejection
+    <!-- Requests List -->
+    @if (!currentRequest) {
+      <div class="requests-list">
+        @for (request of editorRequests; track request) {
+          <div class="request-card">
+            <div class="request-info">
+              <h3>{{ request.fullname }}</h3>
+              <p class="request-email">{{ request.email }}</p>
+              <div class="request-details">
+                <span class="request-category">{{ request.categories }}</span>
+                <span class="request-date">{{ request.createdAt | customDate }}</span>
+              </div>
+            </div>
+            @if (request.status === 'Pending') {
+              <div class="request-actions">
+                <button class="btn-approve" (click)="approveRequest(request)">
+                  <lucide-icon [name]="icons.check"></lucide-icon>
+                  <span>Approve</span>
                 </button>
-            </div>
-        </div>
-
-        <!-- Requests List -->
-        <div class="requests-list" *ngIf="!currentRequest">
-            <div class="request-card" *ngFor="let request of editorRequests">
-                <div class="request-info">
-                    <h3>{{ request.fullname }}</h3>
-                    <p class="request-email">{{ request.email }}</p>
-                    <div class="request-details">
-                        <span class="request-category">{{ request.categories }}</span>
-                        <span class="request-date">{{ request.createdAt | customDate }}</span>
-                    </div>
+                <button class="btn-reject" (click)="showRejectionForm(request)">
+                  <lucide-icon [name]="icons.x"></lucide-icon>
+                  <span>Reject</span>
+                </button>
+              </div>
+            }
+            @if (request.status !== 'Pending') {
+              <div class="request-status">
+                <div class="status-badge" [class.approved]="request.status === 'Approved'"
+                  [class.rejected]="request.status === 'Rejected'">
+                  {{ request.status }}
                 </div>
-
-                <div class="request-actions" *ngIf="request.status === 'Pending'">
-                    <button class="btn-approve" (click)="approveRequest(request)">
-                        <lucide-icon [name]="icons.check"></lucide-icon>
-                        <span>Approve</span>
-                    </button>
-                    <button class="btn-reject" (click)="showRejectionForm(request)">
-                        <lucide-icon [name]="icons.x"></lucide-icon>
-                        <span>Reject</span>
-                    </button>
-                </div>
-
-                <div class="request-status" *ngIf="request.status !== 'Pending'">
-                    <div class="status-badge" [class.approved]="request.status === 'Approved'"
-                        [class.rejected]="request.status === 'Rejected'">
-                        {{ request.status }}
-                    </div>
-                    <p class="rejection-reason-text" *ngIf="request.status === 'Rejected' && request.reason">
-                        Reason: {{ request.reason }}
-                    </p>
-                </div>
-            </div>
-
-            <div class="empty-state" *ngIf="editorRequests.length === 0">
-                <p>No editor requests available at this time.</p>
-            </div>
-        </div>
-    </div>
+                @if (request.status === 'Rejected' && request.reason) {
+                  <p class="rejection-reason-text">
+                    Reason: {{ request.reason }}
+                  </p>
+                }
+              </div>
+            }
+          </div>
+        }
+        @if (editorRequests.length === 0) {
+          <div class="empty-state">
+            <p>No editor requests available at this time.</p>
+          </div>
+        }
+      </div>
+    }
+  </div>
 </div>

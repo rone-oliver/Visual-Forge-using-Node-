@@ -1,10 +1,10 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, Input, ViewChild, ElementRef, AfterViewInit, OnDestroy, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-audio-visualizer',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './audio-visualizer.component.html',
   styleUrl: './audio-visualizer.component.scss'
 })

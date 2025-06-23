@@ -1,12 +1,12 @@
 import { animate, style, transition, trigger } from '@angular/animations';
-import { CommonModule } from '@angular/common';
+
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MediaProtectionDirective } from '../../../directives/media-protection.directive';
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, RouterLink, MediaProtectionDirective],
+  imports: [RouterLink, MediaProtectionDirective],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
   animations: [
