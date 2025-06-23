@@ -21,9 +21,9 @@
     <h2 class="fullname">{{ user.fullname }}</h2>
     <p class="username">&#64;{{ user.username }}</p>
 
-    @if (user.categories?.length) {
+    @if (user.category.length) {
       <div class="categories">
-        @for (category of user.categories; track category) {
+        @for (category of user.category; track category) {
           <span class="category-chip">{{ category }}</span>
         }
       </div>

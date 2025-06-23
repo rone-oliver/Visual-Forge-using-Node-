@@ -102,7 +102,7 @@ export interface PublicEditorProfile {
   fullname: string;
   username: string;
   profileImage?: string;
-  categories: string[];
+  category: string[];
   score: number;
   averageRating: number;
   isVerified: boolean;

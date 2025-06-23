@@ -59,10 +59,17 @@
     position: relative;
     margin-top: -60px;
 
-    img {
+    .profile-image {
         width: 100%;
         height: 100%;
-        object-fit: cover;
+        overflow: hidden;
+        border-radius: 50%;
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
     }
 
     mat-icon {

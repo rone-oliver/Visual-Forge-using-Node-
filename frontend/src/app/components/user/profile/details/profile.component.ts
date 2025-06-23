@@ -1,9 +1,7 @@
-import { CommonModule } from '@angular/common';
-import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { User } from '../../../../interfaces/user.interface';
 import { UserService } from '../../../../services/user/user.service';
-import { Observable } from 'rxjs';
 import { DatePipe } from '../../../../pipes/date.pipe';
 import { MatSnackBarConfig, MatSnackBar } from '@angular/material/snack-bar';
 import { CloudinaryService } from '../../../../services/cloudinary.service';
@@ -15,7 +13,7 @@ import { MediaProtectionDirective } from '../../../../directives/media-protectio
 
 @Component({
   selector: 'app-profile',
-  imports: [MatIconModule,CommonModule,DatePipe, MediaProtectionDirective],
+  imports: [MatIconModule,DatePipe, MediaProtectionDirective],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.scss'
 })

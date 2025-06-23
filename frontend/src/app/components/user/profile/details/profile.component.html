@@ -6,7 +6,9 @@
         <div class="avatar-container">
           <div class="avatar">
             @if (user.profileImage) {
-              <img [src]="user.profileImage" [alt]="user.fullname || 'User Avatar'" appMediaProtection>
+              <div class="profile-image">
+                <img [src]="user.profileImage" [alt]="user.fullname || 'User Avatar'" appMediaProtection>
+              </div>
             } @else {
               <mat-icon>person</mat-icon>
             }
@@ -104,7 +106,7 @@
             </div>
             <div class="info-item">
               <span class="info-label">Role</span>
-              <span class="info-value role-badge" [ngClass]="{'editor-role': user.isEditor}">
+              <span class="info-value role-badge" [class]="{'editor-role': user.isEditor}">
                 {{user.isEditor ? 'Editor' : 'User'}}
               </span>
             </div>
@@ -120,11 +122,11 @@
           <div class="info-section">
             <h2 class="section-title">Editor Information</h2>
             <div class="info-grid">
-              @if (user.editorDetails?.category?.length) {
+              @if (user.editorDetails.category?.length) {
                 <div class="info-item">
                   <span class="info-label">Categories</span>
                   <div class="categories-container">
-                    @for (category of user.editorDetails?.category; track category) {
+                    @for (category of user.editorDetails.category; track category) {
                       <span class="category-badge">
                         {{category}}
                       </span>
@@ -148,25 +150,25 @@
                 <span class="info-value score-value">{{user.editorDetails.score || 0}} points</span>
               </div>
             </div>
-            @if (hasSocialLinks(user.editorDetails?.socialLinks)) {
+            @if (hasSocialLinks(user.editorDetails.socialLinks)) {
               <div class="social-links">
                 <h3 class="subsection-title">Social Links</h3>
                 <div class="social-links-grid">
-                  @if (user.editorDetails?.socialLinks?.website) {
+                  @if (user.editorDetails.socialLinks?.website) {
                     <a [href]="user.editorDetails.socialLinks?.website"
                       target="_blank" class="social-link website">
                       <mat-icon>language</mat-icon>
                       <span>Website</span>
                     </a>
                   }
-                  @if (user.editorDetails?.socialLinks?.linkedIn) {
+                  @if (user.editorDetails.socialLinks?.linkedIn) {
                     <a
                       [href]="user.editorDetails.socialLinks?.linkedIn" target="_blank" class="social-link linkedin">
                       <mat-icon>work</mat-icon>
                       <span>LinkedIn</span>
                     </a>
                   }
-                  @if (user.editorDetails?.socialLinks?.instagram) {
+                  @if (user.editorDetails.socialLinks?.instagram) {
                     <a
                       [href]="user.editorDetails.socialLinks?.instagram" target="_blank"
                       class="social-link instagram">
@@ -174,14 +176,14 @@
                       <span>Instagram</span>
                     </a>
                   }
-                  @if (user.editorDetails?.socialLinks?.facebook) {
+                  @if (user.editorDetails.socialLinks?.facebook) {
                     <a
                       [href]="user.editorDetails.socialLinks?.facebook" target="_blank" class="social-link facebook">
                       <mat-icon>thumb_up</mat-icon>
                       <span>Facebook</span>
                     </a>
                   }
-                  @if (user.editorDetails?.socialLinks?.pinterest) {
+                  @if (user.editorDetails.socialLinks?.pinterest) {
                     <a
                       [href]="user.editorDetails.socialLinks?.pinterest" target="_blank"
                       class="social-link pinterest">
