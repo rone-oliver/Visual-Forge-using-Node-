@@ -83,9 +83,9 @@
   // For success Alerts
   .success-snackbar {
     &.mat-mdc-snack-bar-container {
-      --mdc-snackbar-container-color: var(--color-success);
+      --mat-snackbar-container-color: var(--color-success);
       --mat-mdc-snack-bar-button-color: white;
-      --mdc-snackbar-supporting-text-color: white;
+      --mat-snackbar-supporting-text-color: white;
 
       .mdc-snackbar__surface {
         background-color: var(--color-success);
