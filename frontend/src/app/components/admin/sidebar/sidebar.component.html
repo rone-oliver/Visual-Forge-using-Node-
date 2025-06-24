@@ -58,11 +58,11 @@
           <mat-icon class="expand-icon">chevron_right</mat-icon>
         </a>
       </li>
-      <li class="menu-item" [class.active]="activeTab === 'activities'"
-        (click)="toggleFilter('activities')">
-        <a [routerLink]="['/admin/activities']" class="menu-link">
-          <mat-icon class="menu-icon">admin_panel_settings</mat-icon>
-          <span class="menu-text">Admin Activities</span>
+      <li class="menu-item" [class.active]="activeTab === 'ledger'"
+        (click)="toggleFilter('ledger')">
+        <a [routerLink]="['/admin/wallet/ledger']" class="menu-link">
+          <mat-icon class="menu-icon">book</mat-icon>
+          <span class="menu-text">Ledger</span>
           <mat-icon class="expand-icon">chevron_right</mat-icon>
         </a>
       </li>

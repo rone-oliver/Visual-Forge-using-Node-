@@ -1,6 +1,7 @@
 import { IsOptional, IsInt, IsDateString, IsNotEmpty, IsNumber, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { WalletTransaction } from '../models/wallet-transaction.schema';
+import { AdminTransaction } from '../models/admin-transaction.schema';
 
 // For GET /wallet/transactions
 export class GetTransactionsDto {
@@ -36,4 +37,25 @@ export class PaginatedWalletTransactionsResponseDto {
     total: number;
     page: number;
     totalPages: number;
+}
+
+export class GetLedgerQueryDto {
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt()
+    page?: number = 1;
+
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt()
+    limit?: number = 10;
+}
+
+export class PaginatedLedgerResponseDto {
+    transactions: AdminTransaction[];
+    totalItems: number;
+    currentPage: number;
+    totalPages: number;
+    itemsPerPage: number;
+    totalBalance: number;
 }

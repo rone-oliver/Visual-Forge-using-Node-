@@ -1,0 +1,88 @@
+<div class="ledger-container" @fadeInOut>
+    <header class="ledger-header">
+        <h1>Admin Wallet Ledger</h1>
+        <mat-card class="balance-card">
+            <mat-card-header>
+                <mat-card-title>Current Account Balance</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+                <p class="balance-amount">{{ totalBalance() | currency:'INR':'symbol':'1.2-2' }}</p>
+            </mat-card-content>
+        </mat-card>
+    </header>
+
+    @if (isLoading()) {
+    <div class="spinner-container">
+        <mat-progress-spinner mode="indeterminate" diameter="50"></mat-progress-spinner>
+    </div>
+    } @else {
+    <mat-card class="table-card">
+        <mat-card-content>
+            <div class="table-responsive">
+                <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z2">
+
+                    <!-- Date Column -->
+                    <ng-container matColumnDef="createdAt">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Date </th>
+                        <td mat-cell *matCellDef="let element"> {{element.createdAt | date: 'MMM d, y, h:mm a'}} </td>
+                    </ng-container>
+
+                    <!-- Type Column -->
+                    <ng-container matColumnDef="transactionType">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Type </th>
+                        <td mat-cell *matCellDef="let element"> {{ formatType(element.transactionType) }} </td>
+                    </ng-container>
+
+                    <!-- Flow Column -->
+                    <ng-container matColumnDef="flow">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Flow </th>
+                        <td mat-cell *matCellDef="let element">
+                            <div class="flow-chip" [class.credit]="element.flow === 'credit'" [class.debit]="element.flow === 'debit'">
+                                <mat-icon>{{ element.flow === 'credit' ? 'arrow_upward' : 'arrow_downward' }}</mat-icon>
+                                <span>{{ element.flow | titlecase }}</span>
+                            </div>
+                        </td>
+                    </ng-container>
+
+                    <!-- Amount Column -->
+                    <ng-container matColumnDef="amount">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Amount </th>
+                        <td mat-cell *matCellDef="let element" [class.credit-amount]="element.flow === 'credit'"
+                            [class.debit-amount]="element.flow === 'debit'">
+                            {{ element.amount | currency:'INR' }}
+                        </td>
+                    </ng-container>
+
+                    <!-- Commission Column -->
+                    <ng-container matColumnDef="commission">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Commission </th>
+                        <td mat-cell *matCellDef="let element">
+                            {{ (element.commission > 0 ? (element.commission | currency:'INR') : 'N/A') }}
+                        </td>
+                    </ng-container>
+
+                    <!-- Details Column -->
+                    <ng-container matColumnDef="details">
+                        <th mat-header-cell *matHeaderCellDef> Details </th>
+                        <td mat-cell *matCellDef="let element" class="details-cell">
+                            @if(element.user){ <div>User: {{element.user?.fullname}}</div> }
+                            @if(element.editor){ <div>Editor: {{element.editor?.fullname}}</div> }
+                        </td>
+                    </ng-container>
+
+                    <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+                    <tr class="mat-row" *matNoDataRow>
+                        <td class="mat-cell" colspan="6">No transactions found.</td>
+                    </tr>
+                </table>
+            </div>
+            <mat-paginator [length]="totalItems" [pageSize]="itemsPerPage" [pageIndex]="currentPage - 1"
+                [pageSizeOptions]="[10, 25, 100]" (page)="handlePageEvent($event)"
+                aria-label="Select page of ledger book" class="app-paginator">
+            </mat-paginator>
+        </mat-card-content>
+    </mat-card>
+    }
+</div>

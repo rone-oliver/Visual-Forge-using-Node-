@@ -16,6 +16,7 @@ import { Bid, BidSchema } from 'src/common/bids/models/bids.schema';
 import { BidsModule } from 'src/common/bids/bids.module';
 import { IUsersServiceToken } from './interfaces/users.service.interface';
 import { Report, ReportSchema } from 'src/common/models/report.schema';
+import { WalletModule } from 'src/wallet/wallet.module';
 
 @Module({
   controllers: [UsersController],
@@ -37,7 +38,7 @@ import { Report, ReportSchema } from 'src/common/models/report.schema';
       { name: Bid.name, schema: BidSchema},
       { name: Report.name, schema: ReportSchema },
     ]),
-    PaymentModule, BidsModule,
+    PaymentModule, BidsModule, WalletModule,
     forwardRef(()=> NotificationModule)
   ],
   exports: [IUsersServiceToken,]

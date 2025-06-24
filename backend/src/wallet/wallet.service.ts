@@ -58,6 +58,25 @@ export class WalletService implements IWalletService {
     return updatedWallet;
   }
 
+  async creditEditorWallet(userId: string, amount: number, quotationId: string) {
+    if (amount <= 0) {
+        throw new BadRequestException('Amount must be positive.');
+    }
+
+    const wallet = await this.getWallet(userId);
+    const updatedWallet = await this.walletRepo.updateWalletBalance(userId, amount);
+
+    await this.walletRepo.createTransaction(
+        userId,
+        wallet._id.toString(),
+        amount,
+        WalletTransactionType.CREDIT_FROM_WORK,
+        `Payment from work #${quotationId}`
+    );
+
+    return updatedWallet;
+  }
+
   async withdrawMoney(userId: string, amount: number) {
     if (amount <= 0) {
         throw new BadRequestException('Amount must be positive.');

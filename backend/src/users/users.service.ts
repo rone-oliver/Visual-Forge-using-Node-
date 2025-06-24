@@ -1,4 +1,4 @@
-import { Injectable, Logger, HttpException, HttpStatus, NotFoundException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, HttpException, HttpStatus, NotFoundException, InternalServerErrorException, BadRequestException, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Model, Types } from 'mongoose';
@@ -47,6 +47,7 @@ import {
 } from './dto/users.dto';
 import { NotificationType } from 'src/notification/models/notification.schema';
 import { Report, ReportDocument } from 'src/common/models/report.schema';
+import { IAdminWalletService, IAdminWalletServiceToken } from 'src/wallet/interfaces/admin-wallet.service.interface';
 
 @Injectable()
 export class UsersService implements IUsersService {
@@ -59,6 +60,7 @@ export class UsersService implements IUsersService {
         @InjectModel(Works.name) private workModel: Model<WorksDocument>,
         @InjectModel(Transaction.name) private transactionModel: Model<TransactionDocument>,
         @InjectModel(Report.name) private reportModel: Model<ReportDocument>,
+        @Inject(IAdminWalletServiceToken) private readonly adminWalletService: IAdminWalletService,
         private cloudinaryService: CloudinaryService,
         private notificationService: NotificationService,
         private bidsService: BidsService,
@@ -762,8 +764,8 @@ export class UsersService implements IUsersService {
     }): Promise<TransactionResponseDto>{
         try {
             const transaction = await this.transactionModel.create({
-                userId,
-                quotationId,
+                userId: new Types.ObjectId(userId),
+                quotationId: new Types.ObjectId(quotationId),
                 ...paymentDetails,
                 status: PaymentStatus.COMPLETED,
             });
@@ -778,6 +780,10 @@ export class UsersService implements IUsersService {
                     { _id: quotationId },
                     { $set: { isFullyPaid: true } }
                 );
+            }
+            const quotation = await this.quotationModel.findById(quotationId) as Quotation;
+            if(quotation.isFullyPaid){
+                await this.adminWalletService.recordUserPayment(quotation, paymentDetails.paymentId);
             }
 
             return transaction;

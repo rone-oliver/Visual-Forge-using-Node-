@@ -1,16 +1,29 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import Razorpay from 'razorpay';
 import { ConfigService } from '@nestjs/config';
 import crypto from 'crypto';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
+
+export enum RazorpayAccountType {
+    CURRENT_ACCOUNT = 'current_account',
+    RAZORPAYX_LITE = 'razorpayx_lite',
+    FIXED_DEPOSIT = 'fixed_deposit',
+    ESCROW = 'escrow',
+}
 
 @Injectable()
 export class PaymentService {
+    private readonly logger = new Logger(PaymentService.name);
     private readonly razorpay: Razorpay;
     private readonly razorpayKeyId: string;
     private readonly razorpayKeySecret: string;
     private readonly DEFAULT_CURRENCY = 'INR';
 
-    constructor(private readonly configService: ConfigService) {
+    constructor(
+        private readonly configService: ConfigService,
+        private readonly httpService: HttpService,
+    ) {
         const keyId = this.configService.get<string>('RAZORPAY_KEY_ID');
         const keySecret = this.configService.get<string>('RAZORPAY_SECRET_KEY');
         if (!keyId || !keySecret) {
@@ -48,7 +61,7 @@ export class PaymentService {
             //     "created_at": 1694857598
             // }
         } catch (error) {
-            console.error('Error creating Razorpay order:', error);
+            this.logger.error('Error creating Razorpay order:', error);
             throw new Error('Failed to create Razorpay order');
         }
     }
@@ -60,7 +73,7 @@ export class PaymentService {
             // payment.amount_paid will have the actual paid amount
             return payment;
         } catch (error) {
-            console.error('Error fetching payment details:', error);
+            this.logger.error('Error fetching payment details:', error);
             throw new Error('Failed to fetch payment details');
         }
     }
@@ -72,7 +85,7 @@ export class PaymentService {
             });
             return refund;
         } catch (error) {
-            console.error('Error processing refund:', error);
+            this.logger.error('Error processing refund:', error);
             throw new Error('Failed to process refund');
         }
     }
@@ -89,5 +102,35 @@ export class PaymentService {
             paymentId: razorpayPaymentId,
             signature: razorpaySignature,
         };
+    }
+
+    async getAccountBalance(): Promise<number> {
+        try {
+            const url = 'https://api.razorpay.com/v1/banking_balances';
+            const authToken = Buffer.from(`${this.razorpayKeyId}:${this.razorpayKeySecret}`).toString('base64');
+
+            const { data } = await firstValueFrom(
+                this.httpService.get(url, {
+                    headers: {
+                        'Authorization': `Basic ${authToken}`,
+                    },
+                }),
+            );
+            if (data && data.items && data.items.length > 0) {
+                const currentAccount = data.items.find(
+                    (item: any) => item.account_type === RazorpayAccountType.RAZORPAYX_LITE
+                );
+
+                if (currentAccount) {
+                    return currentAccount.available_amount / 100;
+                }
+            }
+            
+            this.logger.warn('No RazorpayX current account balance was found.');
+            return 0;
+        } catch (error) {
+            this.logger.error('Error fetching Razorpay banking balance:', error.response?.data || error.message);
+            throw new Error('Failed to fetch Razorpay banking balance');
+        }
     }
 }

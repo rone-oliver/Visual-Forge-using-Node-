@@ -50,6 +50,10 @@ export const routes: Routes = [
             {
                 path:'reports', 
                 loadComponent: ADMIN_ROUTES.REPORTS
+            },
+            {
+                path: 'wallet/ledger',
+                loadComponent: ADMIN_ROUTES.WALLET_LEDGER
             }
         ]
     },

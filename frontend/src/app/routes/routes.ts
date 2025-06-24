@@ -22,7 +22,8 @@ export const ADMIN_ROUTES = {
     DASHBOARD: () => import('../components/admin/dashboard/dashboard.component').then(m => m.DashboardComponent),
     USERS: () => import('../components/admin/user-section/user-section.component').then(m => m.UserSectionComponent),
     EDITORS: () => import('../components/admin/editor-section/editor-section.component').then(m => m.EditorSectionComponent),
-    REPORTS: () => import('../components/admin/reported-users/reported-users.component').then(m => m.ReportedUsersComponent)
+    REPORTS: () => import('../components/admin/reported-users/reported-users.component').then(m => m.ReportedUsersComponent),
+    WALLET_LEDGER: () => import('../components/admin/ledger/ledger.component').then(m => m.LedgerComponent)
 };
 
 export const EDITOR_ROUTES = {

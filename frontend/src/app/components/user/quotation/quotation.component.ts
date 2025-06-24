@@ -358,7 +358,7 @@ export class QuotationComponent implements OnInit, OnDestroy {
 
       // After successful payment and verification
       await firstValueFrom(
-        this.userService.updateQuotationPayment(true, quotation._id, quotation.estimatedBudget, paymentResult)
+        this.userService.updateQuotationPayment(true, quotation._id, quotation.advanceAmount, paymentResult)
       );
 
       this.snackBar.open('Payment successful!', 'Close', {
@@ -393,7 +393,7 @@ export class QuotationComponent implements OnInit, OnDestroy {
 
       // After successful payment and verification
       await firstValueFrom(
-        this.userService.updateQuotationPayment(false, work.quotationId, work.estimatedBudget, paymentResult)
+        this.userService.updateQuotationPayment(false, work.quotationId, work.balanceAmount, paymentResult)
       );
 
       this.snackBar.open('Payment successful!', 'Close', {

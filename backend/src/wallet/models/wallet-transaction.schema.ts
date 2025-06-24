@@ -6,6 +6,9 @@ import { Wallet } from './wallet.schema';
 export enum WalletTransactionType {
   CREDIT = 'credit',
   DEBIT = 'debit',
+  CREDIT_FROM_WORK = 'credit_from_work',
+  WITHDRAWAL = 'withdrawal',
+  REFUND = 'refund',
 }
 
 export type WalletTransactionDocument = WalletTransaction & Document;

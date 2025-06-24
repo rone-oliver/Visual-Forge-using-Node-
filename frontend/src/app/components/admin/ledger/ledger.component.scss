@@ -1,0 +1,194 @@
+@use '@angular/material' as mat;
+
+:host {
+  display: block;
+  background-color: var(--admin-color-background);
+  padding: 2rem;
+  min-height: 100vh;
+}
+
+.ledger-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.ledger-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--admin-color-text);
+  }
+}
+
+.balance-card {
+  background: linear-gradient(135deg, var(--admin-color-primary), var(--admin-color-secondary));
+  color: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  min-width: 280px;
+  text-align: center;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1), 0 6px 6px rgba(0, 0, 0, 0.1);
+
+  .mat-mdc-card-title {
+    font-size: 1.2rem;
+    font-weight: 500;
+    opacity: 0.9;
+  }
+
+  .balance-amount {
+    font-size: 2.8rem;
+    font-weight: 700;
+    margin: 0.5rem 0 0 0;
+  }
+}
+
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50vh;
+}
+
+.table-card {
+  border-radius: 12px;
+  background-color: var(--admin-color-surface);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.mat-mdc-table {
+  background-color: transparent;
+}
+
+.mat-mdc-header-cell {
+  background-color: var(--admin-color-primary);
+  color: var(--admin-color-text);
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+}
+
+.mat-mdc-cell {
+  color: var(--admin-color-text);
+  border-bottom-color: var(--admin-color-border);
+  padding: 16px;
+  vertical-align: middle;
+}
+
+.mat-mdc-row {
+  transition: background-color 0.3s ease;
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+  }
+}
+
+.flow-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 500;
+  border-radius: 16px;
+  padding: 4px 10px;
+
+  .mat-icon {
+    font-size: 18px;
+    height: 18px;
+    width: 18px;
+  }
+
+  &.credit {
+    color: var(--admin-color-success);
+    background-color: rgba(28, 200, 138, 0.1);
+  }
+
+  &.debit {
+    color: var(--color-danger);
+    background-color: rgba(239, 68, 68, 0.1);
+  }
+}
+
+.mat-column-amount {
+  text-align: right;
+  font-weight: 500;
+}
+
+.credit-amount {
+  color: var(--admin-color-success);
+  font-weight: 600;
+}
+
+.debit-amount {
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+.details-cell div {
+    font-size: 0.85rem;
+    color: var(--admin-color-text);
+    opacity: 0.8;
+}
+
+.app-paginator {
+    background-color: var(--admin-color-surface);
+    color: var(--admin-color-text);
+    border-top: 1px solid var(--admin-color-border);
+    padding-top: 8px; // Add some space above the paginator content
+    margin-top: 24px; // Space above the paginator itself
+  
+    .dark & {
+      border-top-color: var(--color-neutral-700);
+    }
+  
+    // Style the text elements within the paginator
+    .mat-mdc-paginator-page-size-label,
+    .mat-mdc-paginator-range-label {
+      color: var(--admin-color-text); // Main text color
+      font-size: 0.875rem; // Slightly smaller font for these labels
+    }
+  
+    // Style the dropdown for items per page
+    .mat-mdc-select-value {
+      color: var(--admin-color-primary); // Use primary color for the selected value
+    }
+    .mat-mdc-select-arrow {
+      color: var(--admin-color-primary); // Arrow color
+    }
+  
+    // Style the navigation buttons (next, previous, first, last)
+    .mat-mdc-icon-button {
+      background-color: transparent;
+      color: var(--admin-color-primary); // Primary color for icons
+  
+      &:hover:not([disabled]) {
+        background-color: var(--color-neutral-100); // Subtle hover
+      }
+      
+      .dark &:hover:not([disabled]) {
+        background-color: var(--color-neutral-700); // Darker subtle hover
+      }
+  
+      &.mat-mdc-paginator-navigation-disabled {
+        color: var(--color-neutral-400); // Disabled state color
+        .dark & {
+          color: var(--color-neutral-500);
+        }
+      }
+    }
+}

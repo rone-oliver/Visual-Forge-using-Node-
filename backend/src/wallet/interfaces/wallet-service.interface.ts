@@ -8,4 +8,5 @@ export interface IWalletService {
   getTransactions(userId: string, page?: number, limit?: number, startDate?: string, endDate?: string): Promise<PaginatedWalletTransactionsResponseDto>;
   addMoney(userId: string, amount: number): Promise<Wallet>;
   withdrawMoney(userId: string, amount: number): Promise<Wallet>;
+  creditEditorWallet(userId: string, amount: number, quotationId: string): Promise<Wallet>;
 }

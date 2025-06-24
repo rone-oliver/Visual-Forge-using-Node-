@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { WalletController } from './wallet.controller';
 import { WalletService } from './wallet.service';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -8,16 +8,25 @@ import { IWalletServiceToken } from './interfaces/wallet-service.interface';
 import { IWalletRepositoryToken } from './interfaces/wallet-repository.interface';
 import { WalletRepository } from './repositories/wallet.repository';
 import { UsersModule } from 'src/users/users.module';
+import { AdminTransaction, AdminTransactionSchema } from './models/admin-transaction.schema';
+import { AdminWalletController } from './admin-wallet.controller';
+import { AdminWalletService } from './admin-wallet.service';
+import { AdminTransactionRepository } from './repositories/admin-transaction.repository';
+import { IAdminTransactionRepositoryToken } from './interfaces/admin-transaction.repository.interface';
+import { IAdminWalletServiceToken } from './interfaces/admin-wallet.service.interface';
+import { PaymentModule } from 'src/common/payment/payment.module';
 
 @Module({
   imports:[
     MongooseModule.forFeature([
       { name: Wallet.name, schema: WalletSchema },
-      { name: WalletTransaction.name, schema: WalletTransactionSchema }
+      { name: WalletTransaction.name, schema: WalletTransactionSchema },
+      { name: AdminTransaction.name, schema: AdminTransactionSchema }
     ]),
-    UsersModule,
+    forwardRef(() => UsersModule),
+    PaymentModule,
   ],
-  controllers: [WalletController],
+  controllers: [WalletController, AdminWalletController],
   providers: [
     {
       provide: IWalletServiceToken,
@@ -26,8 +35,16 @@ import { UsersModule } from 'src/users/users.module';
     {
       provide: IWalletRepositoryToken,
       useClass: WalletRepository
-    }
+    },
+    {
+      provide: IAdminWalletServiceToken,
+      useClass: AdminWalletService,
+    },
+    {
+      provide: IAdminTransactionRepositoryToken,
+      useClass: AdminTransactionRepository
+    },
   ],
-  exports: [IWalletServiceToken]
+  exports: [IWalletServiceToken, IAdminWalletServiceToken]
 })
 export class WalletModule {}
