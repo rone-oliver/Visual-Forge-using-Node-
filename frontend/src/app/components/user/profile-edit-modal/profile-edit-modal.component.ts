@@ -9,6 +9,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { FormsModule } from '@angular/forms';
+import { EditorService } from '../../../services/editor/editor.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatListModule } from '@angular/material/list';
 
 @Component({
   selector: 'app-profile-edit-modal',
@@ -21,7 +24,8 @@ import { FormsModule } from '@angular/forms';
     MatDialogModule,
     MatButtonModule,
     MatIconModule,
-    MatDividerModule
+    MatDividerModule,
+    MatListModule,
 ],
   templateUrl: './profile-edit-modal.component.html',
   styleUrls: ['./profile-edit-modal.component.scss'],
@@ -31,17 +35,61 @@ import { FormsModule } from '@angular/forms';
 export class ProfileEditModalComponent implements OnInit {
   editUser: any;
   languages = [Language.ENGLISH, Language.SPANISH, Language.FRENCH, Language.GERMAN, Language.HINDI];
+  sharedTutorials: string[] = [];
+  newTutorialUrl = '';
 
   constructor(
     public dialogRef: MatDialogRef<ProfileEditModalComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(MAT_DIALOG_DATA) public data: any,
+    private snackBar: MatSnackBar,
+    private editorService: EditorService,
   ) {
     this.editUser = { ...data.user };
+    this.sharedTutorials = [...(data.user.editorDetails?.sharedTutorials || [])];
   }
 
   ngOnInit() {
     // Make the dialog scrollable and set max-height
     this.dialogRef.updateSize('600px', '90vh');
+  }
+
+  addTutorial(): void {
+    if (!this.newTutorialUrl || !this.isValidHttpUrl(this.newTutorialUrl)) {
+      this.snackBar.open('Please enter a valid URL.', 'Close', { duration: 3000 });
+      return;
+    }
+
+    this.editorService.addTutorial(this.newTutorialUrl).subscribe({
+      next: (response) => {
+        this.sharedTutorials.push(this.newTutorialUrl);
+        this.newTutorialUrl = '';
+        this.snackBar.open('Tutorial added successfully!', 'Close', { duration: 3000 });
+      },
+      error: (err) => {
+        this.snackBar.open(err.error.message || 'Failed to add tutorial.', 'Close', { duration: 3000 });
+      }
+    });
+  }
+
+  removeTutorial(urlToRemove: string): void {
+    this.editorService.removeTutorial(urlToRemove).subscribe({
+      next: () => {
+        this.sharedTutorials = this.sharedTutorials.filter(url => url !== urlToRemove);
+        this.snackBar.open('Tutorial removed successfully!', 'Close', { duration: 3000 });
+      },
+      error: (err) => {
+        this.snackBar.open(err.error.message || 'Failed to remove tutorial.', 'Close', { duration: 3000 });
+      }
+    });
+  }
+
+  private isValidHttpUrl(string: string): boolean {
+    try {
+      const url = new URL(string);
+      return url.protocol === 'http:' || url.protocol === 'https:';
+    } catch (_) {
+      return false;
+    }
   }
 
   hasChanges(): boolean {

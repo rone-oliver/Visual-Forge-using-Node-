@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatIconModule, MatIconRegistry } from '@angular/material/icon';
-import { DomSanitizer } from '@angular/platform-browser';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { UserService } from '../../../services/user/user.service';
 import { EditorPublicProfile } from '../../../interfaces/user.interface';
@@ -49,5 +49,9 @@ export class EditorProfileComponent implements OnInit {
     if (editorId) {
       this.editorProfile$ = this.userService.getEditorPublicProfile(editorId);
     }
+  }
+
+  getSafeUrl(url: string): SafeResourceUrl {
+    return this.domSanitizer.bypassSecurityTrustResourceUrl(url);
   }
 }

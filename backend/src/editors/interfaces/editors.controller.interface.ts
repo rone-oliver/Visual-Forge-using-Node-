@@ -9,8 +9,11 @@ import {
     UpdateEditorBidBodyDto,
     BidResponseDto,
     CompletedWorkDto,
+    RemoveTutorialDto,
+    AddTutorialDto,
 } from '../dto/editors.dto';
 import { QuotationStatus } from 'src/common/models/quotation.schema';
+import { Editor } from '../models/editor.schema';
 
 export interface IEditorsController {
     getQuotations(
@@ -47,4 +50,7 @@ export interface IEditorsController {
         bidId: string, 
         req: Request
     ): Promise<void>;
+
+    removeTutorial(editorId: string, removeTutorialDto: RemoveTutorialDto): Promise<Editor>;
+    addTutorial(addTutorialDto: AddTutorialDto, editorId: string): Promise<Editor>;
 }

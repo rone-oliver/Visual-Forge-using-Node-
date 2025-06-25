@@ -42,6 +42,8 @@ export interface EditorDetails {
     category?: string[];
     score?: number;
     ratingsCount?: number;
+    sharedTutorials?: string[];
+    tipsAndTricks?: string;
     averageRating?: number;
     socialLinks?: {
         linkedIn?: string;

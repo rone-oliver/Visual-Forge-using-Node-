@@ -48,6 +48,7 @@ import {
 import { NotificationType } from 'src/notification/models/notification.schema';
 import { Report, ReportDocument } from 'src/common/models/report.schema';
 import { IAdminWalletService, IAdminWalletServiceToken } from 'src/wallet/interfaces/admin-wallet.service.interface';
+import { getYouTubeEmbedUrl } from 'src/common/utils/youtube-url.util';
 
 @Injectable()
 export class UsersService implements IUsersService {
@@ -173,6 +174,8 @@ export class UsersService implements IUsersService {
                         editorDetails: {
                             category: editorDetails.category || [],
                             score: editorDetails.score || 0,
+                            tipsAndTricks: editorDetails.tipsAndTricks || '',
+                            sharedTutorials: editorDetails.sharedTutorials || [],
                             ratingsCount: editorDetails.ratings?.length || 0,
                             averageRating: this.calculateAverageRating(editorDetails.ratings),
                             socialLinks: editorDetails.socialLinks || {},
@@ -849,6 +852,10 @@ export class UsersService implements IUsersService {
 
         const averageRating = this.calculateAverageRating(editor.ratings);
 
+        const sharedTutorials = (editor.sharedTutorials || [])
+            .map(getYouTubeEmbedUrl)
+            .filter(url => url !== '');
+
         return {
             _id: user._id,
             username: user.username,
@@ -858,7 +865,7 @@ export class UsersService implements IUsersService {
             averageRating,
             categories: editor.category || [],
             about: user.about || '',
-            sharedTutorials: editor.sharedTutorials || [],
+            sharedTutorials,
             tipsAndTricks: editor.tipsAndTricks || '',
             socialLinks: editor.socialLinks || {},
         };

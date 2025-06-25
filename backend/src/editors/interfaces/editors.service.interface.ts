@@ -11,7 +11,9 @@ import {
     FileUploadResultDto,
     BidResponseDto,
     CompletedWorkDto,
-    PaginatedPublishedQuotationsResponseDto
+    PaginatedPublishedQuotationsResponseDto,
+    AddTutorialDto,
+    RemoveTutorialDto
 } from '../dto/editors.dto';
 
 export const IEditorsServiceToken = Symbol('IEditorsServiceToken');
@@ -55,4 +57,7 @@ export interface IEditorsService {
     ): Promise<BidResponseDto>;
 
     deleteBid(bidId: Types.ObjectId, editorId: Types.ObjectId): Promise<void>;
+
+    addTutorial(editorId: string, addTutorialDto: AddTutorialDto): Promise<Editor>;
+    removeTutorial(editorId: string, removeTutorialDto: RemoveTutorialDto): Promise<Editor>;
 }

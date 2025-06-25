@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Editor, EditorDocument } from './models/editor.schema';
 import { Model, Types } from 'mongoose';
@@ -27,6 +27,8 @@ import {
     EditorDetailsDto,
     PaginatedPublishedQuotationsResponseDto,
     PublishedQuotationItemDto,
+    AddTutorialDto,
+    RemoveTutorialDto,
 } from './dto/editors.dto';
 import { CreateBidDto } from 'src/common/bids/dto/create-bid.dto';
 
@@ -580,5 +582,34 @@ export class EditorsService implements IEditorsService {
 
     async deleteBid(bidId: Types.ObjectId, editorId: Types.ObjectId): Promise<void> {
         return this.bidsService.deleteBid(bidId, editorId);
+    }
+
+    async addTutorial(editorId: string, addTutorialDto: AddTutorialDto): Promise<Editor> {
+        const editor = await this.editorModel.findOne({ userId: new Types.ObjectId(editorId) });
+
+        if (!editor) {
+            throw new NotFoundException(`Editor with user ID ${editorId} not found.`);
+        }
+
+        if(editor.sharedTutorials){
+            editor.sharedTutorials.push(addTutorialDto.tutorialUrl);
+        }
+
+        return await editor.save();
+    }
+
+    async removeTutorial(editorId: string, removeTutorialDto: RemoveTutorialDto): Promise<Editor> {
+        const editor = await this.editorModel.findOne({ userId: new Types.ObjectId(editorId) });
+        if (!editor) {
+            throw new NotFoundException(`Editor with user ID ${editorId} not found.`);
+        }
+    
+        if (editor.sharedTutorials) {
+            editor.sharedTutorials = editor.sharedTutorials.filter(
+                (url) => url !== removeTutorialDto.tutorialUrl
+            );
+        }
+
+        return await editor.save();
     }
 }

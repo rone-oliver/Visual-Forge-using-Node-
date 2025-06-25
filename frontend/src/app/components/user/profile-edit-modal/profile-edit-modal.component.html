@@ -98,6 +98,34 @@
         }
       </mat-form-field>
 
+      <mat-divider class="section-divider"></mat-divider>
+
+      <div class="tutorials-section">
+        <h3 class="section-title">Manage Tutorials</h3>
+        <div class="add-tutorial-container">
+          <mat-form-field appearance="outline" class="tutorial-url-field">
+            <mat-label>New YouTube URL</mat-label>
+            <input matInput [(ngModel)]="newTutorialUrl" name="newTutorialUrl" 
+                   (keyup.enter)="addTutorial()" placeholder="https://youtube.com/watch?v=...">
+            <mat-icon matSuffix>video_library</mat-icon>
+          </mat-form-field>
+          <button mat-flat-button color="primary" (click)="addTutorial()" type="button" [disabled]="!newTutorialUrl">Add</button>
+        </div>
+
+        <mat-list class="tutorials-list">
+          @for (url of sharedTutorials; track url) {
+            <mat-list-item>
+              <a [href]="url" target="_blank" rel="noopener noreferrer" matListItemTitle class="tutorial-url-text">{{ url }}</a>
+              <button mat-icon-button class="remove-tutorial-btn" (click)="removeTutorial(url)" type="button" aria-label="Remove tutorial">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </mat-list-item>
+          } @empty {
+            <p class="empty-list-message">No tutorials added yet.</p>
+          }
+        </mat-list>
+      </div>
+
       <div class="profile-edit-actions">
         <button mat-button class="cancel-button" mat-dialog-close type="button">Cancel</button>
         <button mat-flat-button class="save-button" type="submit"

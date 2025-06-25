@@ -74,10 +74,12 @@
           @if (profile.sharedTutorials.length > 0) {
             @for (tutorial of profile.sharedTutorials; track tutorial; let i = $index) {
               <div class="tutorial-card">
-                <img src="https://www.placehold.co/300x200" alt="Tutorial Thumbnail" class="thumbnail" appMediaProtection/>
-                <div class="play-icon">
-                  <mat-icon>play_circle_filled</mat-icon>
-                </div>
+                <iframe class="tutorial-video" 
+                        [src]="getSafeUrl(tutorial)" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                </iframe>
               </div>
             }
           } @else {

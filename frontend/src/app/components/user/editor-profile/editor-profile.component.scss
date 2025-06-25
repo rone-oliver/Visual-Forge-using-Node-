@@ -207,47 +207,30 @@
 
 .tutorials-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1.5rem;
-
+  
   .tutorial-card {
+    background-color: var(--color-surface);
     position: relative;
     border-radius: 12px;
     overflow: hidden;
     cursor: pointer;
+    aspect-ratio: 16 / 9;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 
     &:hover {
       transform: translateY(-5px);
       box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-
-      .play-icon {
-        opacity: 1;
-        transform: scale(1.1);
-      }
     }
 
-    .thumbnail {
+    iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
-      object-fit: cover;
-    }
-
-    .play-icon {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      color: white;
-      font-size: 4rem;
-      opacity: 0.8;
-      transition: opacity 0.3s ease, transform 0.3s ease;
-
-      mat-icon {
-        font-size: inherit;
-        width: 1em;
-        height: 1em;
-      }
+      border: 0;
     }
   }
 }

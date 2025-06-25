@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsBoolean, IsDateString, IsEnum, IsMongoId, IsNotEmpty, IsNumber, IsOptional, IsString, Min, ValidateNested } from 'class-validator';
+import { IsArray, IsBoolean, IsDateString, IsEnum, IsMongoId, IsNotEmpty, IsNumber, IsOptional, IsString, IsUrl, Min, ValidateNested } from 'class-validator';
 import { Types } from 'mongoose';
 import { Type } from 'class-transformer';
 import { OutputType, QuotationStatus } from 'src/common/models/quotation.schema';
@@ -154,6 +154,17 @@ export class EditorDetailsDto {
   @IsOptional()
   @IsNumber()
   score?: number;
+
+  @ApiPropertyOptional({ description: 'Editor\'s tips and tricks' })
+  @IsOptional()
+  @IsString()
+  tipsAndTricks?: string;
+
+  @ApiPropertyOptional({ description: 'Editor\'s shared tutorials' })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  sharedTutorials?: string[];
 
   @ApiPropertyOptional({ description: 'Number of ratings received' })
   @IsOptional()
@@ -518,4 +529,23 @@ export class PaginatedPublishedQuotationsResponseDto {
   @ApiProperty({ description: 'Number of items per page' })
   @IsNumber()
   itemsPerPage: number;
+}
+
+export class AddTutorialDto {
+  @ApiProperty({
+      description: 'The URL of the YouTube tutorial video.',
+      example: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+  })
+  @IsString()
+  @IsUrl({}, { message: 'Please enter a valid URL.' })
+  tutorialUrl: string;
+}
+
+export class RemoveTutorialDto {
+  @IsUrl(
+    { require_protocol: true },
+    { message: 'A valid tutorial URL is required.' },
+  )
+  @IsNotEmpty({ message: 'Tutorial URL cannot be empty.' })
+  tutorialUrl: string;
 }

@@ -16,10 +16,15 @@ import {
   FileUploadResultDto,
   BidResponseDto,
   CompletedWorkDto,
-  PaginatedPublishedQuotationsResponseDto
+  PaginatedPublishedQuotationsResponseDto,
+  AddTutorialDto,
+  RemoveTutorialDto
 } from './dto/editors.dto';
 import { ApiBody, ApiConsumes, ApiOperation, ApiQuery, ApiResponse, ApiTags, getSchemaPath } from '@nestjs/swagger';
 import { IEditorsController } from './interfaces/editors.controller.interface';
+import { GetUser } from 'src/auth/decorators/get-user.decorator';
+import { Editor } from './models/editor.schema';
+import { Role } from 'src/common/enums/role.enum';
 
 @ApiTags('editor')
 @Controller('editor')
@@ -38,8 +43,8 @@ export class EditorsController implements IEditorsController {
   @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Number of items per page' })
   @ApiQuery({ name: 'searchTerm', required: false, type: String, description: 'Search term for filtering' })
   @ApiQuery({ name: 'mediaType', required: false, type: String, description: 'Filter by media type (for published quotations)' })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Successfully retrieved quotations. Type depends on status query param.',
     schema: {
       oneOf: [
@@ -47,11 +52,11 @@ export class EditorsController implements IEditorsController {
         { $ref: getSchemaPath(PaginatedPublishedQuotationsResponseDto) },
       ],
     }
-   })
+  })
   async getQuotations(
     @Req() req: Request,
     @Query('status') status: QuotationStatus,
-    @Query() queryDto: GetPublishedQuotationsQueryDto & GetAcceptedQuotationsQueryDto, 
+    @Query() queryDto: GetPublishedQuotationsQueryDto & GetAcceptedQuotationsQueryDto,
   ): Promise<PaginatedAcceptedQuotationsResponseDto | PaginatedPublishedQuotationsResponseDto> {
     const editor = req['user'] as { userId: Types.ObjectId, role: string };
     const pageNumber = parseInt(queryDto.page ? queryDto.page.toString() : '1', 10);
@@ -60,7 +65,7 @@ export class EditorsController implements IEditorsController {
     if (status === QuotationStatus.ACCEPTED) {
       const acceptedQueryDto: GetAcceptedQuotationsQueryDto = { page: pageNumber, limit: limitNumber, searchTerm: queryDto.searchTerm };
       return this.editorService.getAcceptedQuotations(editor.userId, acceptedQueryDto);
-    } else if(status === QuotationStatus.PUBLISHED){
+    } else if (status === QuotationStatus.PUBLISHED) {
       const publishedQueryDto: GetPublishedQuotationsQueryDto = { page: pageNumber, limit: limitNumber, mediaType: queryDto.mediaType, searchTerm: queryDto.searchTerm };
       return this.editorService.getPublishedQuotations(editor.userId, publishedQueryDto);
     }
@@ -141,8 +146,8 @@ export class EditorsController implements IEditorsController {
   @ApiResponse({ status: 200, description: 'Bid updated successfully.', type: BidResponseDto })
   @ApiResponse({ status: 400, description: 'Invalid bid ID or input data.' })
   async updateBid(
-    @Param('bidId') bidId: string, 
-    @Body() bidData: UpdateEditorBidBodyDto, 
+    @Param('bidId') bidId: string,
+    @Body() bidData: UpdateEditorBidBodyDto,
     @Req() req: Request
   ): Promise<BidResponseDto> {
     const editor = req['user'] as { userId: Types.ObjectId; role: string };
@@ -166,5 +171,28 @@ export class EditorsController implements IEditorsController {
     }
 
     await this.editorService.deleteBid(new Types.ObjectId(bidId), new Types.ObjectId(editor.userId));
+  }
+
+  @Post('tutorials')
+  @Roles(Role.EDITOR)
+  @ApiOperation({ summary: 'Add a new tutorial to the editor\'s profile' })
+  @ApiBody({ type: AddTutorialDto })
+  @ApiResponse({ status: 201, description: 'Tutorial added successfully.' })
+  @ApiResponse({ status: 400, description: 'Invalid input data.' })
+  async addTutorial(
+    @Body() addTutorialDto: AddTutorialDto,
+    @GetUser('userId') editorId: string
+  ): Promise<Editor> {
+    return this.editorService.addTutorial(editorId, addTutorialDto);
+  }
+
+  @Delete('tutorials')
+  @ApiOperation({ summary: 'Remove a tutorial from the editor\'s profile' })
+  @ApiBody({ type: RemoveTutorialDto })
+  @ApiResponse({ status: 200, description: 'Tutorial removed successfully.' })
+  @ApiResponse({ status: 400, description: 'Invalid input data.' })
+  @Roles(Role.EDITOR)
+  async removeTutorial(@GetUser('userId') editorId: string, @Body() removeTutorialDto: RemoveTutorialDto) {
+    return this.editorService.removeTutorial(editorId, removeTutorialDto);
   }
 }

@@ -92,4 +92,12 @@ export class EditorService {
   deleteBid(bidId: string): Observable<void> {
     return this.http.delete<void>(`${this.editorApiUrl}/bids/${bidId}`);
   }
+
+  addTutorial(tutorialUrl: string): Observable<Editor> {
+    return this.http.post<Editor>(`${this.editorApiUrl}/tutorials`, { tutorialUrl });
+  }
+
+  removeTutorial(tutorialUrl: string): Observable<Editor> {
+    return this.http.delete<Editor>(`${this.editorApiUrl}/tutorials`, { body: { tutorialUrl } });
+  }
 }
