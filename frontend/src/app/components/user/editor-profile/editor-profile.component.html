@@ -8,10 +8,24 @@
       </div>
       <div class="editor-info-card">
         <div class="avatar-container">
-          <img [src]="profile.profileImage" [alt]="profile.fullname" class="avatar" appMediaProtection/>
+          @if(profile.profileImage){
+            <img [src]="profile.profileImage" [alt]="profile.fullname" class="avatar" appMediaProtection/>
+          } @else {
+            <div class="default-avatar">
+              <mat-icon>person</mat-icon>
+            </div>
+          }
           <span class="editor-name">{{ profile.fullname }}</span>
         </div>
         <div class="editor-details">
+          <div class="detail-item stat">
+            <span class="label">Followers</span>
+            <span class="value">{{ profile.followersCount || 0 }}</span>
+          </div>
+          <div class="detail-item stat">
+            <span class="label">Following</span>
+            <span class="value">{{ profile.followingCount || 0 }}</span>
+          </div>
           <div class="detail-item">
             <span class="label">Username</span>
             <span class="value">{{ profile.username }}</span>
@@ -31,6 +45,15 @@
               }
             </div>
           }
+          <div class="profile-actions">
+            @if(profile.isFollowing){
+              <button mat-stroked-button color="warn" (click)="unfollow(profile._id)" >Unfollow</button>
+            }
+            @else{
+              <button (click)="follow(profile._id)" class="btn btn-primary">Follow</button>
+            }
+            <button class="btn btn-secondary">Message</button>
+          </div>
         </div>
         @if (profile.socialLinks && (profile.socialLinks.website || profile.socialLinks.linkedIn || profile.socialLinks.instagram || profile.socialLinks.pinterest || profile.socialLinks.facebook)) {
           <div class="social-links">

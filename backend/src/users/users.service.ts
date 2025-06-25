@@ -49,6 +49,8 @@ import { NotificationType } from 'src/notification/models/notification.schema';
 import { Report, ReportDocument } from 'src/common/models/report.schema';
 import { IAdminWalletService, IAdminWalletServiceToken } from 'src/wallet/interfaces/admin-wallet.service.interface';
 import { getYouTubeEmbedUrl } from 'src/common/utils/youtube-url.util';
+import { IRelationshipService, IRelationshipServiceToken } from 'src/common/relationship/interfaces/service.interface';
+import { RelationshipType } from 'src/common/enums/relationships.enum';
 
 @Injectable()
 export class UsersService implements IUsersService {
@@ -62,6 +64,7 @@ export class UsersService implements IUsersService {
         @InjectModel(Transaction.name) private transactionModel: Model<TransactionDocument>,
         @InjectModel(Report.name) private reportModel: Model<ReportDocument>,
         @Inject(IAdminWalletServiceToken) private readonly adminWalletService: IAdminWalletService,
+        @Inject(IRelationshipServiceToken) private readonly relationshipService: IRelationshipService,
         private cloudinaryService: CloudinaryService,
         private notificationService: NotificationService,
         private bidsService: BidsService,
@@ -169,6 +172,12 @@ export class UsersService implements IUsersService {
                 if (editorDetails) {
                     this.logger.log('Editor details: ', editorDetails)
                     const userObj = user.toObject();
+
+                    const [followersCount, followingCount] = await Promise.all([
+                        this.relationshipService.getFollowers({ userId: user._id, limit: 0, skip: 0 }).then(f => f.length),
+                        this.relationshipService.getFollowing({ userId: user._id, limit: 0, skip: 0 }).then(f => f.length),
+                    ]);
+
                     return {
                         ...userObj,
                         editorDetails: {
@@ -180,6 +189,8 @@ export class UsersService implements IUsersService {
                             averageRating: this.calculateAverageRating(editorDetails.ratings),
                             socialLinks: editorDetails.socialLinks || {},
                             createdAt: editorDetails.createdAt,
+                            followersCount,
+                            followingCount,
                         }
                     }
                 } else console.log('no editor details');
@@ -835,11 +846,13 @@ export class UsersService implements IUsersService {
         return { success: true, message: 'Bid cancelled successfully' };
     }
 
-    async getEditorPublicProfile(editorId: string): Promise<EditorPublicProfileResponseDto> {
+    async getEditorPublicProfile(editorId: string, currentUserId?:string): Promise<EditorPublicProfileResponseDto> {
         if (!Types.ObjectId.isValid(editorId)) {
             this.logger.log(`Invalid editor ID format: ${editorId}`);
             throw new BadRequestException('Invalid editor ID format.');
         }
+
+        const editorObjectId = new Types.ObjectId(editorId);
 
         const editor = await this.editorModel.findOne({ userId: new Types.ObjectId(editorId) }).populate('userId').lean();
 
@@ -849,6 +862,14 @@ export class UsersService implements IUsersService {
         }
 
         const user = editor.userId as unknown as User;
+
+        const [followersCount, followingCount, isFollowing] = await Promise.all([
+            this.relationshipService.getFollowers({ userId: editorObjectId, limit: 0, skip: 0 }).then(f => f.length),
+            this.relationshipService.getFollowing({ userId: editorObjectId, limit: 0, skip: 0 }).then(f => f.length),
+            currentUserId && Types.ObjectId.isValid(currentUserId)
+                ? this.relationshipService.isFollowing(new Types.ObjectId(currentUserId), editorObjectId)
+                : Promise.resolve(false),
+        ]);
 
         const averageRating = this.calculateAverageRating(editor.ratings);
 
@@ -868,6 +889,9 @@ export class UsersService implements IUsersService {
             sharedTutorials,
             tipsAndTricks: editor.tipsAndTricks || '',
             socialLinks: editor.socialLinks || {},
+            followersCount,
+            followingCount,
+            isFollowing,
         };
     }
 
@@ -956,6 +980,34 @@ export class UsersService implements IUsersService {
             return { success: true, message: 'Report submitted successfully' };
         } catch (error) {
             this.logger.error(`Error reporting user: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async followUser(sourceUserId: Types.ObjectId, targetUserId: Types.ObjectId): Promise<SuccessResponseDto> {
+        try {
+            await this.relationshipService.createRelationship({
+                sourceUser: sourceUserId,
+                targetUser: targetUserId,
+                type: RelationshipType.FOLLOWS,
+            });
+            return { success: true, message: 'User followed successfully' };
+        } catch (error) {
+            this.logger.error(`Error following user: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async unfollowUser(sourceUserId: Types.ObjectId, targetUserId: Types.ObjectId): Promise<SuccessResponseDto> {
+        try {
+            await this.relationshipService.removeRelationship({
+                sourceUser: sourceUserId,
+                targetUser: targetUserId,
+                type: RelationshipType.FOLLOWS,
+            });
+            return { success: true, message: 'User unfollowed successfully' };
+        } catch (error) {
+            this.logger.error(`Error unfollowing user: ${error.message}`);
             throw error;
         }
     }

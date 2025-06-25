@@ -296,4 +296,12 @@ export class UserService {
   }): Observable<any> {
     return this.http.post(`${this.userApiUrl}/reports`, reportData);
   }
+
+  followUser(userId: string): Observable<{ success: boolean }> {
+    return this.http.post<{ success: boolean }>(`${this.userApiUrl}/follow/${userId}`, {});
+  }
+
+  unfollowUser(userId: string): Observable<{ success: boolean }> {
+    return this.http.delete<{ success: boolean }>(`${this.userApiUrl}/follow/${userId}`, {});
+  }
 }

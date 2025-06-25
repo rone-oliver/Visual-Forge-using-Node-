@@ -45,6 +45,8 @@ export interface EditorDetails {
     sharedTutorials?: string[];
     tipsAndTricks?: string;
     averageRating?: number;
+    followersCount?: number;
+    followingCount?: number;
     socialLinks?: {
         linkedIn?: string;
         pinterest?: string;
@@ -84,6 +86,9 @@ export interface EditorPublicProfile {
         facebook?: string;
         website?: string;
     };
+    followersCount: number;
+    followingCount: number;
+    isFollowing: boolean;
 }
 
 // export interface EditorProfile {

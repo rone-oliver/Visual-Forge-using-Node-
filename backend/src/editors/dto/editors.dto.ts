@@ -182,6 +182,12 @@ export class EditorDetailsDto {
   @Type(() => EditorSocialLinksDto)
   socialLinks?: EditorSocialLinksDto;
 
+  @IsNumber()
+  followersCount: number;
+
+  @IsNumber()
+  followingCount: number;
+
   @ApiPropertyOptional({ description: 'Date when the editor profile was created' })
   @IsOptional()
   @IsDateString()

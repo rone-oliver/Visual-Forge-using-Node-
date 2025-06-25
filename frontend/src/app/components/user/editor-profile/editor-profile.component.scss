@@ -94,6 +94,27 @@
           font-size: 1.5rem;
           font-weight: bold;
         }
+
+        &.stat {
+          text-align: center;
+          padding: 1rem;
+          background-color: var(--color-surface);
+          border: 1px solid var(--color-neutral-200);
+          border-radius: 12px;
+
+          .value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--color-primary);
+            background: none;
+            padding: 0.25rem 0 0;
+          }
+
+          .label {
+            font-weight: 500;
+            text-transform: uppercase;
+          }
+        }
       }
 
       .categories {
@@ -139,6 +160,37 @@
             font-size: 24px;
             width: 24px;
             height: 24px;
+          }
+        }
+      }
+
+      .profile-actions {
+        grid-column: span 2;
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        margin-top: 1.5rem;
+
+        .btn {
+          padding: 0.75rem 1.5rem;
+          border: none;
+          border-radius: 8px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: background-color 0.3s ease, transform 0.2s ease;
+
+          &:hover {
+            transform: translateY(-2px);
+          }
+
+          &.btn-primary {
+            background-color: var(--color-primary);
+            color: white;
+          }
+
+          &.btn-secondary {
+            background-color: var(--color-neutral-200);
+            color: var(--color-text);
           }
         }
       }

@@ -48,7 +48,7 @@ export interface IUsersService {
     getUserDetails(userId: Types.ObjectId): Promise<UserProfileResponseDto | null>;
     requestForEditor(userId: Types.ObjectId): Promise<SuccessResponseDto>; // Assuming boolean maps to a success DTO
     getEditorRequestStatus(userId: Types.ObjectId): Promise<EditorRequestStatusResponseDto>;
-    getEditorPublicProfile(editorId: string): Promise<EditorPublicProfileResponseDto>;
+    getEditorPublicProfile(editorId: string,currentUserId?:string): Promise<EditorPublicProfileResponseDto>;
     getPublicEditors(params: GetPublicEditorsDto): Promise<PaginatedPublicEditorsDto>;
     getTransactionHistory(userId: Types.ObjectId, params: { page: number, limit: number }): Promise<PaginatedTransactionsResponseDto>;
 
@@ -113,6 +113,9 @@ export interface IUsersService {
     updatePassword(userId: Types.ObjectId, password: string): Promise<boolean>; // Covered by ResetPasswordDto
 
     reportUser(reportDto: ReportUserDto, reporterId: string): Promise<SuccessResponseDto>;
+
+    followUser(sourceUserId: Types.ObjectId, targetUserId: Types.ObjectId): Promise<SuccessResponseDto>;
+    unfollowUser(sourceUserId: Types.ObjectId, targetUserId: Types.ObjectId): Promise<SuccessResponseDto>;
 
     // Internal or less-exposed methods (might not need DTOs if purely internal, but good for consistency)
 

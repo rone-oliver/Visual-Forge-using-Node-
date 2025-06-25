@@ -74,7 +74,7 @@ export class UsersController implements IUsersController {
     ) { };
 
     @Get('profile')
-    @Roles('User', 'Editor')
+    @Roles(Role.USER, Role.EDITOR)
     async getUserProfile(@Req() req: Request):Promise<UserProfileResponseDto> {
         console.log('controller hitted on /user/profile');
         const user = req['user'] as { userId: Types.ObjectId; role: string }
@@ -298,12 +298,15 @@ export class UsersController implements IUsersController {
     // }
 
     @Get('profile/editors/:id')
-    @Roles('User', 'Editor')
+    @Roles(Role.USER, Role.EDITOR)
     @ApiOperation({ summary: "Get an editor's public profile" })
     @ApiResponse({ status: 200, description: 'Returns the public profile of the editor.', type: EditorPublicProfileResponseDto })
     @ApiResponse({ status: 404, description: 'Editor not found.' })
-    async getEditorPublicProfile(@Param('id') id: string): Promise<EditorPublicProfileResponseDto> {
-        return this.userService.getEditorPublicProfile(id);
+    async getEditorPublicProfile(
+        @Param('id') id: string,
+        @GetUser('userId') userId: string,
+    ): Promise<EditorPublicProfileResponseDto> {
+        return this.userService.getEditorPublicProfile(id,userId);
     }
 
     @Post('payment')
@@ -419,5 +422,25 @@ export class UsersController implements IUsersController {
         @GetUser('userId') userId: string,
     ): Promise<SuccessResponseDto>{
         return this.userService.reportUser(reportDto, userId);
+    }
+
+    @Post('follow/:id')
+    @Roles(Role.USER, Role.EDITOR)
+    @ApiOperation({ summary: 'Follow a user' })
+    @ApiResponse({ status: 200, description: 'Successfully followed user.' })
+    async followUser(@Param('id') id: string, @GetUser('userId') userId: string):Promise<SuccessResponseDto> {
+        const sourceUserId = new Types.ObjectId(userId);
+        const targetUserId = new Types.ObjectId(id);
+        return this.userService.followUser(sourceUserId, targetUserId);
+    }
+
+    @Delete('follow/:id')
+    @Roles(Role.USER, Role.EDITOR)
+    @ApiOperation({ summary: 'Unfollow a user' })
+    @ApiResponse({ status: 200, description: 'Successfully unfollowed user.' })
+    async unfollowUser(@Param('id') id: string, @GetUser('userId') userId: string):Promise<SuccessResponseDto> {
+        const sourceUserId = new Types.ObjectId(userId);
+        const targetUserId = new Types.ObjectId(id);
+        return this.userService.unfollowUser(sourceUserId, targetUserId);
     }
 }

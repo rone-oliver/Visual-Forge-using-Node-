@@ -1,0 +1,81 @@
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { FilterQuery, Model, Types } from 'mongoose';
+import { Relationship, RelationshipDocument } from '../models/relationships.schema';
+import { IRelationshipRepository } from '../interfaces/repository.interface';
+import { RelationshipDto } from '../dto/relationship.dto';
+import { RelationshipType } from 'src/common/enums/relationships.enum';
+import { UserDocument } from 'src/users/models/user.schema';
+
+@Injectable()
+export class RelationshipRepository implements IRelationshipRepository {
+  constructor(
+    @InjectModel(Relationship.name) private readonly relationshipModel: Model<RelationshipDocument>,
+  ) {}
+
+  async create(relationshipDto: RelationshipDto): Promise<Relationship> {
+    const newRelationship = new this.relationshipModel(relationshipDto);
+    return newRelationship.save();
+  }
+
+  async findOne(filter: FilterQuery<RelationshipDocument>): Promise<Relationship | null> {
+    return this.relationshipModel.findOne(filter).exec();
+  }
+
+  async deleteOne(filter: FilterQuery<RelationshipDocument>): Promise<{ deletedCount: number }> {
+    const result = await this.relationshipModel.deleteOne(filter).exec();
+    return { deletedCount: result.deletedCount };
+  }
+
+  async count(filter: FilterQuery<RelationshipDocument>): Promise<number> {
+    return this.relationshipModel.countDocuments(filter).exec();
+  }
+
+  async countFollowers(userId: Types.ObjectId): Promise<number> {
+    return this.count({
+      targetUser: userId,
+      type: RelationshipType.FOLLOWS,
+    });
+  }
+
+  async countFollowing(userId: Types.ObjectId): Promise<number> {
+    return this.count({
+      sourceUser: userId,
+      type: RelationshipType.FOLLOWS,
+    });
+  }
+
+  private async findRelatedUsers(
+    userId: Types.ObjectId,
+    type: RelationshipType,
+    userField: 'sourceUser' | 'targetUser',
+    populateField: 'sourceUser' | 'targetUser',
+    limit: number,
+    skip: number,
+  ): Promise<UserDocument[]> {
+    const relationships = await this.relationshipModel
+      .find({ [userField]: userId, type })
+      .populate(populateField, 'username profileImage')
+      .limit(limit)
+      .skip(skip)
+      .exec();
+
+    return relationships.map(rel => rel[populateField] as unknown as UserDocument);
+  }
+
+  async findFollows(userId: Types.ObjectId, limit: number, skip: number): Promise<UserDocument[]> {
+    return this.findRelatedUsers(userId, RelationshipType.FOLLOWS, 'sourceUser', 'targetUser', limit, skip);
+  }
+
+  async findFollowers(userId: Types.ObjectId, limit: number, skip: number): Promise<UserDocument[]> {
+    return this.findRelatedUsers(userId, RelationshipType.FOLLOWS, 'targetUser', 'sourceUser', limit, skip);
+  }
+
+  async findBlockedUsers(userId: Types.ObjectId, limit: number, skip: number): Promise<UserDocument[]> {
+    return this.findRelatedUsers(userId, RelationshipType.BLOCKS, 'sourceUser', 'targetUser', limit, skip);
+  }
+
+  async findBlockersOfUser(userId: Types.ObjectId, limit: number, skip: number): Promise<UserDocument[]> {
+    return this.findRelatedUsers(userId, RelationshipType.BLOCKS, 'targetUser', 'sourceUser', limit, skip);
+  }
+}

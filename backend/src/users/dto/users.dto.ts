@@ -1152,7 +1152,16 @@ export class EditorPublicProfileResponseDto {
     })
     @IsObject()
     @IsOptional()
-    socialLinks?: { [key: string]: string };
+    socialLinks?: Record<string, string>;
+
+    @IsNumber()
+    followersCount: number;
+
+    @IsNumber()
+    followingCount: number;
+
+    @IsBoolean()
+    isFollowing: boolean;
 }
 
 export class GetUsersQueryDto {

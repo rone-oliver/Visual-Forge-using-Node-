@@ -59,17 +59,17 @@
               </div>
               <div class="stat-divider"></div>
               <div class="stat-item">
-                <!-- <span class="stat-value">{{user.followers || 0}}</span> -->
+                <span class="stat-value">{{ user.editorDetails?.followersCount || 0 }}</span>
                 <span class="stat-label">Followers</span>
               </div>
               <div class="stat-divider"></div>
               <div class="stat-item">
-                <!-- <span class="stat-value">{{user.following || 0}}</span> -->
+                <span class="stat-value">{{ user.editorDetails?.followingCount || 0 }}</span>
                 <span class="stat-label">Following</span>
               </div>
               <div class="stat-divider"></div>
               <div class="stat-item">
-                <!-- <span class="stat-value">{{user.posts || 0}}</span> -->
+                <span class="stat-value">{{user.editorDetails?.sharedTutorials?.length || 0}}</span>
                 <span class="stat-label">Posts</span>
               </div>
             </div>

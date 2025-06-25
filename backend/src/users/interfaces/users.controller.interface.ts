@@ -37,7 +37,7 @@ import { Bid } from 'src/common/bids/models/bids.schema';
 export interface IUsersController {
     getUserProfile(req: Request): Promise<UserProfileResponseDto>;
     requestForEditor(req: Request): Promise<SuccessResponseDto>;
-    getEditorPublicProfile(id: string): Promise<EditorPublicProfileResponseDto>;
+    getEditorPublicProfile(id: string,currentUserId?:string): Promise<EditorPublicProfileResponseDto>;
     getPublicEditors(query: GetPublicEditorsDto): Promise<PaginatedPublicEditorsDto>;
     getEditorRequestStatus(req: Request): Promise<EditorRequestStatusResponseDto>;
     getTransactionHistory(
@@ -106,4 +106,7 @@ export interface IUsersController {
     cancelAcceptedBid(bidId: string, requesterId: string): Promise<SuccessResponseDto>;
 
     reportUser(reportDto: ReportUserDto, userId: string): Promise<SuccessResponseDto>;
+
+    followUser(id: string, userId: string): Promise<SuccessResponseDto>;
+    unfollowUser(id: string, userId: string): Promise<SuccessResponseDto>;
 }

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Editor, EditorDocument } from './models/editor.schema';
 import { Model, Types } from 'mongoose';
@@ -31,6 +31,7 @@ import {
     RemoveTutorialDto,
 } from './dto/editors.dto';
 import { CreateBidDto } from 'src/common/bids/dto/create-bid.dto';
+import { IRelationshipService, IRelationshipServiceToken } from 'src/common/relationship/interfaces/service.interface';
 
 @Injectable()
 export class EditorsService implements IEditorsService {
@@ -41,6 +42,7 @@ export class EditorsService implements IEditorsService {
         @InjectModel(Works.name) private workModel: Model<WorksDocument>,
         @InjectModel(User.name) private userModel: Model<UserDocument>,
         @InjectModel(Bid.name) private bidModel: Model<BidDocument>,
+        @Inject(IRelationshipServiceToken) private readonly relationshipService: IRelationshipService,
         private cloudinaryService: CloudinaryService,
         private readonly notificationService: NotificationService,
         private readonly bidsService: BidsService,
@@ -506,6 +508,10 @@ export class EditorsService implements IEditorsService {
                 const editorDetailsDoc = await this.editorModel.findOne({ userId: user._id }).lean();
                 if (editorDetailsDoc) {
                     this.logger.log('Editor details: ', editorDetailsDoc)
+                    const [followersCount, followingCount] = await Promise.all([
+                        this.relationshipService.getFollowerCount(user._id),
+                        this.relationshipService.getFollowingCount(user._id),
+                    ]);
                     const userDto: UserForEditorDetailsDto = {
                         _id: user._id,
                         fullname: user.fullname,
@@ -522,6 +528,8 @@ export class EditorsService implements IEditorsService {
                         averageRating: this.calculateAverageRating(editorDetailsDoc.ratings),
                         socialLinks: editorDetailsDoc.socialLinks || {},
                         createdAt: editorDetailsDoc.createdAt,
+                        followersCount,
+                        followingCount,
                     };
 
                     return { ...userDto, editorDetails: editorDto };
