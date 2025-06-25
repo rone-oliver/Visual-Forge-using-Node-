@@ -258,6 +258,14 @@ export class UserService {
     return this.http.post<IBid>(`${this.userApiUrl}/bids/${bidId}/accept`, {});
   }
 
+  getAcceptedBid(quotationId: string, editorId: string): Observable<IBid> {
+    return this.http.get<IBid>(`${this.userApiUrl}/bids/${quotationId}/accepted`, { params: { editorId } });
+  }
+
+  cancelAcceptedBid(bidId: string): Observable<{ success: boolean }> {
+    return this.http.patch<{ success: boolean }>(`${this.userApiUrl}/bids/${bidId}/cancel`, {});
+  }
+
   getWalletDetails(): Observable<IWallet> {
     return this.http.get<IWallet>(`${this.userApiUrl}/wallet`);
   }

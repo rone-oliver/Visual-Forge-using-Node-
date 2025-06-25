@@ -163,8 +163,77 @@ export class BidsService implements IBidService{
       return updateBid;
     } catch (error) {
       await session.abortTransaction();
-    this.logger.error(`Failed to accept bid: ${error.message}`, error.stack);
-    throw error;
+      this.logger.error(`Failed to accept bid: ${error.message}`, error.stack);
+      throw error;
+    } finally {
+      session.endSession();
+    }
+  }
+
+  async getAcceptedBid(quotationId: Types.ObjectId, editorId: Types.ObjectId): Promise<Bid> {
+    const bid = await this.bidRepository.getAcceptedBid(quotationId, editorId);
+    return bid;
+  }
+
+  async cancelAcceptedBid(bidId: Types.ObjectId, requesterId: Types.ObjectId): Promise<void> {
+    const session = await this.bidModel.db.startSession();
+    session.startTransaction();
+
+    try {
+      const acceptedBid = await this.bidRepository.findById(bidId, { session });
+
+      if (!acceptedBid || acceptedBid.status !== BidStatus.ACCEPTED) {
+        throw new BadRequestException('Bid to cancel must be an accepted bid.');
+      }
+
+      const quotation = await this.quotationModel.findById(acceptedBid.quotationId).session(session);
+
+      if (!quotation) {
+        throw new NotFoundException('Associated quotation not found.');
+      }
+
+      const isOwner = quotation.userId.toString() === requesterId.toString();
+      const isEditor = acceptedBid.editorId.toString() === requesterId.toString();
+
+      if (!isOwner && !isEditor) {
+        throw new BadRequestException('Only the quotation owner or the accepted editor can cancel the bid.');
+      }
+
+      if (quotation.status !== QuotationStatus.ACCEPTED) {
+        throw new BadRequestException('Quotation is not in an accepted state.');
+      }
+      
+      if (quotation.isAdvancePaid) {
+        throw new BadRequestException('Cannot cancel a bid after an advance payment has been made.');
+      }
+
+      await this.quotationModel.updateOne(
+        { _id: quotation._id },
+        { 
+          status: QuotationStatus.PUBLISHED, 
+          $unset: { editorId: 1 } 
+        },
+        { session }
+      );
+
+      acceptedBid.status = BidStatus.REJECTED;
+      await this.bidRepository.save(acceptedBid, { session });
+
+      await this.bidRepository.updateMany(
+        {
+          quotationId: quotation._id,
+          _id: { $ne: acceptedBid._id },
+          status: BidStatus.REJECTED
+        },
+        { status: BidStatus.PENDING },
+        { session }
+      );
+
+      await session.commitTransaction();
+    } catch (error) {
+      await session.abortTransaction();
+      this.logger.error(`Failed to cancel accepted bid: ${error.message}`, error.stack);
+      throw error;
     } finally {
       session.endSession();
     }

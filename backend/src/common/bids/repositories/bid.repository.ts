@@ -1,6 +1,6 @@
 // bid.repository.ts
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Bid, BidDocument, BidStatus } from '../models/bids.schema';
@@ -56,6 +56,14 @@ export class BidRepository implements IBidRepository {
         bid,
         { new: true, ...options }
     ).lean().exec();
+  }
+
+  async getAcceptedBid(quotationId: Types.ObjectId, editorId: Types.ObjectId): Promise<Bid> {
+    const bid = await this.bidModel.findOne({ quotationId, editorId, status: BidStatus.ACCEPTED }).lean().exec();
+    if (!bid) {
+      throw new NotFoundException('Bid not found');
+    }
+    return bid;
   }
 
   async updateMany(filter: any, update: any, options?: any): Promise<any> {

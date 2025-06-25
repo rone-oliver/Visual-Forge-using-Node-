@@ -1,4 +1,3 @@
-
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
@@ -16,6 +15,8 @@ import { Router } from '@angular/router';
 import { debounceTime, distinctUntilChanged, Subject, Subscription } from 'rxjs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MediaProtectionDirective } from '../../../directives/media-protection.directive';
+import { UserService } from '../../../services/user/user.service';
+import { ConfirmationDialogComponent, DialogType } from '../../mat-dialogs/confirmation-dialog/confirmation-dialog.component';
 
 
 @Component({
@@ -30,7 +31,7 @@ import { MediaProtectionDirective } from '../../../directives/media-protection.d
     MatRippleModule,
     MatProgressSpinnerModule,
     MediaProtectionDirective
-],
+  ],
   templateUrl: './accepted-quotation.component.html',
   styleUrl: './accepted-quotation.component.scss'
 })
@@ -62,24 +63,25 @@ export class AcceptedQuotationComponent {
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private router: Router,
-  ){};
+    private userService: UserService,
+  ) { };
 
-  ngOnInit(): void{
+  ngOnInit(): void {
     this.loadAcceptedQuotations();
     this.searchSubscription = this.searchSubject.pipe(
       debounceTime(500),
       distinctUntilChanged(),
-    ).subscribe( searchValue => {
+    ).subscribe(searchValue => {
       this.searchQuery = searchValue;
       this.loadAcceptedQuotations();
     })
   }
-  
-  loadAcceptedQuotations(loadMore = false): void{
-    if(loadMore){
+
+  loadAcceptedQuotations(loadMore = false): void {
+    if (loadMore) {
       this.isLoadingMore = true;
       this.currentPage++;
-    }else{
+    } else {
       this.isLoading = true;
       this.currentPage = 1;
       this.acceptedQuotations.length = 0;
@@ -90,9 +92,9 @@ export class AcceptedQuotationComponent {
       searchTerm: this.searchQuery.trim() || undefined,
     }).subscribe({
       next: (response: PaginatedEditorQuotationsResponse) => {
-        if(loadMore){
+        if (loadMore) {
           this.acceptedQuotations.push(...response.quotations);
-        } else{
+        } else {
           this.acceptedQuotations = response.quotations;
         }
         this.totalItems = response.totalItems;
@@ -100,7 +102,7 @@ export class AcceptedQuotationComponent {
         this.isLoading = false;
         this.isLoadingMore = false;
 
-        if(this.acceptedQuotations.length > 0 && !this.selectedQuotation){
+        if (this.acceptedQuotations.length > 0 && !this.selectedQuotation) {
           this.selectedQuotation = this.acceptedQuotations[0];
         }
       },
@@ -117,7 +119,7 @@ export class AcceptedQuotationComponent {
     })
   }
 
-  loadMore():void{
+  loadMore(): void {
     this.loadAcceptedQuotations(true);
   }
 
@@ -126,7 +128,7 @@ export class AcceptedQuotationComponent {
     this.responseText = '';
   }
 
-  onSearchChange(term: string){
+  onSearchChange(term: string) {
     this.searchSubject.next(term);
   }
 
@@ -136,26 +138,26 @@ export class AcceptedQuotationComponent {
   }
 
   openFileModal(fileType: FileType): void {
-      if (!this.selectedQuotation?.attachedFiles || this.selectedQuotation.attachedFiles.length === 0) {
-        return;
-      }
-      
-      const files = this.selectedQuotation.attachedFiles.filter(file => file.fileType === fileType);
-      
-      if (files.length === 0) {
-        return;
-      }
-      
-      this.dialog.open(FilesPreviewComponent, {
-        width: '800px',
-        maxHeight: '80vh',
-        panelClass: 'rounded-dialog-container',
-        data: {
-          files,
-          fileType: fileType
-        }
-      });
+    if (!this.selectedQuotation?.attachedFiles || this.selectedQuotation.attachedFiles.length === 0) {
+      return;
     }
+
+    const files = this.selectedQuotation.attachedFiles.filter(file => file.fileType === fileType);
+
+    if (files.length === 0) {
+      return;
+    }
+
+    this.dialog.open(FilesPreviewComponent, {
+      width: '800px',
+      maxHeight: '80vh',
+      panelClass: 'rounded-dialog-container',
+      data: {
+        files,
+        fileType: fileType
+      }
+    });
+  }
 
   submitResponse(): void {
     if (!this.selectedQuotation || !this.selectedQuotation._id || !this.responseText.trim() || this.uploadedFiles.length === 0) {
@@ -212,12 +214,12 @@ export class AcceptedQuotationComponent {
       this.showMessage('No quotation selected');
       return;
     }
-    
+
     this.isUploading = true;
 
     this.editorService.uploadWorkFiles(this.selectedFiles).subscribe({
       next: (results) => {
-        this.uploadedFiles = [...this.uploadedFiles,...results];
+        this.uploadedFiles = [...this.uploadedFiles, ...results];
         this.selectedFiles = [];
         this.isUploading = false;
         this.showMessage('Files uploaded successfully');
@@ -226,6 +228,53 @@ export class AcceptedQuotationComponent {
         console.error('Error uploading files:', error);
         this.isUploading = false;
         this.showMessage('Error uploading files');
+      }
+    });
+  }
+
+  openCancelBidConfirmation(quotation: IQuotation): void {
+    if (!quotation.editorId) {
+      this.snackBar.open('No editor ID found for this quotation.', 'Dismiss', { duration: 3000 });
+      return;
+    }
+
+    this.userService.getAcceptedBid(quotation._id, quotation.editorId).subscribe({
+      next: (acceptedBid) => {
+        const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+          width: '400px',
+          data: {
+            title: 'Confirm Cancellation',
+            message: 'Are you sure you want to cancel this agreement? This action cannot be undone.',
+            type: DialogType.DANGER,
+            confirmText: 'Yes, Cancel',
+            cancelText: 'No, Keep it'
+          }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+          if (result) {
+            this.userService.cancelAcceptedBid(acceptedBid._id).subscribe({
+              next: () => {
+                this.snackBar.open('Agreement cancelled successfully.', 'Dismiss', {
+                  duration: 3000,
+                  panelClass: 'success-snack'
+                });
+                this.selectedQuotation = null;
+                this.loadAcceptedQuotations();
+              },
+              error: (err) => {
+                console.error('Error cancelling bid:', err);
+                this.snackBar.open(err.error.message || 'Failed to cancel agreement.', 'Dismiss', {
+                  duration: 3000,
+                  panelClass: 'error-snack'
+                });
+              }
+            });
+          }
+        });
+      },
+      error: (err) => {
+        this.snackBar.open(err.error.message || 'Failed to find an accepted bid.', 'Dismiss', { duration: 3000 });
       }
     });
   }
@@ -239,7 +288,7 @@ export class AcceptedQuotationComponent {
     });
   }
 
-  viewWorksHistory(){
+  viewWorksHistory() {
     console.log('Navigating to works history page');
     this.router.navigate(['/editor/works/history'])
   }

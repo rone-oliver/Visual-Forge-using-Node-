@@ -279,6 +279,7 @@ export class EditorsService implements IEditorsService {
                 outputType: q.outputType,
                 dueDate: q.dueDate,
                 status: q.status,
+                editorId: q.editorId,
                 userId: q.userId, // Client's ID
                 userFullName: q.userDetails?.fullname, // Client's full name
                 imageUrl: q.imageUrl,

@@ -37,5 +37,3 @@ export class Bid {
 }
 
 export const BidSchema = SchemaFactory.createForClass(Bid);
-
-BidSchema.index({ dueDate: 1 }, { expireAfterSeconds: 0 });

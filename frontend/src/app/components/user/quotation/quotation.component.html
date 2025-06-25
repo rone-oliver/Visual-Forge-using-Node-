@@ -145,6 +145,16 @@
                                 </div>
                             }
 
+                            @if (quotation.status === QuotationStatus.ACCEPTED && !quotation.isAdvancePaid) {
+                                <div class="detail-item bids-button-container">
+                                    <button mat-stroked-button color="warn" class="cancel-bid-button"
+                                        (click)="openCancelBidConfirmation(quotation)">
+                                        <mat-icon>cancel</mat-icon>
+                                        <span>Cancel Agreement</span>
+                                    </button>
+                                </div>
+                            }
+
                             @if (quotation.attachedFiles && quotation.attachedFiles.length > 0) {
                                 <div class="file-attachments">
                                     <div class="file-type-badges">

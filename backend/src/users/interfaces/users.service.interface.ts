@@ -101,7 +101,9 @@ export interface IUsersService {
 
     // Bid related methods
     getBidsByQuotation(quotationId: Types.ObjectId, userId: Types.ObjectId): Promise<BidResponseDto[]>;
-    acceptBid(bidId: Types.ObjectId, userId: Types.ObjectId): Promise<BidResponseDto>; // Assuming Bid DTO is suitable
+    acceptBid(bidId: Types.ObjectId, userId: Types.ObjectId): Promise<BidResponseDto>; 
+    cancelAcceptedBid(bidId: Types.ObjectId, requesterId: Types.ObjectId): Promise<SuccessResponseDto>;
+    getAcceptedBid(quotationId: Types.ObjectId, editorId: Types.ObjectId): Promise<Bid>;
 
     // Methods for user-auth
     findOne(filter: Partial<User>): Promise<User | null>;

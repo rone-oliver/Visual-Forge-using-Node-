@@ -32,6 +32,7 @@ import { BidResponseDto } from '../dto/users.dto';
 import { FileUploadResult } from 'src/common/cloudinary/cloudinary.service'; 
 import { User } from '../models/user.schema';
 import { Types } from 'mongoose';
+import { Bid } from 'src/common/bids/models/bids.schema';
 
 export interface IUsersController {
     getUserProfile(req: Request): Promise<UserProfileResponseDto>;
@@ -101,6 +102,8 @@ export interface IUsersController {
     ): Promise<SuccessResponseDto>;
 
     acceptBid(bidId: string, req: Request): Promise<BidResponseDto>;
+    getAcceptedBid(quotationId: string, editorId: string): Promise<Bid>;
+    cancelAcceptedBid(bidId: string, requesterId: string): Promise<SuccessResponseDto>;
 
     reportUser(reportDto: ReportUserDto, userId: string): Promise<SuccessResponseDto>;
 }

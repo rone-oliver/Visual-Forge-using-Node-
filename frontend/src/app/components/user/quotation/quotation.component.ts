@@ -16,7 +16,7 @@ import { firstValueFrom, Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { IBid } from '../../../interfaces/bid.interface';
 import { BidDialogComponent } from '../../mat-dialogs/bid-dialog/bid-dialog.component';
-import { ConfirmationDialogComponent } from '../../mat-dialogs/confirmation-dialog/confirmation-dialog.component';
+import { ConfirmationDialogComponent, DialogType } from '../../mat-dialogs/confirmation-dialog/confirmation-dialog.component';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { FormsModule } from '@angular/forms';
 
@@ -473,6 +473,52 @@ export class QuotationComponent implements OnInit, OnDestroy {
         panelClass: 'warning-snack'
       });
     }
+  }
+
+  openCancelBidConfirmation(quotation: IQuotation): void {
+    if (!quotation.editorId) {
+      this.snackBar.open('No editor ID found for this quotation.', 'Dismiss', { duration: 3000 });
+      return;
+    }
+
+    this.userService.getAcceptedBid(quotation._id, quotation.editorId).subscribe({
+      next: (acceptedBid) => {
+        const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+          width: '400px',
+          data: {
+            title: 'Confirm Cancellation',
+            message: 'Are you sure you want to cancel this agreement? This action cannot be undone.',
+            type: DialogType.DANGER,
+            confirmText: 'Yes, Cancel',
+            cancelText: 'No, Keep it'
+          }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+          if (result) {
+            this.userService.cancelAcceptedBid(acceptedBid._id).subscribe({
+              next: () => {
+                this.snackBar.open('Agreement cancelled successfully.', 'Dismiss', {
+                  duration: 3000,
+                  panelClass: 'success-snack'
+                });
+                this.loadQuotations(); // Refresh the list
+              },
+              error: (err) => {
+                console.error('Error cancelling bid:', err);
+                this.snackBar.open(err.error.message || 'Failed to cancel agreement.', 'Dismiss', {
+                  duration: 3000,
+                  panelClass: 'error-snack'
+                });
+              }
+            });
+          }
+        });
+      },
+      error: (err) => {
+        this.snackBar.open(err.error.message || 'Failed to find an accepted bid.', 'Dismiss', { duration: 3000 });
+      }
+    });
   }
 
   ngOnDestroy(): void {

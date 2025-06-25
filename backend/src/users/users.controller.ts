@@ -37,6 +37,8 @@ import { IUsersService, IUsersServiceToken } from './interfaces/users.service.in
 import { IUsersController } from './interfaces/users.controller.interface';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
+import { Role } from 'src/common/enums/role.enum';
+import { Bid } from 'src/common/bids/models/bids.schema';
 // import { Public } from 'src/common/decorators/public.decorator';
 
 export interface GetQuotationsParams {
@@ -371,6 +373,34 @@ export class UsersController implements IUsersController {
         }
         
         return this.userService.acceptBid(new Types.ObjectId(bidId), user.userId);
+    }
+
+    @Get('bids/:quotationId/accepted')
+    @Roles(Role.USER, Role.EDITOR)
+    async getAcceptedBid(
+        @Param('quotationId') quotationId: string,
+        @Query('editorId') editorId: string,
+    ): Promise<Bid> {
+        if (!Types.ObjectId.isValid(quotationId)) {
+            throw new BadRequestException('Invalid quotation ID');
+        }
+        
+        return this.userService.getAcceptedBid(new Types.ObjectId(quotationId), new Types.ObjectId(editorId));
+    }
+
+    @Patch('bids/:bidId/cancel')
+    @Roles(Role.USER, Role.EDITOR)
+    @ApiOperation({ summary: 'Cancel an accepted bid before payment' })
+    @ApiResponse({ status: 200, description: 'Bid cancelled successfully.', type: SuccessResponseDto })
+    @ApiResponse({ status: 400, description: 'Invalid request or bid cannot be cancelled.' })
+    async cancelAcceptedBid(
+        @Param('bidId') bidId: string,
+        @GetUser('userId') requesterId: string,
+    ): Promise<SuccessResponseDto> {
+        if (!Types.ObjectId.isValid(bidId)) {
+            throw new BadRequestException('Invalid bid ID');
+        }
+        return await this.userService.cancelAcceptedBid(new Types.ObjectId(bidId), new Types.ObjectId(requesterId));
     }
 
     // @Public()

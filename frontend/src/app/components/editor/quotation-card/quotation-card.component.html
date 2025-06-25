@@ -161,6 +161,13 @@
                             </button>
                         </div>
                     }
+
+                    @if(currentEditorBid.bidStatus === 'Accepted'){
+                        <div class="bid-status-message accepted">
+                            <mat-icon>check_circle</mat-icon>
+                            <span>The client has accepted your bid.</span>
+                        </div>
+                    }
                 </div>
             }
         </div>

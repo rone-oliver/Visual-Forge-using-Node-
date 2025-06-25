@@ -822,6 +822,16 @@ export class UsersService implements IUsersService {
         return bid;
     }
 
+    async getAcceptedBid(quotationId: Types.ObjectId, editorId: Types.ObjectId): Promise<Bid> {
+        const bid = await this.bidsService.getAcceptedBid(quotationId, editorId);
+        return bid;
+    }
+
+    async cancelAcceptedBid(bidId: Types.ObjectId, requesterId: Types.ObjectId): Promise<SuccessResponseDto> {
+        await this.bidsService.cancelAcceptedBid(bidId, requesterId);
+        return { success: true, message: 'Bid cancelled successfully' };
+    }
+
     async getEditorPublicProfile(editorId: string): Promise<EditorPublicProfileResponseDto> {
         if (!Types.ObjectId.isValid(editorId)) {
             this.logger.log(`Invalid editor ID format: ${editorId}`);

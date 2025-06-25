@@ -12,6 +12,7 @@ export interface IBidRepository {
     save(bid: Partial<Bid> & { _id: Types.ObjectId }, options?: any): Promise<Bid>;
     updateMany(filter: any, update: any, options?: any): Promise<any>;
     delete(bidId: Types.ObjectId): Promise<void>;
+    getAcceptedBid(quotationId: Types.ObjectId, editorId: Types.ObjectId): Promise<Bid>;
 }
 
 export interface IBidService {
@@ -21,4 +22,5 @@ export interface IBidService {
   acceptBid(bidId: Types.ObjectId, userId: Types.ObjectId): Promise<Bid>;
   updateBid(bidId: Types.ObjectId, editorId: Types.ObjectId, bidAmount: number, notes?: string): Promise<Bid>;
   deleteBid(bidId: Types.ObjectId, editorId: Types.ObjectId): Promise<void>;
+  getAcceptedBid(quotationId: Types.ObjectId, editorId: Types.ObjectId): Promise<Bid>;
 }
