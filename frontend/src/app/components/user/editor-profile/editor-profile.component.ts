@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatIconModule, MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { UserService } from '../../../services/user/user.service';
 import { EditorPublicProfile } from '../../../interfaces/user.interface';
 import { Observable, BehaviorSubject } from 'rxjs';
@@ -15,7 +15,7 @@ import { MatButtonModule } from '@angular/material/button';
 @Component({
   selector: 'app-editor-profile',
   standalone: true,
-  imports: [MatButtonModule, CommonModule, MatTabsModule, MatIconModule, MatProgressSpinnerModule, MediaProtectionDirective],
+  imports: [MatButtonModule, CommonModule, MatTabsModule, MatIconModule, MatProgressSpinnerModule, MediaProtectionDirective, RouterModule],
   templateUrl: './editor-profile.component.html',
   styleUrls: ['./editor-profile.component.scss']
 })
