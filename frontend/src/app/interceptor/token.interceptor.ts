@@ -87,7 +87,7 @@ function handleTokenAddition(
             if (error.status === 403 && error.error?.isBlocked) {
                 console.log('User is blocked. Logging out.');
                 return handleLogout(userType, authService, router, { blocked: 'true' }).pipe(
-                    switchMap(() => EMPTY) // Stop the request chain
+                    switchMap(() => EMPTY)
                 );
             }
 
@@ -107,14 +107,12 @@ function handleTokenAddition(
                         }),
                         catchError((refreshError) => {
                             console.error(`Failed to refresh ${userType} token. Logging out.`, refreshError);
-                            // Logout and then stop the request chain.
                             return handleLogout(userType, authService, router).pipe(
                                 switchMap(() => EMPTY)
                             );
                         })
                     );
                 } else {
-                    // Handle other 401 errors (e.g., invalid token) by logging out and stopping the chain.
                     console.error('Invalid token or other 401 error. Logging out.', error);
                     return handleLogout(userType, authService, router).pipe(
                         switchMap(() => EMPTY)
@@ -122,7 +120,6 @@ function handleTokenAddition(
                 }
             }
 
-            // For all other errors, just re-throw
             return throwError(() => error);
         })
     );
