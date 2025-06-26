@@ -108,7 +108,17 @@ export interface IQuotationWithEditorBid extends IQuotation {
 
 export interface IPaymentVerification {
     success: boolean;
-    orderId: string;
-    paymentId: string;
+    // orderId: string;
+    order_id: string;
+    id: string;
+    // paymentId: string;
+    method: string;
+    amount: number;
+    wallet: string;
+    currency: string;
+    bank: string;
+    fee: number;
+    tax: number;
+    created_at: number;
     signature: string;
 }

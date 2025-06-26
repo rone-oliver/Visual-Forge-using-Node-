@@ -241,9 +241,16 @@ export class UserService {
     console.log('paymentDetails:', paymentDetails);
     return this.http.patch<boolean>(`${this.userApiUrl}/quotations/${quotationId}/payment`, {
       isAdvancePaid: !isAdvance,
-      orderId: paymentDetails.orderId,
-      paymentId: paymentDetails.paymentId,
-      amount
+      orderId: paymentDetails.order_id, 
+      paymentId: paymentDetails.id,       
+      amount: paymentDetails.amount / 100, 
+      razorpayPaymentMethod: paymentDetails.method, 
+      currency: paymentDetails.currency,
+      bank: paymentDetails.bank,
+      wallet: paymentDetails.wallet,
+      fee: paymentDetails.fee / 100,       
+      tax: paymentDetails.tax / 100,       
+      paymentDate: new Date(paymentDetails.created_at * 1000) 
     }).pipe(
       map(response => response),
       catchError(error => { throw error })

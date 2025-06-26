@@ -33,6 +33,24 @@ export class Transaction {
     @Prop({ required: true })
     orderId: string;
 
+    @Prop({ required: true })
+    razorpayPaymentMethod: string;
+
+    @Prop({ required: true })
+    currency: string;
+
+    @Prop()
+    bank: string;
+
+    @Prop()
+    wallet: string;
+
+    @Prop()
+    fee: number;
+
+    @Prop()
+    tax: number;
+
     @Prop({ required: true, type: Number })
     amount: number;
 

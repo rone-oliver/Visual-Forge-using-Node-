@@ -96,12 +96,21 @@ export class PaymentService {
             .update(razorpayOrderId + '|' + razorpayPaymentId)
             .digest('hex');
 
-        return {
-            success : generatedSignature === razorpaySignature,
-            orderId: razorpayOrderId,
-            paymentId: razorpayPaymentId,
-            signature: razorpaySignature,
-        };
+        if (generatedSignature !== razorpaySignature) {
+            this.logger.warn(`Payment verification failed for orderId: ${razorpayOrderId}`);
+            return { success: false, message: 'Payment verification failed' };
+        }
+
+        try {
+            const paymentDetails = await this.fetchPaymentDetails(razorpayPaymentId);
+            return {
+                success: true,
+                ...paymentDetails,
+            };
+        } catch (error) {
+            this.logger.error(`Failed to fetch payment details for paymentId: ${razorpayPaymentId}`, error);
+            return { success: false, message: 'Failed to fetch payment details' };
+        }
     }
 
     async getAccountBalance(): Promise<number> {

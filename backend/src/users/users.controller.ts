@@ -338,7 +338,7 @@ export class UsersController implements IUsersController {
     }
 
     @Post('payment/verify')
-    @Roles('User', 'Editor')
+    @Roles(Role.USER, Role.EDITOR)
     async verifyPayment(@Req() req: Request, @Body() body: { razorpay_order_id: string, razorpay_payment_id: string, razorpay_signature: string }) {
         const user = req['user'] as { userId: Types.ObjectId, role: string }
         const payment = await this.paymentService.verifyPayment(body.razorpay_order_id, body.razorpay_payment_id, body.razorpay_signature);
@@ -355,7 +355,14 @@ export class UsersController implements IUsersController {
             paymentId: body.paymentId,
             orderId: body.orderId,
             amount: body.amount,
-            paymentType: paymentType
+            paymentType: paymentType,
+            razorpayPaymentMethod: body.razorpayPaymentMethod,
+            currency: body.currency,
+            bank: body.bank,
+            fee: body.fee,
+            tax: body.tax,
+            wallet: body.wallet,
+            paymentDate: body.paymentDate
         };
         console.log('paymentDetails: ',paymentDetails);
 

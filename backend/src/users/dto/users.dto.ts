@@ -959,6 +959,36 @@ export class UpdateQuotationPaymentDto {
     @IsNumber()
     @Min(0)
     amount: number;
+
+    @ApiProperty({ description: 'Payment method from Razorpay' })
+    @IsString()
+    razorpayPaymentMethod: string;
+
+    @ApiProperty({ description: 'Currency of the payment' })
+    @IsString()
+    currency: string;
+
+    @ApiPropertyOptional({ description: 'Bank associated with the payment', required: false })
+    @IsString()
+    @IsOptional()
+    bank?: string;
+
+    @ApiPropertyOptional({ description: 'Wallet associated with the payment', required: false })
+    @IsString()
+    @IsOptional()
+    wallet?: string;
+
+    @ApiProperty({ description: 'Fee charged by Razorpay' })
+    @IsNumber()
+    fee: number;
+
+    @ApiProperty({ description: 'Tax charged for the payment' })
+    @IsNumber()
+    tax: number;
+
+    @ApiProperty({ description: 'Date of the payment' })
+    @IsDateString()
+    paymentDate: Date;
 }
 
 export class TransactionResponseDto {
@@ -1069,7 +1099,39 @@ export class TransactionItemDto {
   
     @ApiProperty({ description: 'The date of the payment.', example: '2025-05-13T11:00:33.490Z' })
     @Expose()
-    createdAt: Date;
+    paymentDate: Date;
+
+    @ApiProperty({ description: 'The payment ID from the gateway.' })
+    @Expose()
+    paymentId: string;
+
+    @ApiProperty({ description: 'The order ID from the gateway.' })
+    @Expose()
+    orderId: string;
+
+    @ApiProperty({ description: 'The payment method used.' })
+    @Expose()
+    razorpayPaymentMethod: string;
+
+    @ApiProperty({ description: 'The currency of the transaction.' })
+    @Expose()
+    currency: string;
+
+    @ApiProperty({ description: 'The bank used for the payment.', required: false })
+    @Expose()
+    bank?: string;
+
+    @ApiProperty({ description: 'The wallet used for the payment.', required: false })
+    @Expose()
+    wallet?: string;
+
+    @ApiProperty({ description: 'The fee charged by the gateway.' })
+    @Expose()
+    fee: number;
+
+    @ApiProperty({ description: 'The tax applied to the transaction.' })
+    @Expose()
+    tax: number;
 }
 
 export class PaginatedTransactionsResponseDto {

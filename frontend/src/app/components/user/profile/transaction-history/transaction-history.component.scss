@@ -81,41 +81,71 @@
     }
 
     .transaction-date {
-      font-size: 0.875rem;
+      font-size: 0.8rem;
       color: var(--color-neutral-500);
+      margin-top: 4px;
+    }
+
+    .transaction-meta {
+      font-size: 0.8rem;
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+
+      span {
+        background-color: var(--color-neutral-100);
+        color: var(--color-text);
+        padding: 2px 8px;
+        border-radius: 4px;
+      }
     }
   }
 
   .transaction-amount {
     text-align: right;
+    flex-shrink: 0;
 
     .amount {
-      font-size: 1.125rem;
+      font-size: 1.1rem;
       font-weight: 600;
-      color: var(--color-danger);
+      color: var(--color-text);
     }
 
     .status {
-      font-size: 0.875rem;
+      font-size: 0.8rem;
       font-weight: 500;
-      margin-top: 0.25rem;
-      padding: 0.25rem 0.75rem;
+      padding: 2px 8px;
       border-radius: 12px;
       text-transform: capitalize;
+      display: inline-block;
+      margin-top: 4px;
 
       &.status-completed {
-        color: var(--color-success-dark, #166534);
-        background-color: var(--color-success-light, #dcfce7);
+        color: var(--color-success);
+        background-color: var(--file-uploaded-bg);
       }
 
       &.status-pending {
-        color: var(--color-warning-dark, #9a3412);
-        background-color: var(--color-warning-light, #ffedd5);
+        color: var(--admin-color-warning);
+        background-color: rgba(246, 194, 62, 0.1);
       }
 
       &.status-failed {
-        color: var(--color-danger-dark, #991b1b);
-        background-color: var(--color-danger-light, #fee2e2);
+        color: var(--color-danger);
+        background-color: rgba(239, 68, 68, 0.1);
+      }
+    }
+
+    .transaction-fees {
+      font-size: 0.8rem;
+      color: var(--color-neutral-500);
+      text-align: right;
+      margin-top: 8px;
+
+      span {
+        display: block;
+        line-height: 1.5;
       }
     }
   }

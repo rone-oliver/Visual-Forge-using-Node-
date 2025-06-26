@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule, CurrencyPipe } from '@angular/common';
+import { CommonModule, CurrencyPipe, TitleCasePipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -13,7 +13,7 @@ import { LocalDatePipe } from '../../../../pipes/date.pipe';
     MatIconModule,
     MatPaginatorModule,
     MatProgressSpinnerModule,
-    CurrencyPipe, LocalDatePipe
+    CurrencyPipe, LocalDatePipe, TitleCasePipe
   ],
   templateUrl: './transaction-history.component.html',
   styleUrls: ['./transaction-history.component.scss']

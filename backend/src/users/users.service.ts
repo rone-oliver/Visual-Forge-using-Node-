@@ -272,7 +272,14 @@ export class UsersService implements IUsersService {
         try {
             this.logger.log(`Fetching transaction history for user ${userId}, page: ${page}, limit: ${limit}`);
 
-            const transactionsQuery = this.transactionModel.find({ userId })
+            const findCondition = {
+                $or: [
+                    { userId: new Types.ObjectId(userId) },
+                    { userId: userId as any }
+                ]
+            };
+
+            const transactionsQuery = await this.transactionModel.find(findCondition)
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit)
@@ -283,7 +290,9 @@ export class UsersService implements IUsersService {
                 .lean()
                 .exec();
 
-            const totalItemsQuery = this.transactionModel.countDocuments({ userId }).exec();
+            this.logger.log(`Transactions for user ${userId}: `,transactionsQuery);
+
+            const totalItemsQuery = this.transactionModel.countDocuments(findCondition).exec();
 
             const [transactions, totalItems] = await Promise.all([transactionsQuery, totalItemsQuery]);
 
@@ -775,6 +784,13 @@ export class UsersService implements IUsersService {
     async createTransaction(userId: Types.ObjectId, quotationId: Types.ObjectId, paymentDetails: {
         paymentId: string;
         orderId: string;
+        razorpayPaymentMethod: string;
+        currency: string;
+        bank: string;
+        wallet: string;
+        fee: number;
+        tax: number;
+        paymentDate: Date;
         amount: number;
         paymentType: PaymentType
     }): Promise<TransactionResponseDto>{
@@ -782,7 +798,17 @@ export class UsersService implements IUsersService {
             const transaction = await this.transactionModel.create({
                 userId: new Types.ObjectId(userId),
                 quotationId: new Types.ObjectId(quotationId),
-                ...paymentDetails,
+                paymentId: paymentDetails.paymentId,
+                orderId: paymentDetails.orderId,
+                razorpayPaymentMethod: paymentDetails.razorpayPaymentMethod, 
+                currency: paymentDetails.currency,
+                bank: paymentDetails.bank,
+                wallet: paymentDetails.wallet,
+                fee: paymentDetails.fee,
+                tax: paymentDetails.tax,
+                amount: paymentDetails.amount,
+                paymentType: paymentDetails.paymentType,
+                paymentDate: paymentDetails.paymentDate,
                 status: PaymentStatus.COMPLETED,
             });
 

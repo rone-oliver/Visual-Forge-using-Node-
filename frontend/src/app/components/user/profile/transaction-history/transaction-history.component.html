@@ -21,13 +21,26 @@
     @for(transaction of transactions; track transaction._id){
     <div class="transaction-item">
       <div class="transaction-details">
-        <p class="transaction-description">{{ transaction.paymentType === 'advance' ? `Advance Payment for` : `Balance
-          Payment for` }} {{'quotation: ' + transaction.quotationId.title }}</p>
-        <p class="transaction-date">{{ transaction.createdAt | localDate:'long' }}</p>
+        <p class="transaction-description">{{ transaction.paymentType === 'advance' ? `Advance Payment for` : `Balance Payment for` }} {{'quotation: ' + transaction.quotationId.title }}</p>
+        <p class="transaction-date">{{ transaction.paymentDate | localDate:'long' }}</p>
+        <div class="transaction-meta">
+          <span>Method: {{ transaction.razorpayPaymentMethod | titlecase }}</span>
+          @if(transaction.bank){
+            <span>Bank: {{ transaction.bank }}</span>
+          }
+          @if(transaction.wallet){
+            <span>Wallet: {{ transaction.wallet }}</span>
+          }
+          <span>Payment ID: {{ transaction.paymentId }}</span>
+        </div>
       </div>
       <div class="transaction-amount">
-        <p class="amount">- {{ transaction.amount | currency:'USD' }}</p>
+        <p class="amount">- {{ transaction.amount | currency:transaction.currency }}</p>
         <p class="status" [class]="'status-' + transaction.status.toLowerCase()">{{ transaction.status }}</p>
+        <div class="transaction-fees">
+            <span>Fee: {{ transaction.fee | currency:transaction.currency }}</span>
+            <span>Tax: {{ transaction.tax | currency:transaction.currency }}</span>
+        </div>
       </div>
     </div>
     }

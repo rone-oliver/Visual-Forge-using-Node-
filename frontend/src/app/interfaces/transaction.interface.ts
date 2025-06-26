@@ -7,6 +7,15 @@ export interface Transaction {
   paymentType: string;
   status: string;
   createdAt: string;
+  paymentDate: string;
+  paymentId: string;
+  orderId: string;
+  razorpayPaymentMethod: string;
+  currency: string;
+  bank?: string;
+  wallet?: string;
+  fee: number;
+  tax: number;
 }
 
 export interface PaginatedTransactionResponse {
