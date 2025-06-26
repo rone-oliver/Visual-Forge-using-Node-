@@ -257,6 +257,8 @@ export class EditorsService implements IEditorsService {
                     outputType: 1,
                     dueDate: 1,
                     status: 1,
+                    isAdvancePaid: 1,
+                    isFullyPaid: 1,
                     userId: 1,
                     editorId: 1,
                     userFullName: 1,
@@ -287,6 +289,8 @@ export class EditorsService implements IEditorsService {
                 userId: q.userId, // Client's ID
                 userFullName: q.userDetails?.fullname, // Client's full name
                 imageUrl: q.imageUrl,
+                isAdvancePaid: q.isAdvancePaid,
+                isFullyPaid: q.isFullyPaid,
                 attachedFiles: q.attachedFiles?.map(file => ({
                     url: file.url,
                     fileType: file.fileType,
