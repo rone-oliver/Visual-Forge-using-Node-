@@ -40,15 +40,24 @@ export class CreateQuotationComponent implements OnInit{
     tomorrow.setDate(tomorrow.getDate() + 1);
 
     this.quotationForm = this.fb.group({
-      title: ['', Validators.required],
+      title: ['', [Validators.required, Validators.pattern('^[a-zA-Z ]*$')]],
       description: ['', Validators.required],
       theme: [''],
       dueDate: [tomorrow, Validators.required],
-      estimatedBudget: ['', [Validators.required, Validators.min(0)]],
+      estimatedBudget: ['', [Validators.required, Validators.pattern('^[0-9]*$'), Validators.min(0)]],
       outputType: ['', Validators.required],
       attachedFiles: [[]],
     });
   }
+
+  // Getters for easy access from the template
+  get title() { return this.quotationForm.get('title'); }
+  get description() { return this.quotationForm.get('description'); }
+  get dueDate() { return this.quotationForm.get('dueDate'); }
+  get estimatedBudget() { return this.quotationForm.get('estimatedBudget'); }
+  get outputType() { return this.quotationForm.get('outputType'); }
+  get theme() { return this.quotationForm.get('theme'); }
+  get attachedFiles() { return this.quotationForm.get('attachedFiles'); }
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {

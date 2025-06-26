@@ -15,6 +15,16 @@
                     <input formControlName="title"
                         class="w-full p-2 border rounded input-field focus:outline-none focus:ring-2 focus:ring-primary transition duration-300"
                         placeholder="Title" type="text" />
+                    @if (title?.invalid && (title?.dirty || title?.touched)) {
+                        <div class="text-red-500 text-xs mt-1">
+                            @if (title?.errors?.['required']) {
+                                <div>Title is required.</div>
+                            }
+                            @if (title?.errors?.['pattern']) {
+                                <div>Title can only contain letters and spaces.</div>
+                            }
+                        </div>
+                    }
                 </div>
 
                 <div class="mb-4">
@@ -24,6 +34,13 @@
                     <textarea formControlName="description"
                         class="w-full p-2 border rounded input-field focus:outline-none focus:ring-2 focus:ring-primary transition duration-300"
                         placeholder="Description" rows="4"></textarea>
+                    @if (description?.invalid && (description?.dirty || description?.touched)) {
+                        <div class="text-red-500 text-xs mt-1">
+                            @if (description?.errors?.['required']) {
+                                <div>Description is required.</div>
+                            }
+                        </div>
+                    }
                 </div>
 
                 <div class="mb-4">
@@ -46,23 +63,13 @@
                                 class="w-full p-2 border rounded input-field focus:outline-none focus:ring-2 focus:ring-primary transition duration-300"
                                 type="datetime-local" />
                         </div>
-                        <!-- <div class="flex items-center">
-                            <span class="mr-2 font-bold">Before</span>
-                            <div class="relative w-full">
-                                <label class="w-full cursor-pointer" for="dueDateInput">
-                                    <div
-                                        class="p-2 border rounded input-field focus:outline-none transition duration-300 flex justify-between items-center">
-                                        <span *ngIf="quotationForm.get('dueDate')?.value">{{
-                                            quotationForm.get('dueDate')?.value | localDate:'medium' }}</span>
-                                        <span *ngIf="!quotationForm.get('dueDate')?.value" class="text-gray-400">Select
-                                            a date and time</span>
-                                        <mat-icon class="text-primary">calendar_today</mat-icon>
-                                    </div>
-                                    <input id="dueDateInput" formControlName="dueDate" class="hidden"
-                                        type="datetime-local" />
-                                </label>
+                        @if (dueDate?.invalid && (dueDate?.dirty || dueDate?.touched)) {
+                            <div class="text-red-500 text-xs mt-1">
+                                @if (dueDate?.errors?.['required']) {
+                                    <div>Due date is required.</div>
+                                }
                             </div>
-                        </div> -->
+                        }
                     </div>
 
                     <div class="flex-1">
@@ -75,6 +82,18 @@
                                 class="w-full p-2 border rounded input-field focus:outline-none focus:ring-2 focus:ring-primary transition duration-300"
                                 placeholder="Price" type="text" />
                         </div>
+                        @if (estimatedBudget?.invalid && (estimatedBudget?.dirty || estimatedBudget?.touched)) {
+                            <div class="pl-4 text-red-500 text-xs mt-1">
+                                @if (estimatedBudget?.errors?.['required']) {
+                                    <div>Estimated budget is required.</div>
+                                }
+                                @if (estimatedBudget?.errors?.['min']) {
+                                    <div>Budget cannot be negative.</div>
+                                } @else if (estimatedBudget?.errors?.['pattern']) {
+                                    <div>Estimated budget must be a number.</div>
+                                }
+                            </div>
+                        }
                     </div>
                 </div>
 
@@ -89,6 +108,13 @@
                             <option [value]="type">{{type}}</option>
                         }
                     </select>
+                    @if (outputType?.invalid && (outputType?.dirty || outputType?.touched)) {
+                        <div class="text-red-500 text-xs mt-1">
+                            @if (outputType?.errors?.['required']) {
+                                <div>Please select a preferred output type.</div>
+                            }
+                        </div>
+                    }
                     <p class="text-xs mt-1 text-gray-500">Select the type of output you expect from the editor</p>
                 </div>
 
