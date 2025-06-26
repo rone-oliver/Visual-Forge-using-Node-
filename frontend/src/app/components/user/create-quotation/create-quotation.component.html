@@ -158,6 +158,9 @@
                                 @for(file of selectedFiles; track file; let i = $index){
                                     <div class="file-item-pending rounded p-2 flex items-center">
                                         <span class="truncate max-w-xs text-text">{{ file.name }}</span>
+                                        <button type="button" class="ml-2 text-gray-400 hover:text-white flex items-center justify-center w-5 h-5" (click)="openPreview(file)">
+                                            <mat-icon class="flex items-center justify-center text-base">visibility</mat-icon>
+                                        </button>
                                         <button type="button" class="ml-2 text-red-500 flex items-center justify-center w-5 h-5" (click)="removeFile(i)">
                                             <mat-icon class="flex items-center justify-center text-base">close</mat-icon>
                                         </button>

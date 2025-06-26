@@ -1,0 +1,30 @@
+<div class="dialog-container">
+  <div class="dialog-header">
+    <h2 class="dialog-title">{{ fileName }}</h2>
+    <button mat-icon-button (click)="close()" class="close-button">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-dialog-content class="dialog-content">
+    <div class="media-container">
+      @switch (fileType) {
+        @case ('image') {
+          <img [src]="previewUrl" alt="File preview" class="preview-media">
+        }
+        @case ('video') {
+          <video [src]="previewUrl" controls class="preview-media"></video>
+        }
+        @case ('audio') {
+          <audio [src]="previewUrl" controls class="preview-media audio-player"></audio>
+        }
+        @default {
+          <div class="unsupported-message">
+            <mat-icon>error_outline</mat-icon>
+            <span>Unsupported file type for preview.</span>
+          </div>
+        }
+      }
+    </div>
+  </mat-dialog-content>
+</div>

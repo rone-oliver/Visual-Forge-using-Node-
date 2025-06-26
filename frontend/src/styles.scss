@@ -209,4 +209,11 @@
       }
     }
   }
+
+  .file-preview-dialog .mat-mdc-dialog-container {
+    .mdc-dialog__surface {
+      background-color: transparent;
+      box-shadow: none;
+    }
+  }
 }

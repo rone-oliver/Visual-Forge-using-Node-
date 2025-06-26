@@ -5,6 +5,8 @@ import { UserService } from '../../../services/user/user.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FileAttachmentResponse, IQuotation, OutputType } from '../../../interfaces/quotation.interface';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDialog } from '@angular/material/dialog';
+import { FilePreviewModalComponent } from '../../mat-dialogs/files-preview-modal/files-preview-modal.component';
 
 interface FileWithProgress {
   file: File;
@@ -35,6 +37,7 @@ export class CreateQuotationComponent implements OnInit{
     private router: Router,
     private route: ActivatedRoute,
     private snackBar: MatSnackBar,
+    private dialog: MatDialog
   ) {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -228,6 +231,15 @@ export class CreateQuotationComponent implements OnInit{
       if (control instanceof FormGroup) {
         this.markFormGroupTouched(control);
       }
+    });
+  }
+
+  openPreview(file: File): void {
+    this.dialog.open(FilePreviewModalComponent, {
+      data: { file },
+      width: '80vw',
+      height: '80vh',
+      panelClass: ['file-preview-dialog']
     });
   }
 }
