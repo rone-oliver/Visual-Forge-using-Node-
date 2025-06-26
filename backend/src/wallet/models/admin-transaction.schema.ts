@@ -8,6 +8,7 @@ export enum AdminTransactionType {
   EDITOR_PAYOUT = 'editor_payout',
   WITHDRAWAL_FEE = 'withdrawal_fee',
   REFUND = 'refund',
+  WELCOME_BONUS = 'welcome_bonus',
 }
 
 export enum TransactionFlow {

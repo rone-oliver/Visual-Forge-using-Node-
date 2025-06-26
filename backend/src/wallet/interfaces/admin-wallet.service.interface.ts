@@ -8,4 +8,5 @@ export const IAdminWalletServiceToken = Symbol('IAdminWalletService');
 export interface IAdminWalletService {
     recordUserPayment(quotation: Quotation, razorpayPaymentId: string): Promise<void>;
     getLedger(page?: number, limit?: number): Promise<PaginatedLedgerResponseDto>;
+    creditWelcomeBonus(userId: string): Promise<void>;
 }

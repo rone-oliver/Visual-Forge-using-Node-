@@ -94,7 +94,9 @@ export class UsersService implements IUsersService {
                 user.password = await bcrypt.hash(user.password, 10);
             }
             this.logger.log(`Creating new user: ${user.email}`);
-            return this.userModel.create(user);
+            const newUser = await this.userModel.create(user);
+            await this.adminWalletService.creditWelcomeBonus(newUser._id.toString());
+            return newUser;
         } catch (error) {
             this.logger.error(`Error creating user: ${error.message}`);
             throw error;

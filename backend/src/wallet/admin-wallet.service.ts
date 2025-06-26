@@ -19,10 +19,19 @@ export class AdminWalletService implements IAdminWalletService {
     private readonly paymentService: PaymentService,
   ) {}
 
-  /**
-   * Records a user's payment, calculates commission, and credits the editor's wallet.
-   * This should be called from your Order or Payment service after a successful payment.
-   */
+  async creditWelcomeBonus(userId: string): Promise<void> {
+    const bonusAmount = 100; // Welcome bonus amount
+
+    await this.walletService.addMoney(userId, bonusAmount);
+
+    await this.adminTransactionRepository.create({
+      flow: TransactionFlow.DEBIT,
+      amount: bonusAmount,
+      transactionType: AdminTransactionType.WELCOME_BONUS,
+      user: new Types.ObjectId(userId),
+    });
+  }
+
   async recordUserPayment(quotation: Quotation, razorpayPaymentId: string): Promise<void> {
     const totalAmount = quotation.estimatedBudget;
     const commissionRate = 0.1; // 10% commission
