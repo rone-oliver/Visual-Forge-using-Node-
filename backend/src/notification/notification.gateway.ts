@@ -6,21 +6,24 @@ import {
     SubscribeMessage,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Logger } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Logger, Inject } from '@nestjs/common';
 import { Notification } from './models/notification.schema';
+import { INotificationGateway } from './interfaces/notification-gateway.interface';
+import { INotificationService, INotificationServiceToken } from './interfaces/notification-service.interface';
 
 @WebSocketGateway({
-    cors: { origin: 'http://localhost:' + process.env.FRONTEND_PORT, credentials: true },
+    cors: { origin: process.env.CORS_ORIGIN || 'http://localhost:4200', credentials: true },
     namespace: '/notifications'
 })
-export class NotificationGateway implements OnGatewayConnection, OnGatewayDisconnect {
-    @WebSocketServer() server: Server;
+export class NotificationGateway implements OnGatewayConnection, OnGatewayDisconnect, INotificationGateway {
+    @WebSocketServer()
+    server: Server;
     private userSocketMap: Map<string, string[]> = new Map();
     private logger: Logger = new Logger(NotificationGateway.name);
 
-    constructor(@InjectModel(Notification.name) private notificationModel: Model<Notification>) { }
+    constructor(
+        @Inject(INotificationServiceToken) private readonly notificationService: INotificationService,
+    ) { }
 
     async handleConnection(client: Socket, ...args: any[]) {
         this.logger.log(`Notification Client connected: ${client.id}`);
@@ -28,12 +31,10 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
         if (userId) {
             client['userId'] = userId;
 
-            // Store socket ID in the map
             const socketIds = this.userSocketMap.get(userId) || [];
             socketIds.push(client.id);
             this.userSocketMap.set(userId, socketIds);
 
-            // Send initial unread notifications to the connected client
             await this.sendUnreadNotifications(client, userId);
         } else {
             this.logger.warn(`Notification Client ${client.id} connected without userId`);
@@ -45,7 +46,6 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
         this.logger.log(`Notification Client disconnected: ${client.id}`);
         const userId = client['userId'];
         if (userId) {
-            // Remove socket ID from the map
             const sockets = this.userSocketMap.get(userId) || [];
             const index = sockets.indexOf(client.id);
             if (index !== -1) {
@@ -59,27 +59,16 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
         }
     }
 
-    private getClientSocketId(userId: string): string | undefined {
-        const sockets = this.userSocketMap.get(userId);
-        return sockets && sockets.length > 0 ? sockets[0] : undefined;
-    }
-
-    private getAllClientSocketIds(userId: string): string[] {
-        return this.userSocketMap.get(userId) || [];
-    }
-
-    async sendUnreadNotifications(client: Socket, userId: string): Promise<void> {
+    private async sendUnreadNotifications(client: Socket, userId: string): Promise<void> {
         try {
-            const unreadNotifications = await this.notificationModel.find({ userId:new Types.ObjectId(userId), unread: true })
-                .sort({ createdAt: -1 })
-                .exec();
+            const unreadNotifications = await this.notificationService.getUnreadNotificationsByUserId(userId);
             client.emit('initialNotifications', unreadNotifications);
         } catch (error) {
             this.logger.error('Error fetching unread notifications:', error);
         }
     }
 
-    async sendNotificationToUser(userId: string, notification: Notification): Promise<void> {
+    sendNotificationToUser(userId: string, notification: Notification): void {
         const socketIds = this.getAllClientSocketIds(userId);
         if (socketIds.length > 0) {
             socketIds.forEach(socketId => {
@@ -93,28 +82,22 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
     @SubscribeMessage('markAsRead')
     async handleMarkAsRead(client: Socket, notificationId: string): Promise<void> {
         try {
-            const notification = await this.notificationModel.findByIdAndUpdate(
-                notificationId,
-                { unread: false },
-                { new: true }
-            ).exec();
-
-            if (notification) {
-                // Emit status update to all user's connected devices
-                this.sendStatusUpdate(notification.userId.toString(), {
-                    notificationId,
-                    status: 'read'
-                });
-            }
+            await this.notificationService.markAsRead(notificationId);
         } catch (error) {
             this.logger.error(`Error marking notification as read: ${error.message}`);
         }
     }
 
+    private getAllClientSocketIds(userId: string): string[] {
+        return this.userSocketMap.get(userId) || [];
+    }
+
     sendStatusUpdate(userId: string, update: { notificationId: string; status: 'read' | 'unread' }): void {
-        const socketId = this.getClientSocketId(userId);
-        if (socketId) {
-            this.server.to(socketId).emit('notificationStatusUpdate', update);
+        const socketIds = this.getAllClientSocketIds(userId);
+        if (socketIds.length > 0) {
+            socketIds.forEach(socketId => {
+                this.server.to(socketId).emit('notificationStatusUpdate', update);
+            });
         }
     }
 

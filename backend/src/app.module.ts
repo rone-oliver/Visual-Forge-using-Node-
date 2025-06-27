@@ -1,4 +1,5 @@
 import { Logger, Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
@@ -8,9 +9,7 @@ import { DatabaseModule } from './common/database/database.module';
 import { AdminsModule } from './admins/admins.module';
 import { EditorsModule } from './editors/editors.module';
 import { UsersAuthModule } from './auth/users-auth/users.module';
-import { EditorsAuthModule } from './auth/editors-auth/editors.module';
 import { AdminsAuthModule } from './auth/admins-auth/admins.module';
-import { UsersAuthService } from './auth/users-auth/users-auth.service';
 import { UsersAuthController } from './auth/users-auth/users-auth.controller';
 import { JwtService } from '@nestjs/jwt';
 import { TokenRefreshService } from './auth/token-refresh/token-refresh.service';
@@ -27,6 +26,7 @@ import { WalletModule } from './wallet/wallet.module';
 import { CommunityModule } from './community/community.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { RelationshipModule } from './common/relationship/relationship.module';
+import { AuthGuard } from './auth/guards/auth.guard';
 
 @Module({
   imports: [
@@ -61,9 +61,18 @@ import { RelationshipModule } from './common/relationship/relationship.module';
       inject: [ConfigService],
     }),
     // MongooseModule.forRoot(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/visualForge'),
-    AuthModule,UsersModule, DatabaseModule, AdminsModule, EditorsModule, UsersAuthModule, EditorsAuthModule, AdminsAuthModule, JwtConfigModule, PaymentModule, ChatModule, NotificationModule, BidsModule, AiModule, WalletModule, CommunityModule, RelationshipModule
+    AuthModule,UsersModule, DatabaseModule, AdminsModule, EditorsModule, UsersAuthModule, AdminsAuthModule, JwtConfigModule, PaymentModule, ChatModule, NotificationModule, BidsModule, AiModule, WalletModule, CommunityModule, RelationshipModule
   ],
   controllers: [AppController, UsersAuthController, TokenRefreshController],
-  providers: [AppService, JwtService, TokenRefreshService, CloudinaryService],
+  providers: [
+    AppService, 
+    JwtService, 
+    TokenRefreshService, 
+    CloudinaryService,
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+  ],
 })
 export class AppModule {}

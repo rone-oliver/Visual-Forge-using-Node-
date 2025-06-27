@@ -1,54 +1,31 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Injectable, NotFoundException, Logger, Inject, forwardRef } from '@nestjs/common';
+import { Types } from 'mongoose';
 import { Notification, NotificationType } from './models/notification.schema';
-import { NotificationGateway } from './notification.gateway';
 import { OnEvent } from '@nestjs/event-emitter';
 import { EventTypes } from 'src/common/constants/events.constants';
-
-export interface CreateNotificationParams {
-    userId: string | Types.ObjectId;
-    message: string;
-    type: NotificationType;
-    unread?: boolean;
-    data?: any;
-    quotationId?: string | Types.ObjectId;
-    worksId?: string | Types.ObjectId;
-}
+import { CreateNotificationDto } from './dtos/create-notification.dto';
+import { INotificationRepository, INotificationRepositoryToken } from './interfaces/notification-repository.interface';
+import { INotificationService } from './interfaces/notification-service.interface';
+import { INotificationGateway, INotificationGatewayToken } from './interfaces/notification-gateway.interface';
 
 @Injectable()
-export class NotificationService {
+export class NotificationService implements INotificationService {
     private readonly logger = new Logger(NotificationService.name);
 
     constructor(
-        @InjectModel(Notification.name) private notificationModel: Model<Notification>,
-        private notificationGateway: NotificationGateway,
+        @Inject(INotificationRepositoryToken) private readonly notificationRepository: INotificationRepository,
+        @Inject(forwardRef(() => INotificationGatewayToken)) 
+        private readonly notificationGateway: INotificationGateway,
     ) { }
 
-    async createNotification(params: CreateNotificationParams): Promise<Notification | null> {
+    async createNotification(params: CreateNotificationDto): Promise<Notification | null> {
         try {
-            const userId = typeof params.userId === 'string' ? new Types.ObjectId(params.userId) : params.userId;
-            const quotationId = params.quotationId ? 
-                (typeof params.quotationId === 'string' ? new Types.ObjectId(params.quotationId) : params.quotationId) : 
-                undefined;
-            const worksId = params.worksId ? 
-                (typeof params.worksId === 'string' ? new Types.ObjectId(params.worksId) : params.worksId) : 
-                undefined;
-
-            const notification = await this.notificationModel.create({
-                userId,
-                message: params.message,
-                type: params.type,
-                unread: params.unread !== undefined ? params.unread : true,
-                data: params.data || {},
-                ...(quotationId && { quotationId }),
-                ...(worksId && { worksId }),
-            });
+            const notification = await this.notificationRepository.create(params);
 
             try {
                 // Separate try-catch for WebSocket operations to prevent DB transaction failure
                 this.notificationGateway.sendNotificationToUser(
-                    userId.toString(),
+                    notification.userId.toString(),
                     notification
                 );
             } catch (socketError) {
@@ -65,7 +42,7 @@ export class NotificationService {
 
     async getNotificationsByUserId(userId: string): Promise<Notification[]> {
         try {
-            return await this.notificationModel.find({ userId:new Types.ObjectId(userId) }).sort({ createdAt: -1 }).exec();
+            return await this.notificationRepository.findByUserId(userId);
         } catch (error) {
             this.logger.error(`Failed to get notifications for user ${userId}: ${error.message}`, error.stack);
             return [];
@@ -86,130 +63,139 @@ export class NotificationService {
         try {
             // Notify the user who accepted the bid
             await this.createNotification({
-                userId: payload.userId,
+                userId: payload.userId.toString(),
                 message: 'You have successfully accepted a bid',
                 type: NotificationType.WORK,
-                quotationId: payload.quotationId,
+                quotationId: payload.quotationId.toString(),
                 data: {
-                    bidId: payload.bidId,
-                    editorId: payload.editorId
+                    bidId: payload.bidId.toString(),
+                    editorId: payload.editorId.toString()
                 }
             });
             
             // Notify the editor whose bid was accepted
-                    await this.createNotification({
-                        userId: payload.editorId,
-                        type: NotificationType.WORK,
-                        message: `Your bid on "${payload.title}" has been accepted!`,
-                        data: {
-                            quotationId: payload.quotationId,
-                            bidId: payload.bidId,
-                            bidAmount: payload.bidAmount
-                        }
-                    });
+            await this.createNotification({
+                userId: payload.editorId.toString(),
+                message: `Your bid for the work '${payload.title}' has been accepted.`,
+                type: NotificationType.WORK,
+                quotationId: payload.quotationId.toString(),
+                data: {
+                    bidId: payload.bidId.toString(),
+                    userId: payload.userId.toString()
+                }
+            });
+
         } catch (error) {
-            this.logger.error(`Failed to process bid accepted event: ${error.message}`, error.stack);
+            this.logger.error(`Failed to handle bid accepted event: ${error.message}`, error.stack);
+        }
+    }
+
+    @OnEvent(EventTypes.QUOTATION_CREATED)
+    async handleQuotationCreatedEvent(payload: {
+        quotationId: Types.ObjectId,
+        userId: Types.ObjectId,
+        title: string,
+        amount: number
+    }) {
+        this.logger.log(`Handling quotation created event for quotation ${payload.quotationId}`);
+        
+        try {
+            // Notify the user who created the quotation
+            await this.createNotification({
+                userId: payload.userId.toString(),
+                message: 'You have successfully created a quotation',
+                type: NotificationType.WORK,
+                quotationId: payload.quotationId.toString(),
+            });
+        } catch (error) {
+            this.logger.error(`Failed to handle quotation created event: ${error.message}`, error.stack);
+        }
+    }
+
+    @OnEvent(EventTypes.QUOTATION_COMPLETED)
+    async handleQuotationCompletedEvent(payload: {
+        quotationId: Types.ObjectId,
+        userId: Types.ObjectId,
+        title: string,
+        amount: number,
+        type: NotificationType,
+        message: string,
+        data: any,
+        worksId: Types.ObjectId
+    }) {
+        this.logger.log(`Handling quotation completed event for quotation ${payload.quotationId}`);
+        
+        try {
+            // Notify the user who created the quotation
+            await this.createNotification({
+                userId: payload.userId.toString(),
+                message: payload.message || 'You have successfully completed a quotation',
+                type: payload.type || NotificationType.WORK,
+                quotationId: payload.quotationId.toString(),
+                worksId: payload.worksId.toString(),
+                data: payload.data,
+            });
+        } catch (error) {
+            this.logger.error(`Failed to handle quotation completed event: ${error.message}`, error.stack);
         }
     }
 
     async getUnreadNotificationsByUserId(userId: string): Promise<Notification[]> {
         try {
-            return await this.notificationModel.find({ userId:new Types.ObjectId(userId), unread: true }).sort({ createdAt: -1 }).exec();
+            return await this.notificationRepository.findUnreadByUserId(userId);
         } catch (error) {
             this.logger.error(`Failed to get unread notifications for user ${userId}: ${error.message}`, error.stack);
             return [];
         }
     }
 
-    async markAsRead(notificationId: string): Promise<Notification | null> {
-        try {
-            const notification = await this.notificationModel.findByIdAndUpdate(
-                notificationId,
-                { unread: false },
-                { new: true }
-            ).exec();
-
-            if (!notification) {
-                throw new NotFoundException(`Notification with ID ${notificationId} not found`);
-            }
-
-            try {
-                // Separate try-catch for WebSocket operations
-                this.notificationGateway.sendStatusUpdate(
-                    notification.userId.toString(),
-                    { notificationId, status: 'read' }
-                );
-            } catch (socketError) {
-                this.logger.error(`Failed to send status update via WebSocket: ${socketError.message}`, socketError.stack);
-                // Continue execution - we still want to return the notification even if real-time update failed
-            }
-
-            return notification;
-        } catch (error) {
-            if (error instanceof NotFoundException) {
-                throw error; // Re-throw NotFoundException for proper HTTP response
-            }
-            this.logger.error(`Failed to mark notification ${notificationId} as read: ${error.message}`, error.stack);
-            return null;
+    async markAsRead(notificationId: string): Promise<Notification> {
+        const notification = await this.notificationRepository.update(notificationId, { unread: false });
+        if (!notification) {
+            throw new NotFoundException(`Notification with ID "${notificationId}" not found`);
         }
+
+        // Notify the gateway to push the status update to the client
+        this.notificationGateway.sendStatusUpdate(notification.userId.toString(), {
+            notificationId,
+            status: 'read'
+        });
+
+        return notification;
     }
 
-    async markAllAsRead(userId: string): Promise<boolean> {
+    async markAllAsRead(userId: string): Promise<any> {
+        const result = await this.notificationRepository.updateMany({ userId, unread: true }, { unread: false });
+        
+        const updatedCount = result.modifiedCount || 0;
+        
         try {
-            // Get the notifications and update them in a single operation
-            const result = await this.notificationModel.updateMany(
-                { userId: new Types.ObjectId(userId), unread: true },
-                { unread: false }
-            ).exec();
-            
-            const updatedCount = result.modifiedCount || 0;
-            
-            try {
-                // Send real-time updates
-                const userIdStr = userId.toString();
-                
-                if (updatedCount > 0) {
-                    // Since we don't have the individual notification IDs, just send a bulk update
-                    this.notificationGateway.sendBulkStatusUpdate(userIdStr, 'read');
-                    this.logger.log(`Marked ${updatedCount} notifications as read for user ${userId}`);
-                }
-            } catch (socketError) {
-                this.logger.error(`Failed to send bulk status update via WebSocket: ${socketError.message}`, socketError.stack);
+            if (updatedCount > 0) {
+                this.notificationGateway.sendBulkStatusUpdate(userId, 'read');
+                this.logger.log(`Marked ${updatedCount} notifications as read for user ${userId}`);
             }
-            
-            return true;
-        } catch (error) {
-            this.logger.error(`Failed to mark all notifications as read for user ${userId}: ${error.message}`, error.stack);
-            return false;
+        } catch (socketError) {
+            this.logger.error(`Failed to send bulk status update via WebSocket: ${socketError.message}`, socketError.stack);
         }
+        
+        return true;
     }
 
     async deleteNotification(notificationId: string): Promise<boolean> {
         try {
-            const notification = await this.notificationModel.findById(notificationId).exec();
+            const notification = await this.notificationRepository.findById(notificationId);
             if (!notification) {
                 throw new NotFoundException(`Notification with ID ${notificationId} not found`);
             }
             
-            // Store userId before deletion
             const userId = notification.userId.toString();
             
-            // Delete the notification
-            await this.notificationModel.findByIdAndDelete(notificationId).exec();
+            await this.notificationRepository.delete(notificationId);
             
             try {
-                // Send real-time update about the deletion
-                // Send individual status update
-                this.notificationGateway.sendStatusUpdate(
-                    userId,
-                    { notificationId, status: 'read' } // Using 'read' status as a way to remove from unread count
-                );
-                
-                // Also send a bulk update to refresh the notification list
                 this.notificationGateway.sendBulkStatusUpdate(userId, 'deleted');
             } catch (socketError) {
                 this.logger.error(`Failed to send deletion update via WebSocket: ${socketError.message}`, socketError.stack);
-                // Continue execution - we still want to return success even if real-time update failed
             }
             
             return true;
@@ -224,7 +210,7 @@ export class NotificationService {
 
     async getUnreadCount(userId: string): Promise<number> {
         try {
-            return await this.notificationModel.countDocuments({ userId, unread: true }).exec();
+            return await this.notificationRepository.countUnread(userId);
         } catch (error) {
             this.logger.error(`Failed to get unread count for user ${userId}: ${error.message}`, error.stack);
             return 0;

@@ -51,6 +51,8 @@ import { IAdminWalletService, IAdminWalletServiceToken } from 'src/wallet/interf
 import { getYouTubeEmbedUrl } from 'src/common/utils/youtube-url.util';
 import { IRelationshipService, IRelationshipServiceToken } from 'src/common/relationship/interfaces/service.interface';
 import { RelationshipType } from 'src/common/enums/relationships.enum';
+import { EventTypes } from 'src/common/constants/events.constants';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class UsersService implements IUsersService {
@@ -66,7 +68,7 @@ export class UsersService implements IUsersService {
         @Inject(IAdminWalletServiceToken) private readonly adminWalletService: IAdminWalletService,
         @Inject(IRelationshipServiceToken) private readonly relationshipService: IRelationshipService,
         private cloudinaryService: CloudinaryService,
-        private notificationService: NotificationService,
+        private eventEmitter: EventEmitter2,
         private bidsService: BidsService,
     ) { }
 
@@ -450,13 +452,13 @@ export class UsersService implements IUsersService {
                 balanceAmount: calculatedBalanceAmount,
             }
             const savedQuotation = await this.quotationModel.create(quotationDataForDb);
-            await this.notificationService.createNotification({
-                userId,
-                type: NotificationType.WORK,
-                message: 'New quotation created',
-                data: { title: savedQuotation.title },
-                quotationId: savedQuotation._id
-            });
+
+            this.eventEmitter.emit(EventTypes.QUOTATION_CREATED,{
+                quotationId: savedQuotation._id.toString(),
+                userId: userId.toString(),
+                title: savedQuotation.title,
+                amount: savedQuotation.estimatedBudget
+            })
             return savedQuotation as unknown as QuotationResponseDto;
         } catch (error) {
             this.logger.error(`Error creating quotation: ${error.message}`);

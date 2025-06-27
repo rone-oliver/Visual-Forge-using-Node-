@@ -2,12 +2,14 @@ import { Controller, Body, Post, Get, Res, Req, Logger, BadRequestException, Una
 import { AdminsAuthService } from './admins-auth.service';
 import { Request, Response } from 'express';
 import { adminLoginData } from './interfaces/admin-login.interface';
+import { Public } from '../decorators/public.decorator';
 
 @Controller('auth/admin')
 export class AdminsAuthController {
     private readonly logger = new Logger(AdminsAuthController.name);
     constructor(private adminsAuthService: AdminsAuthService){};
 
+    @Public()
     @Post('login')
     async login(
         @Body() LoginData:adminLoginData,
@@ -25,6 +27,7 @@ export class AdminsAuthController {
         );
     }
 
+    @Public()
     @Post('register')
     async register(@Body() registerData: any) {
       return this.adminsAuthService.register(registerData);

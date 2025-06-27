@@ -1,10 +1,12 @@
 import { Controller, Get, HttpException, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { TokenRefreshService } from './token-refresh.service';
+import { Public } from '../decorators/public.decorator';
 
 @Controller('auth')
 export class TokenRefreshController {
     constructor(private readonly tokenRefreshService: TokenRefreshService) {};
 
+    @Public()
     @Get('refresh')
     async refreshAccessToken(@Req() req, @Query('role') role: 'Admin' | 'User'): Promise<{ accessToken: string }> {
         const lowerCaseRole = role.toLowerCase();

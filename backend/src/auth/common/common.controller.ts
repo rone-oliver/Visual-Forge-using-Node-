@@ -2,10 +2,13 @@ import { BadRequestException, Body, Controller, Delete, Get, Post, Put, Query, R
 import { Response, Request } from 'express';
 import { CommonService } from './common.service';
 import { Types } from 'mongoose';
+import { Public } from '../decorators/public.decorator';
 
 @Controller('auth')
 export class AuthController {
   constructor(private commonService: CommonService){}
+
+  @Public()
   @Delete('logout')
   async userLogout(@Req() req: Request, @Res() res: Response, @Query('userType') userType: 'User' | 'Admin') {
     console.log(`Logout called for role: ${userType}`);
@@ -44,6 +47,7 @@ export class AuthController {
   //   this.commonService.getThemePreference(res,user.userId,query.userType);
   // }
 
+  @Public()
   @Post('google')
   async authGoogle(@Body() body:{credential:string}, @Res() res:Response){
     if(!body.credential){

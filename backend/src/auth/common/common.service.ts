@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Response } from 'express';
 import { Model, Types } from 'mongoose';
@@ -12,6 +12,7 @@ import { IUsersService, IUsersServiceToken } from 'src/users/interfaces/users.se
 @Injectable()
 export class CommonService {
   private googleClient: OAuth2Client;
+  private readonly logger = new Logger(CommonService.name);
 
   constructor(
     @InjectModel(Preference.name) private preferenceModel: Model<PreferenceDocument>,
@@ -23,17 +24,17 @@ export class CommonService {
   };
   async logoutHandler(response: Response, userType: 'User' | 'Admin') {
     const tokenName = userType.toLowerCase();
+    const cookieName = `${tokenName}RefreshToken`;
     try {
-      response.clearCookie(`${tokenName}RefreshToken`, {
+      response.clearCookie(cookieName, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
-        maxAge: 7 * 24 * 60 * 60 * 1000,
       });
-      console.log('logout service called');
+      this.logger.log(`Logout service called, cleared cookie: ${cookieName}`);
       response.status(200).json({ message: 'Successfully logged out' });
     } catch (error) {
-      console.error('Logout error:', error);
+      this.logger.error('Logout error:', error);
       response.status(500).json({ message: 'Logout failed' });
     }
   }

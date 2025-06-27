@@ -2,6 +2,7 @@ import { Controller, Post, Body, Res, Req, Get, UnauthorizedException, BadReques
 import { Response, Request } from 'express';
 import { UsersAuthService } from './users-auth.service';
 import { User } from 'src/users/models/user.schema';
+import { Public } from '../decorators/public.decorator';
 
 interface VerifyOtpDto{
     email:string;
@@ -12,6 +13,7 @@ interface VerifyOtpDto{
 export class UsersAuthController {
     constructor(private usersAuthService: UsersAuthService){};
 
+    @Public()
     @Post('login')
     async login(
         @Body() loginData: Partial<User>,
@@ -26,6 +28,7 @@ export class UsersAuthController {
         }
     }
 
+    @Public()
     @Post('register')
     @HttpCode(HttpStatus.CREATED)
     async register(
@@ -34,11 +37,13 @@ export class UsersAuthController {
         return await this.usersAuthService.register(userData);
     }
 
+    @Public()
     @Post('resend-otp')
     async resendOtp(@Body() body:{email:string}){
         return await this.usersAuthService.resendOtp(body.email);
     }
 
+    @Public()
     @Post('verify-email')
     async verifyOtp(
         @Body() verifyOtpDto: VerifyOtpDto,
@@ -68,16 +73,19 @@ export class UsersAuthController {
         }
     }
 
+    @Public()
     @Post('forgot-password')
     async sendPasswordResetOtp(@Body() body:{email:string}){
         return await this.usersAuthService.resendOtp(body.email);
     }
 
+    @Public()
     @Post('verify-reset-otp')
     async verifyPasswordResetOtp(@Body() body:{email:string, otp:string}){
         return await this.usersAuthService.verifyOtp(body.email,body.otp);
     }
 
+    @Public()
     @Post('reset-password')
     async resetPassword(@Body() body:{email:string, newPassword:string}){
         const result = await this.usersAuthService.resetPassword(body.email,body.newPassword);

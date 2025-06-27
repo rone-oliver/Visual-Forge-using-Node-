@@ -4,17 +4,32 @@ import { NotificationController } from './notification.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Notification, NotificationSchema } from './models/notification.schema';
 import { NotificationGateway } from './notification.gateway';
-import { UsersModule } from 'src/users/users.module';
+import { INotificationServiceToken } from './interfaces/notification-service.interface';
+import { INotificationRepositoryToken } from './interfaces/notification-repository.interface';
+import { NotificationRepository } from './repositories/notification.repository';
+import { INotificationGatewayToken } from './interfaces/notification-gateway.interface';
 
 @Module({
-  providers: [NotificationService, NotificationGateway],
+  providers: [
+    {
+      provide: INotificationGatewayToken,
+      useClass: NotificationGateway
+    },
+    {
+      provide: INotificationServiceToken,
+      useClass: NotificationService
+    },
+    {
+      provide: INotificationRepositoryToken,
+      useClass: NotificationRepository
+    }
+  ],
   controllers: [NotificationController],
   imports: [
     MongooseModule.forFeature([
       { name: Notification.name, schema: NotificationSchema}
-    ]),
-    forwardRef(() => UsersModule)
+    ])
   ],
-  exports: [NotificationGateway, NotificationService]
+  exports: [INotificationGatewayToken, INotificationServiceToken, INotificationRepositoryToken]
 })
 export class NotificationModule {}

@@ -5,10 +5,11 @@ import { Preference, PreferenceSchema } from 'src/common/models/userPreference.s
 import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from 'src/users/users.module';
 import { JwtService } from '@nestjs/jwt';
+import { AuthGuard } from './guards/auth.guard';
 
 @Module({
   controllers: [AuthController],
-  providers: [CommonService, JwtService],
+  providers: [CommonService, JwtService, AuthGuard],
   exports: [CommonService, JwtService],
   imports:[
       MongooseModule.forFeature([

@@ -11,7 +11,6 @@ import { Works, workSchema } from 'src/common/models/works.schema';
 import { EditorsService } from 'src/editors/editors.service';
 import { PaymentModule } from 'src/common/payment/payment.module';
 import { Transaction, TransactionSchema } from 'src/common/models/transaction.schema';
-import { NotificationModule } from 'src/notification/notification.module';
 import { Bid, BidSchema } from 'src/common/bids/models/bids.schema';
 import { BidsModule } from 'src/common/bids/bids.module';
 import { IUsersServiceToken } from './interfaces/users.service.interface';
@@ -39,8 +38,7 @@ import { RelationshipModule } from 'src/common/relationship/relationship.module'
       { name: Bid.name, schema: BidSchema},
       { name: Report.name, schema: ReportSchema },
     ]),
-    PaymentModule, BidsModule, WalletModule, RelationshipModule,
-    forwardRef(()=> NotificationModule)
+    PaymentModule, BidsModule, WalletModule, RelationshipModule
   ],
   exports: [IUsersServiceToken,]
 })

@@ -32,6 +32,8 @@ import {
 } from './dto/editors.dto';
 import { CreateBidDto } from 'src/common/bids/dto/create-bid.dto';
 import { IRelationshipService, IRelationshipServiceToken } from 'src/common/relationship/interfaces/service.interface';
+import { EventTypes } from 'src/common/constants/events.constants';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class EditorsService implements IEditorsService {
@@ -44,7 +46,7 @@ export class EditorsService implements IEditorsService {
         @InjectModel(Bid.name) private bidModel: Model<BidDocument>,
         @Inject(IRelationshipServiceToken) private readonly relationshipService: IRelationshipService,
         private cloudinaryService: CloudinaryService,
-        private readonly notificationService: NotificationService,
+        private eventEmitter: EventEmitter2,
         private readonly bidsService: BidsService,
     ) { };
 
@@ -348,20 +350,14 @@ export class EditorsService implements IEditorsService {
         });
         await this.quotationModel.findByIdAndUpdate(quotation._id, { status: QuotationStatus.COMPLETED, worksId: work._id });
 
-        try {
-            await this.notificationService.createNotification({
-                    userId: quotation.userId,
-                    type: NotificationType.WORK,
-                    message: `Your work "${quotation.title}" has been completed`,
-                    data: { title: quotation.title },
-                    quotationId: quotation._id,
-                    worksId: work._id
-            });
-            this.logger.log(`Notification sent to user ${quotation.userId} for completed work`);
-        } catch (notificationError) {
-            this.logger.error(`Failed to send notification: ${notificationError.message}`, notificationError.stack);
-            // Continue execution even if notification fails
-        }
+        this.eventEmitter.emit(EventTypes.QUOTATION_COMPLETED,{
+            userId: quotation.userId,
+            type: NotificationType.WORK,
+            message: `Your work "${quotation.title}" has been completed`,
+            data: { title: quotation.title },
+            quotationId: quotation._id,
+            worksId: work._id
+        })
 
         await this.updateEditorScore(quotation.editorId);
         return true;

@@ -1,14 +1,25 @@
 import { CanActivate, ExecutionContext, HttpException, HttpStatus, Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { IUsersService, IUsersServiceToken } from 'src/users/interfaces/users.service.interface';
+import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   private readonly logger = new Logger(AuthGuard.name);
 
   constructor(
+    private readonly reflector: Reflector,
     @Inject(IUsersServiceToken)private readonly userService: IUsersService,
   ){};
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    if (isPublic) {
+      return true;
+    }
+
     const request = context.switchToHttp().getRequest();
     const user = request.user;
     if (!user) {

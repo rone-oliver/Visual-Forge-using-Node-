@@ -1,17 +1,16 @@
-import { Controller, Delete, Get, NotFoundException, Param, Post, UseGuards } from '@nestjs/common';
+import { Controller, Delete, Get, Inject, NotFoundException, Param, Post, UseGuards } from '@nestjs/common';
 import { Roles } from 'src/auth/decorators/roles.decorator';
-import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { RolesGuard } from 'src/auth/guards/role.guard';
-import { NotificationService } from './notification.service';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import { Notification } from './models/notification.schema';
+import { INotificationService, INotificationServiceToken } from './interfaces/notification-service.interface';
 
 @Controller('user/notifications')
-@UseGuards(AuthGuard, RolesGuard)
+@UseGuards(RolesGuard)
 @Roles('User', 'Editor')
 export class NotificationController {
     constructor(
-        private readonly notificationService: NotificationService,
+        @Inject(INotificationServiceToken) private readonly notificationService: INotificationService,
     ) { };
 
     @Get()
