@@ -41,7 +41,6 @@ export interface UserInfoForChatListDto {
     _id: Types.ObjectId;
     username: string;
     profileImage?: string;
-    isOnline?: boolean;
 }
 
 export interface IUsersService {

@@ -66,7 +66,7 @@ import { AuthGuard } from './auth/guards/auth.guard';
   controllers: [AppController, UsersAuthController, TokenRefreshController],
   providers: [
     AppService, 
-    JwtService, 
+    // JwtService, 
     TokenRefreshService, 
     CloudinaryService,
     {

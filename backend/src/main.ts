@@ -9,7 +9,7 @@ async function bootstrap() {
   app.use(cookieParser());
   app.useGlobalFilters(new HttpExceptionFilter());
   app.enableCors({
-    origin:'http://localhost:'+process.env.FRONTEND_PORT,
+    origin: process.env.CORS_ORIGIN,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
     allowedHeaders: 'Content-Type, Accept, Authorization',

@@ -12,7 +12,7 @@ import { INotificationGateway } from './interfaces/notification-gateway.interfac
 import { INotificationService, INotificationServiceToken } from './interfaces/notification-service.interface';
 
 @WebSocketGateway({
-    cors: { origin: process.env.CORS_ORIGIN || 'http://localhost:4200', credentials: true },
+    cors: { origin: process.env.CORS_ORIGIN || 'http://localhost:5200', credentials: true },
     namespace: '/notifications'
 })
 export class NotificationGateway implements OnGatewayConnection, OnGatewayDisconnect, INotificationGateway {

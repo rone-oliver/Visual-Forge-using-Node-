@@ -4,55 +4,52 @@ import {
     SubscribeMessage,
     OnGatewayConnection,
     OnGatewayDisconnect,
+    ConnectedSocket,
+    MessageBody,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Logger } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
-import { Message, MessagesDocument, MessageStatus } from './models/chat-message.schema';
-import { User, UserDocument } from 'src/users/models/user.schema';
+import { Inject, Logger, UseGuards } from '@nestjs/common';
+import { Types } from 'mongoose';
+import { Message, MessageStatus } from './models/chat-message.schema';
 import { AiService } from 'src/ai/ai.service';
-import { UseGuards } from '@nestjs/common';
 import { WsAuthGuard } from 'src/auth/guards/ws-auth.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { WsRolesGuard } from 'src/auth/guards/ws-roles.guard';
+import { IChatService, IChatServiceToken } from './interfaces/chat-service.interface';
+import { Role } from 'src/common/enums/role.enum';
+import { IChatGateway } from './interfaces/chat-gateway.interface';
+import { AuthGuard } from 'src/auth/guards/auth.guard';
+import { RolesGuard } from 'src/auth/guards/role.guard';
 
 @WebSocketGateway({ 
-    cors: { origin:'http://localhost:' + process.env.FRONTEND_PORT, credentials: true },
+    cors: { origin: process.env.CORS_ORIGIN || 'http://localhost:5200', credentials: true },
     namespace: '/chat'
 })
-@UseGuards(WsAuthGuard, WsRolesGuard) 
-@Roles('User', 'Editor') 
-export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
+// @UseGuards(WsAuthGuard, WsRolesGuard) 
+@UseGuards(AuthGuard, RolesGuard)
+@Roles(Role.USER, Role.EDITOR) 
+export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect, IChatGateway {
     @WebSocketServer() server: Server;
     private readonly logger = new Logger(ChatGateway.name);
     private userSocketMap: Map<string, string> = new Map();
 
     constructor(
-        @InjectModel(Message.name) private messageModel: Model<MessagesDocument>,
-        @InjectModel(User.name) private userModel: Model<UserDocument>, 
+        @Inject(IChatServiceToken) private readonly chatService: IChatService,
         private readonly aiService: AiService
     ) { }
 
     async handleConnection(client: Socket, ...args: any[]) {
         this.logger.log(`Client connected: ${client.id}`);
-        // You might want to authenticate the user here based on a token or query parameter
-        // For simplicity, we'll assume the client sends their userId on connection
         try {
+            // const user = client['user'] as { userId: string, role: string };
             const userId = client.handshake.query.userId as string;
             if (!userId) {
                 this.logger.warn(`Client ${client.id} connected without userId`);
-                client.disconnect();
-                return;
+                return client.disconnect();
             }
-    
-            this.userSocketMap.set(userId, client.id);
             client['userId'] = userId;
     
-            await this.userModel.findByIdAndUpdate(
-                new Types.ObjectId(userId),
-                { isOnline: true }
-            );
+            this.userSocketMap.set(userId, client.id);
     
             client.emit('connected', { message: 'Successfully connected to chat!' });
             this.logger.log(`Client ${client.id} associated with user: ${userId}`);
@@ -64,65 +61,51 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     async handleDisconnect(client: Socket) {
         try {
-            const userId = client['userId'];
+            const userId = client.handshake.query.userId as string;
             if (userId) {
-                // Remove from mapping
                 this.userSocketMap.delete(userId);
-                
-                // Update user's online status
-                await this.userModel.findByIdAndUpdate(
-                    new Types.ObjectId(userId),
-                    { isOnline: false }
-                );
             }
-            
             this.logger.warn(`Client disconnected: ${client.id}`);
         } catch (error) {
             this.logger.error('Error in handleDisconnect:', error);
         }
     }
 
-    @SubscribeMessage('sendMessage')
-    async handleSendMessage(client: Socket, payload: { recipientId: string; content: string }) {
-        this.logger.log(`Message received from ${client['userId']}: ${payload.content} to ${payload.recipientId}`);
+    @SubscribeMessage('message')
+    async handleMessage(
+        @ConnectedSocket() client: Socket,
+        @MessageBody() payload: { recipientId: string; content: string }
+    ) {
+        this.logger.log(`Message received from ${client.handshake.query.userId}: ${payload.content} to ${payload.recipientId}`);
 
         try {
-            const senderId = client['userId'];
-            if (!senderId) {
+            const sender = client['userId'] as string;
+            if (!sender) {
                 this.logger.warn(`Sender ID not found for socket ${client.id}`);
                 client.emit('messageError', { error: 'User not authenticated' });
                 return;
             }
 
-            // Create and save the message
-            const newMessage = await this.messageModel.create({
-                sender: new Types.ObjectId(senderId),
-                recipient: new Types.ObjectId(payload.recipientId),
-                content: payload.content,
-            });
-
-            // Convert to plain object for sending
-            const messageToSend = newMessage.toObject();
+            const newMessage = await this.chatService.createMessage(
+                new Types.ObjectId(sender),
+                new Types.ObjectId(payload.recipientId),
+                payload.content,
+            );
             
-            // Emit to sender
-            client.emit('newMessage', messageToSend);
+            client.emit('newMessage', newMessage);
             
-            // Emit to recipient if online
             const recipientSocketId = this.userSocketMap.get(payload.recipientId);
             if (recipientSocketId) {
-                this.server.to(recipientSocketId).emit('newMessage', messageToSend);
+                this.server.to(recipientSocketId).emit('newMessage', newMessage);
                 
-                // Update status to delivered since recipient is online
-                await this.messageModel.findByIdAndUpdate(
-                    newMessage._id,
-                    { status: MessageStatus.DELIVERED }
-                );
+                const updatedMessage = await this.chatService.updateMessageStatus(newMessage._id.toString(), MessageStatus.DELIVERED);
                 
-                // Notify sender of delivery
-                client.emit('messageStatusUpdate', { 
-                    messageId: newMessage._id.toString(),
-                    status: MessageStatus.DELIVERED 
-                });
+                if (updatedMessage) {
+                    client.emit('messageStatusUpdate', { 
+                        messageId: updatedMessage._id.toString(),
+                        status: updatedMessage.status 
+                    });
+                }
             }
         } catch (error) {
             this.logger.error('Error saving and sending message:', error);
@@ -131,24 +114,18 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     @SubscribeMessage('updateMessageStatus')
-    async handleUpdateMessageStatus(client: Socket, payload: { messageId: string; status: MessageStatus }) {
+    async handleUpdateMessageStatus(
+        @ConnectedSocket() client: Socket,
+        @MessageBody() payload: { messageId: string; status: MessageStatus }
+    ) {
         try {
             const { messageId, status } = payload;
             
-            // Update message status in database
-            await this.messageModel.findByIdAndUpdate(
-                new Types.ObjectId(messageId),
-                { status }
-            );
+            const updatedMessage = await this.chatService.updateMessageStatus(messageId, status);
             
-            // Find the message to get sender ID
-            const message = await this.messageModel.findById(messageId);
-            if (!message) {
-                return;
-            }
+            if (!updatedMessage) return;
             
-            // Notify the sender about status update
-            const senderSocketId = this.userSocketMap.get(message.sender.toString());
+            const senderSocketId = this.userSocketMap.get(updatedMessage.sender.toString());
             if (senderSocketId) {
                 this.server.to(senderSocketId).emit('messageStatusUpdate', { messageId, status });
             }
@@ -157,8 +134,29 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         }
     }
 
+    @SubscribeMessage('typing')
+    handleTyping(@ConnectedSocket() client: Socket, @MessageBody() payload: { recipientId: string }): void {
+        const recipientSocketId = this.userSocketMap.get(payload.recipientId);
+        if (recipientSocketId) {
+            const user = client['user'] as { userId: string };
+            this.server.to(recipientSocketId).emit('typing', { userId: user.userId });
+        }
+    }
+
+    @SubscribeMessage('stopTyping')
+    handleStopTyping(@ConnectedSocket() client: Socket, @MessageBody() payload: { recipientId: string }): void {
+        const recipientSocketId = this.userSocketMap.get(payload.recipientId);
+        if (recipientSocketId) {
+            const user = client['user'] as { userId: string };
+            this.server.to(recipientSocketId).emit('stopTyping', { userId: user.userId });
+        }
+    }
+
     @SubscribeMessage('getSmartReplies')
-    async handleGetSmartReplies(client: Socket, payload: { messages: Message[] }) {
+    async handleGetSmartReplies(
+        @ConnectedSocket() client: Socket,
+        @MessageBody() payload: { messages: Message[] }
+    ) {
         this.logger.log(`Smart reply request received from ${client['userId']}`);
         try {
             const suggestions = await this.aiService.generateSmartReplies(payload.messages, client['userId']);

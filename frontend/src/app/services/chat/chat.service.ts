@@ -121,7 +121,7 @@ export class ChatService {
 
   sendMessage(recipientId: string, content: string): void {
     const messageData = { recipientId, content };
-    this.socket?.emit('sendMessage', messageData);
+    this.socket?.emit('message', messageData);
 
     const subjects = this.conversationSubjects.get(recipientId);
     if (subjects) {
