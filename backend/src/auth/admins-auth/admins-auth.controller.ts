@@ -1,25 +1,27 @@
-import { Controller, Body, Post, Get, Res, Req, Logger, BadRequestException, UnauthorizedException } from '@nestjs/common';
-import { AdminsAuthService } from './admins-auth.service';
-import { Request, Response } from 'express';
-import { adminLoginData } from './interfaces/admin-login.interface';
+import { Controller, Body, Post, Res, Logger, BadRequestException, Inject, HttpStatus, HttpCode } from '@nestjs/common';
+import { Response } from 'express';
 import { Public } from '../decorators/public.decorator';
+import { IAdminsAuthService, IAdminsAuthServiceToken } from './interfaces/adminsAuth-service.interface';
+import { AdminLoginDto, AdminLoginResponseDto } from './dtos/admins-auth.dto';
+import { Admin } from 'src/admins/models/admin.schema';
 
 @Controller('auth/admin')
 export class AdminsAuthController {
     private readonly logger = new Logger(AdminsAuthController.name);
-    constructor(private adminsAuthService: AdminsAuthService){};
+    constructor(
+        @Inject(IAdminsAuthServiceToken) private readonly adminsAuthService: IAdminsAuthService,
+    ){};
 
     @Public()
     @Post('login')
+    @HttpCode(HttpStatus.OK)
     async login(
-        @Body() LoginData:adminLoginData,
+        @Body() LoginData:AdminLoginDto,
         @Res({passthrough: true}) response: Response
-    ) {
-        this.logger.debug('Received login data:', LoginData);
+    ): Promise<AdminLoginResponseDto> {
         if (!LoginData) {
             throw new BadRequestException('Request body is empty');
         }
-        // this.logger.log(`Login attempt with data: ${JSON.stringify(LoginData)}`);
         return await this.adminsAuthService.login(
             LoginData.username,
             LoginData.password,
@@ -29,7 +31,7 @@ export class AdminsAuthController {
 
     @Public()
     @Post('register')
-    async register(@Body() registerData: any) {
+    async register(@Body() registerData: { username: string,password: string }): Promise<Admin> {
       return this.adminsAuthService.register(registerData);
     }
 }

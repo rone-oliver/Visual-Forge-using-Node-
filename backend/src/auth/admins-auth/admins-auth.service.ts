@@ -1,14 +1,15 @@
 import { Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
-import { AdminsService } from 'src/admins/admins.service';
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 import * as bcrypt from 'bcrypt';
 import { Admin } from 'src/admins/models/admin.schema';
 import { ConfigService } from '@nestjs/config';
 import { IAdminsService, IAdminsServiceToken } from 'src/admins/interfaces/admins.service.interface';
+import { IAdminsAuthService } from './interfaces/adminsAuth-service.interface';
+import { AdminLoginResponseDto } from './dtos/admins-auth.dto';
 
 @Injectable()
-export class AdminsAuthService {
+export class AdminsAuthService implements IAdminsAuthService {
     constructor(
         @Inject(IAdminsServiceToken) private adminsService: IAdminsService,
         private jwtService: JwtService,
@@ -62,7 +63,7 @@ export class AdminsAuthService {
         return await bcrypt.compare(password, hashPassword);
     }
 
-    async login(username: string, password: string, response: Response) {
+    async login(username: string, password: string, response: Response): Promise<AdminLoginResponseDto> {
         try {
             const admin = await this.adminsService.findOne({ username });
             if (!admin) {
@@ -80,7 +81,7 @@ export class AdminsAuthService {
             throw error;
         }
     }
-    async register(registerData: any) {
+    async register(registerData: { username: string,password: string }): Promise<Admin> {
         return this.adminsService.createAdmin(registerData);
     }
 }
