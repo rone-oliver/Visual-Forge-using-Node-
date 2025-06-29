@@ -1,18 +1,21 @@
-import { BadRequestException, Body, Controller, Delete, Get, Post, Put, Query, Req, Res, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Inject, Post, Put, Query, Req, Res, UseGuards } from '@nestjs/common';
 import { Response, Request } from 'express';
-import { CommonService } from './common.service';
 import { Types } from 'mongoose';
 import { Public } from '../decorators/public.decorator';
+import { UserType } from './dtos/common.dto';
+import { ICommonService, ICommonServiceToken } from './interfaces/common-service.interface';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private commonService: CommonService){}
+  constructor(
+    @Inject(ICommonServiceToken) private commonService: ICommonService
+  ){}
 
   @Public()
   @Delete('logout')
-  async userLogout(@Req() req: Request, @Res() res: Response, @Query('userType') userType: 'User' | 'Admin') {
+  async userLogout(@Req() req: Request, @Res() res: Response, @Query('userType') userType: UserType) {
     console.log(`Logout called for role: ${userType}`);
-    if (!userType || (userType !== 'User' && userType !== 'Admin')) {
+    if (!userType || (userType !== UserType.USER && userType !== UserType.ADMIN)) {
       throw new BadRequestException('Missing or invalid "role" query parameter.');
     }
     await this.commonService.logoutHandler(res,userType);
@@ -24,9 +27,9 @@ export class AuthController {
   // }
 
   @Put('theme-preference')
-  async updateAdminThemePreference(@Req() req: Request, @Res() res: Response, @Body() body:{userType: 'User' | 'Admin', isDark: boolean}) {
+  async updateAdminThemePreference(@Req() req: Request, @Res() res: Response, @Body() body:{isDark: boolean}) {
     const user = req['user'] as { userId: Types.ObjectId; role: string };
-    this.commonService.updateThemePreference(res,user.userId,body.userType,body.isDark);
+    this.commonService.updateThemePreference(res,user.userId,body.isDark);
   }
 
   // @Post('user/theme-preference')
@@ -36,9 +39,9 @@ export class AuthController {
   // }
 
   @Get('theme-preference')
-  async getUserThemePreference(@Req() req: Request, @Res() res: Response, @Query() query:{userType:'User' | 'Admin'}) {
+  async getUserThemePreference(@Req() req: Request, @Res() res: Response) {
     const user = req['user'] as { userId: Types.ObjectId; role: string };
-    this.commonService.getThemePreference(res,user.userId,query.userType);
+    this.commonService.getThemePreference(res,user.userId);
   }
 
   // @Get('admin/theme-preference')

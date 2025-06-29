@@ -7,11 +7,18 @@ import { UsersModule } from 'src/users/users.module';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthGuard } from './guards/auth.guard';
 import { RolesGuard } from './guards/role.guard';
+import { ICommonServiceToken } from './common/interfaces/common-service.interface';
 
 @Module({
   controllers: [AuthController],
-  providers: [CommonService, AuthGuard, RolesGuard],
-  exports: [CommonService, AuthGuard, RolesGuard],
+  providers: [
+    {
+      provide: ICommonServiceToken,
+      useClass: CommonService
+    },
+    AuthGuard, RolesGuard
+  ],
+  exports: [ICommonServiceToken, AuthGuard, RolesGuard],
   imports:[
       MongooseModule.forFeature([
         { name:Preference.name, schema: PreferenceSchema}

@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, InternalServerErrorException, Logger, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Response } from 'express';
 import { Model, Types } from 'mongoose';
@@ -8,9 +8,11 @@ import { ConfigService } from '@nestjs/config';
 import { Language, User } from 'src/users/models/user.schema';
 import { JwtService } from '@nestjs/jwt';
 import { IUsersService, IUsersServiceToken } from 'src/users/interfaces/users.service.interface';
+import { ICommonService } from './interfaces/common-service.interface';
+import { UserType } from './dtos/common.dto';
 
 @Injectable()
-export class CommonService {
+export class CommonService implements ICommonService {
   private googleClient: OAuth2Client;
   private readonly logger = new Logger(CommonService.name);
 
@@ -22,7 +24,7 @@ export class CommonService {
   ) {
     this.googleClient = new OAuth2Client(this.configService.get<string>('GOOGLE_CLIENT_ID'));
   };
-  async logoutHandler(response: Response, userType: 'User' | 'Admin') {
+  async logoutHandler(response: Response, userType: UserType) {
     const tokenName = userType.toLowerCase();
     const cookieName = `${tokenName}RefreshToken`;
     try {
@@ -39,7 +41,7 @@ export class CommonService {
     }
   }
 
-  async updateThemePreference(res: Response, userId: Types.ObjectId, userType: 'User' | 'Admin', isDark: boolean): Promise<void> {
+  async updateThemePreference(res: Response, userId: Types.ObjectId, isDark: boolean): Promise<void> {
     if (!userId) {
       res.status(401).json({ message: 'Unauthorized or User ID not found' });
       return;
@@ -60,11 +62,9 @@ export class CommonService {
     }
   }
 
-  async getThemePreference(res: Response, userId: Types.ObjectId, userType: 'User' | 'Admin'): Promise<void> {
+  async getThemePreference(res: Response, userId: Types.ObjectId): Promise<void> {
     if (!userId) {
       throw new UnauthorizedException('Unauthorized or User ID not found');
-      // res.status(401).json({ message: 'Unauthorized or User ID not found' });
-      // return;
     }
 
     try {
@@ -129,7 +129,7 @@ export class CommonService {
   }
 
   //for google authentication
-  async handleGoogleAuth(credential: string, res: Response) {
+  async handleGoogleAuth(credential: string, res: Response): Promise<{ accessToken: string; message: string; }> {
     try {
       const ticket = await this.googleClient.verifyIdToken({
         idToken: credential,
@@ -167,10 +167,12 @@ export class CommonService {
           maxAge: 7 * 24 * 60 * 60 * 1000
         });
   
-        return res.json({
+        return {
           accessToken: tokens.accessToken,
           message: 'Google sign-in successful'
-        });
+        };
+      }else{
+        throw new InternalServerErrorException('Unable to sign in via Google')
       }
     } catch (error) {
       throw new BadRequestException('Invalid google Token')
