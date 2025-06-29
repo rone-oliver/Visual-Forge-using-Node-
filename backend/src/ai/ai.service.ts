@@ -1,9 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Message } from 'src/chat/models/chat-message.schema';
+import { IAiService } from './interfaces/ai-service.interface';
 
 @Injectable()
-export class AiService {
+export class AiService implements IAiService {
     private readonly logger = new Logger(AiService.name);
     private genAI: GoogleGenerativeAI;
 

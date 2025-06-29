@@ -20,6 +20,7 @@ import { Role } from 'src/common/enums/role.enum';
 import { IChatGateway } from './interfaces/chat-gateway.interface';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { RolesGuard } from 'src/auth/guards/role.guard';
+import { IAiService, IAiServiceToken } from 'src/ai/interfaces/ai-service.interface';
 
 @WebSocketGateway({ 
     cors: { origin: process.env.CORS_ORIGIN || 'http://localhost:5200', credentials: true },
@@ -35,7 +36,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect, IC
 
     constructor(
         @Inject(IChatServiceToken) private readonly chatService: IChatService,
-        private readonly aiService: AiService
+        @Inject(IAiServiceToken) private readonly aiService: IAiService,
     ) { }
 
     async handleConnection(client: Socket, ...args: any[]) {
