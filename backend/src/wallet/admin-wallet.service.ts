@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { AdminTransactionRepository } from './repositories/admin-transaction.repository';
 import { AdminTransaction, AdminTransactionType, TransactionFlow } from './models/admin-transaction.schema';
 import { WalletService } from './wallet.service';
-import { Quotation } from 'src/common/models/quotation.schema';
+import { Quotation } from 'src/quotation/models/quotation.schema';
 import { User } from 'src/users/models/user.schema';
 import { IAdminTransactionRepository, IAdminTransactionRepositoryToken } from './interfaces/admin-transaction.repository.interface';
 import { IAdminWalletService } from './interfaces/admin-wallet.service.interface';

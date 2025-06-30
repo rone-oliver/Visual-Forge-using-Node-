@@ -1,6 +1,6 @@
 import { Types } from "mongoose";
-import { FileAttachment } from "src/users/interface/Quotation.interface";
-import { OutputType, QuotationStatus } from "../models/quotation.schema";
+import { FileAttachment } from "src/quotation/dtos/quotation.dto";
+import { OutputType, QuotationStatus } from "../../quotation/models/quotation.schema";
 
 export interface CompletedWork {
     // Original quotation ID (preserved)

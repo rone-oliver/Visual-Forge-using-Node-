@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Types } from "mongoose";
-import { FileType } from "./quotation.schema";
+import { FileType } from "../../quotation/models/quotation.schema";
 
 export type WorksDocument = Works & Document;
 

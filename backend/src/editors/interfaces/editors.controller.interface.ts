@@ -12,7 +12,7 @@ import {
     RemoveTutorialDto,
     AddTutorialDto,
 } from '../dto/editors.dto';
-import { QuotationStatus } from 'src/common/models/quotation.schema';
+import { QuotationStatus } from 'src/quotation/models/quotation.schema';
 import { Editor } from '../models/editor.schema';
 
 export interface IEditorsController {

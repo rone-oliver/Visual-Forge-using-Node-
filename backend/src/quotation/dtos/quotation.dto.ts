@@ -1,5 +1,9 @@
 import { Types } from "mongoose";
-import { OutputType, QuotationStatus } from "src/common/models/quotation.schema";
+import { OutputType, QuotationStatus } from "src/quotation/models/quotation.schema";
+
+export class getQuotationsByStatusResponseDto {
+    [key: string]: number;
+}
 
 export interface IQuotation {
     _id?: string | Types.ObjectId;

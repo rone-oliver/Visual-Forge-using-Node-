@@ -15,6 +15,8 @@ import {
     AddTutorialDto,
     RemoveTutorialDto
 } from '../dto/editors.dto';
+import { EditorRequest } from '../models/editorRequest.schema';
+import { FormattedEditor, GetEditorsQueryDto } from 'src/admins/dto/admin.dto';
 
 export const IEditorsServiceToken = Symbol('IEditorsServiceToken');
 
@@ -60,4 +62,13 @@ export interface IEditorsService {
 
     addTutorial(editorId: string, addTutorialDto: AddTutorialDto): Promise<Editor>;
     removeTutorial(editorId: string, removeTutorialDto: RemoveTutorialDto): Promise<Editor>;
+
+    // Editor requests
+    getEditorRequests(): Promise<EditorRequest[]>;
+    approveEditorRequest(requestId: Types.ObjectId, adminId: Types.ObjectId): Promise<boolean>;
+    rejectEditorRequest(requestId: Types.ObjectId, reason: string): Promise<boolean>;
+    countEditorRequests(): Promise<number>;
+
+    getEditorsForAdmin(query: GetEditorsQueryDto): Promise<FormattedEditor[]>;
+    countAllEditors(): Promise<number>;
 }

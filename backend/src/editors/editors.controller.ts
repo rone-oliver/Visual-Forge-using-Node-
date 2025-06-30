@@ -5,7 +5,7 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { RolesGuard } from 'src/auth/guards/role.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
-import { OutputType, QuotationStatus } from 'src/common/models/quotation.schema';
+import { OutputType, QuotationStatus } from 'src/quotation/models/quotation.schema';
 import {
   GetPublishedQuotationsQueryDto,
   GetAcceptedQuotationsQueryDto,

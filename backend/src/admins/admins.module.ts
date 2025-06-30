@@ -4,12 +4,17 @@ import { AdminsController } from './admins.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Admin, adminSchema } from './models/admin.schema';
 import { User, userSchema } from 'src/users/models/user.schema';
-import { EditorRequest, EditorRequestSchema } from 'src/common/models/editorRequest.schema';
+import { EditorRequest, EditorRequestSchema } from 'src/editors/models/editorRequest.schema';
 import { Editor, editorSchema } from 'src/editors/models/editor.schema';
 import { UsersModule } from 'src/users/users.module';
 import { IAdminsServiceToken } from './interfaces/admins.service.interface';
 import { Report, ReportSchema } from 'src/common/models/report.schema';
-import { Quotation, QuotationSchema } from 'src/common/models/quotation.schema';
+import { IAdminRepositoryToken } from './interfaces/admins.repository.interface';
+import { AdminRepository } from './repositories/admin.repository';
+import { IReportsRepositoryToken } from './interfaces/reports.repository.interface';
+import { ReportsRepository } from './repositories/reports.repository';
+import { QuotationModule } from 'src/quotation/quotation.module';
+import { EditorsModule } from 'src/editors/editors.module';
 
 @Module({
   providers: [
@@ -17,17 +22,21 @@ import { Quotation, QuotationSchema } from 'src/common/models/quotation.schema';
       provide: IAdminsServiceToken,
       useClass: AdminsService,
     },
+    {
+      provide: IAdminRepositoryToken,
+      useClass: AdminRepository
+    },
+    {
+      provide: IReportsRepositoryToken,
+      useClass: ReportsRepository
+    }
   ],
   controllers: [AdminsController],
   imports:[
-    UsersModule,
+    UsersModule, QuotationModule, EditorsModule,
     MongooseModule.forFeature([
       { name: Admin.name, schema: adminSchema },
-      { name: User.name, schema: userSchema},
-      { name: EditorRequest.name, schema: EditorRequestSchema},
-      { name: Editor.name, schema: editorSchema},
       { name: Report.name, schema: ReportSchema},
-      { name: Quotation.name, schema: QuotationSchema}
     ])
   ],
   exports: [

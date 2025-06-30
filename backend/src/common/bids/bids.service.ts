@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, InternalServerErrorException, Logger, 
 import { InjectModel } from '@nestjs/mongoose';
 import { Bid, BidDocument, BidStatus } from './models/bids.schema';
 import { Model, Types } from 'mongoose';
-import { Quotation, QuotationDocument, QuotationStatus } from '../models/quotation.schema';
+import { Quotation, QuotationDocument, QuotationStatus } from '../../quotation/models/quotation.schema';
 import { BidResponseDto } from './dto/bid-response.dto';
 import { BidRepository } from './repositories/bid.repository';
 import { CreateBidDto } from './dto/create-bid.dto';

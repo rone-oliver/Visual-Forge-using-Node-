@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Types } from "mongoose";
-import { Rating } from "../interfaces/rating.interface";
+import { Rating } from "../dto/editors.dto";
 
 export type EditorDocument = Editor & Document;
 

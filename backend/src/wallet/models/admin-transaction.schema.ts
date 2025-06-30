@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { Quotation } from 'src/common/models/quotation.schema';
+import { Quotation } from 'src/quotation/models/quotation.schema';
 import { User } from 'src/users/models/user.schema';
 
 export enum AdminTransactionType {

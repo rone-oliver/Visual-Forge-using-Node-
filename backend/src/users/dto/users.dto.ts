@@ -24,7 +24,7 @@ import {
 } from 'class-validator';
 import { Types } from 'mongoose';
 import { Gender, Language } from '../models/user.schema';
-import { QuotationStatus, OutputType, FileType } from '../../common/models/quotation.schema';
+import { QuotationStatus, OutputType, FileType } from '../../quotation/models/quotation.schema';
 import { BidStatus } from '../../common/bids/models/bids.schema';
 import { PaymentType, PaymentStatus, PaymentMethod } from '../../common/models/transaction.schema';
 import { EditorDetailsDto } from 'src/editors/dto/editors.dto'; // Assuming this exists and is relevant

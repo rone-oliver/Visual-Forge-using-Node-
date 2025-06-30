@@ -34,6 +34,7 @@ import { User } from '../models/user.schema';
 import { PaymentType } from 'src/common/models/transaction.schema';
 import { Bid } from 'src/common/bids/models/bids.schema';
 import { FileUploadResultDto as FileUploadResultDtoCloudinary } from 'src/common/cloudinary/dtos/cloudinary.dto';
+import { GetAllUsersQueryDto } from 'src/admins/dto/admin.dto';
 
 export const IUsersServiceToken = Symbol('IUsersService');
 
@@ -44,6 +45,10 @@ export interface UserInfoForChatListDto {
 }
 
 export interface IUsersService {
+    getAllUsersForAdmin(query: GetAllUsersQueryDto): Promise<User[]>;
+    getUserById(userId: Types.ObjectId): Promise<User | null>;
+    blockUser(userId: Types.ObjectId): Promise<User | null>;
+    countAllUsers(): Promise<number>;
     getUserDetails(userId: Types.ObjectId): Promise<UserProfileResponseDto | null>;
     requestForEditor(userId: Types.ObjectId): Promise<SuccessResponseDto>; // Assuming boolean maps to a success DTO
     getEditorRequestStatus(userId: Types.ObjectId): Promise<EditorRequestStatusResponseDto>;

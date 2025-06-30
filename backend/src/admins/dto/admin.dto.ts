@@ -1,6 +1,6 @@
 import { IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
 import { Types } from "mongoose";
-import { Categories, EditorRequestStatus } from "src/common/models/editorRequest.schema";
+import { Categories, EditorRequestStatus } from "src/editors/models/editorRequest.schema";
 import { ReportStatus } from "src/common/models/report.schema";
 
 export interface GetAllUsersQueryDto {

@@ -3,9 +3,9 @@ import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, userSchema } from './models/user.schema';
-import { EditorRequest, EditorRequestSchema } from 'src/common/models/editorRequest.schema';
+import { EditorRequest, EditorRequestSchema } from 'src/editors/models/editorRequest.schema';
 import { Editor, editorSchema } from 'src/editors/models/editor.schema';
-import { Quotation, QuotationSchema } from 'src/common/models/quotation.schema';
+import { Quotation, QuotationSchema } from 'src/quotation/models/quotation.schema';
 import { CloudinaryService } from 'src/common/cloudinary/cloudinary.service';
 import { Works, workSchema } from 'src/common/models/works.schema';
 import { EditorsService } from 'src/editors/editors.service';
@@ -19,6 +19,9 @@ import { WalletModule } from 'src/wallet/wallet.module';
 import { RelationshipModule } from 'src/common/relationship/relationship.module';
 import { CloudinaryModule } from 'src/common/cloudinary/cloudinary.module';
 import { IPaymentServiceToken } from 'src/common/payment/interfaces/payment-service.interface';
+import { EditorsModule } from 'src/editors/editors.module';
+import { IUserRepositoryToken } from './interfaces/users.repository.interface';
+import { UserRepository } from './repositories/user.repository';
 
 @Module({
   controllers: [UsersController],
@@ -27,9 +30,14 @@ import { IPaymentServiceToken } from 'src/common/payment/interfaces/payment-serv
       provide: IUsersServiceToken,
       useClass: UsersService,
     },
-    CloudinaryService, EditorsService
+    {
+      provide: IUserRepositoryToken,
+      useClass: UserRepository
+    },
+    EditorsService
   ],
   imports:[
+    forwardRef(() => EditorsModule),
     MongooseModule.forFeature([
       { name:User.name, schema: userSchema},
       { name: EditorRequest.name, schema: EditorRequestSchema},
@@ -42,6 +50,6 @@ import { IPaymentServiceToken } from 'src/common/payment/interfaces/payment-serv
     ]),
     PaymentModule, BidsModule, WalletModule, RelationshipModule, CloudinaryModule
   ],
-  exports: [IUsersServiceToken,]
+  exports: [IUsersServiceToken, IUserRepositoryToken]
 })
 export class UsersModule {}

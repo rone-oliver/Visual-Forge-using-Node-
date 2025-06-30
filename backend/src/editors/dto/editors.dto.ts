@@ -2,8 +2,8 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsArray, IsBoolean, IsDateString, IsEnum, IsMongoId, IsNotEmpty, IsNumber, IsOptional, IsString, IsUrl, Min, ValidateNested } from 'class-validator';
 import { Types } from 'mongoose';
 import { Type } from 'class-transformer';
-import { OutputType, QuotationStatus } from 'src/common/models/quotation.schema';
-import { FileType as CommonFileType } from 'src/common/models/quotation.schema'; // Renaming to avoid conflict
+import { OutputType, QuotationStatus } from 'src/quotation/models/quotation.schema';
+import { FileType as CommonFileType } from 'src/quotation/models/quotation.schema'; // Renaming to avoid conflict
 import { BidStatus } from 'src/common/bids/models/bids.schema';
 
 // Base DTO for pagination
@@ -554,4 +554,10 @@ export class RemoveTutorialDto {
   )
   @IsNotEmpty({ message: 'Tutorial URL cannot be empty.' })
   tutorialUrl: string;
+}
+
+export interface Rating{
+  rating: number;
+  feedback?: string;
+  userId: Types.ObjectId;
 }

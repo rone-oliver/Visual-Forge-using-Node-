@@ -1,8 +1,8 @@
-import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Editor, EditorDocument } from './models/editor.schema';
 import { Model, Types } from 'mongoose';
-import { OutputType, Quotation, QuotationDocument, QuotationStatus } from 'src/common/models/quotation.schema';
+import { OutputType, Quotation, QuotationDocument, QuotationStatus } from 'src/quotation/models/quotation.schema';
 import { FileType } from 'src/common/cloudinary/dtos/cloudinary.dto';
 import { Works, WorksDocument } from 'src/common/models/works.schema';
 import { User, UserDocument } from 'src/users/models/user.schema';
@@ -34,21 +34,151 @@ import { IRelationshipService, IRelationshipServiceToken } from 'src/common/rela
 import { EventTypes } from 'src/common/constants/events.constants';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ICloudinaryService, ICloudinaryServiceToken } from 'src/common/cloudinary/interfaces/cloudinary-service.interface';
+import { EditorRequest } from 'src/editors/models/editorRequest.schema';
+import { IEditorRequestsRepository, IEditorRequestsRepositoryToken } from './interfaces/editorRequests.repository.interface';
+import { FormattedEditor, GetEditorsQueryDto } from 'src/admins/dto/admin.dto';
+import { IEditorRepository, IEditorRepositoryToken } from './interfaces/editor.repository.interface';
 
 @Injectable()
 export class EditorsService implements IEditorsService {
     private readonly logger = new Logger(EditorsService.name);
     constructor(
         @InjectModel(Editor.name) private editorModel: Model<EditorDocument>,
+        @Inject(IEditorRepositoryToken) private readonly editorRepository: IEditorRepository,
         @InjectModel(Quotation.name) private quotationModel: Model<QuotationDocument>,
         @InjectModel(Works.name) private workModel: Model<WorksDocument>,
         @InjectModel(User.name) private userModel: Model<UserDocument>,
         @InjectModel(Bid.name) private bidModel: Model<BidDocument>,
         @Inject(IRelationshipServiceToken) private readonly relationshipService: IRelationshipService,
-        @Inject(ICloudinaryServiceToken) private cloudinaryService: ICloudinaryService,
+        @Inject(ICloudinaryServiceToken) private readonly cloudinaryService: ICloudinaryService,
+        @Inject(IEditorRequestsRepositoryToken) private readonly editorRequestsRepository: IEditorRequestsRepository,
         private eventEmitter: EventEmitter2,
         private readonly bidsService: BidsService,
     ) { };
+
+    async getEditorRequests(): Promise<EditorRequest[]> {
+        return this.editorRequestsRepository.getEditorRequests();
+    }
+
+    async approveEditorRequest(requestId: Types.ObjectId, adminId: Types.ObjectId): Promise<boolean> {
+        try {
+            const request = await this.editorRequestsRepository.approveEditorRequest(requestId, adminId);
+            if (request && request.userId) {
+                await this.userModel.updateOne({ _id: request.userId }, { isEditor: true });
+                await this.editorModel.create({ userId: new Types.ObjectId(request.userId), category: [request.categories] });
+                return true;
+            }
+            return false;
+        } catch (error) {
+            this.logger.error(`Error approving request: ${error.message}`);
+            throw new HttpException('Failed to approve request', HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    async rejectEditorRequest(requestId: Types.ObjectId, reason: string): Promise<boolean> {
+        try {
+            const request = await this.editorRequestsRepository.rejectEditorRequest(requestId, reason);
+            return request !== null;
+        } catch (error) {
+            this.logger.error(`Error rejecting request: ${error.message}`);
+            throw new HttpException('Failed to reject request', HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    async countEditorRequests(): Promise<number> {
+        return this.editorRequestsRepository.countEditorRequests();
+    }
+
+    async getEditorsForAdmin(query: GetEditorsQueryDto): Promise<FormattedEditor[]> {
+        try {
+            this.logger.log('Fetching editor with these query:', query);
+
+            const pipeline: any[] = [];
+
+            const matchStage: any = {};
+
+            const categoryFilters: string[] = [];
+            if (query.video === 'true') categoryFilters.push('Video');
+            if (query.image === 'true') categoryFilters.push('Image');
+            if (query.audio === 'true') categoryFilters.push('Audio');
+
+            if (categoryFilters.length > 0) {
+                matchStage['category'] = { $all: categoryFilters };
+            }
+
+            if (Object.keys(matchStage).length > 0) {
+                pipeline.push({ $match: matchStage });
+            }
+
+            pipeline.push({
+                $addFields: {
+                    averageRating: {
+                        $cond: {
+                            if: { $eq: [{ $size: "$ratings" }, 0] },
+                            then: 0,
+                            else: { $avg: "$ratings.rating" }
+                        }
+                    }
+                }
+            });
+
+            if (query.rating) {
+                pipeline.push({
+                    $match: {
+                        averageRating: { $gte: parseFloat(query.rating) }
+                    }
+                });
+            }
+
+            pipeline.push({
+                $lookup: {
+                    from: 'users',
+                    localField: 'userId',
+                    foreignField: '_id',
+                    as: 'userInfo'
+                }
+            });
+
+            pipeline.push({ $unwind: '$userInfo' });
+
+            if (query.search) {
+                pipeline.push({
+                    $match: {
+                        'userInfo.username': { $regex: query.search, $options: 'i' }
+                    }
+                });
+            }
+
+            pipeline.push({
+                $project: {
+                    _id: 1,
+                    userId: '$userInfo._id',
+                    fullname: '$userInfo.fullname',
+                    username: '$userInfo.username',
+                    email: '$userInfo.email',
+                    profileImage: '$userInfo.profileImage',
+                    category: { $ifNull: ['$category', []] },
+                    score: { $ifNull: ['$score', 0] },
+                    ratingsCount: { $size: '$ratings' },
+                    averageRating: 1,
+                    createdAt: 1,
+                    isVerified: '$userInfo.isVerified',
+                    isBlocked: '$userInfo.isBlocked',
+                    socialLinks: { $ifNull: ['$socialLinks', {}] }
+                }
+            });
+
+            const editors = await this.editorRepository.aggregate(pipeline);
+            return editors as unknown as FormattedEditor[];
+        } catch (error) {
+            this.logger.error(`Error fetching editors: ${error.message}`);
+            throw new HttpException('No editors found', HttpStatus.NOT_FOUND);
+        }
+    }
+
+    async countAllEditors(): Promise<number> {
+        return this.editorRepository.countDocuments();
+    }
 
     async createEditor(editor: Partial<Editor>): Promise<Editor> {
         return this.editorModel.create(editor);

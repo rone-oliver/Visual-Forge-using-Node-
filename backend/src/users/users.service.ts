@@ -4,8 +4,8 @@ import * as bcrypt from 'bcrypt';
 import { Model, Types } from 'mongoose';
 import { User, UserDocument } from './models/user.schema';
 import { Editor, EditorDocument } from 'src/editors/models/editor.schema';
-import { EditorRequest, EditorRequestDocument } from 'src/common/models/editorRequest.schema';
-import { Quotation, QuotationDocument, QuotationStatus } from 'src/common/models/quotation.schema';
+import { EditorRequest, EditorRequestDocument } from 'src/editors/models/editorRequest.schema';
+import { Quotation, QuotationDocument, QuotationStatus } from 'src/quotation/models/quotation.schema';
 import { Works, WorksDocument } from 'src/common/models/works.schema';
 import { PaymentStatus, PaymentType, Transaction, TransactionDocument } from 'src/common/models/transaction.schema';
 import { Bid } from 'src/common/bids/models/bids.schema';
@@ -42,6 +42,7 @@ import {
     PaginatedPublicEditorsDto,
     ReportUserDto
 } from './dto/users.dto';
+import { GetAllUsersQueryDto } from 'src/admins/dto/admin.dto';
 import { Report, ReportDocument } from 'src/common/models/report.schema';
 import { IAdminWalletService, IAdminWalletServiceToken } from 'src/wallet/interfaces/admin-wallet.service.interface';
 import { getYouTubeEmbedUrl } from 'src/common/utils/youtube-url.util';
@@ -51,6 +52,7 @@ import { EventTypes } from 'src/common/constants/events.constants';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { FileUploadResultDto as FileUploadResultDtoCloudinary } from 'src/common/cloudinary/dtos/cloudinary.dto';
 import { ICloudinaryService, ICloudinaryServiceToken } from 'src/common/cloudinary/interfaces/cloudinary-service.interface';
+import { IUserRepository, IUserRepositoryToken } from './interfaces/users.repository.interface';
 
 @Injectable()
 export class UsersService implements IUsersService {
@@ -66,6 +68,7 @@ export class UsersService implements IUsersService {
         @Inject(IAdminWalletServiceToken) private readonly adminWalletService: IAdminWalletService,
         @Inject(IRelationshipServiceToken) private readonly relationshipService: IRelationshipService,
         @Inject(ICloudinaryServiceToken) private cloudinaryService: ICloudinaryService,
+        @Inject(IUserRepositoryToken) private readonly userRepository: IUserRepository,
         private eventEmitter: EventEmitter2,
         private bidsService: BidsService,
     ) { }
@@ -1038,5 +1041,31 @@ export class UsersService implements IUsersService {
             this.logger.error(`Error unfollowing user: ${error.message}`);
             throw error;
         }
+    }
+
+    async getUserById(userId: Types.ObjectId): Promise<User | null> {
+        return this.userRepository.findById(userId);
+    }
+
+    async blockUser(userId: Types.ObjectId): Promise<User | null> {
+        const user = await this.userRepository.findById(userId);
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+        return this.userRepository.findOneAndUpdate({ _id: userId }, { isBlocked: !user.isBlocked });
+    }
+
+    async countAllUsers(): Promise<number> {
+        return this.userRepository.countDocuments();
+    }
+
+    async getAllUsersForAdmin(query: GetAllUsersQueryDto): Promise<User[]> {
+        const filter: any = {};
+        if (query.isEditor !== undefined) filter.isEditor = query.isEditor;
+        if (query.gender) filter.gender = query.gender;
+        if (query.behaviourRating) filter.behaviourRating = query.behaviourRating;
+        if (query.search) filter.username = { $regex: query.search, $options: 'i' };
+
+        return this.userRepository.find(filter);
     }
 }

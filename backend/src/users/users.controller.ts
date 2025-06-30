@@ -7,7 +7,7 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { EditorsService } from 'src/editors/editors.service';
 import { IPaymentService, IPaymentServiceToken } from 'src/common/payment/interfaces/payment-service.interface';
 import { PaymentType } from 'src/common/models/transaction.schema';
-import { Quotation, QuotationStatus } from 'src/common/models/quotation.schema';
+import { Quotation, QuotationStatus } from 'src/quotation/models/quotation.schema';
 import { FileUploadResultDto as FileUploadResultDtoCloudinary } from 'src/common/cloudinary/dtos/cloudinary.dto';
 import {
     BidResponseDto,

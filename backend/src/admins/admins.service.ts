@@ -1,33 +1,34 @@
-import { HttpException, HttpStatus, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { User, UserDocument } from 'src/users/models/user.schema';
-import { Admin, AdminDocument } from './models/admin.schema';
-import { Model, Types } from 'mongoose';
+import { HttpException, HttpStatus, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { User } from 'src/users/models/user.schema';
+import { Admin } from './models/admin.schema';
+import { Types } from 'mongoose';
 import * as bcrypt from 'bcrypt';
-import { EditorRequest, EditorRequestDocument, EditorRequestStatus } from 'src/common/models/editorRequest.schema';
-import { Editor, EditorDocument } from 'src/editors/models/editor.schema';
 import { IAdminsService } from './interfaces/admins.service.interface';
 import { DashboardResponseDto, FormattedEditor, FormattedEditorRequest, GetAllUsersQueryDto, GetEditorsQueryDto, UpdateReportDto } from './dto/admin.dto';
-import { Report, ReportDocument, ReportStatus } from 'src/common/models/report.schema';
+import { Report } from 'src/common/models/report.schema';
 import { SuccessResponseDto } from 'src/users/dto/users.dto';
-import { Quotation, QuotationDocument, QuotationStatus } from 'src/common/models/quotation.schema';
+import { IAdminRepository, IAdminRepositoryToken } from './interfaces/admins.repository.interface';
+import { IReportsRepository, IReportsRepositoryToken } from './interfaces/reports.repository.interface';
+import { IQuotationService, IQuotationServiceToken } from 'src/quotation/interfaces/quotation.service.interface';
+import { IEditorsService, IEditorsServiceToken } from 'src/editors/interfaces/editors.service.interface';
+import { IUsersService, IUsersServiceToken } from 'src/users/interfaces/users.service.interface';
 
 @Injectable()
 export class AdminsService implements IAdminsService {
     private readonly logger = new Logger(AdminsService.name);
 
     constructor(
-        @InjectModel(Admin.name) private adminModel: Model<AdminDocument>,
-        @InjectModel(User.name) private userModel: Model<UserDocument>,
-        @InjectModel(EditorRequest.name) private editorRequestModel: Model<EditorRequestDocument>,
-        @InjectModel(Editor.name) private editorModel: Model<EditorDocument>,
-        @InjectModel(Report.name) private reportModel: Model<ReportDocument>,
-        @InjectModel(Quotation.name) private quotationModel: Model<QuotationDocument>,
+        @Inject(IUsersServiceToken) private readonly userService: IUsersService,
+        @Inject(IEditorsServiceToken) private readonly editorService: IEditorsService,
+        @Inject(IAdminRepositoryToken) private readonly adminRepository: IAdminRepository,
+        @Inject(IReportsRepositoryToken) private readonly reportsRepository: IReportsRepository,
+        @Inject(IQuotationServiceToken) private readonly quotationService: IQuotationService,
+        @Inject(IUsersServiceToken) private readonly usersService: IUsersService,
     ) { };
 
     async findOne(filter: Partial<Admin>): Promise<Admin | null> {
         try {
-            return this.adminModel.findOne(filter).exec();
+            return this.adminRepository.findOne(filter);
         } catch (error) {
             throw new HttpException('Admin not found', HttpStatus.NOT_FOUND);
         }
@@ -35,18 +36,13 @@ export class AdminsService implements IAdminsService {
 
     async createAdmin(adminData: any): Promise<Admin> {
         adminData.password = await bcrypt.hash(adminData.password, 10);
-        return this.adminModel.create(adminData);
+        return this.adminRepository.create(adminData);
     }
 
     async getAllUsers(query: GetAllUsersQueryDto): Promise<User[]> {
         try {
-            this.logger.log('Fetching users with query:', query);
-            const filter: any = {};
-            if (query.isEditor !== undefined) filter.isEditor = query.isEditor;
-            if (query.gender) filter.gender = query.gender;
-            if (query.behaviourRating) filter.behaviourRating = query.behaviourRating;
-            if (query.search) filter.username = { $regex: query.search, $options: 'i' };
-            return await this.userModel.find(filter);
+            this.logger.log('Delegating to UsersService to fetch users');
+            return this.usersService.getAllUsersForAdmin(query);
         } catch (error) {
             console.error('Error fetching users:', error);
             throw new HttpException('No users found', HttpStatus.NOT_FOUND);
@@ -55,10 +51,10 @@ export class AdminsService implements IAdminsService {
 
     async getEditorRequests(): Promise<FormattedEditorRequest[]> {
         try {
-            const requests = await this.editorRequestModel.find({ status: EditorRequestStatus.PENDING }).populate('userId');
+            const requests = await this.editorService.getEditorRequests();
 
             return requests.map(request => {
-                const user = request.userId as any;
+                const user = request.userId as unknown as User;
 
                 return {
                     _id: request._id,
@@ -79,13 +75,8 @@ export class AdminsService implements IAdminsService {
 
     async approveRequest(requestId: Types.ObjectId, adminId: Types.ObjectId): Promise<boolean> {
         try {
-            const request = await this.editorRequestModel.findOneAndUpdate({ _id: requestId }, { status: EditorRequestStatus.APPROVED, approvedBy: adminId });
-            if (request && request.userId) {
-                await this.userModel.updateOne({ _id: request.userId }, { isEditor: true });
-                await this.editorModel.create({ userId: new Types.ObjectId(request.userId), category: [request.categories] });
-                return true;
-            }
-            return false;
+            const success = await this.editorService.approveEditorRequest(requestId, adminId);
+            return success ? true : false;
         } catch (error) {
             this.logger.error(`Error approving request: ${error.message}`);
             throw new HttpException('Failed to approve request', HttpStatus.INTERNAL_SERVER_ERROR);
@@ -94,8 +85,8 @@ export class AdminsService implements IAdminsService {
 
     async rejectRequest(requestId: Types.ObjectId, reason: string): Promise<boolean> {
         try {
-            const request = await this.editorRequestModel.findOneAndUpdate({ _id: requestId }, { status: EditorRequestStatus.REJECTED, reason });
-            return request !== null;
+            const success = await this.editorService.rejectEditorRequest(requestId, reason);
+            return success ? true : false;
         } catch (error) {
             this.logger.error(`Error rejecting request: ${error.message}`);
             throw new HttpException('Failed to reject request', HttpStatus.INTERNAL_SERVER_ERROR);
@@ -104,92 +95,8 @@ export class AdminsService implements IAdminsService {
 
     async getEditors(query: GetEditorsQueryDto): Promise<FormattedEditor[]> {
         try {
-            this.logger.log('Fetching editor with these query:', query);
-
-            const pipeline: any[] = [];
-
-            const matchStage: any = {};
-
-            const categoryFilters: string[] = [];
-            if (query.video === 'true') categoryFilters.push('Video');
-            if (query.image === 'true') categoryFilters.push('Image');
-            if (query.audio === 'true') categoryFilters.push('Audio');
-
-            if (categoryFilters.length > 0) {
-                matchStage['category'] = { $all: categoryFilters };
-            }
-
-            if (Object.keys(matchStage).length > 0) {
-                pipeline.push({ $match: matchStage });
-            }
-
-            pipeline.push({
-                $addFields: {
-                    averageRating: {
-                        $cond: {
-                            if: { $eq: [{ $size: "$ratings" }, 0] },
-                            then: 0,
-                            else: { $avg: "$ratings.rating" }
-                        }
-                    }
-                }
-            });
-
-            // Filter by rating if specified
-            if (query.rating) {
-                pipeline.push({
-                    $match: {
-                        averageRating: { $gte: parseFloat(query.rating) }
-                    }
-                });
-            }
-
-            // Lookup to populate user data
-            pipeline.push({
-                $lookup: {
-                    from: 'users',
-                    localField: 'userId',
-                    foreignField: '_id',
-                    as: 'userInfo'
-                }
-            });
-
-            // Unwind the user array
-            pipeline.push({
-                $unwind: '$userInfo'
-            });
-
-            // Filter by username search if specified
-            if (query.search) {
-                pipeline.push({
-                    $match: {
-                        'userInfo.username': { $regex: query.search, $options: 'i' }
-                    }
-                });
-            }
-
-            // Project to format the output
-            pipeline.push({
-                $project: {
-                    _id: 1,
-                    userId: '$userInfo._id',
-                    fullname: '$userInfo.fullname',
-                    username: '$userInfo.username',
-                    email: '$userInfo.email',
-                    profileImage: '$userInfo.profileImage',
-                    category: { $ifNull: ['$category', []] },
-                    score: { $ifNull: ['$score', 0] },
-                    ratingsCount: { $size: '$ratings' },
-                    averageRating: 1,
-                    createdAt: 1,
-                    isVerified: '$userInfo.isVerified',
-                    isBlocked: '$userInfo.isBlocked',
-                    socialLinks: { $ifNull: ['$socialLinks', {}] }
-                }
-            });
-
-            const editors = await this.editorModel.aggregate(pipeline);
-            return editors as FormattedEditor[];
+            this.logger.log('Delegating to EditorsService to fetch editors');
+            return await this.editorService.getEditorsForAdmin(query);
         } catch (error) {
             this.logger.error(`Error fetching editors: ${error.message}`);
             throw new HttpException('No editors found', HttpStatus.NOT_FOUND);
@@ -198,12 +105,7 @@ export class AdminsService implements IAdminsService {
 
     async blockUser(userId: Types.ObjectId): Promise<SuccessResponseDto> {
         try {
-            // const user = await this.userModel.findByIdAndUpdate(userId, { isBlocked: true });
-            const user = await this.userModel.findOne({ _id: userId });
-            if (!user) {
-                return { success: false, message: 'User not found' };
-            }
-            await this.userModel.findOneAndUpdate({ _id: user._id }, { isBlocked: !user.isBlocked })
+            await this.userService.blockUser(userId)
             return {
                 success: true,
                 message: 'User blocked successfully'
@@ -215,16 +117,11 @@ export class AdminsService implements IAdminsService {
     }
 
     async getPendingReports(): Promise<Report[]> {
-        return this.reportModel
-            .find({ status: ReportStatus.PENDING })
-            .populate('reporterId', 'username email')
-            .populate('reportedUserId', 'username email isBlocked')
-            .sort({ createdAt: -1 })
-            .exec();
+        return this.reportsRepository.getPendingReports();
     }
 
     async updateReport(reportId: string, updateDto: UpdateReportDto): Promise<Report> {
-        const report = await this.reportModel.findByIdAndUpdate(reportId, updateDto, { new: true });
+        const report = await this.reportsRepository.updateReport(reportId, updateDto);
         if (!report) {
             throw new NotFoundException(`Report with ID "${reportId}" not found`);
         }
@@ -233,25 +130,13 @@ export class AdminsService implements IAdminsService {
 
     async getDashboardData(): Promise<DashboardResponseDto> {
         try {
-            const totalUsers = await this.userModel.countDocuments();
-            const totalEditors = await this.editorModel.countDocuments();
-            const totalReports = await this.reportModel.countDocuments();
-            const totalEditorRequests = await this.editorRequestModel.countDocuments();
-            const totalQuotations = await this.quotationModel.countDocuments();
+            const totalUsers = await this.userService.countAllUsers();
+            const totalEditors = await this.editorService.countAllEditors();
+            const totalReports = await this.reportsRepository.countDocuments();
+            const totalEditorRequests = await this.editorService.countEditorRequests();
+            const totalQuotations = await this.quotationService.countAllQuotations();
 
-            const quotationsByStatus = await this.quotationModel.aggregate([
-                { $group: { _id: '$status', count: { $sum: 1 } } }
-            ]);
-            const statusCounts = {
-                [QuotationStatus.PUBLISHED]: 0,
-                [QuotationStatus.ACCEPTED]: 0,
-                [QuotationStatus.COMPLETED]: 0,
-                [QuotationStatus.EXPIRED]: 0,
-                [QuotationStatus.CANCELLED]: 0,
-            };
-            quotationsByStatus.forEach(status => {
-                statusCounts[status._id] = status.count;
-            });
+            const quotationsByStatus = await this.quotationService.getQuotationsByStatus();
 
             return {
                 totalUsers,
@@ -260,11 +145,11 @@ export class AdminsService implements IAdminsService {
                 totalEditorRequests,
                 totalQuotations,
                 quotationsByStatus: {
-                    Published: statusCounts.Published,
-                    Accepted: statusCounts.Accepted,
-                    Completed: statusCounts.Completed,
-                    Expired: statusCounts.Expired,
-                    Cancelled: statusCounts.Cancelled,
+                    Published: quotationsByStatus.Published,
+                    Accepted: quotationsByStatus.Accepted,
+                    Completed: quotationsByStatus.Completed,
+                    Expired: quotationsByStatus.Expired,
+                    Cancelled: quotationsByStatus.Cancelled,
                 }
             };
         } catch (error) {

@@ -3,7 +3,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { BidsService } from './bids.service';
 import { Bid, BidSchema } from './models/bids.schema';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Quotation, QuotationSchema } from '../models/quotation.schema';
+import { Quotation, QuotationSchema } from '../../quotation/models/quotation.schema';
 import { BidRepository } from './repositories/bid.repository';
 
 @Module({
