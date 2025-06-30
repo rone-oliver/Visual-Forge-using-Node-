@@ -8,6 +8,7 @@ import { OtpService } from './otp/otp.service';
 import { Otp, OtpSchema } from 'src/common/models/otp.schema';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
+import { IUsersAuthServiceToken } from './interfaces/usersAuth-service.interface';
 
 @Module({
   imports: [
@@ -18,7 +19,13 @@ import { ConfigModule } from '@nestjs/config';
     UsersModule, PassportModule, ConfigModule,
   ],
   controllers: [UsersAuthController],
-  providers: [UsersAuthService, JwtService, OtpService],
-  exports: [UsersAuthService],
+  providers: [
+    {
+      provide: IUsersAuthServiceToken,
+      useClass: UsersAuthService
+    },
+    JwtService, OtpService
+  ],
+  exports: [IUsersAuthServiceToken],
 })
 export class UsersAuthModule {}

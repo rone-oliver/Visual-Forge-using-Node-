@@ -1,17 +1,16 @@
-import { Controller, Post, Body, Res, Req, Get, UnauthorizedException, BadRequestException, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, Res, Req, Get, UnauthorizedException, BadRequestException, HttpCode, HttpStatus, Inject } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { UsersAuthService } from './users-auth.service';
 import { User } from 'src/users/models/user.schema';
 import { Public } from '../decorators/public.decorator';
-
-interface VerifyOtpDto{
-    email:string;
-    otp:string;
-}
+import { IUsersAuthService, IUsersAuthServiceToken } from './interfaces/usersAuth-service.interface';
+import { VerifyOtpDto } from './dtos/users-auth.dto';
 
 @Controller('auth/user')
 export class UsersAuthController {
-    constructor(private usersAuthService: UsersAuthService){};
+    constructor(
+        @Inject(IUsersAuthServiceToken) private usersAuthService: IUsersAuthService,
+    ){};
 
     @Public()
     @Post('login')

@@ -6,9 +6,10 @@ import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { OtpService } from './otp/otp.service';
 import { IUsersService, IUsersServiceToken } from 'src/users/interfaces/users.service.interface';
+import { IUsersAuthService } from './interfaces/usersAuth-service.interface';
 
 @Injectable()
-export class UsersAuthService {
+export class UsersAuthService implements IUsersAuthService {
     constructor(
         @Inject(IUsersServiceToken) private readonly usersService: IUsersService,
         private jwtService: JwtService,
@@ -66,7 +67,7 @@ export class UsersAuthService {
         return await bcrypt.compare(password, hashPassword)
     }
 
-    async login(username: string, password: string, response: Response) {
+    async login(username: string, password: string, response: Response):Promise<{ user: User; accessToken: string; }> {
         try {
             this.logger.log(`Login attempt for user: ${username}`);
             const user = await this.usersService.findOne({ username });
