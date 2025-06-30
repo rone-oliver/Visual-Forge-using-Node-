@@ -5,7 +5,7 @@ import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { RolesGuard } from 'src/auth/guards/role.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { EditorsService } from 'src/editors/editors.service';
-import { PaymentService } from 'src/common/payment/payment.service';
+import { IPaymentService, IPaymentServiceToken } from 'src/common/payment/interfaces/payment-service.interface';
 import { PaymentType } from 'src/common/models/transaction.schema';
 import { Quotation, QuotationStatus } from 'src/common/models/quotation.schema';
 import { FileUploadResultDto as FileUploadResultDtoCloudinary } from 'src/common/cloudinary/dtos/cloudinary.dto';
@@ -71,7 +71,7 @@ export class UsersController implements IUsersController {
     constructor(
         @Inject(IUsersServiceToken) private readonly userService: IUsersService,
         private editorService: EditorsService,
-        private paymentService: PaymentService,
+        @Inject(IPaymentServiceToken) private paymentService: IPaymentService,
     ) { };
 
     @Get('profile')

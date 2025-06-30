@@ -18,6 +18,7 @@ import { Report, ReportSchema } from 'src/common/models/report.schema';
 import { WalletModule } from 'src/wallet/wallet.module';
 import { RelationshipModule } from 'src/common/relationship/relationship.module';
 import { CloudinaryModule } from 'src/common/cloudinary/cloudinary.module';
+import { IPaymentServiceToken } from 'src/common/payment/interfaces/payment-service.interface';
 
 @Module({
   controllers: [UsersController],

@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import crypto from 'crypto';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
+import { IPaymentService } from './interfaces/payment-service.interface';
 
 export enum RazorpayAccountType {
     CURRENT_ACCOUNT = 'current_account',
@@ -13,7 +14,7 @@ export enum RazorpayAccountType {
 }
 
 @Injectable()
-export class PaymentService {
+export class PaymentService implements IPaymentService {
     private readonly logger = new Logger(PaymentService.name);
     private readonly razorpay: Razorpay;
     private readonly razorpayKeyId: string;

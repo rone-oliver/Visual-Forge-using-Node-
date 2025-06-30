@@ -10,13 +10,14 @@ import { IWalletService, IWalletServiceToken } from './interfaces/wallet-service
 import { Types } from 'mongoose';
 import { PaginatedLedgerResponseDto } from './dto/wallet.dto';
 import { PaymentService } from 'src/common/payment/payment.service';
+import { IPaymentService, IPaymentServiceToken } from 'src/common/payment/interfaces/payment-service.interface';
 
 @Injectable()
 export class AdminWalletService implements IAdminWalletService {
   constructor(
     @Inject(IAdminTransactionRepositoryToken) private readonly adminTransactionRepository: IAdminTransactionRepository,
     @Inject(IWalletServiceToken) private readonly walletService: IWalletService,
-    private readonly paymentService: PaymentService,
+    @Inject(IPaymentServiceToken) private readonly paymentService: IPaymentService,
   ) {}
 
   async creditWelcomeBonus(userId: string): Promise<void> {
