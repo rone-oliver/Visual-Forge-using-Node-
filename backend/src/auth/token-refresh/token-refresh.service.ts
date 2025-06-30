@@ -1,9 +1,12 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { ITokenRefreshService } from './interfaces/tokenRefresh-service.interface';
 
 @Injectable()
-export class TokenRefreshService {
+export class TokenRefreshService implements ITokenRefreshService {
+    private readonly logger = new Logger(TokenRefreshService.name);
+
     constructor(
         private readonly jwtService: JwtService,
         private readonly configService: ConfigService
@@ -26,8 +29,7 @@ export class TokenRefreshService {
                     expiresIn: this.configService.get<string>('ACCESS_TOKEN_EXPIRATION')
                 }
             )
-            console.log('refresh Access Token called');
-            console.log(accessToken);
+            this.logger.log('refresh Access Token called: ', accessToken);
             return {accessToken};
         } catch (error) {
             throw new HttpException('Invalid refresh token', 401);
@@ -36,7 +38,7 @@ export class TokenRefreshService {
 
     async verifyRefreshToken(refreshToken: string): Promise<void> {
         try {
-            this.jwtService.verify(refreshToken, {
+            await this.jwtService.verifyAsync(refreshToken, {
                 secret: this.configService.get<string>('JWT_SECRET')
             });
         } catch (error) {

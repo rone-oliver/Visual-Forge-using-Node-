@@ -1,10 +1,9 @@
-import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, RequestMethod, Global } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TokenRefreshService } from 'src/auth/token-refresh/token-refresh.service';
-import { TokenRefreshController } from 'src/auth/token-refresh/token-refresh.controller';
 import { JwtMiddleware } from 'src/auth/middleware/jwt.middleware';
 
+@Global()
 @Module({
   imports: [
     JwtModule.registerAsync({
@@ -24,11 +23,11 @@ import { JwtMiddleware } from 'src/auth/middleware/jwt.middleware';
       inject: [ConfigService],
     }),
   ],
-  providers: [TokenRefreshService],
-  controllers: [TokenRefreshController],
+  providers: [],
+  controllers: [],
   exports: [JwtModule],
 })
-export class JwtConfigModule implements NestModule {
+export class CoreModule implements NestModule {
   constructor(private configService: ConfigService){};
 
   configure(consumer: MiddlewareConsumer) {

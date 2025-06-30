@@ -11,11 +11,6 @@ import { EditorsModule } from './editors/editors.module';
 import { UsersAuthModule } from './auth/users-auth/users.module';
 import { AdminsAuthModule } from './auth/admins-auth/admins.module';
 import { UsersAuthController } from './auth/users-auth/users-auth.controller';
-import { JwtService } from '@nestjs/jwt';
-import { TokenRefreshService } from './auth/token-refresh/token-refresh.service';
-import { TokenRefreshController } from './auth/token-refresh/token-refresh.controller';
-import { JwtConfigModule } from './common/config/jwt.module';
-import { AuthModule } from './auth/auth.module';
 import { CloudinaryService } from './common/cloudinary/cloudinary.service';
 import { PaymentModule } from './common/payment/payment.module';
 import { ChatModule } from './chat/chat.module';
@@ -26,7 +21,9 @@ import { WalletModule } from './wallet/wallet.module';
 import { CommunityModule } from './community/community.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { RelationshipModule } from './common/relationship/relationship.module';
+import { AuthModule } from './auth/auth.module';
 import { AuthGuard } from './auth/guards/auth.guard';
+import { CoreModule } from './common/config/core.module';
 
 @Module({
   imports: [
@@ -61,13 +58,12 @@ import { AuthGuard } from './auth/guards/auth.guard';
       inject: [ConfigService],
     }),
     // MongooseModule.forRoot(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/visualForge'),
-    AuthModule,UsersModule, DatabaseModule, AdminsModule, EditorsModule, UsersAuthModule, AdminsAuthModule, JwtConfigModule, PaymentModule, ChatModule, NotificationModule, BidsModule, AiModule, WalletModule, CommunityModule, RelationshipModule
+    AuthModule,UsersModule, DatabaseModule, AdminsModule, EditorsModule, UsersAuthModule, AdminsAuthModule, CoreModule, PaymentModule, ChatModule, NotificationModule, BidsModule, AiModule, WalletModule, CommunityModule, RelationshipModule
   ],
-  controllers: [AppController, UsersAuthController, TokenRefreshController],
+  controllers: [AppController, UsersAuthController],
   providers: [
     AppService, 
     // JwtService, 
-    TokenRefreshService, 
     CloudinaryService,
     {
       provide: APP_GUARD,

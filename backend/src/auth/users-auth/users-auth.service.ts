@@ -5,7 +5,6 @@ import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { OtpService } from './otp/otp.service';
-import { Types } from 'mongoose';
 import { IUsersService, IUsersServiceToken } from 'src/users/interfaces/users.service.interface';
 
 @Injectable()

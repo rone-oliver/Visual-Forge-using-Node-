@@ -1,10 +1,12 @@
-import { Controller, Get, HttpException, Post, Query, Req, UseGuards } from '@nestjs/common';
-import { TokenRefreshService } from './token-refresh.service';
+import { Controller, Get, HttpException, Inject, Query, Req } from '@nestjs/common';
 import { Public } from '../decorators/public.decorator';
+import { ITokenRefreshService, ITokenRefreshServiceToken } from './interfaces/tokenRefresh-service.interface';
 
 @Controller('auth')
 export class TokenRefreshController {
-    constructor(private readonly tokenRefreshService: TokenRefreshService) {};
+    constructor(
+        @Inject(ITokenRefreshServiceToken) private readonly tokenRefreshService: ITokenRefreshService,
+    ) {};
 
     @Public()
     @Get('refresh')
