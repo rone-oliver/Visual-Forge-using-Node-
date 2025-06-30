@@ -3,10 +3,9 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Editor, EditorDocument } from './models/editor.schema';
 import { Model, Types } from 'mongoose';
 import { OutputType, Quotation, QuotationDocument, QuotationStatus } from 'src/common/models/quotation.schema';
-import { CloudinaryService, FileType } from 'src/common/cloudinary/cloudinary.service';
+import { FileType } from 'src/common/cloudinary/dtos/cloudinary.dto';
 import { Works, WorksDocument } from 'src/common/models/works.schema';
 import { User, UserDocument } from 'src/users/models/user.schema';
-import { NotificationService } from 'src/notification/notification.service';
 import { NotificationType } from 'src/notification/models/notification.schema';
 import { Bid, BidDocument, BidStatus } from 'src/common/bids/models/bids.schema';
 import { BidsService } from 'src/common/bids/bids.service';
@@ -34,6 +33,7 @@ import { CreateBidDto } from 'src/common/bids/dto/create-bid.dto';
 import { IRelationshipService, IRelationshipServiceToken } from 'src/common/relationship/interfaces/service.interface';
 import { EventTypes } from 'src/common/constants/events.constants';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { ICloudinaryService, ICloudinaryServiceToken } from 'src/common/cloudinary/interfaces/cloudinary-service.interface';
 
 @Injectable()
 export class EditorsService implements IEditorsService {
@@ -45,7 +45,7 @@ export class EditorsService implements IEditorsService {
         @InjectModel(User.name) private userModel: Model<UserDocument>,
         @InjectModel(Bid.name) private bidModel: Model<BidDocument>,
         @Inject(IRelationshipServiceToken) private readonly relationshipService: IRelationshipService,
-        private cloudinaryService: CloudinaryService,
+        @Inject(ICloudinaryServiceToken) private cloudinaryService: ICloudinaryService,
         private eventEmitter: EventEmitter2,
         private readonly bidsService: BidsService,
     ) { };

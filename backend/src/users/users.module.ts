@@ -17,6 +17,7 @@ import { IUsersServiceToken } from './interfaces/users.service.interface';
 import { Report, ReportSchema } from 'src/common/models/report.schema';
 import { WalletModule } from 'src/wallet/wallet.module';
 import { RelationshipModule } from 'src/common/relationship/relationship.module';
+import { CloudinaryModule } from 'src/common/cloudinary/cloudinary.module';
 
 @Module({
   controllers: [UsersController],
@@ -38,7 +39,7 @@ import { RelationshipModule } from 'src/common/relationship/relationship.module'
       { name: Bid.name, schema: BidSchema},
       { name: Report.name, schema: ReportSchema },
     ]),
-    PaymentModule, BidsModule, WalletModule, RelationshipModule
+    PaymentModule, BidsModule, WalletModule, RelationshipModule, CloudinaryModule
   ],
   exports: [IUsersServiceToken,]
 })

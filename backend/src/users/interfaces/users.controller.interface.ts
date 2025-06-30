@@ -29,7 +29,7 @@ import {
     ReportUserDto,
 } from '../dto/users.dto';
 import { BidResponseDto } from '../dto/users.dto';
-import { FileUploadResult } from 'src/common/cloudinary/cloudinary.service'; 
+import { FileUploadResultDto as FileUploadResultDtoCloudinary } from 'src/common/cloudinary/dtos/cloudinary.dto'; 
 import { User } from '../models/user.schema';
 import { Types } from 'mongoose';
 import { Bid } from 'src/common/bids/models/bids.schema';
@@ -64,7 +64,7 @@ export interface IUsersController {
         req: Request,
         files: Express.Multer.File[],
         folder?: string,
-    ): Promise<FileUploadResult[]>;
+    ): Promise<FileUploadResultDtoCloudinary[]>;
 
     rateWork(
         req: Request,

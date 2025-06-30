@@ -24,6 +24,7 @@ import { RelationshipModule } from './common/relationship/relationship.module';
 import { AuthModule } from './auth/auth.module';
 import { AuthGuard } from './auth/guards/auth.guard';
 import { CoreModule } from './common/config/core.module';
+import { CloudinaryModule } from './common/cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -58,13 +59,11 @@ import { CoreModule } from './common/config/core.module';
       inject: [ConfigService],
     }),
     // MongooseModule.forRoot(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/visualForge'),
-    AuthModule,UsersModule, DatabaseModule, AdminsModule, EditorsModule, UsersAuthModule, AdminsAuthModule, CoreModule, PaymentModule, ChatModule, NotificationModule, BidsModule, AiModule, WalletModule, CommunityModule, RelationshipModule
+    AuthModule,UsersModule, DatabaseModule, AdminsModule, EditorsModule, UsersAuthModule, AdminsAuthModule, CoreModule, PaymentModule, ChatModule, NotificationModule, BidsModule, AiModule, WalletModule, CommunityModule, RelationshipModule, CloudinaryModule
   ],
   controllers: [AppController, UsersAuthController],
   providers: [
-    AppService, 
-    // JwtService, 
-    CloudinaryService,
+    AppService,
     {
       provide: APP_GUARD,
       useClass: AuthGuard,

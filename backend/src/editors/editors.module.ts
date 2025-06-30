@@ -12,6 +12,7 @@ import { Bid, BidSchema } from 'src/common/bids/models/bids.schema';
 import { BidsModule } from 'src/common/bids/bids.module';
 import { IEditorsServiceToken } from './interfaces/editors.service.interface';
 import { RelationshipModule } from 'src/common/relationship/relationship.module';
+import { CloudinaryModule } from 'src/common/cloudinary/cloudinary.module';
 
 @Module({
   providers: [
@@ -23,7 +24,7 @@ import { RelationshipModule } from 'src/common/relationship/relationship.module'
   ],
   controllers: [EditorsController],
   imports:[
-    UsersModule, BidsModule, RelationshipModule,
+    UsersModule, BidsModule, RelationshipModule, CloudinaryModule,
     MongooseModule.forFeature([
       { name: Editor.name, schema: editorSchema},
       { name: Quotation.name, schema: QuotationSchema},

@@ -1,35 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { v2 as cloudinary } from 'cloudinary';
-import { access } from 'fs';
+import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
 import { Readable } from 'stream';
-
-export enum FileType {
-    IMAGE = 'image',
-    VIDEO = 'video',
-    AUDIO = 'audio',
-    DOCUMENT = 'document'
-}
-
-export interface UploadApiResponse {
-    url: string;
-    secure_url: string;
-    public_id: string;
-    format: string;
-    resource_type: 'image' | 'video' | 'raw' | 'auto';
-}
-
-export interface FileUploadResult {
-    url: string;
-    fileType: FileType;
-    fileName: string;
-    size: number;
-    mimeType: string;
-    uploadedAt: Date;
-}
+import { FileType, FileUploadResultDto } from './dtos/cloudinary.dto';
+import { ICloudinaryService } from './interfaces/cloudinary-service.interface';
 
 @Injectable()
-export class CloudinaryService {
+export class CloudinaryService implements ICloudinaryService {
     private readonly logger = new Logger(CloudinaryService.name);
 
     constructor(private configService: ConfigService) {
@@ -45,7 +22,7 @@ export class CloudinaryService {
     async uploadFile(
         file: Express.Multer.File,
         folder = 'Visual Forge'
-    ): Promise<FileUploadResult> {
+    ): Promise<FileUploadResultDto> {
         try {
             const fileType = this.determineFileType(file.mimetype);
             const resourceType = this.getResourceType(fileType);
@@ -101,7 +78,7 @@ export class CloudinaryService {
     async uploadFiles(
         files: Express.Multer.File[],
         folder = 'quotation_files'
-    ): Promise<FileUploadResult[]> {
+    ): Promise<FileUploadResultDto[]> {
         try {
             const uploadPromises = files.map(file => this.uploadFile(file, folder));
             return Promise.all(uploadPromises);
@@ -133,7 +110,7 @@ export class CloudinaryService {
             case FileType.VIDEO:
                 return 'video';
             case FileType.AUDIO:
-                return 'video'; // Cloudinary handles audio under 'video' resource type
+                return 'video';
             case FileType.DOCUMENT:
                 return 'raw';
             default:

@@ -8,9 +8,7 @@ import { EditorRequest, EditorRequestDocument } from 'src/common/models/editorRe
 import { Quotation, QuotationDocument, QuotationStatus } from 'src/common/models/quotation.schema';
 import { Works, WorksDocument } from 'src/common/models/works.schema';
 import { PaymentStatus, PaymentType, Transaction, TransactionDocument } from 'src/common/models/transaction.schema';
-import { Bid, BidDocument } from 'src/common/bids/models/bids.schema';
-import { CloudinaryService, FileUploadResult } from 'src/common/cloudinary/cloudinary.service';
-import { NotificationService } from 'src/notification/notification.service';
+import { Bid } from 'src/common/bids/models/bids.schema';
 import { BidsService } from 'src/common/bids/bids.service';
 import { IUsersService, UserInfoForChatListDto } from './interfaces/users.service.interface';
 import {
@@ -31,7 +29,6 @@ import {
     CompletedWorkDto,
     RateWorkDto,
     RateEditorDto,
-    EditorRatingResponseDto,
     UpdateWorkPublicStatusDto,
     PaginatedPublicWorksResponseDto,
     GetPublicWorksQueryDto,
@@ -45,7 +42,6 @@ import {
     PaginatedPublicEditorsDto,
     ReportUserDto
 } from './dto/users.dto';
-import { NotificationType } from 'src/notification/models/notification.schema';
 import { Report, ReportDocument } from 'src/common/models/report.schema';
 import { IAdminWalletService, IAdminWalletServiceToken } from 'src/wallet/interfaces/admin-wallet.service.interface';
 import { getYouTubeEmbedUrl } from 'src/common/utils/youtube-url.util';
@@ -53,6 +49,8 @@ import { IRelationshipService, IRelationshipServiceToken } from 'src/common/rela
 import { RelationshipType } from 'src/common/enums/relationships.enum';
 import { EventTypes } from 'src/common/constants/events.constants';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { FileUploadResultDto as FileUploadResultDtoCloudinary } from 'src/common/cloudinary/dtos/cloudinary.dto';
+import { ICloudinaryService, ICloudinaryServiceToken } from 'src/common/cloudinary/interfaces/cloudinary-service.interface';
 
 @Injectable()
 export class UsersService implements IUsersService {
@@ -67,7 +65,7 @@ export class UsersService implements IUsersService {
         @InjectModel(Report.name) private reportModel: Model<ReportDocument>,
         @Inject(IAdminWalletServiceToken) private readonly adminWalletService: IAdminWalletService,
         @Inject(IRelationshipServiceToken) private readonly relationshipService: IRelationshipService,
-        private cloudinaryService: CloudinaryService,
+        @Inject(ICloudinaryServiceToken) private cloudinaryService: ICloudinaryService,
         private eventEmitter: EventEmitter2,
         private bidsService: BidsService,
     ) { }
@@ -517,7 +515,7 @@ export class UsersService implements IUsersService {
         }
     }
 
-    async uploadFiles(files: Express.Multer.File[], folder?: string): Promise<FileUploadResult[]> {
+    async uploadFiles(files: Express.Multer.File[], folder?: string): Promise<FileUploadResultDtoCloudinary[]> {
         try {
             const uploadPromises = await this.cloudinaryService.uploadFiles(files, folder);
             return Promise.all(uploadPromises);

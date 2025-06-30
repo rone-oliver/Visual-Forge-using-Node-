@@ -8,6 +8,7 @@ import { EditorsService } from 'src/editors/editors.service';
 import { PaymentService } from 'src/common/payment/payment.service';
 import { PaymentType } from 'src/common/models/transaction.schema';
 import { Quotation, QuotationStatus } from 'src/common/models/quotation.schema';
+import { FileUploadResultDto as FileUploadResultDtoCloudinary } from 'src/common/cloudinary/dtos/cloudinary.dto';
 import {
     BidResponseDto,
     CreatePaymentDto,
@@ -223,7 +224,7 @@ export class UsersController implements IUsersController {
         @Req() req: Request,
         @UploadedFiles() files: Express.Multer.File[],
         @Body('folder') folder?: string,
-    ) {
+    ): Promise<FileUploadResultDtoCloudinary[]> {
         this.logger.log(`Uploading ${files.length} files`);
         const result = await this.userService.uploadFiles(files, folder);
         return result;

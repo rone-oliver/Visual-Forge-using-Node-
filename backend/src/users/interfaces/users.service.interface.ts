@@ -33,7 +33,7 @@ import {
 import { User } from '../models/user.schema';
 import { PaymentType } from 'src/common/models/transaction.schema';
 import { Bid } from 'src/common/bids/models/bids.schema';
-import { FileUploadResult } from 'src/common/cloudinary/cloudinary.service';
+import { FileUploadResultDto as FileUploadResultDtoCloudinary } from 'src/common/cloudinary/dtos/cloudinary.dto';
 
 export const IUsersServiceToken = Symbol('IUsersService');
 
@@ -63,7 +63,7 @@ export interface IUsersService {
     updateProfile(userId: Types.ObjectId, updateProfileDto: UpdateProfileDto): Promise<UserProfileResponseDto | null>;
     resetPassword(userId: Types.ObjectId, resetPasswordDto: ResetPasswordDto): Promise<SuccessResponseDto>;
 
-    uploadFiles(files: Express.Multer.File[], folder?: string): Promise<FileUploadResult[]>;
+    uploadFiles(files: Express.Multer.File[], folder?: string): Promise<FileUploadResultDtoCloudinary[]>;
 
     rateWork(workId: string, rateWorkDto: RateWorkDto): Promise<SuccessResponseDto>;
     updateWorkPublicStatus(workId: string, updateWorkPublicStatusDto: UpdateWorkPublicStatusDto): Promise<SuccessResponseDto>;
