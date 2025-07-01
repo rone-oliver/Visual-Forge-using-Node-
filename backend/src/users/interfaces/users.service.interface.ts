@@ -47,6 +47,7 @@ export interface UserInfoForChatListDto {
 export interface IUsersService {
     getAllUsersForAdmin(query: GetAllUsersQueryDto): Promise<User[]>;
     getUserById(userId: Types.ObjectId): Promise<User | null>;
+    makeUserEditor(userId: Types.ObjectId): Promise<User | null>;
     blockUser(userId: Types.ObjectId): Promise<User | null>;
     countAllUsers(): Promise<number>;
     getUserDetails(userId: Types.ObjectId): Promise<UserProfileResponseDto | null>;

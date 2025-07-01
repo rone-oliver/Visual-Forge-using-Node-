@@ -5,9 +5,20 @@ import { Bid, BidSchema } from './models/bids.schema';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Quotation, QuotationSchema } from '../../quotation/models/quotation.schema';
 import { BidRepository } from './repositories/bid.repository';
+import { IBidRepositoryToken, IBidServiceToken } from './interfaces/bid.interfaces';
 
 @Module({
-  providers: [  BidsService, BidRepository,],
+  providers: [
+    BidsService,
+    {
+      provide: IBidRepositoryToken,
+      useClass: BidRepository
+    },
+    {
+      provide: IBidServiceToken,
+      useClass: BidsService
+    }
+  ],
   imports: [
     MongooseModule.forFeature([
       { name: Bid.name, schema: BidSchema},
@@ -15,6 +26,6 @@ import { BidRepository } from './repositories/bid.repository';
     ]),
     EventEmitterModule.forRoot()
   ],
-  exports:[BidsService,BidRepository]
+  exports:[BidsService,IBidServiceToken,IBidRepositoryToken]
 })
 export class BidsModule {}

@@ -1,28 +1,22 @@
 import { Types } from 'mongoose';
 import { Editor } from '../models/editor.schema';
 import {
-    GetPublishedQuotationsQueryDto,
-    GetAcceptedQuotationsQueryDto,
     SubmitWorkBodyDto,
     CreateEditorBidBodyDto,
     UpdateEditorBidBodyDto,
     EditorDetailsResponseDto,
-    PaginatedAcceptedQuotationsResponseDto,
     FileUploadResultDto,
     BidResponseDto,
-    CompletedWorkDto,
-    PaginatedPublishedQuotationsResponseDto,
     AddTutorialDto,
     RemoveTutorialDto
 } from '../dto/editors.dto';
 import { EditorRequest } from '../models/editorRequest.schema';
 import { FormattedEditor, GetEditorsQueryDto } from 'src/admins/dto/admin.dto';
+import { CompletedWorkDto, GetAcceptedQuotationsQueryDto, GetPublishedQuotationsQueryDto, PaginatedAcceptedQuotationsResponseDto, PaginatedPublishedQuotationsResponseDto } from 'src/quotation/dtos/quotation.dto';
 
 export const IEditorsServiceToken = Symbol('IEditorsServiceToken');
 
 export interface IEditorsService {
-    createEditor(editorDto: Partial<Editor>): Promise<Editor>; // Assuming Editor from schema is fine for creation context
-
     getPublishedQuotations(
         editorId: Types.ObjectId,
         params: GetPublishedQuotationsQueryDto
@@ -39,7 +33,6 @@ export interface IEditorsService {
     ): Promise<FileUploadResultDto[]>;
 
     submitQuotationResponse(
-        editorId: Types.ObjectId, 
         workData: SubmitWorkBodyDto
     ): Promise<boolean>;
 

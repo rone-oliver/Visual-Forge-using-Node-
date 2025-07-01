@@ -3,6 +3,8 @@ import { Bid } from 'src/common/bids/models/bids.schema';
 import { CreateBidDto } from '../dto/create-bid.dto';
 import { BidResponseDto } from '../dto/bid-response.dto';
 
+export const IBidRepositoryToken = Symbol('IBidRepository');
+
 export interface IBidRepository {
     findByFilters(filters: Partial<Bid>): Promise<Bid | null>;
     findById(id: string | Types.ObjectId, options?: any): Promise<Bid | null>;
@@ -14,6 +16,8 @@ export interface IBidRepository {
     delete(bidId: Types.ObjectId): Promise<void>;
     getAcceptedBid(quotationId: Types.ObjectId, editorId: Types.ObjectId): Promise<Bid>;
 }
+
+export const IBidServiceToken = Symbol('IBidService');
 
 export interface IBidService {
   create(bidData: CreateBidDto, editorId: Types.ObjectId): Promise<Bid>;

@@ -5,7 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Editor, editorSchema } from './models/editor.schema';
 import { Quotation, QuotationSchema } from 'src/quotation/models/quotation.schema';
 import { CloudinaryService } from 'src/common/cloudinary/cloudinary.service';
-import { Works, workSchema } from 'src/common/models/works.schema';
+import { Works, workSchema } from 'src/works/models/works.schema';
 import { User, userSchema } from 'src/users/models/user.schema';
 import { UsersModule } from 'src/users/users.module';
 import { Bid, BidSchema } from 'src/common/bids/models/bids.schema';
@@ -18,6 +18,8 @@ import { IEditorRequestsRepositoryToken } from './interfaces/editorRequests.repo
 import { EditorRequest, EditorRequestSchema } from 'src/editors/models/editorRequest.schema';
 import { IEditorRepositoryToken } from './interfaces/editor.repository.interface';
 import { EditorRepository } from './repositories/editor.repository';
+import { QuotationModule } from 'src/quotation/quotation.module';
+import { WorksModule } from 'src/works/works.module';
 
 @Module({
   providers: [
@@ -36,14 +38,10 @@ import { EditorRepository } from './repositories/editor.repository';
   ],
   controllers: [EditorsController],
   imports:[
-    forwardRef(() => UsersModule), BidsModule, RelationshipModule, CloudinaryModule,
+    forwardRef(() => UsersModule), BidsModule, RelationshipModule, CloudinaryModule, QuotationModule, WorksModule,
     MongooseModule.forFeature([
       { name: Editor.name, schema: editorSchema},
       { name: EditorRequest.name, schema: EditorRequestSchema },
-      { name: Quotation.name, schema: QuotationSchema},
-      { name: Works.name, schema: workSchema},
-      { name: User.name, schema: userSchema},
-      { name: Bid.name, schema: BidSchema},
     ])
   ],
   exports: [IEditorsServiceToken, IEditorRequestsRepositoryToken, IEditorRepositoryToken]

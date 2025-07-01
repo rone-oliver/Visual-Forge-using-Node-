@@ -1,19 +1,15 @@
 import {
-    GetPublishedQuotationsQueryDto,
-    GetAcceptedQuotationsQueryDto,
-    PaginatedAcceptedQuotationsResponseDto,
-    PaginatedPublishedQuotationsResponseDto,
     FileUploadResultDto,
     SubmitWorkBodyDto,
     CreateEditorBidBodyDto,
     UpdateEditorBidBodyDto,
     BidResponseDto,
-    CompletedWorkDto,
     RemoveTutorialDto,
     AddTutorialDto,
 } from '../dto/editors.dto';
 import { QuotationStatus } from 'src/quotation/models/quotation.schema';
 import { Editor } from '../models/editor.schema';
+import { CompletedWorkDto, GetAcceptedQuotationsQueryDto, GetPublishedQuotationsQueryDto, PaginatedAcceptedQuotationsResponseDto, PaginatedPublishedQuotationsResponseDto } from 'src/quotation/dtos/quotation.dto';
 
 export interface IEditorsController {
     getQuotations(

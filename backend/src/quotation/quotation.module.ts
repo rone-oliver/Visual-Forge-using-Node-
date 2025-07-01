@@ -20,6 +20,6 @@ import { QuotationService } from './quotation.service';
             useClass: QuotationService,
         },
     ],
-    exports: [IQuotationServiceToken],
+    exports: [IQuotationServiceToken,IQuotationRepositoryToken],
 })
 export class QuotationModule {}

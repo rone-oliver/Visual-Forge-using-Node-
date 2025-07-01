@@ -7,7 +7,7 @@ import { EditorRequest, EditorRequestSchema } from 'src/editors/models/editorReq
 import { Editor, editorSchema } from 'src/editors/models/editor.schema';
 import { Quotation, QuotationSchema } from 'src/quotation/models/quotation.schema';
 import { CloudinaryService } from 'src/common/cloudinary/cloudinary.service';
-import { Works, workSchema } from 'src/common/models/works.schema';
+import { Works, workSchema } from 'src/works/models/works.schema';
 import { EditorsService } from 'src/editors/editors.service';
 import { PaymentModule } from 'src/common/payment/payment.module';
 import { Transaction, TransactionSchema } from 'src/common/models/transaction.schema';
@@ -22,6 +22,8 @@ import { IPaymentServiceToken } from 'src/common/payment/interfaces/payment-serv
 import { EditorsModule } from 'src/editors/editors.module';
 import { IUserRepositoryToken } from './interfaces/users.repository.interface';
 import { UserRepository } from './repositories/user.repository';
+import { QuotationModule } from 'src/quotation/quotation.module';
+import { WorksModule } from 'src/works/works.module';
 
 @Module({
   controllers: [UsersController],
@@ -48,7 +50,7 @@ import { UserRepository } from './repositories/user.repository';
       { name: Bid.name, schema: BidSchema},
       { name: Report.name, schema: ReportSchema },
     ]),
-    PaymentModule, BidsModule, WalletModule, RelationshipModule, CloudinaryModule
+    PaymentModule, BidsModule, WalletModule, RelationshipModule, CloudinaryModule, QuotationModule, WorksModule,
   ],
   exports: [IUsersServiceToken, IUserRepositoryToken]
 })

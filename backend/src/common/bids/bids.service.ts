@@ -1,14 +1,13 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Bid, BidDocument, BidStatus } from './models/bids.schema';
 import { Model, Types } from 'mongoose';
 import { Quotation, QuotationDocument, QuotationStatus } from '../../quotation/models/quotation.schema';
 import { BidResponseDto } from './dto/bid-response.dto';
-import { BidRepository } from './repositories/bid.repository';
 import { CreateBidDto } from './dto/create-bid.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { EventTypes } from '../constants/events.constants';
-import { IBidService } from './interfaces/bid.interfaces';
+import { IBidRepository, IBidRepositoryToken, IBidService } from './interfaces/bid.interfaces';
 
 interface PopulatedEditor {
   _id: Types.ObjectId;
@@ -27,7 +26,7 @@ export class BidsService implements IBidService{
   constructor(
     @InjectModel(Bid.name) private bidModel: Model<BidDocument>,
     @InjectModel(Quotation.name) private quotationModel: Model<QuotationDocument>,
-    private bidRepository: BidRepository,
+    @Inject(IBidRepositoryToken) private bidRepository: IBidRepository,
     private eventEmitter: EventEmitter2,
     // private quotationRepository: QuotationRepository,
   ) { };

@@ -7,16 +7,11 @@ import { RolesGuard } from 'src/auth/guards/role.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { OutputType, QuotationStatus } from 'src/quotation/models/quotation.schema';
 import {
-  GetPublishedQuotationsQueryDto,
-  GetAcceptedQuotationsQueryDto,
   SubmitWorkBodyDto,
   CreateEditorBidBodyDto,
   UpdateEditorBidBodyDto,
-  PaginatedAcceptedQuotationsResponseDto,
   FileUploadResultDto,
   BidResponseDto,
-  CompletedWorkDto,
-  PaginatedPublishedQuotationsResponseDto,
   AddTutorialDto,
   RemoveTutorialDto
 } from './dto/editors.dto';
@@ -25,6 +20,7 @@ import { IEditorsController } from './interfaces/editors.controller.interface';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import { Editor } from './models/editor.schema';
 import { Role } from 'src/common/enums/role.enum';
+import { CompletedWorkDto, GetAcceptedQuotationsQueryDto, GetPublishedQuotationsQueryDto, PaginatedAcceptedQuotationsResponseDto, PaginatedPublishedQuotationsResponseDto } from 'src/quotation/dtos/quotation.dto';
 
 @ApiTags('editor')
 @Controller('editor')
@@ -82,7 +78,7 @@ export class EditorsController implements IEditorsController {
     @Body() workData: SubmitWorkBodyDto
   ): Promise<boolean> {
     const editor = req['user'] as { userId: Types.ObjectId, role: string };
-    return this.editorService.submitQuotationResponse(editor.userId, workData);
+    return this.editorService.submitQuotationResponse(workData);
   }
 
   @Post('uploads/work')

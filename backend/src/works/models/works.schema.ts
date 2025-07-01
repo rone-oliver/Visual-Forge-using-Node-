@@ -5,7 +5,7 @@ import { FileType } from "../../quotation/models/quotation.schema";
 export type WorksDocument = Works & Document;
 
 @Schema()
-class FileAttachment {
+export class FileAttachment {
     @Prop({ required: true })
     url: string;
 

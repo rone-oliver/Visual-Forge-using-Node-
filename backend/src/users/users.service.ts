@@ -6,7 +6,7 @@ import { User, UserDocument } from './models/user.schema';
 import { Editor, EditorDocument } from 'src/editors/models/editor.schema';
 import { EditorRequest, EditorRequestDocument } from 'src/editors/models/editorRequest.schema';
 import { Quotation, QuotationDocument, QuotationStatus } from 'src/quotation/models/quotation.schema';
-import { Works, WorksDocument } from 'src/common/models/works.schema';
+import { Works, WorksDocument } from 'src/works/models/works.schema';
 import { PaymentStatus, PaymentType, Transaction, TransactionDocument } from 'src/common/models/transaction.schema';
 import { Bid } from 'src/common/bids/models/bids.schema';
 import { BidsService } from 'src/common/bids/bids.service';
@@ -1067,5 +1067,14 @@ export class UsersService implements IUsersService {
         if (query.search) filter.username = { $regex: query.search, $options: 'i' };
 
         return this.userRepository.find(filter);
+    }
+
+    async makeUserEditor(userId: Types.ObjectId): Promise<User | null> {
+        try {
+            return this.userRepository.findOneAndUpdate({ _id: userId }, { isEditor: true });
+        } catch (error) {
+            this.logger.error(`Error making user editor: ${error.message}`);
+            throw error;
+        }
     }
 }
