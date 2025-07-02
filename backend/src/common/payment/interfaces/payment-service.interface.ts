@@ -1,3 +1,5 @@
+import { IQuotationService } from "src/quotation/interfaces/quotation.service.interface";
+
 export const IPaymentServiceToken = Symbol('IPaymentService');
 
 export interface IPaymentService {
@@ -6,4 +8,5 @@ export interface IPaymentService {
     refundPayment(paymentId: string, amount: number): Promise<any>;
     verifyPayment(razorpayOrderId: string, razorpayPaymentId: string, razorpaySignature: string): Promise<any>;
     getAccountBalance(): Promise<number>;
+    reconcileStuckPayments(quotationService: IQuotationService);
 }

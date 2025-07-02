@@ -50,10 +50,11 @@ export class PaymentService {
     });
   }
 
-  createOrder(amount: number, currency: string) {
+  createOrder(amount: number, currency: string, quotationId: string) {
     return this.http.post(`${environment.apiUrl}/user/payment`, {
       amount,
-      currency
+      currency,
+      quotationId
     });
   }
 

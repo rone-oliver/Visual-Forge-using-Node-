@@ -230,13 +230,6 @@ export class UserService {
     return this.http.get<User[]>(`${this.userApiUrl}/users`);
   }
 
-  createPaymentOrder(amount: number): Observable<any> {
-    return this.http.post<any>(`${this.userApiUrl}/payment`, { amount }).pipe(
-      map(response => response),
-      catchError(error => { throw error })
-    );
-  }
-
   updateQuotationPayment(isAdvance: boolean, quotationId: string, amount: number, paymentDetails: IPaymentVerification): Observable<boolean> {
     console.log('paymentDetails:', paymentDetails);
     return this.http.patch<boolean>(`${this.userApiUrl}/quotations/${quotationId}/payment`, {

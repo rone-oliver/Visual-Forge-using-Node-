@@ -5,6 +5,7 @@ import crypto from 'crypto';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { IPaymentService } from './interfaces/payment-service.interface';
+import { IQuotationService } from 'src/quotation/interfaces/quotation.service.interface';
 
 export enum RazorpayAccountType {
     CURRENT_ACCOUNT = 'current_account',
@@ -38,13 +39,15 @@ export class PaymentService implements IPaymentService {
         });
     }
 
-    async createRazorpayOrder(amount: number, currency: string = this.DEFAULT_CURRENCY, receipt?: string) {
+    async createRazorpayOrder(amount: number, currency: string = this.DEFAULT_CURRENCY, quotationId: string, receipt?: string) {
         try {
             const order = await this.razorpay.orders.create({
                 amount: amount * 100, // Amount in paise
                 currency: currency,
                 receipt: receipt,
-                // notes: { ... }, // Optional notes
+                notes: {
+                    quotationId
+                }, // Optional notes
             });
             return order;
             // Sample order data
@@ -76,6 +79,67 @@ export class PaymentService implements IPaymentService {
         } catch (error) {
             this.logger.error('Error fetching payment details:', error);
             throw new Error('Failed to fetch payment details');
+        }
+    }
+
+    async fetchOrderStatus(orderId: string) {
+        try {
+            const order = await this.razorpay.orders.fetch(orderId);
+            return order;
+        } catch (error) {
+            this.logger.error('Error fetching order status: ',error);
+            throw new Error('Failed to fetch order status');
+        }
+    }
+
+    async reconcileStuckPayments(quotationService: IQuotationService) {
+        try {
+            // Find quotations that have been in payment progress for more than 10 minutes
+            const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+            
+            const stuckQuotations = await quotationService.findMany({
+                isPaymentInProgress: true,
+            });
+            if(!stuckQuotations){
+                this.logger.warn('No quotations found for clearing the payment states');
+                return;
+            }
+
+            for (const quotation of stuckQuotations) {
+                await quotationService.updateQuotation({_id:quotation._id}, {
+                    isPaymentInProgress: false
+                });
+            }
+
+            this.logger.log(`Reconciled ${stuckQuotations.length} stuck quotations`);
+        } catch (error) {
+            this.logger.error('Error in payment reconciliation job:', error);
+            throw error;
+        }
+    }
+
+    async handleWebhook(event: string, data: any, quotationService: IQuotationService) {
+        try {
+            switch (event) {
+                case 'payment.failed':
+                case 'order.expired':
+                    if (data.order_id) {
+                        const quotation = await quotationService.findOneByRazorpayOrderId(data.order_id);
+                        if (quotation) {
+                            await quotationService.updateQuotation(quotation._id, {
+                                isPaymentInProgress: false,
+                                advancePaymentOrderId: data.order_id === quotation.advancePaymentOrderId ? null : quotation.advancePaymentOrderId,
+                                balancePaymentOrderId: data.order_id === quotation.balancePaymentOrderId ? null : quotation.balancePaymentOrderId
+                            });
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+        } catch (error) {
+            this.logger.error('Error handling Razorpay webhook:', error);
+            throw error;
         }
     }
 

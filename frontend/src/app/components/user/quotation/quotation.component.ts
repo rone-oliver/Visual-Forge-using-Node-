@@ -350,7 +350,7 @@ export class QuotationComponent implements OnInit, OnDestroy {
         return;
       }
       const order = await firstValueFrom(
-        this.paymentService.createOrder(quotation.advanceAmount, 'INR')
+        this.paymentService.createOrder(quotation.advanceAmount, 'INR',quotation._id)
       );
 
       const paymentResult = await this.paymentService.openRazorpayCheckout(order);
@@ -369,12 +369,18 @@ export class QuotationComponent implements OnInit, OnDestroy {
       // Refresh quotations list
       this.loadQuotations();
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Payment or update failed:', error);
-      this.snackBar.open('Payment process failed. Please reload the page and Try Again', 'Dismiss', {
-        duration: 3000,
-        panelClass: 'error-snack'
-      });
+      this.snackBar.open(
+        error && typeof error.error === 'object' && 'message' in error.error 
+          ? error.error.message 
+          : 'Payment process failed. Please reload the page and Try Again',
+        'Dismiss',
+        {
+          duration: 3000,
+          panelClass: 'error-snack'
+        }
+      );
     }
   }
 
@@ -385,7 +391,7 @@ export class QuotationComponent implements OnInit, OnDestroy {
         return;
       }
       const order = await firstValueFrom(
-        this.paymentService.createOrder(work.balanceAmount, 'INR')
+        this.paymentService.createOrder(work.balanceAmount, 'INR', work.quotationId)
       );
 
       const paymentResult = await this.paymentService.openRazorpayCheckout(order);

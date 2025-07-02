@@ -99,6 +99,15 @@ export class Quotation {
     @Prop({ type: Types.ObjectId, ref: 'Works'})
     worksId: Types.ObjectId;
 
+    @Prop({ type: String })
+    advancePaymentOrderId: string;
+
+    @Prop({ type: String })
+    balancePaymentOrderId: string;
+
+    @Prop({ type: Boolean, default: false })
+    isPaymentInProgress: boolean;
+
     createdAt: Date;
     updatedAt: Date;
 }

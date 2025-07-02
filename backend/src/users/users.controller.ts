@@ -1,10 +1,9 @@
-import { BadRequestException, Body, Controller, Delete, Get, Inject, InternalServerErrorException, Logger, NotFoundException, Param, Patch, Post, Put, Query, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, ConflictException, Controller, Delete, Get, Inject, InternalServerErrorException, Logger, NotFoundException, Param, Patch, Post, Put, Query, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { RolesGuard } from 'src/auth/guards/role.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
-import { EditorsService } from 'src/editors/editors.service';
 import { IPaymentService, IPaymentServiceToken } from 'src/common/payment/interfaces/payment-service.interface';
 import { PaymentType } from 'src/common/models/transaction.schema';
 import { Quotation, QuotationStatus } from 'src/quotation/models/quotation.schema';
@@ -40,7 +39,7 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import { Role } from 'src/common/enums/role.enum';
 import { Bid } from 'src/common/bids/models/bids.schema';
-// import { Public } from 'src/common/decorators/public.decorator';
+import { IQuotationService, IQuotationServiceToken } from 'src/quotation/interfaces/quotation.service.interface';
 
 export interface GetQuotationsParams {
     page?: number;
@@ -71,11 +70,12 @@ export class UsersController implements IUsersController {
     constructor(
         @Inject(IUsersServiceToken) private readonly userService: IUsersService,
         @Inject(IPaymentServiceToken) private paymentService: IPaymentService,
+        @Inject(IQuotationServiceToken) private quotationService: IQuotationService,
     ) { };
 
     @Get('profile')
     @Roles(Role.USER, Role.EDITOR)
-    async getUserProfile(@Req() req: Request):Promise<UserProfileResponseDto> {
+    async getUserProfile(@Req() req: Request): Promise<UserProfileResponseDto> {
         console.log('controller hitted on /user/profile');
         const user = req['user'] as { userId: Types.ObjectId; role: string }
         const userDet = await this.userService.getUserDetails(user.userId);
@@ -121,11 +121,11 @@ export class UsersController implements IUsersController {
     async getQuotations(
         @Req() req: Request,
         @Query() query: GetQuotationsParamsDto,
-    ): Promise<PaginatedQuotationsResponseDto>{
+    ): Promise<PaginatedQuotationsResponseDto> {
         const user = req['user'] as { userId: Types.ObjectId; role: string };
         const params: GetQuotationsParams = {
-            page: query.page ? parseInt(query.page.toString(),10) : undefined,
-            limit: query.limit ? parseInt(query.limit.toString(),10) : undefined,
+            page: query.page ? parseInt(query.page.toString(), 10) : undefined,
+            limit: query.limit ? parseInt(query.limit.toString(), 10) : undefined,
             status: query.status,
             searchTerm: query.searchTerm,
         }
@@ -140,28 +140,28 @@ export class UsersController implements IUsersController {
         const quotations = await this.userService.getCompletedWorks(user.userId);
         return quotations;
     }
-    
+
     @Get('quotations/:quotationId')
-    @Roles('User','Editor')
-    async getQuotation(@Param('quotationId') quotationId: string){
+    @Roles('User', 'Editor')
+    async getQuotation(@Param('quotationId') quotationId: string) {
         return await this.userService.getQuotation(new Types.ObjectId(quotationId));
     }
 
     @Get('quotations/:quotationId/bids')
-    @Roles('User','Editor')
+    @Roles('User', 'Editor')
     async getBidsByQuotation(@Param('quotationId') quotationId: string, @Req() req: Request): Promise<BidResponseDto[]> {
         const user = req['user'] as { userId: Types.ObjectId; role: string };
-        
+
         if (!Types.ObjectId.isValid(quotationId)) {
             throw new BadRequestException('Invalid quotation ID');
         }
-        
+
         return this.userService.getBidsByQuotation(new Types.ObjectId(quotationId), new Types.ObjectId(user.userId));
     }
 
     @Post('quotations')
     @Roles('User', 'Editor')
-    async createQuotation(@Req() req: Request, @Body() body:{quotation: CreateQuotationDto}): Promise<SuccessResponseDto> {
+    async createQuotation(@Req() req: Request, @Body() body: { quotation: CreateQuotationDto }): Promise<SuccessResponseDto> {
         const user = req['user'] as { userId: Types.ObjectId; role: string };
         const success = await this.userService.createQuotation(user.userId, body.quotation);
         if (success) {
@@ -171,14 +171,14 @@ export class UsersController implements IUsersController {
     }
 
     @Patch('quotations/:quotationId')
-    @Roles('User','Editor')
+    @Roles('User', 'Editor')
     async updateQuotation(@Param('quotationId') quotationId: string, @Body() dto: UpdateQuotationDto) {
         return await this.userService.updateQuotation(new Types.ObjectId(quotationId), dto);
     }
 
     @Delete('quotations/:quotationId')
-    @Roles('User','Editor')
-    async deleteQuotation(@Param('quotationId') quotationId: string){
+    @Roles('User', 'Editor')
+    async deleteQuotation(@Param('quotationId') quotationId: string) {
         return await this.userService.deleteQuotation(new Types.ObjectId(quotationId));
     }
 
@@ -306,14 +306,29 @@ export class UsersController implements IUsersController {
         @Param('id') id: string,
         @GetUser('userId') userId: string,
     ): Promise<EditorPublicProfileResponseDto> {
-        return this.userService.getEditorPublicProfile(id,userId);
+        return this.userService.getEditorPublicProfile(id, userId);
     }
 
     @Post('payment')
     @Roles('User', 'Editor')
     async createPayment(@Req() req: Request, @Body() body: CreatePaymentDto): Promise<CreatePaymentResponseDto> {
-        const user = req['user'] as { userId: Types.ObjectId, role: string };
-        const razorpayOrder = await this.paymentService.createRazorpayOrder(body.amount, body.currency);
+        const quotation = await this.quotationService.findById(new Types.ObjectId(body.quotationId));
+        if (quotation) {
+            if (quotation.isPaymentInProgress) {
+                this.logger.warn('An existing payment is in progress');
+                throw new ConflictException({
+                    retryInMinutes: 10,
+                    message: 'A payment is already in Progress!'
+                });
+            }
+        }
+        const razorpayOrder = await this.paymentService.createRazorpayOrder(body.amount, body.currency, body.quotationId);
+        if (razorpayOrder) {
+            await this.quotationService.updateQuotation(
+                { _id: body.quotationId },
+                { isPaymentInProgress: true, }
+            )
+        }
 
         // Explicitly map RazorpayOrder to CreatePaymentResponseDto
         const response: CreatePaymentResponseDto = {
@@ -330,7 +345,7 @@ export class UsersController implements IUsersController {
             // Assuming razorpayOrder.notes is compatible with any[] or needs specific mapping
             // Based on your DTO (any[]) and sample (notes: []), direct assignment might be okay if SDK type matches.
             // If razorpayOrder.notes is an object, you might need: Array.isArray(razorpayOrder.notes) ? razorpayOrder.notes : (razorpayOrder.notes ? [razorpayOrder.notes] : [])
-            notes:razorpayOrder.notes ? [razorpayOrder.notes] : [], 
+            notes: razorpayOrder.notes ? [razorpayOrder.notes] : [],
             created_at: razorpayOrder.created_at,
         };
 
@@ -364,24 +379,24 @@ export class UsersController implements IUsersController {
             wallet: body.wallet,
             paymentDate: body.paymentDate
         };
-        console.log('paymentDetails: ',paymentDetails);
+        console.log('paymentDetails: ', paymentDetails);
 
         const success = await this.userService.createTransaction(user.userId, new Types.ObjectId(quotationId), paymentDetails);
         if (!success) {
-            throw new InternalServerErrorException('Create Transaction failed for quotationId: ',quotationId)
+            throw new InternalServerErrorException('Create Transaction failed for quotationId: ', quotationId)
         }
         return { success: true };
     }
 
     @Post('bids/:bidId/accept')
-    @Roles('User','Editor')
+    @Roles('User', 'Editor')
     async acceptBid(@Param('bidId') bidId: string, @Req() req: Request): Promise<BidResponseDto> {
         const user = req['user'] as { userId: Types.ObjectId; role: string };
-        
+
         if (!Types.ObjectId.isValid(bidId)) {
             throw new BadRequestException('Invalid bid ID');
         }
-        
+
         return this.userService.acceptBid(new Types.ObjectId(bidId), user.userId);
     }
 
@@ -394,7 +409,7 @@ export class UsersController implements IUsersController {
         if (!Types.ObjectId.isValid(quotationId)) {
             throw new BadRequestException('Invalid quotation ID');
         }
-        
+
         return this.userService.getAcceptedBid(new Types.ObjectId(quotationId), new Types.ObjectId(editorId));
     }
 
@@ -427,7 +442,7 @@ export class UsersController implements IUsersController {
     async reportUser(
         @Body() reportDto: ReportUserDto,
         @GetUser('userId') userId: string,
-    ): Promise<SuccessResponseDto>{
+    ): Promise<SuccessResponseDto> {
         return this.userService.reportUser(reportDto, userId);
     }
 
@@ -435,7 +450,7 @@ export class UsersController implements IUsersController {
     @Roles(Role.USER, Role.EDITOR)
     @ApiOperation({ summary: 'Follow a user' })
     @ApiResponse({ status: 200, description: 'Successfully followed user.' })
-    async followUser(@Param('id') id: string, @GetUser('userId') userId: string):Promise<SuccessResponseDto> {
+    async followUser(@Param('id') id: string, @GetUser('userId') userId: string): Promise<SuccessResponseDto> {
         const sourceUserId = new Types.ObjectId(userId);
         const targetUserId = new Types.ObjectId(id);
         return this.userService.followUser(sourceUserId, targetUserId);
@@ -445,7 +460,7 @@ export class UsersController implements IUsersController {
     @Roles(Role.USER, Role.EDITOR)
     @ApiOperation({ summary: 'Unfollow a user' })
     @ApiResponse({ status: 200, description: 'Successfully unfollowed user.' })
-    async unfollowUser(@Param('id') id: string, @GetUser('userId') userId: string):Promise<SuccessResponseDto> {
+    async unfollowUser(@Param('id') id: string, @GetUser('userId') userId: string): Promise<SuccessResponseDto> {
         const sourceUserId = new Types.ObjectId(userId);
         const targetUserId = new Types.ObjectId(id);
         return this.userService.unfollowUser(sourceUserId, targetUserId);

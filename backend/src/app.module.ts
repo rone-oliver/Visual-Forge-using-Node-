@@ -27,6 +27,7 @@ import { CoreModule } from './common/config/core.module';
 import { CloudinaryModule } from './common/cloudinary/cloudinary.module';
 import { QuotationModule } from './quotation/quotation.module';
 import { WorksModule } from './works/works.module';
+import { JobsModule } from './jobs/jobs.module';
 
 @Module({
   imports: [
@@ -61,7 +62,7 @@ import { WorksModule } from './works/works.module';
       inject: [ConfigService],
     }),
     // MongooseModule.forRoot(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/visualForge'),
-    AuthModule,UsersModule, DatabaseModule, AdminsModule, EditorsModule, UsersAuthModule, AdminsAuthModule, CoreModule, PaymentModule, ChatModule, NotificationModule, BidsModule, AiModule, WalletModule, CommunityModule, RelationshipModule, CloudinaryModule, QuotationModule, WorksModule
+    AuthModule,UsersModule, DatabaseModule, AdminsModule, EditorsModule, UsersAuthModule, AdminsAuthModule, CoreModule, PaymentModule, ChatModule, NotificationModule, BidsModule, AiModule, WalletModule, CommunityModule, RelationshipModule, CloudinaryModule, QuotationModule, WorksModule, JobsModule
   ],
   controllers: [AppController, UsersAuthController],
   providers: [

@@ -3,7 +3,7 @@ import { IQuotationService } from './interfaces/quotation.service.interface';
 import { IQuotationRepository, IQuotationRepositoryToken } from './interfaces/quotation.repository.interface';
 import { Quotation, QuotationDocument, QuotationStatus } from './models/quotation.schema';
 import { AcceptedQuotationItemDto, CompletedWorkDto, GetAcceptedQuotationsQueryDto, GetPublishedQuotationsQueryDto, getQuotationsByStatusResponseDto, PaginatedAcceptedQuotationsResponseDto, PaginatedPublishedQuotationsResponseDto, PublishedQuotationItemDto } from './dtos/quotation.dto';
-import { Types } from 'mongoose';
+import { FilterQuery, Types, UpdateQuery } from 'mongoose';
 import { WorksDocument } from 'src/works/models/works.schema';
 
 @Injectable()
@@ -161,5 +161,17 @@ export class QuotationService implements IQuotationService {
             this.logger.error('Error getting the completed works', error);
             throw new Error('Error getting the completed works');
         }
+    }
+
+    async findMany(query: FilterQuery<Quotation>): Promise<Quotation[] | null> {
+        return this.quotationRepository.findMany(query);
+    }
+
+    async updateQuotation(query: FilterQuery<Quotation>, update: UpdateQuery<Quotation>): Promise<Quotation | null> {
+        return this.quotationRepository.findByIdAndUpdate(query._id, update)
+    }
+
+    async findOneByRazorpayOrderId(orderId: string): Promise<Quotation | null> {
+        return this.quotationRepository.findByRazorpayOrderId(orderId);
     }
 }

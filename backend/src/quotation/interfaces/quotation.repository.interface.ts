@@ -1,4 +1,4 @@
-import { Types, UpdateQuery } from "mongoose";
+import { FilterQuery, Types, UpdateQuery } from "mongoose";
 import { GetAcceptedQuotationsQueryDto, GetPublishedQuotationsQueryDto, getQuotationsByStatusResponseDto, PaginatedAcceptedQuotationsResponseDto, PaginatedPublishedQuotationsResponseDto } from "../dtos/quotation.dto";
 import { Quotation } from "../models/quotation.schema";
 
@@ -12,4 +12,6 @@ export interface IQuotationRepository {
     findById(quotationId: Types.ObjectId): Promise<Quotation | null>;
     findByIdAndUpdate(quotationId: Types.ObjectId, update: UpdateQuery<Quotation>): Promise<Quotation | null>;
     getCompletedQuotations(editorId: Types.ObjectId): Promise<Quotation[]>;
+    findMany(query: FilterQuery<Quotation>): Promise<Quotation[] | null>;
+    findByRazorpayOrderId(orderId:string): Promise<Quotation | null>;
 }

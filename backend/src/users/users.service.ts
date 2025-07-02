@@ -838,7 +838,7 @@ export class UsersService implements IUsersService {
                     { $set: { isFullyPaid: true } }
                 );
             }
-            const quotation = await this.quotationModel.findById(quotationId) as Quotation;
+            const quotation = await this.quotationModel.findByIdAndUpdate(quotationId,{ isPaymentInProgress: true }, { new: true }) as Quotation;
             if(quotation.isFullyPaid){
                 await this.adminWalletService.recordUserPayment(quotation, paymentDetails.paymentId);
             }

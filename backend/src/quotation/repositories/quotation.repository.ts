@@ -1,10 +1,9 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { Model, Types, UpdateQuery } from "mongoose";
+import { FilterQuery, Model, Types, UpdateQuery } from "mongoose";
 import { OutputType, Quotation, QuotationDocument, QuotationStatus } from "../models/quotation.schema";
 import { IQuotationRepository } from "../interfaces/quotation.repository.interface";
 import { GetAcceptedQuotationsQueryDto, GetPublishedQuotationsQueryDto, getQuotationsByStatusResponseDto, PaginatedAcceptedQuotationsResponseDto, PaginatedPublishedQuotationsResponseDto, PublishedQuotationItemDto } from "../dtos/quotation.dto";
-import { pipeline } from "stream";
 
 @Injectable()
 export class QuotationRepository implements IQuotationRepository {
@@ -238,5 +237,18 @@ export class QuotationRepository implements IQuotationRepository {
         const result = await this.quotationModel.aggregate(dataPipeline);
         const totalItemsResult = await this.quotationModel.aggregate(countPipeline);
         return { result, totalItemsResult };
+    }
+
+    async findByRazorpayOrderId(orderId: string): Promise<Quotation | null> {
+        return this.quotationModel.findOne({
+            $or: [
+                { advancePaymentOrderId: orderId },
+                { balancePaymentOrderId: orderId }
+            ]
+        });
+    }
+
+    async findMany(query: FilterQuery<Quotation>): Promise<Quotation[] | null> {
+        return this.quotationModel.find(query);
     }
 }

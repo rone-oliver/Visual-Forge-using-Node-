@@ -884,6 +884,9 @@ export class CreatePaymentDto {
     @IsString()
     @IsOptional()
     currency?: string;
+
+    @IsString()
+    quotationId: string;
 }
 
 export class CreatePaymentResponseDto {
