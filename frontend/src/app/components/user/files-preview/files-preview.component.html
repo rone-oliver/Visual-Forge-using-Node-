@@ -45,19 +45,19 @@
         <div class="file-preview">
           <!-- Image preview -->
           @if (file.fileType === 'image') {
-            <img [src]="file.url" [alt]="file.fileName" class="image-preview" appMediaProtection>
+            <img [src]="getCompleteUrl(file)" [alt]="file.fileName" class="image-preview" appMediaProtection>
           }
           <!-- Audio preview -->
           @if (file.fileType === 'audio') {
             <audio controls>
-              <source [src]="file.url" [type]="file.mimeType">
+              <source [src]="getCompleteUrl(file)" [type]="file.mimeType">
               Your browser does not support the audio element.
             </audio>
           }
           <!-- Video preview -->
           @if (file.fileType === 'video') {
             <video controls class="video-preview" appMediaProtection>
-              <source [src]="file.url" [type]="file.mimeType">
+              <source [src]="getCompleteUrl(file)" [type]="file.mimeType">
               Your browser does not support the video element.
             </video>
           }

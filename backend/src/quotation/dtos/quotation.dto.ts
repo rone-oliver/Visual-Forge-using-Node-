@@ -79,6 +79,11 @@ export class FileAttachmentDto {
   uploadedAt?: Date;
 }
 
+export class AcceptedQuotationsFileAttachmentDto extends FileAttachmentDto {
+  uniqueId: string;
+  timestamp: number;
+}
+
 export class AcceptedQuotationItemDto {
   @ApiProperty()
   @IsMongoId()
@@ -130,12 +135,12 @@ export class AcceptedQuotationItemDto {
   @IsOptional()
   imageUrl?: string;
 
-  @ApiPropertyOptional({ type: [FileAttachmentDto] })
+  @ApiPropertyOptional({ type: [AcceptedQuotationsFileAttachmentDto] })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => FileAttachmentDto)
-  attachedFiles?: FileAttachmentDto[];
+  @Type(() => AcceptedQuotationsFileAttachmentDto)
+  attachedFiles?: AcceptedQuotationsFileAttachmentDto[];
 
   @ApiPropertyOptional()
   @IsDateString()

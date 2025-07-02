@@ -20,7 +20,7 @@ import { IEditorsController } from './interfaces/editors.controller.interface';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import { Editor } from './models/editor.schema';
 import { Role } from 'src/common/enums/role.enum';
-import { CompletedWorkDto, GetAcceptedQuotationsQueryDto, GetPublishedQuotationsQueryDto, PaginatedAcceptedQuotationsResponseDto, PaginatedPublishedQuotationsResponseDto } from 'src/quotation/dtos/quotation.dto';
+import { CompletedWorkDto, FileAttachmentDto, GetAcceptedQuotationsQueryDto, GetPublishedQuotationsQueryDto, PaginatedAcceptedQuotationsResponseDto, PaginatedPublishedQuotationsResponseDto } from 'src/quotation/dtos/quotation.dto';
 
 @ApiTags('editor')
 @Controller('editor')
@@ -104,7 +104,7 @@ export class EditorsController implements IEditorsController {
     @Req() req: Request,
     @UploadedFiles() files: Express.Multer.File[],
     @Body('folder') folder?: string,
-  ): Promise<FileUploadResultDto[]> {
+  ): Promise<Omit<FileAttachmentDto,'url'>[]> {
     this.logger.log(`Uploading ${files.length} files`);
     return this.editorService.uploadWorkFiles(files, folder);
   }

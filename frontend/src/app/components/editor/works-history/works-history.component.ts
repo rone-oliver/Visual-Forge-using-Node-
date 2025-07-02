@@ -106,7 +106,7 @@ export class WorksHistoryComponent {
       maxHeight: '80vh',
       data: {
         files,
-        fileType: fileType
+        fileType: fileType,
       }
     });
   }

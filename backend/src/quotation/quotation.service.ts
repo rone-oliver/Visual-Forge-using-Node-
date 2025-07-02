@@ -83,6 +83,8 @@ export class QuotationService implements IQuotationService {
                     size: file.size,
                     mimeType: file.mimeType,
                     uploadedAt: file.uploadedAt,
+                    uniqueId: file.uniqueId,
+                    timestamp: file.timestamp
                 })),
                 createdAt: q.createdAt,
                 updatedAt: q.updatedAt,
@@ -126,7 +128,7 @@ export class QuotationService implements IQuotationService {
                     status: qData.status,
                     outputType: qData.outputType,
                     attachedFiles: qData.attachedFiles?.map(f => ({
-                        url: f.url,
+                        url: f.url ? f.url : '',
                         fileType: f.fileType,
                         fileName: f.fileName,
                         size: f.size,
@@ -142,6 +144,8 @@ export class QuotationService implements IQuotationService {
                         size: f.size,
                         mimeType: f.mimeType,
                         uploadedAt: f.uploadedAt,
+                        uniqueId: f.uniqueId,
+                        timestamp: f.timestamp
                     })) || [],
                     comments: worksData?.comments || '',
                     isPublic: worksData?.isPublic, // from Works schema if exists

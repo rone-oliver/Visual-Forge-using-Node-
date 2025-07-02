@@ -67,6 +67,12 @@ export class FileAttachmentDto {
     uploadedAt?: Date;
 }
 
+export class quotationFileAttachmentDto extends FileAttachmentDto {
+    uniqueId: string;
+    timestamp: number;
+    format: string;
+}
+
 export class FileUploadResultDto {
     @ApiProperty()
     @IsString()
@@ -354,12 +360,12 @@ export class CreateQuotationDto {
     @IsOptional()
     dueDate?: string; // Use string for input, transform to Date in service
 
-    @ApiPropertyOptional({ type: [FileAttachmentDto], description: 'Files attached to the quotation' })
+    @ApiPropertyOptional({ type: [quotationFileAttachmentDto], description: 'Files attached to the quotation' })
     @IsArray()
     @ValidateNested({ each: true })
-    @Type(() => FileAttachmentDto)
+    @Type(() => quotationFileAttachmentDto)
     @IsOptional()
-    attachedFiles?: FileAttachmentDto[];
+    attachedFiles?: Omit<quotationFileAttachmentDto,'url'>[];
 }
 
 export class UpdateQuotationDto {

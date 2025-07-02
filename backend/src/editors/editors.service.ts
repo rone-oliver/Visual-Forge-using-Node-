@@ -29,7 +29,7 @@ import { FormattedEditor, GetEditorsQueryDto } from 'src/admins/dto/admin.dto';
 import { IEditorRepository, IEditorRepositoryToken } from './interfaces/editor.repository.interface';
 import { IBidService, IBidServiceToken } from 'src/common/bids/interfaces/bid.interfaces';
 import { IQuotationService, IQuotationServiceToken } from 'src/quotation/interfaces/quotation.service.interface';
-import { CompletedWorkDto, GetAcceptedQuotationsQueryDto, GetPublishedQuotationsQueryDto, PaginatedAcceptedQuotationsResponseDto, PaginatedPublishedQuotationsResponseDto } from 'src/quotation/dtos/quotation.dto';
+import { CompletedWorkDto, FileAttachmentDto, GetAcceptedQuotationsQueryDto, GetPublishedQuotationsQueryDto, PaginatedAcceptedQuotationsResponseDto, PaginatedPublishedQuotationsResponseDto } from 'src/quotation/dtos/quotation.dto';
 import { IWorkService, IWorkServiceToken } from 'src/works/interfaces/works.service.interface';
 import { IUsersService, IUsersServiceToken } from 'src/users/interfaces/users.service.interface';
 import { calculateAverageRating } from 'src/common/utils/calculation.util';
@@ -187,18 +187,21 @@ export class EditorsService implements IEditorsService {
         return this.quotationService.getAcceptedQuotations(editorId, params);
     }
 
-    async uploadWorkFiles(files: Express.Multer.File[], folder?: string): Promise<FileUploadResultDto[]> {
+    async uploadWorkFiles(files: Express.Multer.File[], folder?: string): Promise<Omit<FileAttachmentDto,'url'>[]> {
         if (!files || files.length === 0) {
             throw new BadRequestException('No files uploaded.');
         }
         const uploadResults = await this.cloudinaryService.uploadFiles(files, folder);
         return uploadResults.map(result => ({
-            url: result.url,
+            // url: result.url,
             fileType: result.fileType as FileType, // Assuming FileType enum matches
             fileName: result.fileName,
             size: result.size,
             mimeType: result.mimeType,
             uploadedAt: result.uploadedAt,
+            uniqueId: result.uniqueId,
+            timestamp: result.timestamp,
+            format: result.format,
         }));
     }
 
@@ -213,10 +216,18 @@ export class EditorsService implements IEditorsService {
             const work = await this.worksService.createWork({
                 editorId: quotation.editorId,
                 userId: quotation.userId,
-                finalFiles: finalFiles.map(file => ({
-                    ...file,
-                    uploadedAt: file.uploadedAt ?? new Date(),
-                })),
+                finalFiles: finalFiles.map(file => {
+                    const processedUniqueId = file.uniqueId
+                        ? String(file.uniqueId).replace(/ /g, '%20')
+                        : '';
+            
+                    return {
+                        ...file,
+                        uniqueId: `${processedUniqueId}.${file.format}`,
+                        timestamp: file.timestamp,
+                        uploadedAt: file.uploadedAt ?? new Date(),
+                    };
+                }),
                 comments: comments ?? '',
             });
             await this.quotationService.updateQuotationStatus(quotation._id, QuotationStatus.COMPLETED, work._id);

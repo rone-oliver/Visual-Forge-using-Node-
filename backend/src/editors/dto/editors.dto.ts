@@ -26,7 +26,11 @@ export class PaginationQueryDto {
   searchTerm?: string;
 }
 
-export class FileUploadResultDto extends FileAttachmentDto {}
+export class FileUploadResultDto extends FileAttachmentDto {
+  uniqueId: string;
+  timestamp: number;
+  format: string;
+}
 
 export class SubmitWorkBodyDto {
   @ApiProperty({ description: 'ID of the quotation for which work is being submitted' })

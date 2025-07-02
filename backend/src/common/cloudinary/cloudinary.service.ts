@@ -54,7 +54,10 @@ export class CloudinaryService implements ICloudinaryService {
                                 fileName: file.originalname,
                                 size: file.size,
                                 mimeType: file.mimetype,
-                                uploadedAt: new Date()
+                                uploadedAt: new Date(result.created_at),
+                                uniqueId: result.public_id,
+                                format: result.format,
+                                timestamp: result.version
                             });
                         } else {
                             this.logger.error('Cloudinary upload successful, but result is undefined.');
@@ -77,7 +80,7 @@ export class CloudinaryService implements ICloudinaryService {
      */
     async uploadFiles(
         files: Express.Multer.File[],
-        folder = 'quotation_files'
+        folder
     ): Promise<FileUploadResultDto[]> {
         try {
             const uploadPromises = files.map(file => this.uploadFile(file, folder));

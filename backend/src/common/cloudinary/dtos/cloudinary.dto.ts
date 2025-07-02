@@ -5,6 +5,9 @@ export interface FileUploadResultDto {
     size: number;
     mimeType: string;
     uploadedAt: Date;
+    uniqueId: string;
+    timestamp: number;
+    format: string;
 }
 
 export enum FileType {

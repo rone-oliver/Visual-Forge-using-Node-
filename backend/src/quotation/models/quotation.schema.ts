@@ -27,8 +27,8 @@ export type QuotationDocument = Quotation & Document;
 
 @Schema()
 class FileAttachment {
-    @Prop({ required: true })
-    url: string;
+    @Prop()
+    url?: string;
 
     @Prop({ required: true, enum: FileType, type: String })
     fileType: FileType;
@@ -44,6 +44,12 @@ class FileAttachment {
 
     @Prop({ default: Date.now })
     uploadedAt: Date;
+
+    @Prop({ required:true, type: String })
+    uniqueId: string;
+
+    @Prop({ required: true, type: Number })
+    timestamp: number;
 }
 
 @Schema({ timestamps: true, collection: 'Quotations'})

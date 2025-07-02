@@ -6,8 +6,14 @@ export type WorksDocument = Works & Document;
 
 @Schema()
 export class FileAttachment {
-    @Prop({ required: true })
+    @Prop()
     url: string;
+
+    @Prop({ required: true })
+    uniqueId: string;
+
+    @Prop({ required: true })
+    timestamp: number;
 
     @Prop({ required: true, enum: FileType, type: String })
     fileType: FileType;

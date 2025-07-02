@@ -12,7 +12,7 @@ import {
 } from '../dto/editors.dto';
 import { EditorRequest } from '../models/editorRequest.schema';
 import { FormattedEditor, GetEditorsQueryDto } from 'src/admins/dto/admin.dto';
-import { CompletedWorkDto, GetAcceptedQuotationsQueryDto, GetPublishedQuotationsQueryDto, PaginatedAcceptedQuotationsResponseDto, PaginatedPublishedQuotationsResponseDto } from 'src/quotation/dtos/quotation.dto';
+import { CompletedWorkDto, FileAttachmentDto, GetAcceptedQuotationsQueryDto, GetPublishedQuotationsQueryDto, PaginatedAcceptedQuotationsResponseDto, PaginatedPublishedQuotationsResponseDto } from 'src/quotation/dtos/quotation.dto';
 
 export const IEditorsServiceToken = Symbol('IEditorsServiceToken');
 
@@ -30,7 +30,7 @@ export interface IEditorsService {
     uploadWorkFiles(
         files: Express.Multer.File[], 
         folder?: string
-    ): Promise<FileUploadResultDto[]>;
+    ): Promise<Omit<FileAttachmentDto,'url'>[]>;
 
     submitQuotationResponse(
         workData: SubmitWorkBodyDto

@@ -7,6 +7,7 @@ import { HttpClient, HttpEventType } from '@angular/common/http';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Subject, takeUntil } from 'rxjs';
 import { MediaProtectionDirective } from '../../../directives/media-protection.directive';
+import { CloudinaryUrlBuilder } from '../../../../utils/cloudinary/cloudinary-url';
 
 @Component({
   selector: 'app-files-preview',
@@ -24,6 +25,19 @@ export class FilesPreviewComponent implements OnDestroy {
     public dialogRef: MatDialogRef<FilesPreviewComponent>,
     @Inject(MAT_DIALOG_DATA) public data: { files: FileAttachmentResponse[]; fileType: string },
   ) { }
+
+  getCompleteUrl(file: FileAttachmentResponse): string {
+    if(file.url){
+      return file.url;
+    }
+    console.log('Url builder running...');
+    const completeUrl = CloudinaryUrlBuilder.buildUrl({
+      uniqueId: file.uniqueId,
+      timestamp: file.timestamp,
+      fileType: file.fileType,
+    })
+    return completeUrl;
+  }
 
   close() {
     this.dialogRef.close();

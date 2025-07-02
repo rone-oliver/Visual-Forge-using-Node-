@@ -451,6 +451,18 @@ export class UsersService implements IUsersService {
                 userId,
                 advanceAmount: calculatedAdvanceAmount,
                 balanceAmount: calculatedBalanceAmount,
+                attachedFiles: createQuotationDto.attachedFiles?.map(file=>{
+                    const processedUniqueId = file.uniqueId
+                    ? String(file.uniqueId).replace(/ /g, '%20')
+                    : '';
+
+                    return {
+                        ...file,
+                        uniqueId: `${processedUniqueId}.${file.format}`,
+                        timestamp: file.timestamp,
+                        url: undefined
+                    }
+                })
             }
             const savedQuotation = await this.quotationModel.create(quotationDataForDb);
 

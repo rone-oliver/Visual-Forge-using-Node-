@@ -70,7 +70,6 @@ export class UsersController implements IUsersController {
 
     constructor(
         @Inject(IUsersServiceToken) private readonly userService: IUsersService,
-        private editorService: EditorsService,
         @Inject(IPaymentServiceToken) private paymentService: IPaymentService,
     ) { };
 

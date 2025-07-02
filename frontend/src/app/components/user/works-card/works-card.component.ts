@@ -8,6 +8,8 @@ import { MatIconModule } from '@angular/material/icon';
 
 import { AudioVisualizerComponent } from '../../shared/audio-visualizer/audio-visualizer.component';
 import { MediaProtectionDirective } from '../../../directives/media-protection.directive';
+import { CloudinaryUrlBuilder } from '../../../../utils/cloudinary/cloudinary-url';
+import { FileAttachmentResponse } from '../../../interfaces/quotation.interface';
 
 @Component({
   selector: 'app-works-card',
@@ -102,6 +104,17 @@ export class WorksCardComponent implements OnInit, AfterViewInit {
 
   toggleFilePreview() {
     this.filePreviewState = this.filePreviewState === 'collapsed' ? 'expanded' : 'collapsed';
+  }
+
+  constructCompleteUrl(file:FileAttachmentResponse): string{
+    if(file.url){
+      return file.url;
+    }
+    return CloudinaryUrlBuilder.buildUrl({
+      uniqueId: file.uniqueId,
+      timestamp: file.timestamp,
+      fileType: file.fileType
+    })
   }
 
   navigateToEditorProfile() {
