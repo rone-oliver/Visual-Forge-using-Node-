@@ -71,3 +71,5 @@ export class Transaction {
 }
 
 export const TransactionSchema = SchemaFactory.createForClass(Transaction);
+
+TransactionSchema.index({ quotationId: 1, paymentType: 1 }, { unique: true });
