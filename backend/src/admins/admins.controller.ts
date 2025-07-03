@@ -6,12 +6,13 @@ import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { User } from 'src/users/models/user.schema';
 import { IAdminsController } from './interfaces/admins.controller.interface';
-import { DashboardResponseDto, FormattedEditor, FormattedEditorRequest, GetAllUsersQueryDto, GetEditorsQueryDto, UpdateReportDto } from './dto/admin.dto';
+import { DashboardResponseDto, FormattedEditor, FormattedEditorRequest, GetAllUsersQueryDto, GetEditorsQueryDto } from './dto/admin.dto';
 import { IAdminsService, IAdminsServiceToken } from './interfaces/admins.service.interface';
 import { Role } from 'src/common/enums/role.enum';
 import { SuccessResponseDto } from 'src/users/dto/users.dto';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Report } from 'src/reports/models/report.schema';
+import { UpdateReportDto } from 'src/reports/dtos/reports.dto';
 
 @Controller('admin')
 @UseGuards(AuthGuard, RolesGuard)

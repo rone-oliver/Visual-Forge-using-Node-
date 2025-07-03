@@ -4,14 +4,15 @@ import { Admin } from './models/admin.schema';
 import { Types } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { IAdminsService } from './interfaces/admins.service.interface';
-import { DashboardResponseDto, FormattedEditor, FormattedEditorRequest, GetAllUsersQueryDto, GetEditorsQueryDto, UpdateReportDto } from './dto/admin.dto';
+import { DashboardResponseDto, FormattedEditor, FormattedEditorRequest, GetAllUsersQueryDto, GetEditorsQueryDto } from './dto/admin.dto';
 import { Report } from 'src/reports/models/report.schema';
 import { SuccessResponseDto } from 'src/users/dto/users.dto';
 import { IAdminRepository, IAdminRepositoryToken } from './interfaces/admins.repository.interface';
-import { IReportsRepository, IReportsRepositoryToken } from './interfaces/reports.repository.interface';
 import { IQuotationService, IQuotationServiceToken } from 'src/quotation/interfaces/quotation.service.interface';
 import { IEditorsService, IEditorsServiceToken } from 'src/editors/interfaces/editors.service.interface';
 import { IUsersService, IUsersServiceToken } from 'src/users/interfaces/users.service.interface';
+import { IReportService, IReportServiceToken } from 'src/reports/interfaces/reports.service.interface';
+import { UpdateReportDto } from 'src/reports/dtos/reports.dto';
 
 @Injectable()
 export class AdminsService implements IAdminsService {
@@ -21,7 +22,7 @@ export class AdminsService implements IAdminsService {
         @Inject(IUsersServiceToken) private readonly userService: IUsersService,
         @Inject(IEditorsServiceToken) private readonly editorService: IEditorsService,
         @Inject(IAdminRepositoryToken) private readonly adminRepository: IAdminRepository,
-        @Inject(IReportsRepositoryToken) private readonly reportsRepository: IReportsRepository,
+        @Inject(IReportServiceToken) private readonly reportsService: IReportService,
         @Inject(IQuotationServiceToken) private readonly quotationService: IQuotationService,
         @Inject(IUsersServiceToken) private readonly usersService: IUsersService,
     ) { };
@@ -117,11 +118,11 @@ export class AdminsService implements IAdminsService {
     }
 
     async getPendingReports(): Promise<Report[]> {
-        return this.reportsRepository.getPendingReports();
+        return this.reportsService.getPendingReports();
     }
 
     async updateReport(reportId: string, updateDto: UpdateReportDto): Promise<Report> {
-        const report = await this.reportsRepository.updateReport(reportId, updateDto);
+        const report = await this.reportsService.updateReport(reportId, updateDto);
         if (!report) {
             throw new NotFoundException(`Report with ID "${reportId}" not found`);
         }
@@ -130,12 +131,13 @@ export class AdminsService implements IAdminsService {
 
     async getDashboardData(): Promise<DashboardResponseDto> {
         try {
-            const totalUsers = await this.userService.countAllUsers();
-            const totalEditors = await this.editorService.countAllEditors();
-            const totalReports = await this.reportsRepository.countDocuments();
-            const totalEditorRequests = await this.editorService.countEditorRequests();
-            const totalQuotations = await this.quotationService.countAllQuotations();
-
+            const [totalUsers, totalEditors, totalEditorRequests, totalReports, totalQuotations] = await Promise.all([
+                this.usersService.countAllUsers(),
+                this.editorService.countAllEditors(),
+                this.editorService.countEditorRequests(),
+                this.reportsService.countDocuments(),
+                this.quotationService.countAllQuotations(),
+            ]);
             const quotationsByStatus = await this.quotationService.getQuotationsByStatus();
 
             return {
