@@ -26,7 +26,7 @@ export enum FileType {
 export type QuotationDocument = Quotation & Document;
 
 @Schema()
-class FileAttachment {
+export class FileAttachment {
     @Prop()
     url?: string;
 

@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { FilterQuery, Model, Types, UpdateQuery } from "mongoose";
+import { FilterQuery, Model, PipelineStage, Types, UpdateQuery } from "mongoose";
 import { OutputType, Quotation, QuotationDocument, QuotationStatus } from "../models/quotation.schema";
 import { IQuotationRepository } from "../interfaces/quotation.repository.interface";
 import { GetAcceptedQuotationsQueryDto, GetPublishedQuotationsQueryDto, getQuotationsByStatusResponseDto, PaginatedAcceptedQuotationsResponseDto, PaginatedPublishedQuotationsResponseDto, PublishedQuotationItemDto } from "../dtos/quotation.dto";
@@ -12,8 +12,16 @@ export class QuotationRepository implements IQuotationRepository {
         @InjectModel(Quotation.name) private readonly quotationModel: Model<QuotationDocument>,
     ) { }
 
+    async create(quotation: Partial<Quotation>): Promise<Quotation> {
+        return this.quotationModel.create(quotation);
+    }
+
     async countDocuments(filter?: any): Promise<number> {
         return this.quotationModel.countDocuments(filter).exec();
+    }
+
+    async aggregate(pipeline: PipelineStage[]): Promise<any[]> {
+        return this.quotationModel.aggregate(pipeline).exec();
     }
 
     async getQuotationsByStatus(): Promise<getQuotationsByStatusResponseDto[]> {
@@ -26,8 +34,16 @@ export class QuotationRepository implements IQuotationRepository {
         return this.quotationModel.findById(quotationId).exec();
     }
 
+    async findOne(query: FilterQuery<Quotation>): Promise<Quotation | null>{
+        return this.quotationModel.findOne(query).exec();
+    }
+
     async findByIdAndUpdate(quotationId: Types.ObjectId, update: UpdateQuery<Quotation>): Promise<Quotation | null>{
-        return this.quotationModel.findByIdAndUpdate(quotationId, update).exec();
+        return this.quotationModel.findByIdAndUpdate(quotationId, update, { new: true }).exec();
+    }
+
+    async findByIdAndDelete(quotationId: Types.ObjectId): Promise<void> {
+        await this.quotationModel.findByIdAndDelete(quotationId).exec();
     }
 
     async getCompletedQuotations(editorId: Types.ObjectId): Promise<Quotation[]> {
@@ -36,6 +52,20 @@ export class QuotationRepository implements IQuotationRepository {
                 $or: [
                     { editorId },
                     { editorId: new Types.ObjectId(editorId) }
+                ],
+                status: QuotationStatus.COMPLETED
+            })
+            .populate('worksId')
+            .sort({ createdAt: -1 })
+            .lean();
+    }
+
+    async getCompletedQuotationsForUser(userId: Types.ObjectId): Promise<Quotation[] | null> {
+        return this.quotationModel
+            .find({
+                $or: [
+                    { userId },
+                    { userId: new Types.ObjectId(userId) }
                 ],
                 status: QuotationStatus.COMPLETED
             })

@@ -3,8 +3,9 @@ import { IQuotationService } from './interfaces/quotation.service.interface';
 import { IQuotationRepository, IQuotationRepositoryToken } from './interfaces/quotation.repository.interface';
 import { Quotation, QuotationDocument, QuotationStatus } from './models/quotation.schema';
 import { AcceptedQuotationItemDto, CompletedWorkDto, GetAcceptedQuotationsQueryDto, GetPublishedQuotationsQueryDto, getQuotationsByStatusResponseDto, PaginatedAcceptedQuotationsResponseDto, PaginatedPublishedQuotationsResponseDto, PublishedQuotationItemDto } from './dtos/quotation.dto';
-import { FilterQuery, Types, UpdateQuery } from 'mongoose';
+import { FilterQuery, PipelineStage, Types, UpdateQuery } from 'mongoose';
 import { WorksDocument } from 'src/works/models/works.schema';
+import { SuccessResponseDto } from 'src/users/dto/users.dto';
 
 @Injectable()
 export class QuotationService implements IQuotationService {
@@ -15,6 +16,10 @@ export class QuotationService implements IQuotationService {
 
     async countAllQuotations(): Promise<number> {
         return this.quotationRepository.countDocuments();
+    }
+
+    async countQuotationsByFilter(filter: FilterQuery<Quotation>): Promise<number> {
+        return this.quotationRepository.countDocuments(filter);
     }
 
     async getQuotationsByStatus(): Promise<getQuotationsByStatusResponseDto> {
@@ -173,5 +178,40 @@ export class QuotationService implements IQuotationService {
 
     async findOneByRazorpayOrderId(orderId: string): Promise<Quotation | null> {
         return this.quotationRepository.findByRazorpayOrderId(orderId);
+    }
+
+    async aggregate(pipeline: PipelineStage[]): Promise<any[]> {
+        return this.quotationRepository.aggregate(pipeline);
+    }
+
+    async createQuotation(quotation: Partial<Quotation>): Promise<Quotation> {
+        return this.quotationRepository.create(quotation);
+    }
+
+    async findByIdAndUpdate(quotationId: Types.ObjectId, update: UpdateQuery<Quotation>): Promise<Quotation | null> {
+        try {
+            return this.quotationRepository.findByIdAndUpdate(quotationId, update);
+        } catch (error) {
+            this.logger.error(`Error updating quotation: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async deleteQuotation(quotationId: Types.ObjectId): Promise<SuccessResponseDto> {
+        try {
+            await this.quotationRepository.findByIdAndDelete(quotationId);
+            return { success: true, message: 'Quotation deleted successfully' };
+        } catch (error) {
+            this.logger.error('Error deleting quotation', error);
+            throw error;
+        }
+    }
+
+    async getCompletedQuotationsForUser(userId: Types.ObjectId): Promise<Quotation[] | null> {
+        return this.quotationRepository.getCompletedQuotationsForUser(userId);
+    }
+
+    async findOne(query: FilterQuery<Quotation>): Promise<Quotation | null> {
+        return this.quotationRepository.findOne(query);
     }
 }

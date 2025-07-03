@@ -358,7 +358,8 @@ export class CreateQuotationDto {
     @ApiPropertyOptional({ description: 'Due date for the quotation' })
     @IsDateString()
     @IsOptional()
-    dueDate?: string; // Use string for input, transform to Date in service
+    @Type(() => Date)
+    dueDate?: Date; // Use string for input, transform to Date in service
 
     @ApiPropertyOptional({ type: [quotationFileAttachmentDto], description: 'Files attached to the quotation' })
     @IsArray()

@@ -5,8 +5,7 @@ import { Model, Types } from 'mongoose';
 import { User, UserDocument } from './models/user.schema';
 import { Editor, EditorDocument } from 'src/editors/models/editor.schema';
 import { EditorRequest, EditorRequestDocument } from 'src/editors/models/editorRequest.schema';
-import { Quotation, QuotationDocument, QuotationStatus } from 'src/quotation/models/quotation.schema';
-import { Works, WorksDocument } from 'src/works/models/works.schema';
+import { Quotation, QuotationDocument } from 'src/quotation/models/quotation.schema';
 import { PaymentStatus, PaymentType, Transaction, TransactionDocument } from 'src/common/models/transaction.schema';
 import { Bid } from 'src/common/bids/models/bids.schema';
 import { IUsersService, UserInfoForChatListDto } from './interfaces/users.service.interface';
@@ -22,7 +21,6 @@ import {
     SuccessResponseDto,
     EditorRequestStatusResponseDto,
     QuotationResponseDto,
-    FileUploadResultDto,
     UpdateProfileDto,
     ResetPasswordDto,
     CompletedWorkDto,
@@ -50,6 +48,7 @@ import { IUserRepository, IUserRepositoryToken } from './interfaces/users.reposi
 import { IBidService, IBidServiceToken } from 'src/common/bids/interfaces/bid.interfaces';
 import { GetPublicWorksQueryDto, PaginatedPublicWorksResponseDto, PublicWorkItemDto, RateWorkDto, UpdateWorkPublicStatusDto } from 'src/works/dtos/works.dto';
 import { IWorkService, IWorkServiceToken } from 'src/works/interfaces/works.service.interface';
+import { IQuotationService, IQuotationServiceToken } from 'src/quotation/interfaces/quotation.service.interface';
 
 @Injectable()
 export class UsersService implements IUsersService {
@@ -58,7 +57,7 @@ export class UsersService implements IUsersService {
         @InjectModel(User.name) private userModel: Model<UserDocument>,
         @InjectModel(Editor.name) private editorModel: Model<EditorDocument>,
         @InjectModel(EditorRequest.name) private editorRequestModel: Model<EditorRequestDocument>,
-        @InjectModel(Quotation.name) private quotationModel: Model<QuotationDocument>,
+        @Inject(IQuotationServiceToken) private readonly quotationService: IQuotationService,
         @Inject(IWorkServiceToken) private readonly workService: IWorkService,
         @InjectModel(Transaction.name) private transactionModel: Model<TransactionDocument>,
         @InjectModel(Report.name) private reportModel: Model<ReportDocument>,
@@ -329,7 +328,7 @@ export class UsersService implements IUsersService {
                 ]
             }
 
-            const totalItems = await this.quotationModel.countDocuments(matchQuery);
+            const totalItems = await this.quotationService.countQuotationsByFilter(matchQuery);
             const totalPages = Math.ceil(totalItems / limit);
 
             const aggregationPipeline: any[] = [
@@ -408,7 +407,7 @@ export class UsersService implements IUsersService {
                 { $limit: limit },
             ]
 
-            const quotations = await this.quotationModel.aggregate(aggregationPipeline).exec();
+            const quotations = await this.quotationService.aggregate(aggregationPipeline);
             this.logger.log(`quotations from getQuotations for user: `,quotations)
             
             return {
@@ -448,20 +447,20 @@ export class UsersService implements IUsersService {
                 userId,
                 advanceAmount: calculatedAdvanceAmount,
                 balanceAmount: calculatedBalanceAmount,
-                attachedFiles: createQuotationDto.attachedFiles?.map(file=>{
+                attachedFiles: createQuotationDto.attachedFiles?.map(file => {
                     const processedUniqueId = file.uniqueId
-                    ? String(file.uniqueId).replace(/ /g, '%20')
-                    : '';
+                        ? String(file.uniqueId).replace(/ /g, '%20')
+                        : '';
 
                     return {
                         ...file,
                         uniqueId: `${processedUniqueId}.${file.format}`,
                         timestamp: file.timestamp,
-                        url: undefined
-                    }
+                        uploadedAt: new Date(),
+                    };
                 })
             }
-            const savedQuotation = await this.quotationModel.create(quotationDataForDb);
+            const savedQuotation = await this.quotationService.createQuotation(quotationDataForDb);
 
             this.eventEmitter.emit(EventTypes.QUOTATION_CREATED,{
                 quotationId: savedQuotation._id.toString(),
@@ -478,7 +477,7 @@ export class UsersService implements IUsersService {
 
     async getQuotation(quotationId: Types.ObjectId): Promise<QuotationResponseDto | null> {
         try {
-            const quotation = await this.quotationModel.findById(quotationId) as QuotationResponseDto;
+            const quotation = await this.quotationService.findById(quotationId) as unknown as QuotationResponseDto;
             return quotation;
         } catch (error) {
             this.logger.error(`Error fetching quotation: ${error.message}`);
@@ -500,7 +499,7 @@ export class UsersService implements IUsersService {
                 advanceAmount: advanceAmountCalc,
                 balanceAmount: balanceAmountCalc,
             }
-            const updatedQuotation = await this.quotationModel.findByIdAndUpdate(quotationId, quotationDataForDb, { new: true }) as QuotationResponseDto;
+            const updatedQuotation = await this.quotationService.findByIdAndUpdate(quotationId, quotationDataForDb) as unknown as QuotationResponseDto;
             return updatedQuotation;
         } catch (error) {
             this.logger.error(`Error updating quotation: ${error.message}`);
@@ -510,7 +509,7 @@ export class UsersService implements IUsersService {
 
     async deleteQuotation(quotationId: Types.ObjectId): Promise<SuccessResponseDto> {
         try {
-            await this.quotationModel.deleteOne({ _id: quotationId });
+            await this.quotationService.deleteQuotation(quotationId);
             return { success: true };
         } catch (error) {
             this.logger.error(`Error deleting quotation: ${error.message}`);
@@ -563,13 +562,11 @@ export class UsersService implements IUsersService {
 
     async getCompletedWorks(userId: Types.ObjectId): Promise<CompletedWorkDto[]> {
         try {
-            const completedQuotations = await this.quotationModel
-                .find({ userId, status: QuotationStatus.COMPLETED })
-                .populate('worksId')
-                .sort({ createdAt: -1 })
-                .lean();
+            const completedQuotations = await this.quotationService.getCompletedQuotationsForUser(userId);
 
-            return completedQuotations.map(quotation => {
+            if(!completedQuotations) return [];
+            
+            return completedQuotations.map((quotation: Quotation) => {
                 const worksData = quotation.worksId as any || {};
                 const { worksId, ...quotationData } = quotation;
                 return {
@@ -653,112 +650,6 @@ export class UsersService implements IUsersService {
         params: GetPublicWorksQueryDto,
     ): Promise<PaginatedPublicWorksResponseDto> {
         try {
-            // this.logger.log(`getPublicWorks called with: page=${params.page}, limit=${params.limit}, rating=${params.rating}, search="${params.search}"`);
-
-            // const filter: any = { isPublic: true };
-
-            // if (params.rating !== undefined && params.rating !== null) {
-            //     filter.rating = params.rating;
-            // }
-
-            // if (params.search && params.search.trim()) {
-            //     const searchTerm = params.search.trim().toLowerCase();
-            //     this.logger.log(`Searching for term: "${searchTerm}"`);
-
-            //     // Find users and editors that match the search term
-            //     const [matchingUsers, matchingEditors] = await Promise.all([
-            //         this.userModel.find({
-            //             fullname: { $regex: searchTerm, $options: 'i' }
-            //         }).select('_id').lean(),
-
-            //         this.editorModel.find({
-            //             fullname: { $regex: searchTerm, $options: 'i' }
-            //         }).select('_id').lean()
-            //     ]);
-
-            //     this.logger.log(`Found ${matchingUsers.length} matching users and ${matchingEditors.length} matching editors`);
-
-            //     const userIds = matchingUsers.map(user => user._id.toString());
-            //     const editorIds = matchingEditors.map(editor => editor._id.toString());
-
-            //     // If we found matching users or editors, add them to the filter
-            //     if (userIds.length > 0 || editorIds.length > 0) {
-            //         filter.$or = [];
-
-            //         if (userIds.length > 0) {
-            //             filter.$or.push({ userId: { $in: userIds } });
-            //         }
-
-            //         if (editorIds.length > 0) {
-            //             filter.$or.push({ editorId: { $in: editorIds } });
-            //         }
-            //     } else if (params.search.trim()) {
-            //         // If search term was provided but no matches found, return empty results
-            //         this.logger.log(`No matching users or editors found for "${searchTerm}", returning empty results`);
-            //         return { works: [], total: 0 };
-            //     }
-            // }
-
-            // this.logger.log(`Final filter: ${JSON.stringify(filter)}`);
-
-            // // Execute the query with pagination
-            // const [works, total] = await Promise.all([
-            //     this.workModel.find(filter)
-            //         .sort({ createdAt: -1 })
-            //         .skip((params.page - 1) * params.limit)
-            //         .limit(params.limit)
-            //         .populate<{
-            //             editorId: { _id: Types.ObjectId; fullname: string; username: string; email: string; profileImage?: string } | null; 
-            //             userId: { _id: Types.ObjectId; fullname: string; username: string; email: string; profileImage?: string } | null;
-            //         }>([
-            //             {
-            //                 path: 'editorId',
-            //                 select: 'fullname username profileImage email _id', // Ensured _id and email are selected
-            //                 model: this.userModel
-            //             },
-            //             {
-            //                 path: 'userId',
-            //                 select: 'fullname username profileImage email _id', // Ensured _id and email are selected
-            //                 model: this.userModel
-            //             }
-            //         ])
-            //         .lean(), 
-            //     this.workModel.countDocuments(filter)
-            // ]);
-            // const publicWorksDto: PublicWorkItemDto[] = works.map(work => {
-            //     // Type assertion for populated fields if necessary, or ensure populate returns the expected shape
-            //     const editorInfo = work.editorId as any; // Assuming editorId is populated with user-like info
-            //     const userInfo = work.userId as any; // Assuming userId is populated with user-like info
-
-            //     return {
-            //         _id: work._id.toString(),
-            //         comments: work.comments,
-            //         isPublic: !!work.isPublic,
-            //         finalFiles: work.finalFiles as unknown as FileUploadResultDto[] || [],
-            //         rating: work.rating,
-            //         feedback: work.feedback,
-            //         createdAt: work.createdAt,
-            //         updatedAt: work.updatedAt,
-            //         editorId: work.editorId,
-            //         userId: work.userId,
-            //         editor:{
-            //             _id: editorInfo._id.toString(),
-            //             fullname: editorInfo.fullname,
-            //             username: editorInfo.username,
-            //             email: editorInfo.email,
-            //             profileImage: editorInfo.profileImage,
-            //         },
-            //         user:{
-            //             _id: userInfo._id.toString(),
-            //             fullname: userInfo.fullname,
-            //             username: userInfo.username,
-            //             email: userInfo.email,
-            //             profileImage: userInfo.profileImage,
-            //         },
-            //     };
-            // });
-            // this.logger.log(`Found ${works.length} works out of ${total} total`);
-            // return { works:publicWorksDto, total };
             this.logger.log(`Delegating getPublicWorks to WorksService with params: ${JSON.stringify(params)}`);
             return this.workService.getPublicWorks(params);
         } catch (error) {
@@ -813,17 +704,17 @@ export class UsersService implements IUsersService {
             });
 
             if (paymentDetails.paymentType === PaymentType.ADVANCE) {
-                await this.quotationModel.updateOne(
+                await this.quotationService.updateQuotation(
                     { _id: quotationId },
                     { $set: { isAdvancePaid: true } }
                 );
             } else {
-                await this.quotationModel.updateOne(
+                await this.quotationService.updateQuotation(
                     { _id: quotationId },
                     { $set: { isFullyPaid: true } }
                 );
             }
-            const quotation = await this.quotationModel.findByIdAndUpdate(quotationId,{ isPaymentInProgress: true }, { new: true }) as Quotation;
+            const quotation = await this.quotationService.updateQuotation({ _id: quotationId }, { isPaymentInProgress: true }) as Quotation;
             if(quotation.isFullyPaid){
                 await this.adminWalletService.recordUserPayment(quotation, paymentDetails.paymentId);
             }
@@ -842,7 +733,7 @@ export class UsersService implements IUsersService {
     }
 
     async getBidsByQuotation(quotationId: Types.ObjectId, userId: Types.ObjectId): Promise<BidResponseDto[]> {
-        const quotation = await this.quotationModel.findOne({ _id: quotationId, userId: userId.toString() });
+        const quotation = await this.quotationService.findOne({ _id: quotationId, userId: userId.toString() });
         if (!quotation) {
             throw new NotFoundException('Quotation not found or does not belong to you');
         }
@@ -855,7 +746,7 @@ export class UsersService implements IUsersService {
         const bid = await this.bidsService.acceptBid(bidId, userId);
 
         // Get the quotation to send notification
-        const quotation = await this.quotationModel.findById(bid.quotationId);
+        const quotation = await this.quotationService.findById(bid.quotationId);
 
         if (!quotation) {
             throw new NotFoundException('Quotation not found');
