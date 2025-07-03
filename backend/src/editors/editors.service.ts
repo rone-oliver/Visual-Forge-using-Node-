@@ -1,6 +1,6 @@
 import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
 import { Editor } from './models/editor.schema';
-import { Types } from 'mongoose';
+import { Types, UpdateQuery } from 'mongoose';
 import { QuotationStatus } from 'src/quotation/models/quotation.schema';
 import { FileType } from 'src/common/cloudinary/dtos/cloudinary.dto';
 import { NotificationType } from 'src/notification/models/notification.schema';
@@ -33,6 +33,7 @@ import { CompletedWorkDto, FileAttachmentDto, GetAcceptedQuotationsQueryDto, Get
 import { IWorkService, IWorkServiceToken } from 'src/works/interfaces/works.service.interface';
 import { IUsersService, IUsersServiceToken } from 'src/users/interfaces/users.service.interface';
 import { calculateAverageRating } from 'src/common/utils/calculation.util';
+import { UserRatingForEditorDto } from 'src/users/dto/users.dto';
 
 @Injectable()
 export class EditorsService implements IEditorsService {
@@ -407,5 +408,33 @@ export class EditorsService implements IEditorsService {
 
     async removeTutorial(editorId: string, removeTutorialDto: RemoveTutorialDto): Promise<Editor> {
         return this.editorRepository.removeSharedTutorial(editorId, removeTutorialDto.tutorialUrl);
+    }
+
+    async createEditorRequests(userId: Types.ObjectId): Promise<EditorRequest> {
+        return this.editorRequestsRepository.create(userId);
+    }
+
+    async findEditorRequest(userId: Types.ObjectId): Promise<EditorRequest | null> {
+        return this.editorRequestsRepository.findOne(userId);
+    }
+
+    async findByUserId(userId: Types.ObjectId): Promise<Editor | null> {
+        return this.editorRepository.findByUserIdAndLean(userId);
+    }
+
+    async updateEditor(userId: Types.ObjectId, update: UpdateQuery<Editor>): Promise<Editor | null> {
+        return this.editorRepository.findByUserIdAndUpdate(userId, update);
+    }
+
+    async getEditorRating(userId: Types.ObjectId): Promise<Editor | null> {
+        return this.editorRepository.getEditorRating(userId);
+    }
+
+    async getEditorUserCombined(userId: Types.ObjectId): Promise<Editor | null> {
+        return this.editorRepository.getEditorUserCombined(userId);
+    }
+
+    async getPublicEditors(pipeline: any[]): Promise<any[]> {
+        return this.editorRepository.getPublicEditors(pipeline);
     }
 }

@@ -42,9 +42,6 @@ import { WorksModule } from 'src/works/works.module';
     forwardRef(() => EditorsModule),
     MongooseModule.forFeature([
       { name:User.name, schema: userSchema},
-      { name: EditorRequest.name, schema: EditorRequestSchema},
-      { name: Editor.name, schema: editorSchema},
-      { name: Quotation.name , schema: QuotationSchema},
       { name: Transaction.name, schema: TransactionSchema},
       { name: Report.name, schema: ReportSchema },
     ]),

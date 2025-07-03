@@ -40,3 +40,5 @@ export class EditorRequest {
 }
 
 export const EditorRequestSchema = SchemaFactory.createForClass(EditorRequest);
+
+EditorRequestSchema.index({ userId: 1, categories: 1 }, { unique: true });

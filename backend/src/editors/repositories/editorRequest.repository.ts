@@ -23,4 +23,12 @@ export class EditorRequestsRepository implements IEditorRequestsRepository {
     async rejectEditorRequest(requestId: Types.ObjectId, reason: string): Promise<EditorRequest | null> {
         return this.editorRequestModel.findByIdAndUpdate(requestId, { status: EditorRequestStatus.REJECTED, reason }, { new: true });
     }
+
+    async create(userId: Types.ObjectId): Promise<EditorRequest> {
+        return this.editorRequestModel.create({userId: new Types.ObjectId(userId)});
+    }
+
+    async findOne(userId: Types.ObjectId): Promise<EditorRequest | null> {
+        return this.editorRequestModel.findOne({userId: new Types.ObjectId(userId)});
+    }
 }

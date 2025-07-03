@@ -1,11 +1,9 @@
-import { Injectable, Logger, HttpException, HttpStatus, NotFoundException, InternalServerErrorException, BadRequestException, Inject } from '@nestjs/common';
+import { Injectable, Logger, HttpException, HttpStatus, NotFoundException, InternalServerErrorException, BadRequestException, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Model, Types } from 'mongoose';
 import { User, UserDocument } from './models/user.schema';
-import { Editor, EditorDocument } from 'src/editors/models/editor.schema';
-import { EditorRequest, EditorRequestDocument } from 'src/editors/models/editorRequest.schema';
-import { Quotation, QuotationDocument } from 'src/quotation/models/quotation.schema';
+import { Quotation } from 'src/quotation/models/quotation.schema';
 import { PaymentStatus, PaymentType, Transaction, TransactionDocument } from 'src/common/models/transaction.schema';
 import { Bid } from 'src/common/bids/models/bids.schema';
 import { IUsersService, UserInfoForChatListDto } from './interfaces/users.service.interface';
@@ -49,14 +47,14 @@ import { IBidService, IBidServiceToken } from 'src/common/bids/interfaces/bid.in
 import { GetPublicWorksQueryDto, PaginatedPublicWorksResponseDto, PublicWorkItemDto, RateWorkDto, UpdateWorkPublicStatusDto } from 'src/works/dtos/works.dto';
 import { IWorkService, IWorkServiceToken } from 'src/works/interfaces/works.service.interface';
 import { IQuotationService, IQuotationServiceToken } from 'src/quotation/interfaces/quotation.service.interface';
+import { IEditorsService, IEditorsServiceToken } from 'src/editors/interfaces/editors.service.interface';
 
 @Injectable()
 export class UsersService implements IUsersService {
     private readonly logger = new Logger(UsersService.name);
     constructor(
         @InjectModel(User.name) private userModel: Model<UserDocument>,
-        @InjectModel(Editor.name) private editorModel: Model<EditorDocument>,
-        @InjectModel(EditorRequest.name) private editorRequestModel: Model<EditorRequestDocument>,
+        @Inject(forwardRef(()=>IEditorsServiceToken)) private readonly editorService: IEditorsService,
         @Inject(IQuotationServiceToken) private readonly quotationService: IQuotationService,
         @Inject(IWorkServiceToken) private readonly workService: IWorkService,
         @InjectModel(Transaction.name) private transactionModel: Model<TransactionDocument>,
@@ -169,7 +167,7 @@ export class UsersService implements IUsersService {
             if (user && user.isEditor) {
                 this.logger.log('Fetching the editor details');
                 console.log('user id: ', user._id);
-                const editorDetails = await this.editorModel.findOne({ userId: user._id }).lean();
+                const editorDetails = await this.editorService.findByUserId(user._id);
                 if (editorDetails) {
                     this.logger.log('Editor details: ', editorDetails)
                     const userObj = user.toObject();
@@ -238,7 +236,7 @@ export class UsersService implements IUsersService {
             const user = await this.userModel.findById(userId).select('isEditor');
             if (user && !user.isEditor) {
                 this.logger.log(`User ${userId} is not an editor. Proceeding with request.`);
-                await this.editorRequestModel.create({ userId });
+                await this.editorService.createEditorRequests(userId);
                 this.logger.log(`Editor request created for user ${userId}`);
                 return { success: true };
             }
@@ -252,7 +250,7 @@ export class UsersService implements IUsersService {
 
     async getEditorRequestStatus(userId: Types.ObjectId): Promise<EditorRequestStatusResponseDto> {
         try {
-            const request = await this.editorRequestModel.findOne({ userId });
+            const request = await this.editorService.findEditorRequest(userId);
             if (request) {
                 this.logger.log(`Editor request status for user ${userId}: ${request.status}`);
                 return { status: request.status };
@@ -598,23 +596,32 @@ export class UsersService implements IUsersService {
     async rateEditor(userId: Types.ObjectId, rateEditorDto: RateEditorDto): Promise<SuccessResponseDto> {
         try {
             this.logger.log('rating editor dto from service:', rateEditorDto.editorId, rateEditorDto.rating, rateEditorDto.feedback, userId);
-            const result = await this.editorModel.updateOne({ userId: new Types.ObjectId(rateEditorDto.editorId) }, { $push: { ratings: { rating: rateEditorDto.rating, feedback: rateEditorDto.feedback, userId } } });
-            if (result.matchedCount > 0 && result.modifiedCount > 0) {
+            const editorObjectId = new Types.ObjectId(rateEditorDto.editorId);
+
+            await this.editorService.updateEditor(editorObjectId, {
+                $pull: { ratings: { userId: userId } },
+            });
+
+            const result = await this.editorService.updateEditor(editorObjectId, {
+                $push: { ratings: { rating: rateEditorDto.rating, feedback: rateEditorDto.feedback, userId } },
+            });
+
+            if (result) {
                 this.logger.log('rating editor success');
                 return { success: true };
             } else {
-                this.logger.log('rating editor failed');
-                return { success: false };
+                this.logger.error('rating editor failed: Editor not found or not updated');
+                throw new NotFoundException('Editor not found or rating could not be updated.');
             }
         } catch (error) {
-            this.logger.error(`Error rating editor: ${error.message}`);
-            throw error;
+            this.logger.error('rating editor failed', error);
+            throw new InternalServerErrorException('Failed to rate editor');
         }
     }
 
     async getCurrentEditorRating(userId: Types.ObjectId, editorId: string):Promise<UserRatingForEditorDto | null> {
         try {
-            const editor = await this.editorModel.findOne({ userId: new Types.ObjectId(editorId) }).select('ratings').lean();
+            const editor = await this.editorService.getEditorRating(new Types.ObjectId(editorId));
             if (editor?.ratings && editor.ratings.length > 0) {
                 this.logger.log(`Editor ratings for user ${editorId}: ${editor.ratings}`);
                 const specificRating = editor.ratings.find((rating) => rating.userId.equals(userId));
@@ -773,7 +780,7 @@ export class UsersService implements IUsersService {
 
         const editorObjectId = new Types.ObjectId(editorId);
 
-        const editor = await this.editorModel.findOne({ userId: new Types.ObjectId(editorId) }).populate('userId').lean();
+        const editor = await this.editorService.getEditorUserCombined(editorObjectId);
 
         if (!editor || !editor.userId) {
             this.logger.log(`Editor with user ID ${editorId} not found.`);
@@ -874,7 +881,7 @@ export class UsersService implements IUsersService {
           },
         );
     
-        const result = await this.editorModel.aggregate(pipeline).exec();
+        const result = await this.editorService.getPublicEditors(pipeline);
 
         const data = result[0]?.data || [];
         const total = result[0]?.total.length > 0 ? result[0].total[0].count : 0;

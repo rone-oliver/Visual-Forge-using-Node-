@@ -1,4 +1,4 @@
-import { Types } from 'mongoose';
+import { Types, UpdateQuery } from 'mongoose';
 import { Editor } from '../models/editor.schema';
 import {
     SubmitWorkBodyDto,
@@ -13,6 +13,7 @@ import {
 import { EditorRequest } from '../models/editorRequest.schema';
 import { FormattedEditor, GetEditorsQueryDto } from 'src/admins/dto/admin.dto';
 import { CompletedWorkDto, FileAttachmentDto, GetAcceptedQuotationsQueryDto, GetPublishedQuotationsQueryDto, PaginatedAcceptedQuotationsResponseDto, PaginatedPublishedQuotationsResponseDto } from 'src/quotation/dtos/quotation.dto';
+import { UserRatingForEditorDto } from 'src/users/dto/users.dto';
 
 export const IEditorsServiceToken = Symbol('IEditorsServiceToken');
 
@@ -61,7 +62,15 @@ export interface IEditorsService {
     approveEditorRequest(requestId: Types.ObjectId, adminId: Types.ObjectId): Promise<boolean>;
     rejectEditorRequest(requestId: Types.ObjectId, reason: string): Promise<boolean>;
     countEditorRequests(): Promise<number>;
+    createEditorRequests(userId: Types.ObjectId): Promise<EditorRequest>;
+    findEditorRequest(userId: Types.ObjectId): Promise<EditorRequest | null>;
 
     getEditorsForAdmin(query: GetEditorsQueryDto): Promise<FormattedEditor[]>;
     countAllEditors(): Promise<number>;
+
+    findByUserId(userId: Types.ObjectId): Promise<Editor | null>;
+    updateEditor(userId: Types.ObjectId, update: UpdateQuery<Editor>): Promise<Editor | null>;
+    getEditorRating(userId: Types.ObjectId): Promise<Editor | null>;
+    getEditorUserCombined(userId: Types.ObjectId): Promise<Editor | null>;
+    getPublicEditors(pipeline: any[]): Promise<any[]>
 }

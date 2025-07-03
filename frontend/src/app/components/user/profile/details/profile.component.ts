@@ -43,15 +43,15 @@ export class ProfileComponent implements OnInit{
 
   ngOnInit(): void {
     this.getUserData();
-    if(!this.user.isEditor){
-      this.checkEditorRequestStatus();
-    }
   }
 
   private getUserData(){
     this.userService.getUserProfile().subscribe({
       next:(userData)=>{
         this.user = userData;
+        if(!this.user.isEditor){
+          this.checkEditorRequestStatus();
+        }
       },
       error:(error)=>{
         console.error('Error fetching user profile:', error);

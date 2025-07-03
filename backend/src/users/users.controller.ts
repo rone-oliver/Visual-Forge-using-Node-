@@ -38,6 +38,7 @@ import { Role } from 'src/common/enums/role.enum';
 import { Bid } from 'src/common/bids/models/bids.schema';
 import { IQuotationService, IQuotationServiceToken } from 'src/quotation/interfaces/quotation.service.interface';
 import { GetPublicWorksQueryDto, PaginatedPublicWorksResponseDto, UpdateWorkPublicStatusDto } from 'src/works/dtos/works.dto';
+import { Public } from 'src/auth/decorators/public.decorator';
 
 export interface GetQuotationsParams {
     page?: number;
@@ -426,7 +427,7 @@ export class UsersController implements IUsersController {
         return await this.userService.cancelAcceptedBid(new Types.ObjectId(bidId), new Types.ObjectId(requesterId));
     }
 
-    // @Public()
+    @Public()
     @Get('editors')
     @ApiOperation({ summary: 'Get a list of public editor profiles' })
     @ApiResponse({ status: 200, description: 'Successfully retrieved public editor profiles.', type: PaginatedPublicEditorsDto })

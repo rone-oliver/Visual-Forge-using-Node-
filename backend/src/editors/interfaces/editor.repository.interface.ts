@@ -1,6 +1,7 @@
 import { FormattedEditor } from "src/admins/dto/admin.dto";
 import { Editor, EditorDocument } from "../models/editor.schema";
 import { Types } from "mongoose";
+import { UserRatingForEditorDto } from "src/users/dto/users.dto";
 
 export const IEditorRepositoryToken = Symbol('IEditorRepository');
 
@@ -14,4 +15,9 @@ export interface IEditorRepository {
     updateScore(editorId: Types.ObjectId, score: number, streak: number): Promise<void>;
     addSharedTutorial(userId: string, tutorialUrl: string): Promise<Editor>;
     removeSharedTutorial(userId: string, tutorialUrl: string): Promise<Editor>;
+    findByUserId(userId: Types.ObjectId): Promise<Editor | null>;
+    findByUserIdAndUpdate(userId: Types.ObjectId, update: Partial<Editor>): Promise<Editor | null>;
+    getEditorRating(userId: Types.ObjectId): Promise<Editor | null>;
+    getEditorUserCombined(userId: Types.ObjectId): Promise<Editor | null>;
+    getPublicEditors(pipeline: any[]): Promise<any[]>;
 }

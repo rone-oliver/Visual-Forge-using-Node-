@@ -53,3 +53,5 @@ export class Editor {
 }
 
 export const editorSchema = SchemaFactory.createForClass(Editor);
+
+editorSchema.index({ userId: 1, editorId: 1 }, { unique: true });

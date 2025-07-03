@@ -66,4 +66,20 @@ export class EditorRepository implements IEditorRepository {
 
         return updatedEditor;
     }
+
+    async findByUserIdAndUpdate(userId: Types.ObjectId, update: Partial<Editor>): Promise<Editor | null> {
+        return this.editorModel.findOneAndUpdate({ userId: new Types.ObjectId(userId) }, update, { new: true }).exec();
+    }
+
+    async getEditorRating(userId: Types.ObjectId): Promise<Editor | null> {
+        return this.editorModel.findOne({ userId: new Types.ObjectId(userId) }).select('ratings').lean();
+    }
+
+    async getEditorUserCombined(userId: Types.ObjectId): Promise<Editor | null> {
+        return this.editorModel.findOne({ userId: new Types.ObjectId(userId) }).populate('userId').lean();
+    }
+
+    async getPublicEditors(pipeline: any[]): Promise<any[]> {
+        return this.editorModel.aggregate(pipeline);
+    }
 }
