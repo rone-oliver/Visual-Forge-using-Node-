@@ -45,8 +45,10 @@ export interface CompletedWork {
 
 export interface Works {
     _id: string;
-    editorId: string | Editor;
-    userId: string | User;
+    editorId: string;
+    userId: string;
+    editor: Editor;
+    user: User;
     finalFiles: FileAttachmentResponse[];
     isPublic: boolean;
     comments?: string;

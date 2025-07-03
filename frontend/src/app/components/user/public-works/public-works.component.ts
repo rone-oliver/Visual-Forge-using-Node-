@@ -103,18 +103,24 @@ export class PublicWorksComponent implements OnInit {
           
           this.works.forEach(work => {
             // If the backend returns populated editor and user objects
-            if (work.editorId && typeof work.editorId === 'object') {
-              const editor = work.editorId as unknown as Editor;
-              this.editorsMap.set(editor._id.toString(), editor);
-              // Update the editorId to be just the ID string for consistency
-              work.editorId = editor._id;
-            }
+            // if (work.editorId && typeof work.editorId === 'object') {
+            //   const editor = work.editorId as unknown as Editor;
+            //   this.editorsMap.set(editor._id.toString(), editor);
+            //   // Update the editorId to be just the ID string for consistency
+            //   work.editorId = editor._id;
+            // }
             
-            if (work.userId && typeof work.userId === 'object') {
-              const user = work.userId as unknown as User;
-              this.usersMap.set(user._id.toString(), user);
-              // Update the userId to be just the ID string for consistency
-              work.userId = user._id;
+            // if (work.userId && typeof work.userId === 'object') {
+            //   const user = work.userId as unknown as User;
+            //   this.usersMap.set(user._id.toString(), user);
+            //   // Update the userId to be just the ID string for consistency
+            //   work.userId = user._id;
+            // }
+            if(work.editor && typeof work.editor === 'object'){
+              this.editorsMap.set(work.editor._id.toString(), work.editor);
+            }
+            if(work.user && typeof work.user === 'object'){
+              this.usersMap.set(work.user._id.toString(), work.user);
             }
           });
         },

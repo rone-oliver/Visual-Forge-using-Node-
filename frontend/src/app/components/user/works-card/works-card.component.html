@@ -42,7 +42,7 @@
       @if (work.finalFiles.length > 1) {
         <div class="multi-file-indicator">
           <div class="file-dots">
-            @for (file of work.finalFiles; track file; let i = $index) {
+            @for (file of work.finalFiles; track trackFile($index,file); let i = $index) {
               <span [class.active]="i === activeFileIndex"
               (click)="changeActiveFile(i)"></span>
             }
@@ -56,7 +56,7 @@
     <div class="info-section">
       <!-- Rating Display -->
       <div class="rating">
-        @for (star of getRatingStars(); track star) {
+        @for (star of getRatingStars(); track $index) {
           <mat-icon [class.filled]="star === 1">star</mat-icon>
         }
       </div>
@@ -65,7 +65,13 @@
       <div class="creators">
         <div class="creator editor" (click)="navigateToEditorProfile()">
           <div class="avatar">
-            <img [src]="editor.profileImage || '../../../../assets/images/man.png'" alt="Editor avatar" appMediaProtection>
+            @if (editor.profileImage) {
+              <img [src]="editor.profileImage" alt="Editor avatar" appMediaProtection>
+            } @else {
+              <div class="default-avatar">
+                <mat-icon>person</mat-icon>
+              </div>
+            }
           </div>
           <div class="details">
             <span class="label">Editor</span>
@@ -76,7 +82,13 @@
         @if (user) {
           <div class="creator user" (click)="navigateToUserProfile()">
             <div class="avatar">
-              <img [src]="user.profileImage || '../../../../assets/images/man.png'" alt="User avatar" appMediaProtection>
+              @if (user.profileImage) {
+                <img [src]="user.profileImage" alt="User avatar" appMediaProtection>
+              } @else {
+                <div class="default-avatar">
+                  <mat-icon>person</mat-icon>
+                </div>
+              }
             </div>
             <div class="details">
               <span class="label">User</span>
@@ -109,7 +121,7 @@
   <!-- Expandable Files Preview -->
   <div [@filePreviewExpand]="filePreviewState" class="files-list-container">
     <div class="files-list">
-      @for (file of work.finalFiles; track file; let i = $index) {
+      @for (file of work.finalFiles; track trackFile($index,file); let i = $index) {
         <div class="file-item"
           [class.active]="i === activeFileIndex" (click)="changeActiveFile(i)">
           <mat-icon>{{getFileIcon(file.mimeType)}}</mat-icon>

@@ -117,6 +117,10 @@ export class WorksCardComponent implements OnInit, AfterViewInit {
     })
   }
 
+  trackFile(index: number, file: FileAttachmentResponse): string | number {
+    return file.timestamp || file.url;
+  }
+
   navigateToEditorProfile() {
     if (this.editor && this.editor._id) {
       this.router.navigate(['/editor', this.editor._id]);

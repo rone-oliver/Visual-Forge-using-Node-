@@ -1,9 +1,6 @@
 import {
     UserEditorRatingDto,
-    UpdateWorkPublicStatusDto,
     UserBasicInfoDto,
-    PaginatedPublicWorksResponseDto,
-    GetPublicWorksQueryDto,
     RateEditorDto,
     SuccessResponseDto,
     UpdateProfileDto,
@@ -33,6 +30,7 @@ import { FileUploadResultDto as FileUploadResultDtoCloudinary } from 'src/common
 import { User } from '../models/user.schema';
 import { Types } from 'mongoose';
 import { Bid } from 'src/common/bids/models/bids.schema';
+import { GetPublicWorksQueryDto, PaginatedPublicWorksResponseDto, UpdateWorkPublicStatusDto } from 'src/works/dtos/works.dto';
 
 export interface IUsersController {
     getUserProfile(req: Request): Promise<UserProfileResponseDto>;

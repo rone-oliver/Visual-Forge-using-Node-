@@ -8,6 +8,7 @@ import { CreateBidDto } from './dto/create-bid.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { EventTypes } from '../constants/events.constants';
 import { IBidRepository, IBidRepositoryToken, IBidService } from './interfaces/bid.interfaces';
+import { SuccessResponseDto } from 'src/users/dto/users.dto';
 
 interface PopulatedEditor {
   _id: Types.ObjectId;
@@ -174,7 +175,7 @@ export class BidsService implements IBidService{
     return bid;
   }
 
-  async cancelAcceptedBid(bidId: Types.ObjectId, requesterId: Types.ObjectId): Promise<void> {
+  async cancelAcceptedBid(bidId: Types.ObjectId, requesterId: Types.ObjectId): Promise<SuccessResponseDto> {
     const session = await this.bidModel.db.startSession();
     session.startTransaction();
 
@@ -229,6 +230,7 @@ export class BidsService implements IBidService{
       );
 
       await session.commitTransaction();
+      return { success: true, message: 'Bid cancelled successfully' };
     } catch (error) {
       await session.abortTransaction();
       this.logger.error(`Failed to cancel accepted bid: ${error.message}`, error.stack);

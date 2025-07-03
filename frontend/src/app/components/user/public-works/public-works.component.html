@@ -59,9 +59,9 @@
     <!-- Works Grid -->
     @if (!isLoading && !error && filteredWorks.length > 0) {
         <div class="works-grid" [@staggerFadeIn]="filteredWorks.length">
-            @for (work of filteredWorks; track trackByWorkId(work)) {
+            @for (work of filteredWorks; track work._id) {
                 <div class="work-card-wrapper">
-                    <app-works-card [work]="work" [editor]="getEditor(work.editorId)" [user]="getUser(work.userId)">
+                    <app-works-card [work]="work" [editor]="getEditor(work.editor._id)" [user]="getUser(work.user._id)">
                     </app-works-card>
                 </div>
             }

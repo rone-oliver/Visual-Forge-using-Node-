@@ -7,22 +7,15 @@ import {
     QuotationResponseDto,
     CreateQuotationDto,
     UpdateQuotationDto,
-    FileUploadResultDto,
     UpdateProfileDto,
     ResetPasswordDto,
     CompletedWorkDto,
-    RateWorkDto,
-    UpdateWorkPublicStatusDto,
     RateEditorDto,
-    EditorRatingResponseDto,
-    GetPublicWorksQueryDto,
-    PaginatedPublicWorksResponseDto,
     UserBasicInfoDto,
     BidResponseDto,
     TransactionResponseDto,
     SuccessResponseDto,
     UserBaseResponseDto,
-    CreatePaymentResponseDto,
     UserEditorRatingDto,
     PaginatedTransactionsResponseDto,
     EditorPublicProfileResponseDto,
@@ -35,6 +28,7 @@ import { PaymentType } from 'src/common/models/transaction.schema';
 import { Bid } from 'src/common/bids/models/bids.schema';
 import { FileUploadResultDto as FileUploadResultDtoCloudinary } from 'src/common/cloudinary/dtos/cloudinary.dto';
 import { GetAllUsersQueryDto } from 'src/admins/dto/admin.dto';
+import { GetPublicWorksQueryDto, PaginatedPublicWorksResponseDto, RateWorkDto, UpdateWorkPublicStatusDto } from 'src/works/dtos/works.dto';
 
 export const IUsersServiceToken = Symbol('IUsersService');
 

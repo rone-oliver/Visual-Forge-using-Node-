@@ -9,7 +9,6 @@ import { Quotation, QuotationDocument, QuotationStatus } from 'src/quotation/mod
 import { Works, WorksDocument } from 'src/works/models/works.schema';
 import { PaymentStatus, PaymentType, Transaction, TransactionDocument } from 'src/common/models/transaction.schema';
 import { Bid } from 'src/common/bids/models/bids.schema';
-import { BidsService } from 'src/common/bids/bids.service';
 import { IUsersService, UserInfoForChatListDto } from './interfaces/users.service.interface';
 import {
     CreateQuotationDto,
@@ -27,14 +26,9 @@ import {
     UpdateProfileDto,
     ResetPasswordDto,
     CompletedWorkDto,
-    RateWorkDto,
     RateEditorDto,
-    UpdateWorkPublicStatusDto,
-    PaginatedPublicWorksResponseDto,
-    GetPublicWorksQueryDto,
     TransactionResponseDto,
     UserRatingForEditorDto,
-    PublicWorkItemDto,
     BidResponseDto,
     PaginatedTransactionsResponseDto,
     EditorPublicProfileResponseDto,
@@ -53,6 +47,9 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { FileUploadResultDto as FileUploadResultDtoCloudinary } from 'src/common/cloudinary/dtos/cloudinary.dto';
 import { ICloudinaryService, ICloudinaryServiceToken } from 'src/common/cloudinary/interfaces/cloudinary-service.interface';
 import { IUserRepository, IUserRepositoryToken } from './interfaces/users.repository.interface';
+import { IBidService, IBidServiceToken } from 'src/common/bids/interfaces/bid.interfaces';
+import { GetPublicWorksQueryDto, PaginatedPublicWorksResponseDto, PublicWorkItemDto, RateWorkDto, UpdateWorkPublicStatusDto } from 'src/works/dtos/works.dto';
+import { IWorkService, IWorkServiceToken } from 'src/works/interfaces/works.service.interface';
 
 @Injectable()
 export class UsersService implements IUsersService {
@@ -62,15 +59,15 @@ export class UsersService implements IUsersService {
         @InjectModel(Editor.name) private editorModel: Model<EditorDocument>,
         @InjectModel(EditorRequest.name) private editorRequestModel: Model<EditorRequestDocument>,
         @InjectModel(Quotation.name) private quotationModel: Model<QuotationDocument>,
-        @InjectModel(Works.name) private workModel: Model<WorksDocument>,
+        @Inject(IWorkServiceToken) private readonly workService: IWorkService,
         @InjectModel(Transaction.name) private transactionModel: Model<TransactionDocument>,
         @InjectModel(Report.name) private reportModel: Model<ReportDocument>,
         @Inject(IAdminWalletServiceToken) private readonly adminWalletService: IAdminWalletService,
         @Inject(IRelationshipServiceToken) private readonly relationshipService: IRelationshipService,
         @Inject(ICloudinaryServiceToken) private cloudinaryService: ICloudinaryService,
         @Inject(IUserRepositoryToken) private readonly userRepository: IUserRepository,
+        @Inject(IBidServiceToken) private bidsService: IBidService,
         private eventEmitter: EventEmitter2,
-        private bidsService: BidsService,
     ) { }
 
     async findOne(filter: Partial<User>): Promise<User | null> {
@@ -594,14 +591,7 @@ export class UsersService implements IUsersService {
 
     async rateWork(workId: string, rateWorkDto: RateWorkDto): Promise<SuccessResponseDto> {
         try {
-            this.logger.log('rating work:', workId, rateWorkDto.rating, rateWorkDto.feedback);
-            const result = await this.workModel.updateOne({ _id: new Types.ObjectId(workId) }, { $set: { rating: rateWorkDto.rating, feedback: rateWorkDto.feedback } });
-            console.log('rating work success');
-            if (result.matchedCount > 0 && result.modifiedCount > 0) {
-                return { success: true };
-            } else {
-                return { success: false };
-            }
+            return this.workService.rateWork(workId, rateWorkDto);
         } catch (error) {
             this.logger.error(`Error rating work: ${error.message}`);
             throw error;
@@ -652,14 +642,7 @@ export class UsersService implements IUsersService {
 
     async updateWorkPublicStatus(worksId: string, updateWorkPublicStatusDto: UpdateWorkPublicStatusDto): Promise<SuccessResponseDto> {
         try {
-            const result = await this.workModel.updateOne({ _id: new Types.ObjectId(worksId) }, { $set: { isPublic: updateWorkPublicStatusDto.isPublic } });
-            if (result.matchedCount > 0 && result.modifiedCount > 0) {
-                this.logger.log('Work public status updated successfully');
-                return { success: true };
-            } else {
-                this.logger.log('Work public status update failed');
-                return { success: false };
-            }
+            return this.workService.updateWorkPublicStatus(worksId, updateWorkPublicStatusDto);
         } catch (error) {
             this.logger.error(`Error updating work public status: ${error.message}`);
             throw error;
@@ -670,112 +653,114 @@ export class UsersService implements IUsersService {
         params: GetPublicWorksQueryDto,
     ): Promise<PaginatedPublicWorksResponseDto> {
         try {
-            this.logger.log(`getPublicWorks called with: page=${params.page}, limit=${params.limit}, rating=${params.rating}, search="${params.search}"`);
+            // this.logger.log(`getPublicWorks called with: page=${params.page}, limit=${params.limit}, rating=${params.rating}, search="${params.search}"`);
 
-            const filter: any = { isPublic: true };
+            // const filter: any = { isPublic: true };
 
-            if (params.rating !== undefined && params.rating !== null) {
-                filter.rating = params.rating;
-            }
+            // if (params.rating !== undefined && params.rating !== null) {
+            //     filter.rating = params.rating;
+            // }
 
-            if (params.search && params.search.trim()) {
-                const searchTerm = params.search.trim().toLowerCase();
-                this.logger.log(`Searching for term: "${searchTerm}"`);
+            // if (params.search && params.search.trim()) {
+            //     const searchTerm = params.search.trim().toLowerCase();
+            //     this.logger.log(`Searching for term: "${searchTerm}"`);
 
-                // Find users and editors that match the search term
-                const [matchingUsers, matchingEditors] = await Promise.all([
-                    this.userModel.find({
-                        fullname: { $regex: searchTerm, $options: 'i' }
-                    }).select('_id').lean(),
+            //     // Find users and editors that match the search term
+            //     const [matchingUsers, matchingEditors] = await Promise.all([
+            //         this.userModel.find({
+            //             fullname: { $regex: searchTerm, $options: 'i' }
+            //         }).select('_id').lean(),
 
-                    this.editorModel.find({
-                        fullname: { $regex: searchTerm, $options: 'i' }
-                    }).select('_id').lean()
-                ]);
+            //         this.editorModel.find({
+            //             fullname: { $regex: searchTerm, $options: 'i' }
+            //         }).select('_id').lean()
+            //     ]);
 
-                this.logger.log(`Found ${matchingUsers.length} matching users and ${matchingEditors.length} matching editors`);
+            //     this.logger.log(`Found ${matchingUsers.length} matching users and ${matchingEditors.length} matching editors`);
 
-                const userIds = matchingUsers.map(user => user._id.toString());
-                const editorIds = matchingEditors.map(editor => editor._id.toString());
+            //     const userIds = matchingUsers.map(user => user._id.toString());
+            //     const editorIds = matchingEditors.map(editor => editor._id.toString());
 
-                // If we found matching users or editors, add them to the filter
-                if (userIds.length > 0 || editorIds.length > 0) {
-                    filter.$or = [];
+            //     // If we found matching users or editors, add them to the filter
+            //     if (userIds.length > 0 || editorIds.length > 0) {
+            //         filter.$or = [];
 
-                    if (userIds.length > 0) {
-                        filter.$or.push({ userId: { $in: userIds } });
-                    }
+            //         if (userIds.length > 0) {
+            //             filter.$or.push({ userId: { $in: userIds } });
+            //         }
 
-                    if (editorIds.length > 0) {
-                        filter.$or.push({ editorId: { $in: editorIds } });
-                    }
-                } else if (params.search.trim()) {
-                    // If search term was provided but no matches found, return empty results
-                    this.logger.log(`No matching users or editors found for "${searchTerm}", returning empty results`);
-                    return { works: [], total: 0 };
-                }
-            }
+            //         if (editorIds.length > 0) {
+            //             filter.$or.push({ editorId: { $in: editorIds } });
+            //         }
+            //     } else if (params.search.trim()) {
+            //         // If search term was provided but no matches found, return empty results
+            //         this.logger.log(`No matching users or editors found for "${searchTerm}", returning empty results`);
+            //         return { works: [], total: 0 };
+            //     }
+            // }
 
-            this.logger.log(`Final filter: ${JSON.stringify(filter)}`);
+            // this.logger.log(`Final filter: ${JSON.stringify(filter)}`);
 
-            // Execute the query with pagination
-            const [works, total] = await Promise.all([
-                this.workModel.find(filter)
-                    .sort({ createdAt: -1 })
-                    .skip((params.page - 1) * params.limit)
-                    .limit(params.limit)
-                    .populate<{
-                        editorId: { _id: Types.ObjectId; fullname: string; username: string; email: string; profileImage?: string } | null; 
-                        userId: { _id: Types.ObjectId; fullname: string; username: string; email: string; profileImage?: string } | null;
-                    }>([
-                        {
-                            path: 'editorId',
-                            select: 'fullname username profileImage email _id', // Ensured _id and email are selected
-                            model: this.userModel
-                        },
-                        {
-                            path: 'userId',
-                            select: 'fullname username profileImage email _id', // Ensured _id and email are selected
-                            model: this.userModel
-                        }
-                    ])
-                    .lean(), 
-                this.workModel.countDocuments(filter)
-            ]);
-            const publicWorksDto: PublicWorkItemDto[] = works.map(work => {
-                // Type assertion for populated fields if necessary, or ensure populate returns the expected shape
-                const editorInfo = work.editorId as any; // Assuming editorId is populated with user-like info
-                const userInfo = work.userId as any; // Assuming userId is populated with user-like info
+            // // Execute the query with pagination
+            // const [works, total] = await Promise.all([
+            //     this.workModel.find(filter)
+            //         .sort({ createdAt: -1 })
+            //         .skip((params.page - 1) * params.limit)
+            //         .limit(params.limit)
+            //         .populate<{
+            //             editorId: { _id: Types.ObjectId; fullname: string; username: string; email: string; profileImage?: string } | null; 
+            //             userId: { _id: Types.ObjectId; fullname: string; username: string; email: string; profileImage?: string } | null;
+            //         }>([
+            //             {
+            //                 path: 'editorId',
+            //                 select: 'fullname username profileImage email _id', // Ensured _id and email are selected
+            //                 model: this.userModel
+            //             },
+            //             {
+            //                 path: 'userId',
+            //                 select: 'fullname username profileImage email _id', // Ensured _id and email are selected
+            //                 model: this.userModel
+            //             }
+            //         ])
+            //         .lean(), 
+            //     this.workModel.countDocuments(filter)
+            // ]);
+            // const publicWorksDto: PublicWorkItemDto[] = works.map(work => {
+            //     // Type assertion for populated fields if necessary, or ensure populate returns the expected shape
+            //     const editorInfo = work.editorId as any; // Assuming editorId is populated with user-like info
+            //     const userInfo = work.userId as any; // Assuming userId is populated with user-like info
 
-                return {
-                    _id: work._id.toString(),
-                    comments: work.comments,
-                    isPublic: !!work.isPublic,
-                    finalFiles: work.finalFiles as unknown as FileUploadResultDto[] || [],
-                    rating: work.rating,
-                    feedback: work.feedback,
-                    createdAt: work.createdAt,
-                    updatedAt: work.updatedAt,
-                    editorId: work.editorId,
-                    userId: work.userId,
-                    editor:{
-                        _id: editorInfo._id.toString(),
-                        fullname: editorInfo.fullname,
-                        username: editorInfo.username,
-                        email: editorInfo.email,
-                        profileImage: editorInfo.profileImage,
-                    },
-                    user:{
-                        _id: userInfo._id.toString(),
-                        fullname: userInfo.fullname,
-                        username: userInfo.username,
-                        email: userInfo.email,
-                        profileImage: userInfo.profileImage,
-                    },
-                };
-            });
-            this.logger.log(`Found ${works.length} works out of ${total} total`);
-            return { works:publicWorksDto, total };
+            //     return {
+            //         _id: work._id.toString(),
+            //         comments: work.comments,
+            //         isPublic: !!work.isPublic,
+            //         finalFiles: work.finalFiles as unknown as FileUploadResultDto[] || [],
+            //         rating: work.rating,
+            //         feedback: work.feedback,
+            //         createdAt: work.createdAt,
+            //         updatedAt: work.updatedAt,
+            //         editorId: work.editorId,
+            //         userId: work.userId,
+            //         editor:{
+            //             _id: editorInfo._id.toString(),
+            //             fullname: editorInfo.fullname,
+            //             username: editorInfo.username,
+            //             email: editorInfo.email,
+            //             profileImage: editorInfo.profileImage,
+            //         },
+            //         user:{
+            //             _id: userInfo._id.toString(),
+            //             fullname: userInfo.fullname,
+            //             username: userInfo.username,
+            //             email: userInfo.email,
+            //             profileImage: userInfo.profileImage,
+            //         },
+            //     };
+            // });
+            // this.logger.log(`Found ${works.length} works out of ${total} total`);
+            // return { works:publicWorksDto, total };
+            this.logger.log(`Delegating getPublicWorks to WorksService with params: ${JSON.stringify(params)}`);
+            return this.workService.getPublicWorks(params);
         } catch (error) {
             this.logger.error(`Error getting public works: ${error.message}`);
             throw error;

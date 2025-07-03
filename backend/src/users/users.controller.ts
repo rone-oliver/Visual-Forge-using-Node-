@@ -13,9 +13,7 @@ import {
     CreatePaymentDto,
     CreatePaymentResponseDto,
     CreateQuotationDto,
-    GetPublicWorksQueryDto,
     GetQuotationsParamsDto,
-    PaginatedPublicWorksResponseDto,
     PaginatedQuotationsResponseDto,
     PaginatedTransactionsResponseDto,
     RateEditorDto,
@@ -24,7 +22,6 @@ import {
     UpdateProfileImageDto,
     UpdateQuotationDto,
     UpdateQuotationPaymentDto,
-    UpdateWorkPublicStatusDto,
     UserBasicInfoDto,
     UserEditorRatingDto,
     UserProfileResponseDto,
@@ -40,6 +37,7 @@ import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import { Role } from 'src/common/enums/role.enum';
 import { Bid } from 'src/common/bids/models/bids.schema';
 import { IQuotationService, IQuotationServiceToken } from 'src/quotation/interfaces/quotation.service.interface';
+import { GetPublicWorksQueryDto, PaginatedPublicWorksResponseDto, UpdateWorkPublicStatusDto } from 'src/works/dtos/works.dto';
 
 export interface GetQuotationsParams {
     page?: number;

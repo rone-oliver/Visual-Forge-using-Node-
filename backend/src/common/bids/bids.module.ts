@@ -9,7 +9,6 @@ import { IBidRepositoryToken, IBidServiceToken } from './interfaces/bid.interfac
 
 @Module({
   providers: [
-    BidsService,
     {
       provide: IBidRepositoryToken,
       useClass: BidRepository
@@ -26,6 +25,6 @@ import { IBidRepositoryToken, IBidServiceToken } from './interfaces/bid.interfac
     ]),
     EventEmitterModule.forRoot()
   ],
-  exports:[BidsService,IBidServiceToken,IBidRepositoryToken]
+  exports:[IBidServiceToken,IBidRepositoryToken]
 })
 export class BidsModule {}
