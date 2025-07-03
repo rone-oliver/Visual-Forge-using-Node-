@@ -28,7 +28,7 @@ import { QuotationStatus, OutputType, FileType } from '../../quotation/models/qu
 import { BidStatus } from '../../common/bids/models/bids.schema';
 import { PaymentType, PaymentStatus, PaymentMethod } from '../../common/models/transaction.schema';
 import { EditorDetailsDto } from 'src/editors/dto/editors.dto'; // Assuming this exists and is relevant
-import { ReportContext } from 'src/common/models/report.schema';
+import { ReportContext } from 'src/reports/models/report.schema';
 
 // --- Enums (Re-exported for DTO usage if not directly imported in service/controller) ---
 export { Gender, Language, QuotationStatus, OutputType, FileType, BidStatus, PaymentType, PaymentStatus, PaymentMethod };

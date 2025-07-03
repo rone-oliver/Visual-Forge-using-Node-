@@ -5,7 +5,7 @@ import { Types } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { IAdminsService } from './interfaces/admins.service.interface';
 import { DashboardResponseDto, FormattedEditor, FormattedEditorRequest, GetAllUsersQueryDto, GetEditorsQueryDto, UpdateReportDto } from './dto/admin.dto';
-import { Report } from 'src/common/models/report.schema';
+import { Report } from 'src/reports/models/report.schema';
 import { SuccessResponseDto } from 'src/users/dto/users.dto';
 import { IAdminRepository, IAdminRepositoryToken } from './interfaces/admins.repository.interface';
 import { IReportsRepository, IReportsRepositoryToken } from './interfaces/reports.repository.interface';

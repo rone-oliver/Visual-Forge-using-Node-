@@ -1,7 +1,7 @@
 import { InjectModel } from "@nestjs/mongoose";
 import { IReportsRepository } from "../interfaces/reports.repository.interface";
 import { Model } from "mongoose";
-import { Report, ReportDocument, ReportStatus } from "src/common/models/report.schema";
+import { Report, ReportDocument, ReportStatus } from "src/reports/models/report.schema";
 import { UpdateReportDto } from "../dto/admin.dto";
 
 export class ReportsRepository implements IReportsRepository {

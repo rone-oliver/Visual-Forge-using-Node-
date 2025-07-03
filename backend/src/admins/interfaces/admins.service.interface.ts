@@ -3,7 +3,7 @@ import { User } from 'src/users/models/user.schema';
 import { Admin } from '../models/admin.schema';
 import { FormattedEditorRequest, GetAllUsersQueryDto, GetEditorsQueryDto, FormattedEditor, UpdateReportDto, DashboardResponseDto } from '../dto/admin.dto';
 import { SuccessResponseDto } from 'src/users/dto/users.dto';
-import { Report } from 'src/common/models/report.schema';
+import { Report } from 'src/reports/models/report.schema';
 
 export const IAdminsServiceToken = Symbol('IAdminsService');
 

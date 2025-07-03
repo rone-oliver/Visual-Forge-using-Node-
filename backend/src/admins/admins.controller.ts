@@ -11,7 +11,7 @@ import { IAdminsService, IAdminsServiceToken } from './interfaces/admins.service
 import { Role } from 'src/common/enums/role.enum';
 import { SuccessResponseDto } from 'src/users/dto/users.dto';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { Report } from 'src/common/models/report.schema';
+import { Report } from 'src/reports/models/report.schema';
 
 @Controller('admin')
 @UseGuards(AuthGuard, RolesGuard)

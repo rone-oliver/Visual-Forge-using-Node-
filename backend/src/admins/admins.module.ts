@@ -8,7 +8,7 @@ import { EditorRequest, EditorRequestSchema } from 'src/editors/models/editorReq
 import { Editor, editorSchema } from 'src/editors/models/editor.schema';
 import { UsersModule } from 'src/users/users.module';
 import { IAdminsServiceToken } from './interfaces/admins.service.interface';
-import { Report, ReportSchema } from 'src/common/models/report.schema';
+import { Report, ReportSchema } from 'src/reports/models/report.schema';
 import { IAdminRepositoryToken } from './interfaces/admins.repository.interface';
 import { AdminRepository } from './repositories/admin.repository';
 import { IReportsRepositoryToken } from './interfaces/reports.repository.interface';

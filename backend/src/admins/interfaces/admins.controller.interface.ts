@@ -1,7 +1,7 @@
 import { User } from "src/users/models/user.schema";
 import { DashboardResponseDto, FormattedEditor, FormattedEditorRequest, GetAllUsersQueryDto, GetEditorsQueryDto, UpdateReportDto } from "../dto/admin.dto";
 import { SuccessResponseDto } from "src/users/dto/users.dto";
-import { Report } from "src/common/models/report.schema";
+import { Report } from "src/reports/models/report.schema";
 
 export interface IAdminsController {
     getAllUsers(query: GetAllUsersQueryDto): Promise<User[]>;

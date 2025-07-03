@@ -14,7 +14,7 @@ import { Transaction, TransactionSchema } from 'src/common/models/transaction.sc
 import { Bid, BidSchema } from 'src/common/bids/models/bids.schema';
 import { BidsModule } from 'src/common/bids/bids.module';
 import { IUsersServiceToken } from './interfaces/users.service.interface';
-import { Report, ReportSchema } from 'src/common/models/report.schema';
+import { Report, ReportSchema } from 'src/reports/models/report.schema';
 import { WalletModule } from 'src/wallet/wallet.module';
 import { RelationshipModule } from 'src/common/relationship/relationship.module';
 import { CloudinaryModule } from 'src/common/cloudinary/cloudinary.module';
@@ -24,6 +24,7 @@ import { IUserRepositoryToken } from './interfaces/users.repository.interface';
 import { UserRepository } from './repositories/user.repository';
 import { QuotationModule } from 'src/quotation/quotation.module';
 import { WorksModule } from 'src/works/works.module';
+import { ReportsModule } from 'src/reports/reports.module';
 
 @Module({
   controllers: [UsersController],
@@ -43,9 +44,9 @@ import { WorksModule } from 'src/works/works.module';
     MongooseModule.forFeature([
       { name:User.name, schema: userSchema},
       { name: Transaction.name, schema: TransactionSchema},
-      { name: Report.name, schema: ReportSchema },
     ]),
-    PaymentModule, BidsModule, WalletModule, RelationshipModule, CloudinaryModule, QuotationModule, WorksModule,
+    PaymentModule, BidsModule, WalletModule, RelationshipModule,
+    CloudinaryModule, QuotationModule, WorksModule, ReportsModule,
   ],
   exports: [IUsersServiceToken, IUserRepositoryToken]
 })

@@ -33,7 +33,7 @@ import {
     ReportUserDto
 } from './dto/users.dto';
 import { GetAllUsersQueryDto } from 'src/admins/dto/admin.dto';
-import { Report, ReportDocument } from 'src/common/models/report.schema';
+import { Report, ReportDocument } from 'src/reports/models/report.schema';
 import { IAdminWalletService, IAdminWalletServiceToken } from 'src/wallet/interfaces/admin-wallet.service.interface';
 import { getYouTubeEmbedUrl } from 'src/common/utils/youtube-url.util';
 import { IRelationshipService, IRelationshipServiceToken } from 'src/common/relationship/interfaces/service.interface';
@@ -48,6 +48,7 @@ import { GetPublicWorksQueryDto, PaginatedPublicWorksResponseDto, PublicWorkItem
 import { IWorkService, IWorkServiceToken } from 'src/works/interfaces/works.service.interface';
 import { IQuotationService, IQuotationServiceToken } from 'src/quotation/interfaces/quotation.service.interface';
 import { IEditorsService, IEditorsServiceToken } from 'src/editors/interfaces/editors.service.interface';
+import { IReportService, IReportServiceToken } from 'src/reports/interfaces/reports.service.interface';
 
 @Injectable()
 export class UsersService implements IUsersService {
@@ -58,7 +59,7 @@ export class UsersService implements IUsersService {
         @Inject(IQuotationServiceToken) private readonly quotationService: IQuotationService,
         @Inject(IWorkServiceToken) private readonly workService: IWorkService,
         @InjectModel(Transaction.name) private transactionModel: Model<TransactionDocument>,
-        @InjectModel(Report.name) private reportModel: Model<ReportDocument>,
+        @Inject(IReportServiceToken) private readonly reportService: IReportService,
         @Inject(IAdminWalletServiceToken) private readonly adminWalletService: IAdminWalletService,
         @Inject(IRelationshipServiceToken) private readonly relationshipService: IRelationshipService,
         @Inject(ICloudinaryServiceToken) private cloudinaryService: ICloudinaryService,
@@ -896,14 +897,7 @@ export class UsersService implements IUsersService {
 
     async reportUser(reportDto: ReportUserDto, reporterId: string): Promise<SuccessResponseDto> {
         try {
-            await this.reportModel.create({
-                reporterId: new Types.ObjectId(reporterId),
-                reportedUserId: new Types.ObjectId(reportDto.reportedUserId),
-                context: reportDto.context.trim(),
-                reason: reportDto.reason.trim(),
-                additionalContext: reportDto.additionalContext?.trim(),
-            })
-            return { success: true, message: 'Report submitted successfully' };
+            return this.reportService.reportUser(reporterId, reportDto);
         } catch (error) {
             this.logger.error(`Error reporting user: ${error.message}`);
             throw error;
