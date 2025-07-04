@@ -202,7 +202,8 @@ export class UsersService implements IUsersService {
 
     async getUsers(currentUserId: Types.ObjectId): Promise<UserBasicInfoDto[]> {
         try {
-            return await this.userRepository.find({ _id: { $ne: currentUserId } });
+            const { items } = await this.userRepository.find({ _id: { $ne: currentUserId } });
+            return items;
         } catch (error) {
             this.logger.error(`Error fetching users: ${error.message}`);
             throw error;

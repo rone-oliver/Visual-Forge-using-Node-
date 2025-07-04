@@ -7,15 +7,15 @@ import { SuccessResponseDto } from 'src/users/dto/users.dto';
 export const IBidRepositoryToken = Symbol('IBidRepository');
 
 export interface IBidRepository {
-    findByFilters(filters: Partial<Bid>): Promise<Bid | null>;
-    findById(id: string | Types.ObjectId, options?: QueryOptions): Promise<Bid | null>;
-    create(bidData: Partial<Bid>): Promise<Bid>;
-    findAllByQuotation(quotationId: Types.ObjectId): Promise<any[]>;
-    findAllByEditor(editorId: Types.ObjectId): Promise<Bid[]>;
-    save(bid: Partial<Bid> & { _id: Types.ObjectId }, options?: QueryOptions): Promise<Bid>;
-    updateMany(filter: FilterQuery<Bid>, update: UpdateQuery<Bid>, options?: QueryOptions): Promise<any>;
-    delete(bidId: Types.ObjectId): Promise<void>;
-    getAcceptedBid(quotationId: Types.ObjectId, editorId: Types.ObjectId): Promise<Bid>;
+  findByFilters(filters: Partial<Bid>): Promise<Bid | null>;
+  findById(id: string | Types.ObjectId, options?: QueryOptions): Promise<Bid | null>;
+  create(bidData: Partial<Bid>): Promise<Bid>;
+  findAllByQuotation(quotationId: Types.ObjectId): Promise<any[]>;
+  findAllByEditor(editorId: Types.ObjectId): Promise<Bid[]>;
+  save(bid: Partial<Bid> & { _id: Types.ObjectId }, options?: QueryOptions): Promise<Bid>;
+  updateMany(filter: FilterQuery<Bid>, update: UpdateQuery<Bid>, options?: QueryOptions): Promise<any>;
+  delete(bidId: Types.ObjectId): Promise<void>;
+  getAcceptedBid(quotationId: Types.ObjectId, editorId: Types.ObjectId): Promise<Bid>;
 }
 
 export const IBidServiceToken = Symbol('IBidService');
