@@ -5,8 +5,11 @@ import { IWorkRepository } from "../interfaces/works.repository.interface";
 import { CreateWorkDto, GetPublicWorksQueryDto, PopulatedWork } from "../dtos/works.dto";
 import { User, UserDocument } from "src/users/models/user.schema";
 import { Editor, EditorDocument } from "src/editors/models/editor.schema";
+import { Logger } from "@nestjs/common";
 
 export class WorkRepository implements IWorkRepository {
+    private readonly logger = new Logger(WorkRepository.name);
+    
     constructor(
         @InjectModel(Works.name) private readonly workModel: Model<WorksDocument>,
         @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
@@ -49,11 +52,11 @@ export class WorkRepository implements IWorkRepository {
 
             const [matchingUsers, matchingEditors] = await Promise.all([
                 this.userModel.find({ fullname: { $regex: searchTerm, $options: 'i' } }).select('_id').lean(),
-                this.editorModel.find({ fullname: { $regex: searchTerm, $options: 'i' } }).select('_id').lean()
+                this.userModel.find({ fullname: { $regex: searchTerm, $options: 'i' }, isEditor: true }).select('_id').lean()
             ]);
 
-            const userIds = matchingUsers.map(user => user._id);
-            const editorIds = matchingEditors.map(editor => editor._id);
+            const userIds = matchingUsers.map(user => user._id.toString());
+            const editorIds = matchingEditors.map(editor => new Types.ObjectId(editor._id));
 
             if (userIds.length > 0 || editorIds.length > 0) {
                 filter.$or = [];
