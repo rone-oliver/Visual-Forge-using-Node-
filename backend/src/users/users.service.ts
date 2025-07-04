@@ -55,7 +55,6 @@ import { GetTransactionsQueryDto, IFindOptions } from 'src/common/transaction/dt
 export class UsersService implements IUsersService {
     private readonly logger = new Logger(UsersService.name);
     constructor(
-        @InjectModel(User.name) private userModel: Model<UserDocument>,
         @Inject(forwardRef(()=>IEditorsServiceToken)) private readonly editorService: IEditorsService,
         @Inject(IQuotationServiceToken) private readonly quotationService: IQuotationService,
         @Inject(IWorkServiceToken) private readonly workService: IWorkService,
@@ -71,20 +70,19 @@ export class UsersService implements IUsersService {
 
     async findOne(filter: Partial<User>): Promise<User | null> {
         try {
-            return this.userModel.findOne(filter).exec();
+            return this.userRepository.findOne(filter);
         } catch (error) {
             this.logger.error(`Error finding user: ${error.message}`);
-            // throw error;
             throw new HttpException('User not found', HttpStatus.NOT_FOUND);
         }
     }
 
     async findByUsername(username: string) {
-        return await this.userModel.findOne({ username });
+        return await this.userRepository.findOne({ username });
     }
 
     async findByEmail(email: string) {
-        return await this.userModel.findOne({ email });
+        return await this.userRepository.findOne({ email });
     }
 
     async createUser(user: Partial<User>): Promise<User> {
@@ -93,7 +91,7 @@ export class UsersService implements IUsersService {
                 user.password = await bcrypt.hash(user.password, 10);
             }
             this.logger.log(`Creating new user: ${user.email}`);
-            const newUser = await this.userModel.create(user);
+            const newUser = await this.userRepository.create(user);
             await this.adminWalletService.creditWelcomeBonus(newUser._id.toString());
             return newUser;
         } catch (error) {
@@ -110,7 +108,7 @@ export class UsersService implements IUsersService {
             const randomString = Math.random().toString(36).substring(2, 6);
             username = `user_${randomString}`;
 
-            const existingUser = await this.userModel.findOne({ username });
+            const existingUser = await this.userRepository.findOne({ username });
             if (!existingUser) {
                 isUnique = true;
             }
@@ -133,7 +131,7 @@ export class UsersService implements IUsersService {
 
     async updateUserGoogleId(userId: Types.ObjectId, googleId: string): Promise<User | null> {
         try {
-            return await this.userModel.findOneAndUpdate({ _id: userId }, { $set: { googleId } }, { new: true })
+            return await this.userRepository.findOneAndUpdate({ _id: userId }, { $set: { googleId } });
         } catch (error) {
             this.logger.error(`Error updating user: ${error.message}`);
             throw error;
@@ -142,7 +140,7 @@ export class UsersService implements IUsersService {
 
     async updateOne(filter: Partial<User>, update: Partial<User>) {
         try {
-            await this.userModel.updateOne(filter, update);
+            await this.userRepository.findOneAndUpdate(filter, update);
             this.logger.log("User data updated successfully");
         } catch (error) {
             this.logger.error(`Error updating User: ${error.message}`);
@@ -153,7 +151,7 @@ export class UsersService implements IUsersService {
     async updatePassword(userId: Types.ObjectId, password: string): Promise<boolean> {
         try {
             this.logger.log(userId, password)
-            await this.userModel.updateOne({ _id: userId }, { $set: { password } });
+            await this.userRepository.findOneAndUpdate({ _id: userId }, { $set: { password } });
             this.logger.log("Password updated successfully");
             return true;
         } catch (error) {
@@ -165,14 +163,13 @@ export class UsersService implements IUsersService {
     async getUserDetails(userId: Types.ObjectId): Promise<UserProfileResponseDto | null> {
         try {
             this.logger.log(`Fetching user details for ID: ${userId}`);
-            const user = await this.userModel.findById(userId);
+            const user = await this.userRepository.findById(userId);
             if (user && user.isEditor) {
                 this.logger.log('Fetching the editor details');
                 console.log('user id: ', user._id);
                 const editorDetails = await this.editorService.findByUserId(user._id);
                 if (editorDetails) {
-                    this.logger.log('Editor details: ', editorDetails)
-                    const userObj = user.toObject();
+                    this.logger.log('Editor details: ', editorDetails);
 
                     const [followersCount, followingCount] = await Promise.all([
                         this.relationshipService.getFollowers({ userId: user._id, limit: 0, skip: 0 }).then(f => f.length),
@@ -180,7 +177,7 @@ export class UsersService implements IUsersService {
                     ]);
 
                     return {
-                        ...userObj,
+                        ...user,
                         editorDetails: {
                             category: editorDetails.category || [],
                             score: editorDetails.score || 0,
@@ -205,7 +202,7 @@ export class UsersService implements IUsersService {
 
     async getUsers(currentUserId: Types.ObjectId): Promise<UserBasicInfoDto[]> {
         try {
-            return await this.userModel.find({ _id: { $ne: currentUserId } });
+            return await this.userRepository.find({ _id: { $ne: currentUserId } });
         } catch (error) {
             this.logger.error(`Error fetching users: ${error.message}`);
             throw error;
@@ -214,7 +211,7 @@ export class UsersService implements IUsersService {
 
     async getUserInfoForChatList(userId: Types.ObjectId): Promise<UserInfoForChatListDto> {
         try {
-            const userInfo = await this.userModel.findById(userId, { username: 1, profileImage: 1, isOnline: 1 });
+            const userInfo = await this.userRepository.findById(userId, { username: 1, profileImage: 1, isOnline: 1 });
             if(!userInfo){
                 throw new NotFoundException('No user info found for your chats');
             }
@@ -235,7 +232,7 @@ export class UsersService implements IUsersService {
     async requestForEditor(userId: Types.ObjectId): Promise<SuccessResponseDto> {
         try {
 
-            const user = await this.userModel.findById(userId).select('isEditor');
+            const user = await this.userRepository.findById(userId, { isEditor: 1 });
             if (user && !user.isEditor) {
                 this.logger.log(`User ${userId} is not an editor. Proceeding with request.`);
                 await this.editorService.createEditorRequests(userId);
@@ -518,7 +515,7 @@ export class UsersService implements IUsersService {
 
     async updateProfileImage(userId: Types.ObjectId, profileImageUrl: string): Promise<UserBaseResponseDto | null> {
         try {
-            return await this.userModel.findOneAndUpdate({ _id: userId }, { profileImage: profileImageUrl }, { new: true })
+            return await this.userRepository.findOneAndUpdate({ _id: userId }, { profileImage: profileImageUrl });
         } catch (error) {
             this.logger.error(`Error updating profile image: ${error.message}`);
             throw error;
@@ -537,7 +534,7 @@ export class UsersService implements IUsersService {
 
     async updateProfile(userId: Types.ObjectId, updateProfileDto: UpdateProfileDto): Promise<UserProfileResponseDto | null> {
         try {
-            return await this.userModel.findOneAndUpdate({ _id: userId }, { $set: updateProfileDto })
+            return await this.userRepository.findOneAndUpdate({ _id: userId }, { $set: updateProfileDto })
         } catch (error) {
             this.logger.error(`Error updating profile: ${error.message}`);
             throw error;
@@ -546,12 +543,12 @@ export class UsersService implements IUsersService {
 
     async resetPassword(userId: Types.ObjectId, resetPasswordDto: ResetPasswordDto): Promise<SuccessResponseDto> {
         try {
-            const user = await this.userModel.findById(userId);
+            const user = await this.userRepository.findById(userId);
             if (!user) throw new Error('User not found');
             const isPasswordValid = await bcrypt.compare(resetPasswordDto.currentPassword, user.password);
             if (!isPasswordValid) throw new Error('Current password is incorrect');
             const hashedPassword = await bcrypt.hash(resetPasswordDto.newPassword, 10);
-            await this.userModel.updateOne({ _id: userId }, { $set: { password: hashedPassword } });
+            await this.userRepository.findOneAndUpdate({ _id: userId }, { $set: { password: hashedPassword } });
             return { success: true };
         } catch (error) {
             this.logger.error(`Error resetting password: ${error.message}`);
@@ -668,7 +665,7 @@ export class UsersService implements IUsersService {
 
     async getUser(userId: Types.ObjectId): Promise<UserBasicInfoDto | null> {
         try {
-            const user = await this.userModel.findById(userId);
+            const user = await this.userRepository.findById(userId);
             if (!user) {
                 this.logger.log('User not found');
                 throw new Error('User not found');
