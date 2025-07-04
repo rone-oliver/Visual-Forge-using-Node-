@@ -10,4 +10,5 @@ export interface IUserRepository {
     findById(id: Types.ObjectId, projection?: ProjectionType<User>): Promise<User | null>;
     findOneAndUpdate(filter: FilterQuery<User>, update: UpdateQuery<User>): Promise<User | null>;
     countDocuments(): Promise<number>;
+    exists(filter: FilterQuery<User>): Promise<boolean>;
 }

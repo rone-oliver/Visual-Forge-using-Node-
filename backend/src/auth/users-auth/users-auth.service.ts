@@ -7,6 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { OtpService } from './otp/otp.service';
 import { IUsersService, IUsersServiceToken } from 'src/users/interfaces/users.service.interface';
 import { IUsersAuthService } from './interfaces/usersAuth-service.interface';
+import { IOtpService, IOtpServiceToken } from './interfaces/otp.service.interface';
 
 @Injectable()
 export class UsersAuthService implements IUsersAuthService {
@@ -14,7 +15,7 @@ export class UsersAuthService implements IUsersAuthService {
         @Inject(IUsersServiceToken) private readonly usersService: IUsersService,
         private jwtService: JwtService,
         private configService: ConfigService,
-        private otpService: OtpService,
+        @Inject(IOtpServiceToken) private readonly otpService: IOtpService,
     ) { }
     private readonly logger = new Logger(UsersAuthService.name);
 

@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { ReportsService } from './reports.service';
-import { ReportsController } from './reports.controller';
 import { IReportRepositoryToken } from './interfaces/reports.repository.interface';
 import { ReportRepository } from './repositories/reports.repository';
 import { IReportServiceToken } from './interfaces/reports.service.interface';
@@ -23,7 +22,6 @@ import { Report, ReportSchema } from './models/report.schema';
       { name: Report.name, schema: ReportSchema },
     ])
   ],
-  controllers: [ReportsController],
   exports: [IReportServiceToken,IReportRepositoryToken]
 })
 export class ReportsModule {}

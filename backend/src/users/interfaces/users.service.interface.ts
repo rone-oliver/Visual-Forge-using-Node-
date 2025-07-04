@@ -77,6 +77,7 @@ export interface IUsersService {
     // User retrieval methods (consider if these are admin-only or also for general users with specific contexts)
     getUser(userId: Types.ObjectId): Promise<UserBasicInfoDto | null>; // Simplified DTO for general fetching
     getUsers(currentUserId: Types.ObjectId): Promise<UserBasicInfoDto[]>; // For user search/listing, excluding sensitive data
+    isExistingUser(userId: Types.ObjectId): Promise<boolean>;
 
     // Methods for Google Auth used by CommonService
     findByEmail(email: string): Promise<User | null>;

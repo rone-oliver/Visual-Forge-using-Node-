@@ -15,7 +15,7 @@ export class NotificationService implements INotificationService {
     constructor(
         @Inject(INotificationRepositoryToken) private readonly notificationRepository: INotificationRepository,
         @Inject(forwardRef(() => INotificationGatewayToken)) 
-        private readonly notificationGateway: INotificationGateway,
+        @Inject(INotificationGatewayToken) private readonly notificationGateway: INotificationGateway,
     ) { }
 
     async createNotification(params: CreateNotificationDto): Promise<Notification | null> {

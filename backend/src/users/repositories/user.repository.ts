@@ -30,6 +30,11 @@ export class UserRepository implements IUserRepository {
         return this.userModel.findOneAndUpdate(filter, update, { new: true }).exec();
     }
 
+    async exists(filter: FilterQuery<User>): Promise<boolean> {
+        const result = await this.userModel.exists(filter).exec();
+        return !!result;
+    }
+
     async countDocuments(): Promise<number> {
         return this.userModel.countDocuments().exec();
     }

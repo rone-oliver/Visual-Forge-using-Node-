@@ -11,7 +11,6 @@ import {
     CreateEditorBidBodyDto,
     UpdateEditorBidBodyDto,
     EditorDetailsResponseDto,
-    FileUploadResultDto,
     BidResponseDto,
     UserForEditorDetailsDto,
     EditorDetailsDto,
@@ -33,7 +32,6 @@ import { CompletedWorkDto, FileAttachmentDto, GetAcceptedQuotationsQueryDto, Get
 import { IWorkService, IWorkServiceToken } from 'src/works/interfaces/works.service.interface';
 import { IUsersService, IUsersServiceToken } from 'src/users/interfaces/users.service.interface';
 import { calculateAverageRating } from 'src/common/utils/calculation.util';
-import { UserRatingForEditorDto } from 'src/users/dto/users.dto';
 
 @Injectable()
 export class EditorsService implements IEditorsService {

@@ -1,5 +1,4 @@
 import { Body, Controller, Get, Inject, Logger, Param, Patch, Query, Req, UseGuards } from '@nestjs/common';
-import { AdminsService } from './admins.service';
 import { Types } from 'mongoose';
 import { RolesGuard } from 'src/auth/guards/role.guard';
 import { AuthGuard } from 'src/auth/guards/auth.guard';

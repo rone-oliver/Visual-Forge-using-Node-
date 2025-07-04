@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
+import { Injectable, BadRequestException, Inject } from '@nestjs/common';
 import { IWalletRepository } from './interfaces/wallet-repository.interface';
 import { IWalletService } from './interfaces/wallet-service.interface';
 import { WalletTransactionType } from './models/wallet-transaction.schema';

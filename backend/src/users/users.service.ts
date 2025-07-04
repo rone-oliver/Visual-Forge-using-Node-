@@ -961,4 +961,8 @@ export class UsersService implements IUsersService {
             throw error;
         }
     }
+
+    async isExistingUser(userId: Types.ObjectId): Promise<boolean> {
+        return this.userRepository.exists({ _id: userId });
+    }
 }

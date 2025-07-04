@@ -1,6 +1,5 @@
 import { Controller, Post, Body, Res, Req, Get, UnauthorizedException, BadRequestException, HttpCode, HttpStatus, Inject } from '@nestjs/common';
 import { Response, Request } from 'express';
-import { UsersAuthService } from './users-auth.service';
 import { User } from 'src/users/models/user.schema';
 import { Public } from '../decorators/public.decorator';
 import { IUsersAuthService, IUsersAuthServiceToken } from './interfaces/usersAuth-service.interface';

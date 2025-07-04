@@ -1,17 +1,16 @@
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { HttpException, HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Otp, OtpDocument } from 'src/common/models/otp.schema';
 import * as nodemailer from 'nodemailer';
 import * as otpGenerator from 'otp-generator';
+import { IOtpService } from '../interfaces/otp.service.interface';
+import { IOtpRepository, IOtpRepositoryToken } from '../interfaces/otp.repository.interface';
 
 @Injectable()
-export class OtpService {
+export class OtpService implements IOtpService {
     private transporter: nodemailer.Transporter;
     private readonly logger = new Logger(OtpService.name);
     constructor(
-        @InjectModel(Otp.name) private otpModel: Model<OtpDocument>,
+        @Inject(IOtpRepositoryToken) private readonly otpRepository: IOtpRepository,
         private configService: ConfigService
     ) {
         this.transporter = nodemailer.createTransport({
@@ -29,19 +28,16 @@ export class OtpService {
             const expiresAt = new Date();
             expiresAt.setMinutes(expiresAt.getMinutes() + 10);
 
-            const result = await this.otpModel.updateOne(
+            const success = await this.otpRepository.upsert(
                 { email },
                 {
-                    $set: {
-                        otp,
-                        expiresAt,
-                        isVerified: false
-                    }
-                },
-                { upsert: true }
+                    otp,
+                    expiresAt,
+                    isVerified: false
+                }
             );
 
-            if (!result.acknowledged) {
+            if (!success) {
                 throw new HttpException('Failed to create OTP', HttpStatus.INTERNAL_SERVER_ERROR);
             }
             return otp;
@@ -51,7 +47,7 @@ export class OtpService {
         }
     }
     async verifyOtp(email: string, otp: string): Promise<boolean> {
-        const updateResult = await this.otpModel.updateOne(
+        return this.otpRepository.findAndUpdate(
             {
                 email,
                 otp,
@@ -62,7 +58,6 @@ export class OtpService {
                 isVerified: true,
             }
         )
-        return updateResult.modifiedCount > 0;
     }
     private generateOtp(): string {
         return otpGenerator.generate(6, {

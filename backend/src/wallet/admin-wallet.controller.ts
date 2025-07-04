@@ -1,5 +1,4 @@
 import { Controller, Get, Inject, Query, UseGuards } from '@nestjs/common';
-import { AdminWalletService } from './admin-wallet.service';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/common/enums/role.enum';

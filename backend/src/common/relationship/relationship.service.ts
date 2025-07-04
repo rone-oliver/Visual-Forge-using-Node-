@@ -7,12 +7,13 @@ import { GetRelatedUsersDto, RelationshipDto } from './dto/relationship.dto';
 import { IRelationshipRepository, IRelationshipRepositoryToken } from './interfaces/repository.interface';
 import { IRelationshipService } from './interfaces/service.interface';
 import { Relationship } from './models/relationships.schema';
+import { IUsersService, IUsersServiceToken } from 'src/users/interfaces/users.service.interface';
 
 @Injectable()
 export class RelationshipService implements IRelationshipService {
   constructor(
     @Inject(IRelationshipRepositoryToken) private readonly relationshipRepository: IRelationshipRepository,
-    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+    @Inject(IUsersServiceToken) private readonly userService: IUsersService,
   ) {}
 
   async createRelationship(dto: RelationshipDto): Promise<Relationship> {
@@ -23,8 +24,8 @@ export class RelationshipService implements IRelationshipService {
     }
 
     const [sourceUserExists, targetUserExists] = await Promise.all([
-      this.userModel.exists({ _id: sourceUser }),
-      this.userModel.exists({ _id: targetUser }),
+      this.userService.isExistingUser(sourceUser),
+      this.userService.isExistingUser(targetUser),
     ]);
 
     if (!sourceUserExists) throw new NotFoundException('Source user not found.');
