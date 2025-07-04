@@ -340,6 +340,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.googleAuthService.verifyGoogleToken(credential).subscribe({
       next: (response: any) => {
         if (response) {
+          console.debug("Google response:", response)
           this.successMessage = 'Google sign-in successful';
 
           setTimeout(() => {

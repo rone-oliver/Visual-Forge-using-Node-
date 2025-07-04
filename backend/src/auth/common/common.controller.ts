@@ -1,12 +1,14 @@
-import { BadRequestException, Body, Controller, Delete, Get, Inject, Post, Put, Query, Req, Res, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Inject, Post, Put, Query, Req, Res, UseGuards, HttpStatus } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { Types } from 'mongoose';
 import { Public } from '../decorators/public.decorator';
 import { UserType } from './dtos/common.dto';
 import { ICommonService, ICommonServiceToken } from './interfaces/common-service.interface';
+import { Logger } from '@nestjs/common';
 
 @Controller('auth')
 export class AuthController {
+  private readonly logger = new Logger(AuthController.name);
   constructor(
     @Inject(ICommonServiceToken) private commonService: ICommonService
   ){}
@@ -56,7 +58,8 @@ export class AuthController {
     if(!body.credential){
       throw new BadRequestException('No credential provided');
     }else{
-      return this.commonService.handleGoogleAuth(body.credential,res);
+      const resp = await this.commonService.handleGoogleAuth(body.credential,res);
+      res.status(HttpStatus.OK).json(resp);
     }
   }
 }
