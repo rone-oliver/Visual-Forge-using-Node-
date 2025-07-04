@@ -177,7 +177,7 @@ export class UsersService implements IUsersService {
                     ]);
 
                     return {
-                        ...user,
+                        ...user.toObject(),
                         editorDetails: {
                             category: editorDetails.category || [],
                             score: editorDetails.score || 0,
