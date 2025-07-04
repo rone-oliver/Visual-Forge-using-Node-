@@ -131,52 +131,34 @@ export class CommonService implements ICommonService {
   //for google authentication
   async handleGoogleAuth(credential: string, res: Response): Promise<{ accessToken: string; message: string; }> {
     try {
-      console.log('--- handleGoogleAuth started ---');
-      console.log('Received credential:', credential);
-
       const ticket = await this.googleClient.verifyIdToken({
         idToken: credential,
         audience: this.configService.get<string>('GOOGLE_CLIENT_ID')
       })
-      console.log('Google token verification successful.');
 
       const payload = ticket.getPayload()
-      console.log('Token payload:', payload);
 
       if (!payload || !payload.email) {
-        console.error('Invalid Google Token: no payload or email.');
         throw new BadRequestException('Invalid Google Token')
       }
 
       const { email, name: fullname, email_verified, sub: googleId, locale, picture: profileImage } = payload
-      console.log('Payload details:', { email, fullname, email_verified, googleId, locale, profileImage });
-
       if (!email_verified) {
-        console.error('Email not verified.');
         throw new BadRequestException('Email not verified')
       }
 
       const language = this.convertToLanguageEnum(locale);
-      console.log('Converted language:', language);
 
       let user: User | null = await this.userService.findByEmail(email);
-      console.log('User found by email:', user);
-
       if (!user) {
-        console.log('User not found, creating new Google user...');
         user = await this.userService.createGoogleUser({ email, fullname, googleId, language, profileImage });
-        console.log('New user created:', user);
       }
 
       if (user && !user.googleId) {
-        console.log('User exists but without googleId, updating...');
         user = await this.userService.updateUserGoogleId(user._id, googleId);
-        console.log('User updated with googleId:', user);
       }
       if(user){
-        console.log('User object is valid, generating tokens for:', user);
         const tokens = await this.generateTokens(user!, user.isEditor ? 'Editor' : 'User');
-        console.log('Tokens generated.');
         
         res.cookie('userRefreshToken', tokens.refreshToken, {
           httpOnly: true,
@@ -184,19 +166,15 @@ export class CommonService implements ICommonService {
           sameSite: 'strict',
           maxAge: 7 * 24 * 60 * 60 * 1000
         });
-        console.log('Refresh token cookie set.');
   
-        console.log('--- handleGoogleAuth successful ---');
         return {
           accessToken: tokens.accessToken,
           message: 'Google sign-in successful'
         };
       }else{
-        console.error('Unable to sign in via Google: user object is null or undefined.');
         throw new InternalServerErrorException('Unable to sign in via Google')
       }
     } catch (error) {
-      console.error('Error in handleGoogleAuth:', error);
       throw new BadRequestException('Invalid google Token')
     }
   }
