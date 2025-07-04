@@ -26,7 +26,7 @@ export class EditorManagementService {
     return this.http.patch<boolean>(`${this.adminUrl}/requests/editor/${requestId}/reject`,{ reason });
   }
 
-  getEditors(params?:{[key:string]:any}): Observable<[]>{
+  getEditors(params?:{[key:string]:any}): Observable<{editors:any[],total: number}>{
     let httpParams = new HttpParams();
     if(params){
       console.log('params:',params);
@@ -36,6 +36,6 @@ export class EditorManagementService {
         }
       });
     }
-    return this.http.get<[]>(`${this.adminUrl}/editors`,{params:httpParams});
+    return this.http.get<{editors:any[],total: number}>(`${this.adminUrl}/editors`,{params:httpParams});
   }
 }

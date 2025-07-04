@@ -65,7 +65,7 @@ export interface IEditorsService {
     createEditorRequests(userId: Types.ObjectId): Promise<EditorRequest>;
     findEditorRequest(userId: Types.ObjectId): Promise<EditorRequest | null>;
 
-    getEditorsForAdmin(query: GetEditorsQueryDto): Promise<FormattedEditor[]>;
+    getEditorsForAdmin(query: GetEditorsQueryDto): Promise<{ editors: FormattedEditor[]; total: number }>;
     countAllEditors(): Promise<number>;
 
     findByUserId(userId: Types.ObjectId): Promise<Editor | null>;

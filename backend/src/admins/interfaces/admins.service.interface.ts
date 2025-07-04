@@ -11,11 +11,11 @@ export const IAdminsServiceToken = Symbol('IAdminsService');
 export interface IAdminsService {
   findOne(filter: Partial<Admin>): Promise<Admin | null>;
   createAdmin(adminData: any): Promise<Admin>;
-  getAllUsers(query: GetAllUsersQueryDto): Promise<User[]>;
+  getAllUsers(query: GetAllUsersQueryDto): Promise<{ users: User[]; total: number }>;
   getEditorRequests(): Promise<FormattedEditorRequest[]>;
   approveRequest(requestId: Types.ObjectId, adminId: Types.ObjectId): Promise<boolean>;
   rejectRequest(requestId: Types.ObjectId, reason: string): Promise<boolean>;
-  getEditors(query: GetEditorsQueryDto): Promise<FormattedEditor[]>;
+  getEditors(query: GetEditorsQueryDto): Promise<{ editors: FormattedEditor[]; total: number }>;
   blockUser(userId: Types.ObjectId): Promise<SuccessResponseDto>;
   getPendingReports(): Promise<Report[]>;
   updateReport(reportId: string, updateDto: UpdateReportDto): Promise<Report>;

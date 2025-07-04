@@ -81,18 +81,32 @@ export class EditorsService implements IEditorsService {
         return this.editorRequestsRepository.countEditorRequests();
     }
 
-    async getEditorsForAdmin(query: GetEditorsQueryDto): Promise<FormattedEditor[]> {
+    async getEditorsForAdmin(
+        query: GetEditorsQueryDto,
+    ): Promise<{ editors: FormattedEditor[]; total: number }> {
         try {
             this.logger.log('Fetching editor with these query:', query);
+
+            const {
+                page = '1',
+                limit = '10',
+                // sortBy = 'fullname',
+                // sortOrder = 'asc',
+                search,
+                video,
+                image,
+                audio,
+                rating,
+            } = query;
 
             const pipeline: any[] = [];
 
             const matchStage: any = {};
 
             const categoryFilters: string[] = [];
-            if (query.video === 'true') categoryFilters.push('Video');
-            if (query.image === 'true') categoryFilters.push('Image');
-            if (query.audio === 'true') categoryFilters.push('Audio');
+            if (video === 'true') categoryFilters.push('Video');
+            if (image === 'true') categoryFilters.push('Image');
+            if (audio === 'true') categoryFilters.push('Audio');
 
             if (categoryFilters.length > 0) {
                 matchStage['category'] = { $all: categoryFilters };
@@ -106,19 +120,19 @@ export class EditorsService implements IEditorsService {
                 $addFields: {
                     averageRating: {
                         $cond: {
-                            if: { $eq: [{ $size: "$ratings" }, 0] },
+                            if: { $eq: [{ $size: '$ratings' }, 0] },
                             then: 0,
-                            else: { $avg: "$ratings.rating" }
-                        }
-                    }
-                }
+                            else: { $avg: '$ratings.rating' },
+                        },
+                    },
+                },
             });
 
-            if (query.rating) {
+            if (rating) {
                 pipeline.push({
                     $match: {
-                        averageRating: { $gte: parseFloat(query.rating) }
-                    }
+                        averageRating: { $gte: parseFloat(rating) },
+                    },
                 });
             }
 
@@ -127,19 +141,36 @@ export class EditorsService implements IEditorsService {
                     from: 'users',
                     localField: 'userId',
                     foreignField: '_id',
-                    as: 'userInfo'
-                }
+                    as: 'userInfo',
+                },
             });
 
             pipeline.push({ $unwind: '$userInfo' });
 
-            if (query.search) {
+            if (search) {
                 pipeline.push({
                     $match: {
-                        'userInfo.username': { $regex: query.search, $options: 'i' }
-                    }
+                        $or: [
+                            { 'userInfo.fullname': { $regex: search, $options: 'i' } },
+                            { 'userInfo.email': { $regex: search, $options: 'i' } },
+                            { 'userInfo.username': { $regex: search, $options: 'i' } },
+                        ],
+                    },
                 });
             }
+
+            const countPipeline = [...pipeline, { $count: 'total' }];
+            const totalResult = (await this.editorRepository.aggregate(countPipeline)) as unknown as { total: number }[];
+            const total = totalResult.length > 0 ? totalResult[0].total : 0;
+
+            // pipeline.push({
+            //     $sort: {
+            //         [`userInfo.${sortBy}`]: sortOrder === 'asc' ? 1 : -1,
+            //     },
+            // });
+
+            pipeline.push({ $skip: (parseInt(page) - 1) * parseInt(limit) });
+            pipeline.push({ $limit: parseInt(limit) });
 
             pipeline.push({
                 $project: {
@@ -156,12 +187,13 @@ export class EditorsService implements IEditorsService {
                     createdAt: 1,
                     isVerified: '$userInfo.isVerified',
                     isBlocked: '$userInfo.isBlocked',
-                    socialLinks: { $ifNull: ['$socialLinks', {}] }
-                }
+                    socialLinks: { $ifNull: ['$socialLinks', {}] },
+                },
             });
 
             const editors = await this.editorRepository.aggregate(pipeline);
-            return editors as unknown as FormattedEditor[];
+
+            return { editors: editors as unknown as FormattedEditor[], total };
         } catch (error) {
             this.logger.error(`Error fetching editors: ${error.message}`);
             throw new HttpException('No editors found', HttpStatus.NOT_FOUND);

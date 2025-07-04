@@ -5,11 +5,11 @@ import { Report } from "src/reports/models/report.schema";
 import { UpdateReportDto } from "src/reports/dtos/reports.dto";
 
 export interface IAdminsController {
-    getAllUsers(query: GetAllUsersQueryDto): Promise<User[]>;
+    getAllUsers(query: GetAllUsersQueryDto): Promise<{ users: User[]; total: number }>;
     getEditorRequests(): Promise<FormattedEditorRequest[]>;
     approveRequest(req: Request, reqId: string): Promise<boolean>;
     rejectRequest(reqId: string, body: { reason: string }): Promise<boolean>;
-    getEditors(query: GetEditorsQueryDto): Promise<FormattedEditor[]>;
+    getEditors(query: GetEditorsQueryDto): Promise<{ editors: FormattedEditor[]; total: number }>;
     blockUser(userId: string): Promise<SuccessResponseDto>;
     getPendingReports(): Promise<Report[]>;
     updateReport(reportId: string, updateDto: UpdateReportDto): Promise<Report>;

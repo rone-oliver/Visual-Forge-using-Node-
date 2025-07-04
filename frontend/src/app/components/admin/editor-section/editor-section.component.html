@@ -51,7 +51,16 @@
   </div>
 
   <div class="content-area">
-    <app-table [data]="getEditors" [columns]="editorColumns" [loading]="loading" (rowClick)="onEditorClick($event)"
+    <app-table 
+      [data]="editors" 
+      [columns]="editorColumns" 
+      [loading]="loading"
+      [totalItems]="totalEditors"
+      [currentPage]="currentPage"
+      [pageSize]="pageSize"
+      (pageChange)="onPageChange($event)"
+      (sortChange)="onSortChange($event)"
+      (rowClick)="onEditorClick($event)"
       (actionClick)="onEditorAction($event)">
     </app-table>
   </div>

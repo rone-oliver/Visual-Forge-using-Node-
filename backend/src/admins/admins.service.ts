@@ -40,10 +40,12 @@ export class AdminsService implements IAdminsService {
         return this.adminRepository.create(adminData);
     }
 
-    async getAllUsers(query: GetAllUsersQueryDto): Promise<User[]> {
+    async getAllUsers(
+        query: GetAllUsersQueryDto,
+    ): Promise<{ users: User[]; total: number }> {
         try {
             this.logger.log('Delegating to UsersService to fetch users');
-            return this.usersService.getAllUsersForAdmin(query);
+            return await this.usersService.getAllUsersForAdmin(query);
         } catch (error) {
             console.error('Error fetching users:', error);
             throw new HttpException('No users found', HttpStatus.NOT_FOUND);
@@ -94,7 +96,9 @@ export class AdminsService implements IAdminsService {
         }
     }
 
-    async getEditors(query: GetEditorsQueryDto): Promise<FormattedEditor[]> {
+    async getEditors(
+        query: GetEditorsQueryDto,
+    ): Promise<{ editors: FormattedEditor[]; total: number }> {
         try {
             this.logger.log('Delegating to EditorsService to fetch editors');
             return await this.editorService.getEditorsForAdmin(query);

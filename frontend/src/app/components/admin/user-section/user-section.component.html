@@ -73,7 +73,16 @@
 </div>
 
 <div class="content-area">
-  <app-table [data]="users" [columns]="userColumns" [loading]="loading" (rowClick)="onUserClick($event)"
+  <app-table 
+    [data]="users" 
+    [columns]="userColumns" 
+    [loading]="loading"
+    [totalItems]="totalUsers"
+    [currentPage]="currentPage"
+    [pageSize]="pageSize"
+    (pageChange)="onPageChange($event)"
+    (sortChange)="onSortChange($event)"
+    (rowClick)="onUserClick($event)"
     (actionClick)="onUserAction($event)">
   </app-table>
 </div>

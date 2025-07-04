@@ -124,24 +124,20 @@
 }
 
 <!-- Pagination -->
-@if (showPagination && data && data.length > pageSize) {
+@if (showPagination && totalPages > 1) {
   <div class="pagination">
-    <button class="pagination-btn" [disabled]="currentPage === 1" (click)="prevPage()">
-      Previous
+    <button class="pagination-btn" [disabled]="currentPage() === 1" (click)="prevPage()">
+      <lucide-angular [name]="icons.chevronLeft" [size]="16"></lucide-angular>
     </button>
     <div class="page-numbers">
-      @for (page of [].constructor(totalPages > 5 ? 5 : totalPages); track page; let i = $index) {
-        <button
-          class="page-number" [ngClass]="{'active': currentPage === i + 1}" (click)="goToPage(i + 1)">
-          {{ i + 1 }}
+      <ng-container *ngFor="let i of [].constructor(totalPages); let j = index">
+        <button class="pagination-btn" [ngClass]="{'active': currentPage() === j + 1}" (click)="goToPage(j + 1)">
+          {{ j + 1 }}
         </button>
-      }
-      @if (totalPages > 5) {
-        <span>...</span>
-      }
+      </ng-container>
     </div>
-    <button class="pagination-btn" [disabled]="currentPage === totalPages" (click)="nextPage()">
-      Next
+    <button class="pagination-btn" [disabled]="currentPage() === totalPages" (click)="nextPage()">
+      <lucide-angular [name]="icons.chevronRight" [size]="16"></lucide-angular>
     </button>
   </div>
 }

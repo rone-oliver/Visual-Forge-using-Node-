@@ -22,7 +22,9 @@ export class AdminsController implements IAdminsController {
     ) { };
     @Get('users')
     @Roles(Role.ADMIN)
-    async getAllUsers(@Query() query: GetAllUsersQueryDto): Promise<User[]> {
+    async getAllUsers(
+        @Query() query: GetAllUsersQueryDto,
+    ): Promise<{ users: User[]; total: number }> {
         return await this.adminService.getAllUsers(query);
     }
 
@@ -50,8 +52,10 @@ export class AdminsController implements IAdminsController {
 
     @Get('editors')
     @Roles(Role.ADMIN)
-    async getEditors(@Query() query: GetEditorsQueryDto): Promise<FormattedEditor[]> {
-        this.logger.log('Attempting to fetch editors with query:', query);
+    async getEditors(
+        @Query() query: GetEditorsQueryDto,
+    ): Promise<{ editors: FormattedEditor[]; total: number }> {
+        this.logger.log('Delegating to EditorsService to fetch editors');
         return await this.adminService.getEditors(query);
     }
 

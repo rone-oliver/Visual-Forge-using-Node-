@@ -6,6 +6,8 @@ export interface GetAllUsersQueryDto {
   gender?: string;
   behaviourRating?: number | string;
   search?: string;
+  page?: string;
+  limit?: string;
 }
 
 export interface GetEditorsQueryDto {
@@ -14,6 +16,8 @@ export interface GetEditorsQueryDto {
   audio?: string; // Expected 'true' or 'false'.
   rating?: string; // Expected as string, parsed to float. Consider number type with validation.
   search?: string;
+  page?: string;
+  limit?: string;
 }
 
 export interface FormattedEditorRequest {

@@ -26,6 +26,15 @@ export class UserSectionComponent implements OnInit {
   selectedBehRating: number | null = null;
   selectedGender: string = '';
 
+  // Pagination properties
+  totalUsers = 0;
+  currentPage = 1;
+  pageSize = 10;
+
+  // Sorting properties
+  sortBy = 'fullname';
+  sortOrder: 'asc' | 'desc' = 'asc';
+
   userColumns: TableColumn[] = [
     { key: 'fullname', header: 'Name', sortable: true },
     { key: 'email', header: 'Email', sortable: true },
@@ -54,32 +63,51 @@ export class UserSectionComponent implements OnInit {
     // this.users$ = this.userManagementService.getAllUsers();
     this.loadUsers();
     this.searchControl.valueChanges
-    .pipe(debounceTime(400))
-    .subscribe(value => {
-      this.searchQuery = value;
-      this.loadUsers();
-    });
+      .pipe(debounceTime(400))
+      .subscribe(() => {
+        this.currentPage = 1; // Reset to first page on search
+        this.loadUsers();
+      });
   }
 
   loadUsers(): void {
     this.loading = true;
-    const params: any = {};
-    if(this.searchQuery.trim()) params.search = this.searchQuery.trim();
-    if(this._hideEditors) params.isEditor = false;
-    if(this.selectedGender) params.gender = this.selectedGender;
-    if(this.selectedAge) params.age = this.selectedAge;
-    if(this.selectedBehRating) params.behaviourRating = this.selectedBehRating;
+    let params: any = {
+      page: this.currentPage,
+      limit: this.pageSize,
+      sortBy: this.sortBy,
+      sortOrder: this.sortOrder,
+      search: this.searchControl.value || undefined
+    };
+
+    if (this.selectedGender) params.gender = this.selectedGender;
+    if (this.selectedBehRating) params.behaviourRating = this.selectedBehRating;
+    if (this._hideEditors) params.isEditor = false;
+
     this.userManagementService.getAllUsers(params).subscribe({
-      next: (users) => {
-        console.log('users:',users);
-        this.users = users;
+      next: (response) => {
+        this.users = response.users;
+        this.totalUsers = response.total;
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Error loading users:', error);
         this.loading = false;
       }
     });
+  }
+
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.loadUsers();
+  }
+
+  onSortChange(sort: { key: string, direction: 'asc' | 'desc' }): void {
+    this.sortBy = sort.key;
+    this.sortOrder = sort.direction;
+    this.currentPage = 1; // Reset to first page on sort
+    this.loadUsers();
   }
 
   get hideEditors(): boolean {

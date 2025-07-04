@@ -167,62 +167,39 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-top: 1rem;
     padding: 16px;
-    border-top: 1px solid var(--admin-color-border);
-
-    .pagination-btn {
-        padding: 8px 16px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-weight: 500;
-        transition: background-color 0.2s;
-        background-color: var(--admin-color-background);
-        color: var(--admin-color-text);
-
-        &:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        &:hover:not(:disabled) {
-            background-color: rgba(var(--admin-color-primary, 131, 85, 255), 0.1);
-        }
-    }
 
     .page-numbers {
         display: flex;
-        align-items: center;
-        gap: 8px;
-
-        .page-number {
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.2s;
-            background-color: transparent;
-            color: var(--admin-color-text);
-
-            &:hover:not(.active) {
-                background-color: var(--admin-color-background);
-            }
-
-            &.active {
-                background-color: var(--admin-color-primary);
-                color: white;
-            }
-        }
+        gap: 0.5rem;
     }
 
-    @media (max-width: 480px) {
-        flex-direction: column;
-        gap: 16px;
+    .pagination-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        background-color: var(--admin-color-background);
+        cursor: pointer;
+        transition: background-color 0.2s;
+
+        &:hover:not(:disabled) {
+            background-color: #f5f5f5;
+        }
+
+        &:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        &.active {
+            background-color: #3f51b5;
+            color: #fff;
+            border-color: #3f51b5;
+        }
     }
 }
 

@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, input, Input, output, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '../../../pipes/date.pipe';
-import { LucideAngularModule, CheckCircle, XCircle, Edit, Trash, Ban, Check, ShieldCheck} from 'lucide-angular';
+import { LucideAngularModule, CheckCircle, XCircle, Edit, Trash, Ban, Check, ShieldCheck, ChevronRight, ChevronLeft} from 'lucide-angular';
 import { MediaProtectionDirective } from '../../../directives/media-protection.directive';
 
 export interface TableColumn {
@@ -26,6 +26,8 @@ export class TableComponent {
 
   @Input() columns: TableColumn[] = [];
   @Input() pageSize: number = 10;
+  totalItems = input<number>(0); // Total items for backend pagination
+  currentPage = input<number>(1); // Current page controlled by parent
   @Input() showPagination: boolean = true;
 
   @Input() loading: boolean = false;
@@ -35,20 +37,21 @@ export class TableComponent {
 
   @Output() rowClick = new EventEmitter<any>();
   @Output() actionClick = new EventEmitter<{ action: string, item: any}>();
+  pageChange = output<number>();
+  sortChange = output<{key: string, direction: 'asc' | 'desc'}>();
 
   defaultPlaceholder: string = 'N/A'
-  currentPage: number = 1;
   sortColumn: string | null = null;
   sortDirection: 'asc' | 'desc' = 'asc';
 
+  // Data is now pre-paginated by the parent component.
   get paginatedData(): any[]{
-    if(!this.showPagination) return this.data;
-    const startIndex = (this.currentPage - 1)*this.pageSize;
-    return this.data.slice(startIndex, startIndex + this.pageSize);
+    return this.data;
   }
 
   get totalPages(): number {
-    return Math.ceil(this.data.length / this.pageSize);
+    if (!this.totalItems() || this.totalItems() === 0) return 1;
+    return Math.ceil(this.totalItems() / this.pageSize);
   }
 
   icons = {
@@ -58,7 +61,9 @@ export class TableComponent {
     delete: Trash,
     block: Ban,
     unblock: Check,
-    resolve: ShieldCheck
+    resolve: ShieldCheck,
+    chevronLeft: ChevronLeft,
+    chevronRight: ChevronRight
   }
 
   onRowClick(item: any): void {
@@ -74,40 +79,31 @@ export class TableComponent {
     if (!column.sortable) return;
     
     if (this.sortColumn === column.key) {
-      // Toggle direction if already sorting by this column
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
     } else {
-      // Set new sort column and default to ascending
       this.sortColumn = column.key;
       this.sortDirection = 'asc';
     }
     
-    // Sort the data
-    this.data = [...this.data].sort((a, b) => {
-      const valueA = this.getNestedProperty(a, column.key);
-      const valueB = this.getNestedProperty(b, column.key);
-      
-      if (valueA < valueB) return this.sortDirection === 'asc' ? -1 : 1;
-      if (valueA > valueB) return this.sortDirection === 'asc' ? 1 : -1;
-      return 0;
-    });
+    // Emit sort event instead of sorting locally
+    this.sortChange.emit({ key: this.sortColumn, direction: this.sortDirection });
   }
 
   nextPage(): void {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
+    if (this.currentPage() < this.totalPages) {
+      this.pageChange.emit(this.currentPage() + 1);
     }
   }
   
   prevPage(): void {
-    if (this.currentPage > 1) {
-      this.currentPage--;
+    if (this.currentPage() > 1) {
+      this.pageChange.emit(this.currentPage() - 1);
     }
   }
   
   goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
+    if (page >= 1 && page <= this.totalPages && page !== this.currentPage()) {
+      this.pageChange.emit(page);
     }
   }
   

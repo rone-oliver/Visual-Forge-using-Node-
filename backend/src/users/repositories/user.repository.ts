@@ -35,7 +35,11 @@ export class UserRepository implements IUserRepository {
         return !!result;
     }
 
-    async countDocuments(): Promise<number> {
-        return this.userModel.countDocuments().exec();
+    async countDocuments(filter?: FilterQuery<User>): Promise<number> {
+        return this.userModel.countDocuments(filter).exec();
+    }
+
+    async getUsersForAdmin(filter: FilterQuery<User>, skip: number, limit: number, projection?: ProjectionType<User>): Promise<User[]> {
+        return this.userModel.find(filter, projection).skip(skip).limit(limit).exec();
     }
 }

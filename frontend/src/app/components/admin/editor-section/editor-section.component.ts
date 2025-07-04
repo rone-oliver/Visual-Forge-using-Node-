@@ -1,5 +1,4 @@
-import { Component, OnInit } from '@angular/core';
-
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Activity, Hourglass, LucideAngularModule, Zap } from 'lucide-angular';
 import { Search, Funnel, ChevronDown, ShareIcon, Plus, Clock, Star, X, X as XIcon, Check } from 'lucide-angular';
@@ -10,7 +9,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { TableColumn, TableComponent } from '../../shared/table/table.component';
 import { MatIconModule } from '@angular/material/icon';
 import { Editor } from '../../../interfaces/editor.interface';
-import { debounceTime } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 
@@ -50,8 +49,18 @@ export class EditorSectionComponent implements OnInit {
 
   loading: boolean = false;
 
+  // Pagination properties
+  totalEditors = 0;
+  currentPage = 1;
+  pageSize = 10;
+
+  // Sorting properties
+  sortBy = 'fullname';
+  sortOrder: 'asc' | 'desc' = 'asc';
+
   constructor(
     private editorManagementService: EditorManagementService,
+    private cdr: ChangeDetectorRef
   ) { };
 
   ngOnInit(): void {
@@ -59,8 +68,8 @@ export class EditorSectionComponent implements OnInit {
     this.loadEditors();
     this.searchControl.valueChanges
       .pipe(debounceTime(400))
-      .subscribe(value => {
-        this.searchQuery = value || '';
+      .subscribe(() => {
+        this.currentPage = 1; // Reset to first page on search
         this.loadEditors();
       });
   }
@@ -81,8 +90,14 @@ export class EditorSectionComponent implements OnInit {
   }
 
   loadEditors() {
-    const params: any = {};
-    
+    const params: any = {
+      page: this.currentPage,
+      limit: this.pageSize,
+      sortBy: this.sortBy,
+      sortOrder: this.sortOrder,
+      search: this.searchControl.value || undefined
+    };
+
     // Search filter
     if(this.searchQuery.trim()) params.search = this.searchQuery.trim();
     
@@ -95,13 +110,15 @@ export class EditorSectionComponent implements OnInit {
     // Rating filter
     const selectedRating = this.ratingFilterControl.value;
     if(selectedRating) params.rating = selectedRating;
-    
+
     this.loading = true;
     this.editorManagementService.getEditors(params).subscribe({
-      next: (editors) => {
+      next: (response) => {
         console.log('Fetched editors successfully');
-        this.editors = editors;
+        this.editors = response.editors;
+        this.totalEditors = response.total;
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Error fetching editors:', error);
@@ -204,5 +221,17 @@ export class EditorSectionComponent implements OnInit {
   cancelRejection(): void {
     this.currentRequest = null;
     this.rejectionReason = '';
+  }
+
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.loadEditors();
+  }
+
+  onSortChange(sort: { key: string, direction: 'asc' | 'desc' }): void {
+    this.sortBy = sort.key;
+    this.sortOrder = sort.direction;
+    this.currentPage = 1; // Reset to first page on sort
+    this.loadEditors();
   }
 }

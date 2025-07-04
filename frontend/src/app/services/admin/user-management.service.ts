@@ -17,6 +17,11 @@ export interface User {
   isEditor?: boolean;
 }
 
+export interface UserResponse {
+  users: User[];
+  total: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -25,17 +30,17 @@ export class UserManagementService {
 
   constructor(private http: HttpClient) { }
 
-  getAllUsers(params?: {[key:string]: any}):Observable<User[]>{
+  getAllUsers(params?: {[key:string]: any}):Observable<UserResponse>{
     let httpParams = new HttpParams();
     if(params){
-      console.log('params:',params);
+      console.debug('params:',params);
       Object.keys(params).forEach(key => {
         if (params[key] !== undefined && params[key] !== null && params[key] !== '') {
           httpParams = httpParams.set(key, params[key]);
         }
       });
     }
-    return this.http.get<User[]>(this.apiUrl,{ params: httpParams});
+    return this.http.get<UserResponse>(this.apiUrl,{ params: httpParams});
   }
 
   getUser(username: string):Observable<User>{

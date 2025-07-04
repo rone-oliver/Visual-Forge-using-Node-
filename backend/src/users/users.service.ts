@@ -943,14 +943,35 @@ export class UsersService implements IUsersService {
         return this.userRepository.countDocuments();
     }
 
-    async getAllUsersForAdmin(query: GetAllUsersQueryDto): Promise<User[]> {
+    async getAllUsersForAdmin(
+        query: GetAllUsersQueryDto,
+    ): Promise<{ users: User[]; total: number }> {
+        const {
+            page = '1',
+            limit = '10',
+            search,
+            isEditor,
+            gender,
+            behaviourRating,
+            // sortBy = 'fullname',
+            // ...filters
+        } = query;
+
         const filter: any = {};
         if (query.isEditor !== undefined) filter.isEditor = query.isEditor;
         if (query.gender) filter.gender = query.gender;
         if (query.behaviourRating) filter.behaviourRating = query.behaviourRating;
-        if (query.search) filter.username = { $regex: query.search, $options: 'i' };
+        if (search) {
+            filter.$or = [
+                { fullname: { $regex: search, $options: 'i' } },
+                { email: { $regex: search, $options: 'i' } },
+                { username: { $regex: search, $options: 'i' } },
+            ];
+        }
 
-        return this.userRepository.find(filter);
+        const total = await this.userRepository.countDocuments(filter);
+        const users = await this.userRepository.getUsersForAdmin(filter,(parseInt(page) - 1) * parseInt(limit),parseInt(limit));
+        return { users, total };
     }
 
     async makeUserEditor(userId: Types.ObjectId): Promise<User | null> {
