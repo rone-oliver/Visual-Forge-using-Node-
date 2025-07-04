@@ -10,4 +10,6 @@ export interface IEditorRequestsRepository{
     countEditorRequests(): Promise<number>;
     create(userId: Types.ObjectId): Promise<EditorRequest>;
     findOne(userId: Types.ObjectId): Promise<EditorRequest | null>;
+    checkEditorRequest(userId: Types.ObjectId): Promise<boolean>;
+    deleteRequest(userId: Types.ObjectId): Promise<EditorRequest | null>;
 }

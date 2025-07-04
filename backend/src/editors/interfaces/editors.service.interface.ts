@@ -73,4 +73,7 @@ export interface IEditorsService {
     getEditorRating(userId: Types.ObjectId): Promise<Editor | null>;
     getEditorUserCombined(userId: Types.ObjectId): Promise<Editor | null>;
     getPublicEditors(pipeline: any[]): Promise<any[]>
+
+    checkEditorRequest(userId: Types.ObjectId): Promise<boolean>;
+    deleteEditorRequest(userId: Types.ObjectId): Promise<EditorRequest | null>;
 }

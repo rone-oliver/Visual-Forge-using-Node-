@@ -236,6 +236,10 @@ export class UsersService implements IUsersService {
             const user = await this.userRepository.findById(userId, { isEditor: 1 });
             if (user && !user.isEditor) {
                 this.logger.log(`User ${userId} is not an editor. Proceeding with request.`);
+                if(await this.editorService.checkEditorRequest(userId)){
+                    this.logger.log(`User ${userId} already has an editor request`);
+                    await this.editorService.deleteEditorRequest(userId);
+                }
                 await this.editorService.createEditorRequests(userId);
                 this.logger.log(`Editor request created for user ${userId}`);
                 return { success: true };

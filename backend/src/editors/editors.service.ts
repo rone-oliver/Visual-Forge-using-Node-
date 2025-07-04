@@ -236,6 +236,14 @@ export class EditorsService implements IEditorsService {
         }));
     }
 
+    async checkEditorRequest(userId: Types.ObjectId): Promise<boolean> {
+        return this.editorRequestsRepository.checkEditorRequest(userId);
+    }
+
+    async deleteEditorRequest(userId: Types.ObjectId): Promise<EditorRequest | null> {
+        return this.editorRequestsRepository.deleteRequest(userId);
+    }
+
     async submitQuotationResponse(workData: SubmitWorkBodyDto) {
         try {
             const { quotationId, finalFiles, comments } = workData;

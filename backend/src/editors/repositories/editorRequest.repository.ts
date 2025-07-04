@@ -31,4 +31,13 @@ export class EditorRequestsRepository implements IEditorRequestsRepository {
     async findOne(userId: Types.ObjectId): Promise<EditorRequest | null> {
         return this.editorRequestModel.findOne({userId: new Types.ObjectId(userId)});
     }
+
+    async checkEditorRequest(userId: Types.ObjectId): Promise<boolean> {
+        const request = await this.editorRequestModel.findOne({userId: new Types.ObjectId(userId)});
+        return request !== null;
+    }
+
+    async deleteRequest(userId: Types.ObjectId): Promise<EditorRequest | null> {
+        return this.editorRequestModel.findOneAndDelete({userId: new Types.ObjectId(userId)});
+    }
 }
