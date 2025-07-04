@@ -6,6 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Quotation, QuotationSchema } from '../../quotation/models/quotation.schema';
 import { BidRepository } from './repositories/bid.repository';
 import { IBidRepositoryToken, IBidServiceToken } from './interfaces/bid.interfaces';
+import { QuotationModule } from 'src/quotation/quotation.module';
 
 @Module({
   providers: [
@@ -21,9 +22,9 @@ import { IBidRepositoryToken, IBidServiceToken } from './interfaces/bid.interfac
   imports: [
     MongooseModule.forFeature([
       { name: Bid.name, schema: BidSchema},
-      { name: Quotation.name, schema: QuotationSchema}
     ]),
-    EventEmitterModule.forRoot()
+    EventEmitterModule.forRoot(),
+    QuotationModule,
   ],
   exports:[IBidServiceToken,IBidRepositoryToken]
 })

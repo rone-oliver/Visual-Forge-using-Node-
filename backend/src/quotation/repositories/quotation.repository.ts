@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { FilterQuery, Model, PipelineStage, Types, UpdateQuery } from "mongoose";
+import { FilterQuery, Model, PipelineStage, QueryOptions, Types, UpdateQuery } from "mongoose";
 import { OutputType, Quotation, QuotationDocument, QuotationStatus } from "../models/quotation.schema";
 import { IQuotationRepository } from "../interfaces/quotation.repository.interface";
 import { GetAcceptedQuotationsQueryDto, GetPublishedQuotationsQueryDto, getQuotationsByStatusResponseDto, PaginatedAcceptedQuotationsResponseDto, PaginatedPublishedQuotationsResponseDto, PublishedQuotationItemDto } from "../dtos/quotation.dto";
@@ -30,16 +30,16 @@ export class QuotationRepository implements IQuotationRepository {
         ]);
     }
 
-    async findById(quotationId: Types.ObjectId): Promise<Quotation | null>{
-        return this.quotationModel.findById(quotationId).exec();
+    async findById(quotationId: Types.ObjectId, options?: QueryOptions): Promise<Quotation | null>{
+        return this.quotationModel.findById(quotationId, null, options).exec();
     }
 
     async findOne(query: FilterQuery<Quotation>): Promise<Quotation | null>{
         return this.quotationModel.findOne(query).exec();
     }
 
-    async findByIdAndUpdate(quotationId: Types.ObjectId, update: UpdateQuery<Quotation>): Promise<Quotation | null>{
-        return this.quotationModel.findByIdAndUpdate(quotationId, update, { new: true }).exec();
+    async findByIdAndUpdate(quotationId: Types.ObjectId, update: UpdateQuery<Quotation>, options?: QueryOptions): Promise<Quotation | null>{
+        return this.quotationModel.findByIdAndUpdate(quotationId, update, { new: true, ...options }).exec();
     }
 
     async findByIdAndDelete(quotationId: Types.ObjectId): Promise<void> {

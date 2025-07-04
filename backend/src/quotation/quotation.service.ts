@@ -3,7 +3,7 @@ import { IQuotationService } from './interfaces/quotation.service.interface';
 import { IQuotationRepository, IQuotationRepositoryToken } from './interfaces/quotation.repository.interface';
 import { Quotation, QuotationDocument, QuotationStatus } from './models/quotation.schema';
 import { AcceptedQuotationItemDto, CompletedWorkDto, GetAcceptedQuotationsQueryDto, GetPublishedQuotationsQueryDto, getQuotationsByStatusResponseDto, PaginatedAcceptedQuotationsResponseDto, PaginatedPublishedQuotationsResponseDto, PublishedQuotationItemDto } from './dtos/quotation.dto';
-import { FilterQuery, PipelineStage, Types, UpdateQuery } from 'mongoose';
+import { FilterQuery, PipelineStage, QueryOptions, Types, UpdateQuery } from 'mongoose';
 import { WorksDocument } from 'src/works/models/works.schema';
 import { SuccessResponseDto } from 'src/users/dto/users.dto';
 
@@ -106,8 +106,8 @@ export class QuotationService implements IQuotationService {
         }
     }
 
-    async findById(quotationId: Types.ObjectId): Promise<Quotation | null>{
-        return this.quotationRepository.findById(quotationId);
+    async findById(quotationId: Types.ObjectId, options?: QueryOptions): Promise<Quotation | null>{
+        return this.quotationRepository.findById(quotationId, options);
     }
 
     async updateQuotationStatus(quotationId: Types.ObjectId, status: QuotationStatus, worksId: Types.ObjectId): Promise<Quotation | null>{
@@ -188,9 +188,9 @@ export class QuotationService implements IQuotationService {
         return this.quotationRepository.create(quotation);
     }
 
-    async findByIdAndUpdate(quotationId: Types.ObjectId, update: UpdateQuery<Quotation>): Promise<Quotation | null> {
+    async findByIdAndUpdate(quotationId: Types.ObjectId, update: UpdateQuery<Quotation>, options?: QueryOptions): Promise<Quotation | null> {
         try {
-            return this.quotationRepository.findByIdAndUpdate(quotationId, update);
+            return this.quotationRepository.findByIdAndUpdate(quotationId, update, options);
         } catch (error) {
             this.logger.error(`Error updating quotation: ${error.message}`);
             throw error;

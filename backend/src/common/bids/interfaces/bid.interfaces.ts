@@ -1,4 +1,4 @@
-import { Types } from 'mongoose';
+import { FilterQuery, QueryOptions, Types, UpdateQuery } from 'mongoose';
 import { Bid } from 'src/common/bids/models/bids.schema';
 import { CreateBidDto } from '../dto/create-bid.dto';
 import { BidResponseDto } from '../dto/bid-response.dto';
@@ -8,12 +8,12 @@ export const IBidRepositoryToken = Symbol('IBidRepository');
 
 export interface IBidRepository {
     findByFilters(filters: Partial<Bid>): Promise<Bid | null>;
-    findById(id: string | Types.ObjectId, options?: any): Promise<Bid | null>;
+    findById(id: string | Types.ObjectId, options?: QueryOptions): Promise<Bid | null>;
     create(bidData: Partial<Bid>): Promise<Bid>;
     findAllByQuotation(quotationId: Types.ObjectId): Promise<any[]>;
     findAllByEditor(editorId: Types.ObjectId): Promise<Bid[]>;
-    save(bid: Partial<Bid> & { _id: Types.ObjectId }, options?: any): Promise<Bid>;
-    updateMany(filter: any, update: any, options?: any): Promise<any>;
+    save(bid: Partial<Bid> & { _id: Types.ObjectId }, options?: QueryOptions): Promise<Bid>;
+    updateMany(filter: FilterQuery<Bid>, update: UpdateQuery<Bid>, options?: QueryOptions): Promise<any>;
     delete(bidId: Types.ObjectId): Promise<void>;
     getAcceptedBid(quotationId: Types.ObjectId, editorId: Types.ObjectId): Promise<Bid>;
 }
