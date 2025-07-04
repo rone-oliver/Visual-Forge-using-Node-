@@ -5,7 +5,7 @@ import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { RolesGuard } from 'src/auth/guards/role.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { IPaymentService, IPaymentServiceToken } from 'src/common/payment/interfaces/payment-service.interface';
-import { PaymentType } from 'src/common/models/transaction.schema';
+import { PaymentType } from 'src/common/transaction/models/transaction.schema';
 import { Quotation, QuotationStatus } from 'src/quotation/models/quotation.schema';
 import { FileUploadResultDto as FileUploadResultDtoCloudinary } from 'src/common/cloudinary/dtos/cloudinary.dto';
 import {
@@ -112,7 +112,7 @@ export class UsersController implements IUsersController {
             page: query.page ? parseInt(query.page.toString(), 10) : 1,
             limit: query.limit ? parseInt(query.limit.toString(), 10) : 10,
         };
-        return this.userService.getTransactionHistory(user.userId, params);
+        return this.userService.getTransactionHistory(user.userId.toString(), params);
     }
 
     @Get('quotations')

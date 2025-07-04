@@ -4,7 +4,7 @@ import * as bcrypt from 'bcrypt';
 import { Model, Types } from 'mongoose';
 import { User, UserDocument } from './models/user.schema';
 import { Quotation } from 'src/quotation/models/quotation.schema';
-import { PaymentStatus, PaymentType, Transaction, TransactionDocument } from 'src/common/models/transaction.schema';
+import { PaymentStatus, PaymentType, Transaction, TransactionDocument } from 'src/common/transaction/models/transaction.schema';
 import { Bid } from 'src/common/bids/models/bids.schema';
 import { IUsersService, UserInfoForChatListDto } from './interfaces/users.service.interface';
 import {
@@ -33,7 +33,6 @@ import {
     ReportUserDto
 } from './dto/users.dto';
 import { GetAllUsersQueryDto } from 'src/admins/dto/admin.dto';
-import { Report, ReportDocument } from 'src/reports/models/report.schema';
 import { IAdminWalletService, IAdminWalletServiceToken } from 'src/wallet/interfaces/admin-wallet.service.interface';
 import { getYouTubeEmbedUrl } from 'src/common/utils/youtube-url.util';
 import { IRelationshipService, IRelationshipServiceToken } from 'src/common/relationship/interfaces/service.interface';
@@ -49,6 +48,8 @@ import { IWorkService, IWorkServiceToken } from 'src/works/interfaces/works.serv
 import { IQuotationService, IQuotationServiceToken } from 'src/quotation/interfaces/quotation.service.interface';
 import { IEditorsService, IEditorsServiceToken } from 'src/editors/interfaces/editors.service.interface';
 import { IReportService, IReportServiceToken } from 'src/reports/interfaces/reports.service.interface';
+import { ITransactionService, ITransactionServiceToken } from 'src/common/transaction/interfaces/transaction.service.interface';
+import { GetTransactionsQueryDto, IFindOptions } from 'src/common/transaction/dtos/transaction.dto';
 
 @Injectable()
 export class UsersService implements IUsersService {
@@ -58,7 +59,7 @@ export class UsersService implements IUsersService {
         @Inject(forwardRef(()=>IEditorsServiceToken)) private readonly editorService: IEditorsService,
         @Inject(IQuotationServiceToken) private readonly quotationService: IQuotationService,
         @Inject(IWorkServiceToken) private readonly workService: IWorkService,
-        @InjectModel(Transaction.name) private transactionModel: Model<TransactionDocument>,
+        @Inject(ITransactionServiceToken) private readonly transactionService: ITransactionService,
         @Inject(IReportServiceToken) private readonly reportService: IReportService,
         @Inject(IAdminWalletServiceToken) private readonly adminWalletService: IAdminWalletService,
         @Inject(IRelationshipServiceToken) private readonly relationshipService: IRelationshipService,
@@ -263,36 +264,35 @@ export class UsersService implements IUsersService {
         }
     }
 
-    async getTransactionHistory(userId: Types.ObjectId, params: { page: number, limit: number }): Promise<PaginatedTransactionsResponseDto> {
-        const { page, limit } = params;
-        const skip = (page - 1) * limit;
-
+    async getTransactionHistory(userId: string, query: GetTransactionsQueryDto): Promise<PaginatedTransactionsResponseDto> {
         try {
-            this.logger.log(`Fetching transaction history for user ${userId}, page: ${page}, limit: ${limit}`);
+            const { page = 1, limit = 10, paymentType, status } = query;
+            const skip = (page - 1) * limit;
 
-            const findCondition = {
+            const findCondition: any = {
                 $or: [
                     { userId: new Types.ObjectId(userId) },
-                    { userId: userId as any }
+                    { userId: userId }
                 ]
             };
 
-            const transactionsQuery = await this.transactionModel.find(findCondition)
-                .sort({ createdAt: -1 })
-                .skip(skip)
-                .limit(limit)
-                .populate({
+            if (paymentType) findCondition.paymentType = paymentType;
+            if (status) findCondition.status = status;
+
+            const findOptions: IFindOptions = {
+                sort: { createdAt: -1 },
+                skip: skip,
+                limit: limit,
+                populate: {
                     path: 'quotationId',
                     select: 'title',
-                })
-                .lean()
-                .exec();
+                }
+            };
 
-            this.logger.log(`Transactions for user ${userId}: `,transactionsQuery);
-
-            const totalItemsQuery = this.transactionModel.countDocuments(findCondition).exec();
-
-            const [transactions, totalItems] = await Promise.all([transactionsQuery, totalItemsQuery]);
+            const [transactions, totalItems] = await Promise.all([
+                this.transactionService.getTransactions(findCondition, findOptions),
+                this.transactionService.countTransactions(findCondition)
+            ]);
 
             const totalPages = Math.ceil(totalItems / limit);
 
@@ -694,7 +694,7 @@ export class UsersService implements IUsersService {
         paymentType: PaymentType
     }): Promise<TransactionResponseDto>{
         try {
-            const transaction = await this.transactionModel.create({
+            const transaction = await this.transactionService.createTransaction({
                 userId: new Types.ObjectId(userId),
                 quotationId: new Types.ObjectId(quotationId),
                 paymentId: paymentDetails.paymentId,
@@ -735,9 +735,7 @@ export class UsersService implements IUsersService {
     }
 
     async getQuotationTransactions(quotationId: Types.ObjectId) {
-        return this.transactionModel.find({ quotationId })
-            .sort({ createdAt: -1 })
-            .exec();
+        return this.transactionService.getTransactionsByQuotationId(quotationId.toString());
     }
 
     async getBidsByQuotation(quotationId: Types.ObjectId, userId: Types.ObjectId): Promise<BidResponseDto[]> {

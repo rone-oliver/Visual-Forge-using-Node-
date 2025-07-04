@@ -24,11 +24,12 @@ import {
     ReportUserDto
 } from '../dto/users.dto';
 import { User } from '../models/user.schema';
-import { PaymentType } from 'src/common/models/transaction.schema';
+import { PaymentType } from 'src/common/transaction/models/transaction.schema';
 import { Bid } from 'src/common/bids/models/bids.schema';
 import { FileUploadResultDto as FileUploadResultDtoCloudinary } from 'src/common/cloudinary/dtos/cloudinary.dto';
 import { GetAllUsersQueryDto } from 'src/admins/dto/admin.dto';
 import { GetPublicWorksQueryDto, PaginatedPublicWorksResponseDto, RateWorkDto, UpdateWorkPublicStatusDto } from 'src/works/dtos/works.dto';
+import { GetTransactionsQueryDto } from 'src/common/transaction/dtos/transaction.dto';
 
 export const IUsersServiceToken = Symbol('IUsersService');
 
@@ -49,7 +50,7 @@ export interface IUsersService {
     getEditorRequestStatus(userId: Types.ObjectId): Promise<EditorRequestStatusResponseDto>;
     getEditorPublicProfile(editorId: string,currentUserId?:string): Promise<EditorPublicProfileResponseDto>;
     getPublicEditors(params: GetPublicEditorsDto): Promise<PaginatedPublicEditorsDto>;
-    getTransactionHistory(userId: Types.ObjectId, params: { page: number, limit: number }): Promise<PaginatedTransactionsResponseDto>;
+    getTransactionHistory(userId: string, params: GetTransactionsQueryDto): Promise<PaginatedTransactionsResponseDto>;
 
     getQuotations(userId: Types.ObjectId, params: GetQuotationsParamsDto): Promise<PaginatedQuotationsResponseDto>;
     getQuotation(quotationId: Types.ObjectId): Promise<QuotationResponseDto | null>;

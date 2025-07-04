@@ -26,7 +26,7 @@ import { Types } from 'mongoose';
 import { Gender, Language } from '../models/user.schema';
 import { QuotationStatus, OutputType, FileType } from '../../quotation/models/quotation.schema';
 import { BidStatus } from '../../common/bids/models/bids.schema';
-import { PaymentType, PaymentStatus, PaymentMethod } from '../../common/models/transaction.schema';
+import { PaymentType, PaymentStatus, PaymentMethod } from '../../common/transaction/models/transaction.schema';
 import { EditorDetailsDto } from 'src/editors/dto/editors.dto'; // Assuming this exists and is relevant
 import { ReportContext } from 'src/reports/models/report.schema';
 
@@ -891,7 +891,7 @@ export class UpdateQuotationPaymentDto {
 export class TransactionResponseDto {
     @ApiProperty({ type: String })
     @IsMongoId()
-    _id: Types.ObjectId;
+    _id?: Types.ObjectId;
 
     @ApiProperty({ type: String })
     @IsMongoId()
