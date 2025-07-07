@@ -49,7 +49,6 @@ export class CloudinaryService implements ICloudinaryService {
 
                         if (result) {
                             resolve({
-                                url: result.secure_url,
                                 fileType,
                                 fileName: file.originalname,
                                 size: file.size,

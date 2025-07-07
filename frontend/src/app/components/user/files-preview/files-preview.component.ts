@@ -63,8 +63,10 @@ export class FilesPreviewComponent implements OnDestroy {
     
     this.isDownloading[file.fileName] = true;
     this.downloadProgress[file.fileName] = 0;
+    const url = this.getCompleteUrl(file);
+    
 
-    this.http.get(file.url, {
+    this.http.get(url, {
       responseType: 'blob',
       reportProgress: true,
       observe: 'events'

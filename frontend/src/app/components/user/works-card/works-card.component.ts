@@ -118,7 +118,7 @@ export class WorksCardComponent implements OnInit, AfterViewInit {
   }
 
   trackFile(index: number, file: FileAttachmentResponse): string | number {
-    return file.timestamp || file.url;
+    return file.timestamp || file.url || index;
   }
 
   navigateToEditorProfile() {

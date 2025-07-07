@@ -32,7 +32,7 @@ export interface FileAttachment {
 }
 
 export interface FileAttachmentResponse {
-    url: string;
+    url?: string;
     uniqueId: string;
     timestamp: number;
     fileType: FileType;

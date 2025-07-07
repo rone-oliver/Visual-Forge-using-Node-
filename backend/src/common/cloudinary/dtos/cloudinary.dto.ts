@@ -1,5 +1,5 @@
 export interface FileUploadResultDto {
-    url: string;
+    url?: string;
     fileType: FileType;
     fileName: string;
     size: number;
