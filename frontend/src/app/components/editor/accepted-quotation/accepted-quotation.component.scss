@@ -624,3 +624,30 @@
         }
     }
 }
+
+.payment-pending-message {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px;
+  border-radius: 8px;
+  background-color: var(--warning-light);
+  border: 1px solid var(--warning-main);
+  color: var(--warning-dark);
+  margin-top: 20px;
+
+  mat-icon {
+    font-size: 24px;
+    width: 28px;
+    height: 28px;
+  }
+
+  span {
+    font-weight: 500;
+  }
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+}

@@ -145,6 +145,7 @@
         }
       </div>
       <!-- Response Section -->
+      @if (selectedQuotation.isAdvancePaid) {
       <div class="response-section">
         <h3 class="section-title">Response</h3>
         <div class="response-content">
@@ -221,6 +222,12 @@
           </div>
         </div>
       </div>
+      } @else {
+      <div class="payment-pending-message">
+        <mat-icon>info</mat-icon>
+        <span>The user has not yet completed the advance payment. You can submit your response once the payment is confirmed.</span>
+      </div>
+      }
     </div>
     }
   </div>
