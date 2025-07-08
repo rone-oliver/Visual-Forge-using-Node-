@@ -5,7 +5,7 @@ import { catchError, Observable } from 'rxjs';
 import { FileAttachmentResponse, GetEditorQuotationsParams, IQuotation, OutputType, PaginatedEditorQuotationsResponse, QuotationStatus } from '../../interfaces/quotation.interface';
 import { CompletedWork } from '../../interfaces/completed-word.interface';
 import { Editor } from '../../interfaces/editor.interface';
-import { IBid } from '../../interfaces/bid.interface';
+import { IBid, BidStatus, GetBiddedQuotationsQuery, PaginatedBiddedQuotationsResponse, EditorBid } from '../../interfaces/bid.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -32,6 +32,12 @@ export class EditorService {
     }
     httpParams = httpParams.set('status',QuotationStatus.PUBLISHED);
     return this.http.get<PaginatedEditorQuotationsResponse>(`${this.editorApiUrl}/quotations`, { params: httpParams });
+  }
+
+  getEditorBidForQuotation(quotationId: string): Observable<EditorBid> {
+    return this.http.get<EditorBid>(
+      `${this.editorApiUrl}/bids/quotation/${quotationId}`
+    );
   }
 
   getAcceptedQuotations(params: {
@@ -91,6 +97,22 @@ export class EditorService {
 
   deleteBid(bidId: string): Observable<void> {
     return this.http.delete<void>(`${this.editorApiUrl}/bids/${bidId}`);
+  }
+
+  getBiddedQuotations(params: GetBiddedQuotationsQuery): Observable<PaginatedBiddedQuotationsResponse> {
+    let httpParams = new HttpParams()
+      .set('page', params.page.toString())
+      .set('limit', params.limit.toString());
+
+    if (params.status) {
+      httpParams = httpParams.set('status', params.status);
+    }
+
+    if (params.hideNonBiddable) {
+      httpParams = httpParams.set('hideNonBiddable', params.hideNonBiddable);
+    }
+
+    return this.http.get<PaginatedBiddedQuotationsResponse>(`${this.editorApiUrl}/bids`, { params: httpParams });
   }
 
   addTutorial(tutorialUrl: string): Observable<Editor> {

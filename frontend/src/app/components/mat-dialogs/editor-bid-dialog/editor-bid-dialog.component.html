@@ -1,0 +1,42 @@
+<h2 mat-dialog-title>Edit Your Bid</h2>
+
+<mat-dialog-content class="mat-typography">
+  @if (isLoading) {
+    <div class="loading-container">
+      <mat-spinner diameter="50"></mat-spinner>
+      <p>Loading your bid...</p>
+    </div>
+  }
+  @if (error) {
+    <div class="error-container">
+      <mat-icon color="warn">error_outline</mat-icon>
+      <p>{{ error }}</p>
+    </div>
+  }
+
+  @if(!isLoading && !error) {
+    <div class="bid-form">
+      <mat-form-field appearance="outline" class="bid-amount-field">
+        <mat-label>Bid Amount</mat-label>
+        <span matPrefix>&nbsp;₹&nbsp;</span>
+        <input matInput type="number" placeholder="Enter bid amount" [(ngModel)]="bidAmount" min="1">
+      </mat-form-field>
+  
+      <mat-form-field appearance="outline" class="bid-notes-field">
+        <mat-label>Notes (Optional)</mat-label>
+        <textarea matInput placeholder="Add notes about your bid..." [(ngModel)]="bidNotes" rows="4"></textarea>
+      </mat-form-field>
+    </div>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onNoClick()">
+    <mat-icon>cancel</mat-icon>
+    <span>Cancel</span>
+  </button>
+  <button mat-raised-button color="primary" (click)="updateBid()" [disabled]="isLoading || !bidAmount">
+    <mat-icon>save</mat-icon>
+    <span>Save Changes</span>
+  </button>
+</mat-dialog-actions>

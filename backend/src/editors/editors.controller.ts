@@ -13,9 +13,12 @@ import {
   FileUploadResultDto,
   BidResponseDto,
   AddTutorialDto,
-  RemoveTutorialDto
+  RemoveTutorialDto,
+  GetBiddedQuotationsQueryDto,
+  PaginatedBiddedQuotationsResponseDto,
+  EditorBidDto
 } from './dto/editors.dto';
-import { ApiBody, ApiConsumes, ApiOperation, ApiQuery, ApiResponse, ApiTags, getSchemaPath } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiResponse, ApiTags, getSchemaPath } from '@nestjs/swagger';
 import { IEditorsController } from './interfaces/editors.controller.interface';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import { Editor } from './models/editor.schema';
@@ -190,5 +193,31 @@ export class EditorsController implements IEditorsController {
   @Roles(Role.EDITOR)
   async removeTutorial(@GetUser('userId') editorId: string, @Body() removeTutorialDto: RemoveTutorialDto) {
     return this.editorService.removeTutorial(editorId, removeTutorialDto);
+  }
+
+  @Get('bids')
+  @Roles('Editor')
+  @ApiOperation({ summary: 'Get all quotations the editor has bidded on' })
+  @ApiResponse({ status: 200, description: 'Successfully retrieved bidded quotations.', type: PaginatedBiddedQuotationsResponseDto })
+  async getBiddedQuotations(
+    @GetUser('userId') editorId: string,
+    @Query() query: GetBiddedQuotationsQueryDto
+  ): Promise<PaginatedBiddedQuotationsResponseDto> {
+    return this.editorService.getBiddedQuotations(editorId, query);
+  }
+
+  @Get('bids/quotation/:quotationId')
+  @Roles(Role.EDITOR)
+  @ApiOperation({ summary: 'Get the bid by the current editor for a specific quotation' })
+  @ApiOkResponse({ description: 'Bid details retrieved successfully.', type: EditorBidDto })
+  @ApiNotFoundResponse({ description: 'Bid not found for this quotation.' })
+  async getEditorBidForQuotation(
+    @Param('quotationId') quotationId: string,
+    @GetUser('userId') editorId: string,
+  ): Promise<EditorBidDto> {
+    return this.editorService.getEditorBidForQuotation(
+      new Types.ObjectId(quotationId),
+      new Types.ObjectId(editorId),
+    );
   }
 }

@@ -100,8 +100,11 @@ export class QuotationComponent implements OnInit, OnDestroy {
     this.loadQuotations();
   }
 
-  navigateToAccepted(){
-    console.log('Navigating to accepted quotations');
+  navigateToBidded(): void {
+    this.router.navigate(['/editor/bidded-quotations']);
+  }
+
+  navigateToAccepted(): void {
     this.router.navigate(['/editor/accepted-quotations']);
   }
 

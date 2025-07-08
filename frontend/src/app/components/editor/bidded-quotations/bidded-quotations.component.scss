@@ -1,0 +1,181 @@
+.bids-container {
+  padding: 2rem;
+  background-color: var(--color-background);
+  min-height: 100vh;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+
+  .back-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-text);
+    font-size: 1rem;
+    // @include transition(color);
+
+    &:hover {
+      color: var(--color-primary);
+    }
+  }
+
+  .page-title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+}
+
+.controls-container {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin-bottom: 2rem;
+
+  .status-filter {
+    min-width: 250px;
+  }
+
+  .biddable-toggle {
+    margin-top: -1rem; // Aligns toggle with the form field
+  }
+}
+
+.loading-indicator, .error-message, .no-bids-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  color: var(--color-secondary-100);
+
+  mat-icon {
+    font-size: 3rem;
+    width: 3rem;
+    height: 3rem;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    font-size: 1.2rem;
+  }
+}
+
+.error-message {
+  color: var(--color-danger);
+}
+
+.table-container {
+  background-color: var(--color-background);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.bids-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th, td {
+    padding: 1rem 1.5rem;
+    text-align: left;
+    border-bottom: 1px solid var(--color-neutral-200);
+  }
+
+  th {
+    background-color: var(--color-background);
+    color: var(--color-text);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+  }
+
+  tbody tr {
+    cursor: pointer;
+    // @include transition(background-color);
+
+    &:hover {
+      background-color: var(--color-neutral-100);
+    }
+
+    &.not-assigned {
+      opacity: 0.6;
+      background-color: #f9f9f9;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
+
+  .title-cell {
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  .amount-cell {
+    font-weight: 500;
+    color: var(--color-primary);
+  }
+
+  .date-cell {
+    color: var(--color-text);
+    font-style: italic;
+  }
+
+  .actions-cell {
+    width: 80px; // Give a fixed width to prevent layout shifts
+    text-align: center;
+
+    button {
+      // Add a subtle background on hover for better feedback
+      transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+      padding: .5rem;
+      border-radius: 40%;
+
+      mat-icon {
+        color: var(--color-text);
+      }
+
+      &:hover {
+        background-color: rgba(63, 81, 181, 0.1); // Using a generic primary-like color with alpha
+      }
+    }
+  }
+}
+
+.status-badge {
+  padding: 0.3rem 0.7rem;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.8rem;
+  color: var(--color-text);
+  text-transform: capitalize;
+
+//   &.status-pending { background-color: $warning-color; }
+//   &.status-accepted { background-color: $success-color; }
+//   &.status-rejected { background-color: $error-color; }
+//   &.status-expired { background-color: $text-secondary; }
+//   &.status-published { background-color: $info-color; }
+//   &.status-in-progress { background-color: $primary-color; }
+//   &.status-completed { background-color: $success-color; }
+//   &.status-cancelled { background-color: $text-secondary; }
+}
+
+mat-paginator {
+  margin-top: 2rem;
+  background-color: transparent;
+}
+
+.no-bids-message {
+  text-align: center;
+  padding: 2rem;
+}

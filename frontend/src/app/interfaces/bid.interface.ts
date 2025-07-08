@@ -33,3 +33,44 @@ export interface IEditorBidDetails {
   bidNotes?: string;
   bidCreatedAt?: Date | string;
 }
+
+export interface GetBiddedQuotationsQuery {
+  page: number;
+  limit: number;
+  status?: BidStatus;
+  hideNonBiddable?: boolean;
+}
+
+import { QuotationStatus } from './quotation.interface';
+
+export interface BiddedQuotation {
+  _id: string;
+  title: string;
+  quotationStatus: QuotationStatus;
+  deadline: Date | string;
+  bidAmount: number;
+  bidStatus: BidStatus;
+  bidCreatedAt: Date | string;
+  isWorkAssignedToMe: boolean;
+  isQuotationBiddable: boolean;
+  finalAmount?: number;
+  acceptedEditorId?: string;
+}
+
+export interface PaginatedBiddedQuotationsResponse {
+  data: BiddedQuotation[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+}
+
+export interface EditorBid {
+  _id: string;
+  bidAmount: number;
+  bidNotes?: string;
+  bidStatus: string; 
+  bidCreatedAt: string; 
+}

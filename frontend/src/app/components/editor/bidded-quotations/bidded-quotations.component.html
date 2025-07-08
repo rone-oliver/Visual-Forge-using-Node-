@@ -1,0 +1,105 @@
+<div class="bids-container">
+    <header class="page-header">
+        <button (click)="goBack()" class="back-button">
+            <mat-icon>arrow_back</mat-icon>
+            <span>Back to Quotations</span>
+        </button>
+        <h1 class="page-title">My Bidded Quotations</h1>
+    </header>
+
+    <div class="controls-container">
+        <mat-form-field appearance="outline" class="status-filter profile-edit-dialog">
+            <mat-label>Filter by Bid Status</mat-label>
+            <mat-select [(ngModel)]="selectedStatus" (ngModelChange)="onFilterChange()">
+                <mat-option value="All">All Statuses</mat-option>
+                @for(status of bidStatusOptions; track $index){
+                    <mat-option [value]="status">
+                        {{ status }}
+                    </mat-option>
+                }
+            </mat-select>
+        </mat-form-field>
+
+        <mat-slide-toggle
+            class="biddable-toggle"
+            [(ngModel)]="hideNonBiddable"
+            (ngModelChange)="onFilterChange()">
+            Only show biddable
+        </mat-slide-toggle>
+    </div>
+
+    @if(isLoading){
+        <div class="loading-indicator">
+            <mat-spinner></mat-spinner>
+            <p>Loading your bids...</p>
+        </div>
+    }
+
+    @if(error){
+        <div class="error-message">
+            <mat-icon>error_outline</mat-icon>
+            <p>{{ error }}</p>
+        </div>
+    }
+
+    @if(!isLoading && !error && biddedQuotations.length === 0){
+        <div class="no-bids-message">
+            <mat-icon>info_outline</mat-icon>
+            <p>You have no quotations matching the selected status.</p>
+        </div>
+    }
+
+    @if(!isLoading && !error && biddedQuotations.length > 0){
+        <div class="table-container">
+            <table class="bids-table">
+                <thead>
+                    <tr>
+                        <th>Quotation Title</th>
+                        <th>Your Bid</th>
+                        <th>Bid Status</th>
+                        <th>Quotation Status</th>
+                        <th>Bid Date</th>
+                        <th>Work Deadline</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for(bid of biddedQuotations; track $index){
+                        <tr
+                            [class.not-assigned]="!bid.isQuotationBiddable"
+                            (click)="navigateToQuotation(bid._id)">
+                            <td class="title-cell">{{ bid.title }}</td>
+                            <td class="amount-cell">{{ bid.bidAmount | currency:'INR' }}</td>
+                            <td>
+                                <span [class]="'status-badge status-' + bid.bidStatus.toLowerCase()">
+                                    {{ bid.bidStatus }}
+                                </span>
+                            </td>
+                            <td>
+                                <span [class]="'status-badge status-' + bid.quotationStatus.toLowerCase().replace(' ', '-')">
+                                    {{ bid.quotationStatus }}
+                                </span>
+                            </td>
+                            <td class="date-cell">{{ bid.bidCreatedAt | date:'mediumDate' }}</td>
+                            <td class="date-cell">{{ bid.deadline | date:'mediumDate' }}</td>
+                            <td class="actions-cell">
+                                @if(bid.isQuotationBiddable){
+                                    <button mat-icon-button color="primary" (click)="openEditBidDialog(bid._id, $event)" aria-label="Edit bid">
+                                        <mat-icon>edit</mat-icon>
+                                    </button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    @if(!isLoading && totalItems > 0){
+        <mat-paginator [length]="totalItems" [pageSize]="itemsPerPage"
+            [pageIndex]="currentPage-1" [pageSizeOptions]="[5, 10, 25, 100]" (page)="handlePageEvent($event)"
+            aria-label="Select page of bidded quotations">
+        </mat-paginator>
+    }
+</div>

@@ -1,7 +1,7 @@
 import { BadRequestException, Inject, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { Bid, BidDocument, BidStatus } from './models/bids.schema';
-import { Connection, Model, Types } from 'mongoose';
+import { Connection, FilterQuery, Model, Types } from 'mongoose';
 import { Quotation, QuotationDocument, QuotationStatus } from '../../quotation/models/quotation.schema';
 import { BidResponseDto } from './dto/bid-response.dto';
 import { CreateBidDto } from './dto/create-bid.dto';
@@ -10,6 +10,7 @@ import { EventTypes } from '../constants/events.constants';
 import { IBidRepository, IBidRepositoryToken, IBidService } from './interfaces/bid.interfaces';
 import { SuccessResponseDto } from 'src/users/dto/users.dto';
 import { IQuotationService, IQuotationServiceToken } from 'src/quotation/interfaces/quotation.service.interface';
+import { BiddedQuotationDto } from 'src/editors/dto/editors.dto';
 
 interface PopulatedEditor {
   _id: Types.ObjectId;
@@ -265,5 +266,17 @@ export class BidsService implements IBidService{
     }
 
     await this.bidRepository.delete(bidId);
+  }
+
+  async getBiddedQuotationsForEditor(pipeline: any): Promise<BiddedQuotationDto[]> {
+    return await this.bidRepository.getBiddedQuotationsForEditor(pipeline);
+  }
+
+  async getBidsCountByAggregation(pipeline: any): Promise<number> {
+    return await this.bidRepository.getBidsCountByAggregation(pipeline);
+  }
+
+  async findOne(filter: FilterQuery<Bid>): Promise<Bid | null> {
+    return this.bidRepository.findOne(filter);
   }
 }

@@ -6,6 +6,8 @@ import {
     BidResponseDto,
     RemoveTutorialDto,
     AddTutorialDto,
+    GetBiddedQuotationsQueryDto,
+    PaginatedBiddedQuotationsResponseDto,
 } from '../dto/editors.dto';
 import { QuotationStatus } from 'src/quotation/models/quotation.schema';
 import { Editor } from '../models/editor.schema';
@@ -35,18 +37,20 @@ export interface IEditorsController {
         bidData: CreateEditorBidBodyDto, 
         req: Request
     ): Promise<BidResponseDto>;
-
     updateBid(
         bidId: string, 
         bidData: UpdateEditorBidBodyDto, 
         req: Request
     ): Promise<BidResponseDto>;
-
     deleteBid(
         bidId: string, 
         req: Request
     ): Promise<void>;
-
+    getBiddedQuotations(
+        editorId: string,
+        query: GetBiddedQuotationsQueryDto
+    ): Promise<PaginatedBiddedQuotationsResponseDto>;
+    
     removeTutorial(editorId: string, removeTutorialDto: RemoveTutorialDto): Promise<Editor>;
     addTutorial(addTutorialDto: AddTutorialDto, editorId: string): Promise<Editor>;
 }

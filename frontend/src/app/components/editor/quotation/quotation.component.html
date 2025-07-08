@@ -3,10 +3,16 @@
   <header class="page-header">
     <div class="header-content">
       <h1 class="page-title">Browse Published Quotations</h1>
-      <button class="btn-primary" (click)="navigateToAccepted()">
-        <span>View Accepted Quotations</span>
-        <mat-icon>keyboard_double_arrow_right</mat-icon>
-      </button>
+      <div class="header-actions">
+        <button class="btn-secondary" (click)="navigateToBidded()">
+          <span>My Bids</span>
+          <mat-icon>gavel</mat-icon>
+        </button>
+        <button class="btn-primary" (click)="navigateToAccepted()">
+          <span>View Accepted Quotations</span>
+          <mat-icon>keyboard_double_arrow_right</mat-icon>
+        </button>
+      </div>
     </div>
   </header>
 

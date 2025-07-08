@@ -8,7 +8,10 @@ import {
     FileUploadResultDto,
     BidResponseDto,
     AddTutorialDto,
-    RemoveTutorialDto
+    RemoveTutorialDto,
+    GetBiddedQuotationsQueryDto,
+    PaginatedBiddedQuotationsResponseDto,
+    EditorBidDto
 } from '../dto/editors.dto';
 import { EditorRequest } from '../models/editorRequest.schema';
 import { FormattedEditor, GetEditorsQueryDto } from 'src/admins/dto/admin.dto';
@@ -76,4 +79,6 @@ export interface IEditorsService {
 
     checkEditorRequest(userId: Types.ObjectId): Promise<boolean>;
     deleteEditorRequest(userId: Types.ObjectId): Promise<EditorRequest | null>;
+    getBiddedQuotations(editorId: string, query: GetBiddedQuotationsQueryDto): Promise<PaginatedBiddedQuotationsResponseDto>;
+    getEditorBidForQuotation(quotationId: Types.ObjectId, editorId: Types.ObjectId): Promise<EditorBidDto>;
 }

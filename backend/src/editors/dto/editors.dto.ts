@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsArray, IsBoolean, IsDateString, IsEnum, IsMongoId, IsNotEmpty, IsNumber, IsOptional, IsString, IsUrl, Min, ValidateNested } from 'class-validator';
 import { Types } from 'mongoose';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { OutputType, QuotationStatus } from 'src/quotation/models/quotation.schema';
 import { BidStatus } from 'src/common/bids/models/bids.schema';
 import { FileAttachmentDto } from 'src/quotation/dtos/quotation.dto';
@@ -265,16 +265,14 @@ export class EditorBidDetailsDto {
 }
 
 export class AddTutorialDto {
-  @ApiProperty({
-      description: 'The URL of the YouTube tutorial video.',
-      example: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-  })
-  @IsString()
-  @IsUrl({}, { message: 'Please enter a valid URL.' })
+  @ApiProperty({ description: 'URL of the tutorial to add' })
+  @IsUrl()
+  @IsNotEmpty()
   tutorialUrl: string;
 }
 
 export class RemoveTutorialDto {
+  @ApiProperty({ description: 'URL of the tutorial to remove' })
   @IsUrl(
     { require_protocol: true },
     { message: 'A valid tutorial URL is required.' },
@@ -287,4 +285,92 @@ export interface Rating{
   rating: number;
   feedback?: string;
   userId: Types.ObjectId;
+}
+
+export class GetBiddedQuotationsQueryDto extends PaginationQueryDto {
+  @ApiPropertyOptional({ enum: BidStatus, description: 'Filter by bid status' })
+  @IsOptional()
+  @IsEnum(BidStatus)
+  status?: BidStatus;
+
+  @ApiPropertyOptional({ description: 'Set to true to hide non-biddable quotations', type: Boolean })
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => value === 'true' || value === true)
+  hideNonBiddable?: boolean;
+}
+
+export class EditorBidDto {
+  @ApiProperty({ description: 'The unique identifier of the bid' })
+  _id: string;
+
+  @ApiProperty({ description: 'The amount of the bid' })
+  bidAmount: number;
+
+  @ApiPropertyOptional({ description: 'Optional notes included with the bid' })
+  bidNotes?: string;
+
+  @ApiProperty({ enum: BidStatus, description: 'The current status of the bid' })
+  bidStatus: BidStatus;
+
+  @ApiProperty({ description: 'The date the bid was created' })
+  bidCreatedAt: Date;
+}
+
+export class BiddedQuotationDto {
+  @ApiProperty({ type: String, description: 'Quotation ID' })
+  _id: Types.ObjectId;
+
+  @ApiProperty({ description: 'Title of the quotation' })
+  title: string;
+
+  @ApiProperty({ enum: QuotationStatus, description: 'Current status of the quotation' })
+  quotationStatus: QuotationStatus;
+
+  @ApiProperty({ description: 'Deadline for the quotation work' })
+  deadline: Date;
+
+  @ApiProperty({ description: 'The amount the editor bidded' })
+  bidAmount: number;
+
+  @ApiProperty({ enum: BidStatus, description: 'The status of the editor\'s bid' })
+  bidStatus: BidStatus;
+
+  @ApiProperty({ description: 'The date the bid was placed' })
+  bidCreatedAt: Date;
+
+  @ApiProperty({ description: 'Indicates if the work for this quotation was assigned to the current editor' })
+  isWorkAssignedToMe: boolean;
+
+  @ApiProperty({ description: 'Indicates if the quotation is still open for bidding' })
+  isQuotationBiddable: boolean;
+
+  @ApiPropertyOptional({ description: 'The final amount if the bid was accepted' })
+  finalAmount?: number;
+
+  @ApiPropertyOptional({ description: 'The ID of the editor who won the bid' })
+  acceptedEditorId?: Types.ObjectId;
+}
+
+export class PaginatedBiddedQuotationsResponseDto {
+  @ApiProperty({ type: [BiddedQuotationDto] })
+  data: BiddedQuotationDto[];
+
+  @ApiProperty({ description: 'Total number of bidded quotations' })
+  total: number;
+
+  @ApiProperty({ description: 'Current page number' })
+  page: number;
+
+  @ApiProperty({ description: 'Number of items per page' })
+  limit: number;
+
+  @ApiProperty({ description: 'Total number of pages' })
+  totalPages: number;
+
+  @ApiProperty({ description: 'Indicates if there is a next page' })
+  hasNextPage: boolean;
+
+  @ApiProperty({ description: 'Indicates if there is a previous page' })
+  hasPrevPage: boolean;
 }

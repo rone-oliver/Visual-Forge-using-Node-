@@ -2,11 +2,12 @@
 
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model, Types, FilterQuery } from 'mongoose';
 import { Bid, BidDocument, BidStatus } from '../models/bids.schema';
 import { IBidRepository } from '../interfaces/bid.interfaces';
 import { BidResponseDto } from '../dto/bid-response.dto';
 import { CreateBidDto } from '../dto/create-bid.dto';
+import { BiddedQuotationDto } from 'src/editors/dto/editors.dto';
 
 interface PopulatedEditor {
   _id: Types.ObjectId;
@@ -72,5 +73,22 @@ export class BidRepository implements IBidRepository {
 
   async delete(bidId: Types.ObjectId): Promise<void> {
     await this.bidModel.findByIdAndDelete(bidId);
+  }
+
+  async getBiddedQuotationsForEditor(pipeline: any): Promise<BiddedQuotationDto[]> {
+    return this.bidModel.aggregate(pipeline);
+  }
+
+  async getBidsCountByAggregation(pipeline: any): Promise<number> {
+    const result = await this.bidModel.aggregate(pipeline);
+    return result.length > 0 ? result[0].total : 0;
+  }
+
+  async findOne(filter: FilterQuery<Bid>): Promise<Bid | null> {
+    return this.bidModel.findOne(filter).exec();
+  }
+
+  async findOneById(id: string): Promise<Bid | null> {
+    return this.bidModel.findById(id).exec();
   }
 }

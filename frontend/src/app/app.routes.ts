@@ -128,15 +128,19 @@ export const routes: Routes = [
         canActivateChild: [editorGuard],
         children: [
             {
-                path:'published-quotations',
+                path: 'published-quotations',
                 loadComponent: EDITOR_ROUTES.PUBLISHED_QUOTATIONS
             },
             {
-                path:'accepted-quotations', 
+                path: 'accepted-quotations',
                 loadComponent: EDITOR_ROUTES.ACCEPTED_QUOTATIONS
             },
             {
-                path:'works/history', 
+                path: 'bidded-quotations',
+                loadComponent: EDITOR_ROUTES.BIDDED_QUOTATIONS
+            },
+            {
+                path: 'works/history',
                 loadComponent: EDITOR_ROUTES.WORKS_HISTORY
             },
             {

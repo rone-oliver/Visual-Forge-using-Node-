@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Editor } from './models/editor.schema';
 import { Types, UpdateQuery } from 'mongoose';
 import { QuotationStatus } from 'src/quotation/models/quotation.schema';
@@ -16,6 +16,9 @@ import {
     EditorDetailsDto,
     AddTutorialDto,
     RemoveTutorialDto,
+    GetBiddedQuotationsQueryDto,
+    PaginatedBiddedQuotationsResponseDto,
+    EditorBidDto,
 } from './dto/editors.dto';
 import { CreateBidDto } from 'src/common/bids/dto/create-bid.dto';
 import { IRelationshipService, IRelationshipServiceToken } from 'src/common/relationship/interfaces/service.interface';
@@ -440,6 +443,30 @@ export class EditorsService implements IEditorsService {
         return this.bidsService.deleteBid(bidId, editorId);
     }
 
+    async getEditorBidForQuotation(
+        quotationId: Types.ObjectId,
+        editorId: Types.ObjectId,
+    ): Promise<EditorBidDto> {
+        const bid = await this.bidsService.findOne({
+            quotationId,
+            editorId,
+        });
+
+        if (!bid) {
+            throw new NotFoundException(
+                `Bid not found for quotation ${quotationId} by this editor.`,
+            );
+        }
+
+        return {
+            _id: bid._id.toString(),
+            bidAmount: bid.bidAmount,
+            bidNotes: bid.notes,
+            bidStatus: bid.status,
+            bidCreatedAt: bid.createdAt,
+        };
+    }
+
     async addTutorial(editorId: string, addTutorialDto: AddTutorialDto): Promise<Editor> {
         return this.editorRepository.addSharedTutorial(editorId, addTutorialDto.tutorialUrl);
     }
@@ -474,5 +501,91 @@ export class EditorsService implements IEditorsService {
 
     async getPublicEditors(pipeline: any[]): Promise<any[]> {
         return this.editorRepository.getPublicEditors(pipeline);
+    }
+
+    async getBiddedQuotations(editorId: string, query: GetBiddedQuotationsQueryDto): Promise<PaginatedBiddedQuotationsResponseDto> {
+        const { page = 1, limit = 10, status, hideNonBiddable } = query;
+        const skip = (page - 1) * limit;
+
+        const matchStage: any = { editorId: new Types.ObjectId(editorId) };
+        if (status) {
+            matchStage.status = status;
+        }
+
+        const pipeline: any[] = [
+            { $match: matchStage },
+            {
+                $lookup: {
+                    from: 'Quotations',
+                    localField: 'quotationId',
+                    foreignField: '_id',
+                    as: 'quotationInfo'
+                }
+            },
+            { $unwind: '$quotationInfo' },
+            {
+                $addFields: {
+                    isQuotationBiddable: {
+                        $and: [
+                            { $ne: ['$quotationInfo.status', 'Completed'] },
+                            {
+                                $or: [
+                                    { $ne: ['$quotationInfo.status', 'Accepted'] },
+                                    {
+                                        $and: [
+                                            { $eq: ['$quotationInfo.status', 'Accepted'] },
+                                            { $eq: ['$quotationInfo.isAdvancePaid', false] }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+        ];
+
+        if (hideNonBiddable) {
+            pipeline.push({ $match: { isQuotationBiddable: true } });
+        }
+
+        const countPipeline = [...pipeline, { $count: 'total' }];
+        const total = await this.bidsService.getBidsCountByAggregation(countPipeline);
+
+        const dataPipeline = [
+            ...pipeline,
+            { $sort: { createdAt: -1 } },
+            { $skip: skip },
+            { $limit: limit },
+            {
+                $project: {
+                    _id: '$quotationInfo._id',
+                    title: '$quotationInfo.title',
+                    quotationStatus: '$quotationInfo.status',
+                    deadline: '$quotationInfo.dueDate',
+                    bidAmount: '$bidAmount',
+                    bidStatus: '$status',
+                    bidCreatedAt: '$createdAt',
+                    finalAmount: '$quotationInfo.finalAmount',
+                    acceptedEditorId: '$quotationInfo.editorId',
+                    isWorkAssignedToMe: {
+                        $eq: ['$quotationInfo.editorId', editorId]
+                    },
+                    isQuotationBiddable: '$isQuotationBiddable'
+                }
+            }
+        ];
+
+        const data = await this.bidsService.getBiddedQuotationsForEditor(dataPipeline);
+
+        return {
+            data,
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit),
+            hasNextPage: page * limit < total,
+            hasPrevPage: page > 1,
+        };
     }
 }

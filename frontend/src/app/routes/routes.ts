@@ -31,5 +31,6 @@ export const EDITOR_ROUTES = {
     ACCEPTED_QUOTATIONS: () => import('../components/editor/accepted-quotation/accepted-quotation.component').then(m => m.AcceptedQuotationComponent),
     WORKS_HISTORY: () => import('../components/editor/works-history/works-history.component').then(m => m.WorksHistoryComponent),
     COMMUNITY_CHAT: () => import('../components/editor/community/chat/chat.component').then(m => m.ChatComponent),
-    COMMUNITIES: () => import('../components/editor/community/communities/communities.component').then(m => m.CommunitiesComponent)
+    COMMUNITIES: () => import('../components/editor/community/communities/communities.component').then(m => m.CommunitiesComponent),
+    BIDDED_QUOTATIONS: () => import('../components/editor/bidded-quotations/bidded-quotations.component').then(m => m.BiddedQuotationsComponent)
 };
