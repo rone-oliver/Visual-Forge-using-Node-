@@ -23,6 +23,8 @@ export class UserHeaderComponent implements OnInit, OnDestroy{
   userRole: string | null = null;
   private authSubscription!: Subscription;
   private notificationSubscription!: Subscription;
+  isSuspended = false;
+  suspendedUntil: Date | null = null;
   // private themeSubscription!: Subscription;
 
   notifications: Notification[] = [];
@@ -48,7 +50,16 @@ export class UserHeaderComponent implements OnInit, OnDestroy{
     });
     this.authService.userRole$.subscribe(role=>{
       this.userRole = role;
-    })
+    });
+    this.authService.currentUser$.subscribe(user => {
+      if (user && user.role === 'Editor') {
+        this.isSuspended = user.isSuspended ?? false;
+        this.suspendedUntil = user.suspendedUntil ?? null;
+      } else {
+        this.isSuspended = false;
+        this.suspendedUntil = null;
+      }
+    });
   };
 
   ngOnInit() {

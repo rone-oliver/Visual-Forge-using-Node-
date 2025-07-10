@@ -1,6 +1,6 @@
 import { FormattedEditor } from "src/admins/dto/admin.dto";
 import { Editor, EditorDocument } from "../models/editor.schema";
-import { Types } from "mongoose";
+import { FilterQuery, Types } from "mongoose";
 import { UserRatingForEditorDto } from "src/users/dto/users.dto";
 
 export const IEditorRepositoryToken = Symbol('IEditorRepository');
@@ -20,4 +20,5 @@ export interface IEditorRepository {
     getEditorRating(userId: Types.ObjectId): Promise<Editor | null>;
     getEditorUserCombined(userId: Types.ObjectId): Promise<Editor | null>;
     getPublicEditors(pipeline: any[]): Promise<any[]>;
+    findMany(filter: FilterQuery<Editor>): Promise<Editor[] | null>;
 }

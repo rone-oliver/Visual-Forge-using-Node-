@@ -12,6 +12,8 @@ import { IUsersAuthServiceToken } from './interfaces/usersAuth-service.interface
 import { IOtpServiceToken } from './interfaces/otp.service.interface';
 import { IOtpRepositoryToken } from './interfaces/otp.repository.interface';
 import { OtpRepository } from './repositories/otp.repository';
+import { EditorsModule } from 'src/editors/editors.module';
+import { MailModule } from 'src/mail/mail.module';
 
 @Module({
   imports: [
@@ -19,7 +21,8 @@ import { OtpRepository } from './repositories/otp.repository';
     MongooseModule.forFeature([
       { name:Otp.name, schema: OtpSchema}
     ]),
-    UsersModule, PassportModule, ConfigModule,
+    UsersModule, PassportModule, ConfigModule, EditorsModule,
+    MailModule,
   ],
   controllers: [UsersAuthController],
   providers: [

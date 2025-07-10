@@ -1,6 +1,6 @@
-import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, Logger, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { Editor } from './models/editor.schema';
-import { Types, UpdateQuery } from 'mongoose';
+import { FilterQuery, Types, UpdateQuery } from 'mongoose';
 import { QuotationStatus } from 'src/quotation/models/quotation.schema';
 import { FileType } from 'src/common/cloudinary/dtos/cloudinary.dto';
 import { NotificationType } from 'src/notification/models/notification.schema';
@@ -354,10 +354,32 @@ export class EditorsService implements IEditorsService {
         }
     }
 
-    async createBid(
-        editorId: Types.ObjectId,
-        bidDto: CreateEditorBidBodyDto
-    ): Promise<BidResponseDto> {
+    async createBid(editorId: Types.ObjectId, bidDto: CreateEditorBidBodyDto): Promise<BidResponseDto> {
+        let editor = await this.editorRepository.findByUserId(editorId);
+        if (!editor) {
+            throw new NotFoundException('Editor not found');
+        }
+
+        if (editor.isSuspended && editor.suspendedUntil && new Date() > editor.suspendedUntil) {
+            await this.updateEditor(editor.userId, {
+                $set: { isSuspended: false },
+                $unset: { suspendedUntil: '' },
+            });
+            editor.isSuspended = false;
+            editor.suspendedUntil = undefined;
+        }
+
+        if (editor.isSuspended) {
+            const suspendedUntilDate = editor.suspendedUntil ? 
+            new Date(editor.suspendedUntil).toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+            })
+            : 'an unknown date';
+            throw new ForbiddenException(`Your account is suspended. You cannot bid on new quotations until ${suspendedUntilDate}.`);
+        }
+
         const { quotationId, bidAmount, notes } = bidDto;
         const bidData = {
             quotationId: new Types.ObjectId(quotationId),
@@ -536,6 +558,10 @@ export class EditorsService implements IEditorsService {
             hasNextPage: page * limit < total,
             hasPrevPage: page > 1,
         };
+    }
+
+    async findMany(filter: FilterQuery<Editor>): Promise<Editor[] | null> {
+        return this.editorRepository.findMany(filter);
     }
     
     private _calculatePenalty(dueDate: Date, submissionDate: Date, amount: number): number {

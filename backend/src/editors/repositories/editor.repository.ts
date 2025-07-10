@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { IEditorRepository } from "../interfaces/editor.repository.interface";
 import { InjectModel } from "@nestjs/mongoose";
 import { Editor, EditorDocument } from "../models/editor.schema";
-import { Model, Types } from "mongoose";
+import { FilterQuery, Model, Types } from "mongoose";
 import { FormattedEditor } from "src/admins/dto/admin.dto";
 
 @Injectable()
@@ -81,5 +81,9 @@ export class EditorRepository implements IEditorRepository {
 
     async getPublicEditors(pipeline: any[]): Promise<any[]> {
         return this.editorModel.aggregate(pipeline);
+    }
+
+    async findMany(filter: FilterQuery<Editor>): Promise<Editor[] | null> {
+        return this.editorModel.find(filter).exec();
     }
 }

@@ -149,6 +149,10 @@
                 <span class="info-label">Score</span>
                 <span class="info-value score-value">{{user.editorDetails.score || 0}} points</span>
               </div>
+              <div class="info-item">
+                <span class="info-label">Warnings</span>
+                <span class="info-value warning-value">{{user.editorDetails.warningCount || 0}} / 3</span>
+              </div>
             </div>
             @if (hasSocialLinks(user.editorDetails.socialLinks)) {
               <div class="social-links">

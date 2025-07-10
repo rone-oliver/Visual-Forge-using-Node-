@@ -59,6 +59,13 @@
   </div>
 </header>
 
+@if (isSuspended) {
+  <div class="suspension-banner">
+    <mat-icon>warning</mat-icon>
+    <p>Your account is suspended until {{ suspendedUntil | date:'longDate' }}. You cannot bid on new quotations.</p>
+  </div>
+}
+
 <ng-template #notificationsOverlayTemplate>
   <div class="notifications-overlay">
     <div class="notifications-header">

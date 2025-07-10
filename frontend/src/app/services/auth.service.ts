@@ -4,6 +4,7 @@ import { jwtDecode } from 'jwt-decode';
 import { BehaviorSubject, catchError, EMPTY, finalize, firstValueFrom, map, Observable, of, tap, throwError } from 'rxjs';
 import { TokenService } from './token.service';
 import { environment } from '../../environments/environment';
+import { AuthenticatedUser } from '../interfaces/user.interface';
 
 const httpOptions = {
   headers: new HttpHeaders({
@@ -44,6 +45,9 @@ export class AuthService {
   private registrationEmail: string | null = null;
   private refreshTokenInProgress = false;
 
+  private currentUserSubject = new BehaviorSubject<AuthenticatedUser | null>(null);
+  currentUser$ = this.currentUserSubject.asObservable();
+
   private userIsAuthenticatedSubject = new BehaviorSubject<boolean>(false);
   userIsAuthenticated$ = this.userIsAuthenticatedSubject.asObservable();
 
@@ -60,14 +64,28 @@ export class AuthService {
   private initializeAuth(): void {
     const userToken = this.tokenService.getToken('User');
     if (userToken) {
-      this.userIsAuthenticatedSubject.next(true);
-      this.setRole(userToken, 'User');
+      // this.userIsAuthenticatedSubject.next(true);
+      // this.setRole(userToken, 'User');
+      this.updateUserState(userToken);
     }
 
     const adminToken = this.tokenService.getToken('Admin');
     if (adminToken) {
       this.adminIsAuthenticatedSubject.next(true);
       // this.setRole(adminToken,'Admin');
+    }
+  }
+
+  private updateUserState(token: string | null): void {
+    if (token && this._isTokenValid(token)) {
+      const user = jwtDecode<AuthenticatedUser>(token);
+      this.currentUserSubject.next(user);
+      this.userIsAuthenticatedSubject.next(true);
+      this.userRoleSubject.next(user.role);
+    } else {
+      this.currentUserSubject.next(null);
+      this.userIsAuthenticatedSubject.next(false);
+      this.userRoleSubject.next(null);
     }
   }
 
@@ -95,9 +113,10 @@ export class AuthService {
     this.tokenService.setToken(token, userType);
     if (userType === 'User') {
       // this.userAccessTokenSubject.next(token);
-      console.log('inside the userType User block in the setAccessToken method');
-      this.userIsAuthenticatedSubject.next(this._isTokenValid(token));
-      this.setRole(token, 'User');
+      // console.log('inside the userType User block in the setAccessToken method');
+      // this.userIsAuthenticatedSubject.next(this._isTokenValid(token));
+      // this.setRole(token, 'User');
+      this.updateUserState(token);
     } else {
       // this.adminAccessTokenSubject.next(token);
       this.adminIsAuthenticatedSubject.next(this._isTokenValid(token));

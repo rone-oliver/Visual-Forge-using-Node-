@@ -140,6 +140,36 @@ export class NotificationService implements INotificationService {
         }
     }
 
+    @OnEvent(EventTypes.PAYMENT_REFUNDED)
+    async handlePaymentRefunded(payload: { recipient: Types.ObjectId, message: string, type: NotificationType }) {
+        this.logger.log(`Handling payment refunded event for user ${payload.recipient}`);
+        await this.createNotification({
+            userId: payload.recipient.toString(),
+            message: payload.message,
+            type: payload.type,
+        });
+    }
+
+    @OnEvent(EventTypes.EDITOR_WARNING)
+    async handleEditorWarning(payload: { recipient: Types.ObjectId, message: string, type: NotificationType }) {
+        this.logger.log(`Handling editor warning event for editor ${payload.recipient}`);
+        await this.createNotification({
+            userId: payload.recipient.toString(),
+            message: payload.message,
+            type: payload.type,
+        });
+    }
+
+    @OnEvent(EventTypes.EDITOR_SUSPENDED)
+    async handleEditorSuspended(payload: { recipient: Types.ObjectId, message: string, type: NotificationType }) {
+        this.logger.log(`Handling editor suspended event for editor ${payload.recipient}`);
+        await this.createNotification({
+            userId: payload.recipient.toString(),
+            message: payload.message,
+            type: payload.type,
+        });
+    }
+
     async getUnreadNotificationsByUserId(userId: string): Promise<Notification[]> {
         try {
             return await this.notificationRepository.findUnreadByUserId(userId);

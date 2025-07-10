@@ -124,4 +124,23 @@ export class WalletService implements IWalletService {
 
     return updatedWallet;
   }
+
+  async refundUserForExpiredQuotation(userId: string, quotationId: string, amount: number): Promise<boolean> {
+    if (amount <= 0) {
+      throw new BadRequestException('Refund amount must be positive.');
+    }
+
+    const wallet = await this.getWallet(userId);
+    await this.walletRepo.updateWalletBalance(userId, amount);
+
+    await this.walletRepo.createTransaction(
+      userId,
+      wallet._id.toString(),
+      amount,
+      WalletTransactionType.REFUND,
+      `Refund for expired quotation #${quotationId}`,
+    );
+
+    return true;
+  }
 }

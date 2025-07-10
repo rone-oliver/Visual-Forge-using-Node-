@@ -26,6 +26,8 @@
     --color-neutral-700: theme('colors.neutral.700');
     --color-success: #10B981;
     --color-danger: #EF4444;
+    --color-warning: #FDB52A; // New warning color from secondary palette
+    --color-warning-contrast: #080F25; // Dark text for contrast
     --color-danger-contrast: #ffffff;
 
     // File upload component colors
@@ -59,6 +61,8 @@
     --color-surface: theme('colors.surface.dark');
     --color-success: #059669;
     --color-danger: #DC2626;
+    --color-warning: #FDB52A; // Consistent warning color for dark mode
+    --color-warning-contrast: #080F25;
 
     // File upload component colors for dark theme
     --file-pending-bg: theme('colors.neutral.200');

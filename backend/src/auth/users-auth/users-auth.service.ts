@@ -4,10 +4,11 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
-import { OtpService } from './otp/otp.service';
 import { IUsersService, IUsersServiceToken } from 'src/users/interfaces/users.service.interface';
 import { IUsersAuthService } from './interfaces/usersAuth-service.interface';
 import { IOtpService, IOtpServiceToken } from './interfaces/otp.service.interface';
+import { IEditorsService, IEditorsServiceToken } from 'src/editors/interfaces/editors.service.interface';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class UsersAuthService implements IUsersAuthService {
@@ -15,33 +16,44 @@ export class UsersAuthService implements IUsersAuthService {
         @Inject(IUsersServiceToken) private readonly usersService: IUsersService,
         private jwtService: JwtService,
         private configService: ConfigService,
+        @Inject(IEditorsServiceToken) private editorService: IEditorsService,
         @Inject(IOtpServiceToken) private readonly otpService: IOtpService,
+        private mailService: MailService,
     ) { }
     private readonly logger = new Logger(UsersAuthService.name);
 
     // Helper
     private async generateTokens(user: User, role: 'User' | 'Editor') {
-        console.log('user Role: ', role);
+        this.logger.debug('User Role: ', role);
+
+        let payload: any = {
+            userId: user._id,
+            email: user.email,
+            role
+        };
+
+        if (role === 'Editor') {
+            const editorDetails = await this.editorService.findByUserId(user._id);
+            if (editorDetails) {
+                payload = {
+                    ...payload,
+                    isSuspended: editorDetails.isSuspended,
+                    suspendedUntil: editorDetails.suspendedUntil,
+                    warningCount: editorDetails.warningCount
+                };
+            }
+        }
+
         const [accessToken, refreshToken] = await Promise.all([
             this.jwtService.signAsync(
-                {
-                    userId: user._id,
-                    // username: user.username,
-                    email: user.email,
-                    role
-                },
+                payload,
                 {
                     secret: this.configService.get<string>('JWT_SECRET'),
                     expiresIn: this.configService.get<string>('ACCESS_TOKEN_EXPIRATION')
                 },
             ),
             this.jwtService.signAsync(
-                {
-                    userId: user._id,
-                    // username: user.username,
-                    email: user.email,
-                    role
-                },
+                payload,
                 {
                     secret: this.configService.get<string>('JWT_SECRET'),
                     expiresIn: this.configService.get<string>('REFRESH_TOKEN_EXPIRATION')
@@ -122,7 +134,7 @@ export class UsersAuthService implements IUsersAuthService {
             const user = await this.usersService.createUser(userData);
 
             const otp = await this.otpService.createOtp(user.email);
-            this.otpService.sendOtpEmail(user.email, otp);
+            this.mailService.sendOtpEmail(user.email, { otp });
             this.logger.log('OTP Sent for verification');
             return {
                 success: true,
@@ -158,7 +170,7 @@ export class UsersAuthService implements IUsersAuthService {
     async resendOtp(email: string): Promise<boolean> {
         try {
             const otp = await this.otpService.createOtp(email);
-            await this.otpService.sendOtpEmail(email, otp);
+            await this.mailService.sendOtpEmail(email, { otp });
             return true;
         } catch (error) {
             this.logger.error(`Failed to resend OTP for email ${email}: ${error.message}`);

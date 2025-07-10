@@ -30,6 +30,7 @@ import { WorksModule } from './works/works.module';
 import { JobsModule } from './jobs/jobs.module';
 import { ReportsModule } from './reports/reports.module';
 import { TransactionModule } from './common/transaction/transaction.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -64,7 +65,12 @@ import { TransactionModule } from './common/transaction/transaction.module';
       inject: [ConfigService],
     }),
     // MongooseModule.forRoot(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/visualForge'),
-    AuthModule,UsersModule, DatabaseModule, AdminsModule, EditorsModule, UsersAuthModule, AdminsAuthModule, CoreModule, PaymentModule, ChatModule, NotificationModule, BidsModule, AiModule, WalletModule, CommunityModule, RelationshipModule, CloudinaryModule, QuotationModule, WorksModule, JobsModule, ReportsModule, TransactionModule
+    AuthModule, UsersModule, DatabaseModule, AdminsModule,
+    EditorsModule, UsersAuthModule, AdminsAuthModule, CoreModule,
+    PaymentModule, ChatModule, NotificationModule, BidsModule,
+    AiModule, WalletModule, CommunityModule, RelationshipModule,
+    CloudinaryModule, QuotationModule, WorksModule, JobsModule,
+    ReportsModule, TransactionModule, MailModule,
   ],
   controllers: [AppController, UsersAuthController],
   providers: [

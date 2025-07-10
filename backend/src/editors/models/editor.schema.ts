@@ -48,6 +48,18 @@ export class Editor {
   @Prop({ type: String, default: '' })
   tipsAndTricks?: string;
 
+  @Prop({ type: Number, default: 0 })
+  warningCount?: number;
+
+  @Prop({ type: Boolean, default: false })
+  isSuspended?: boolean;
+
+  @Prop({ type: Date })
+  suspendedUntil?: Date;
+
+  @Prop({ type: Date })
+  lastWarningDate?: Date;
+
   createdAt: Date;
   updatedAt: Date;
 }

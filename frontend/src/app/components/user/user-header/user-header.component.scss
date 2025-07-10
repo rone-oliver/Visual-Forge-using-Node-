@@ -328,3 +328,29 @@ body {
     background-color: var(--color-secondary-300);
     color: white;
 }
+
+.suspension-banner {
+    background: var(--color-warning);
+    color: var(--color-warning-contrast);
+    padding: 10px 20px;
+    text-align: center;
+    width: 100%;
+    font-weight: 500;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    p {
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    mat-icon {
+        font-size: 22px;
+        height: 22px;
+        width: 22px;
+    }
+}

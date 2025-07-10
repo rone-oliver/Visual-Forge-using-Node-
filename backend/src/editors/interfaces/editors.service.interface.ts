@@ -1,4 +1,4 @@
-import { Types, UpdateQuery } from 'mongoose';
+import { FilterQuery, Types, UpdateQuery } from 'mongoose';
 import { Editor } from '../models/editor.schema';
 import {
     SubmitWorkBodyDto,
@@ -70,6 +70,7 @@ export interface IEditorsService {
 
     getEditorsForAdmin(query: GetEditorsQueryDto): Promise<{ editors: FormattedEditor[]; total: number }>;
     countAllEditors(): Promise<number>;
+    findMany(filter: FilterQuery<Editor>): Promise<Editor[] | null>;
 
     findByUserId(userId: Types.ObjectId): Promise<Editor | null>;
     updateEditor(userId: Types.ObjectId, update: UpdateQuery<Editor>): Promise<Editor | null>;

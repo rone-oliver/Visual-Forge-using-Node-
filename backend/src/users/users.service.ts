@@ -186,6 +186,7 @@ export class UsersService implements IUsersService {
                             ratingsCount: editorDetails.ratings?.length || 0,
                             averageRating: this.calculateAverageRating(editorDetails.ratings),
                             socialLinks: editorDetails.socialLinks || {},
+                            warningCount: editorDetails.warningCount || 0,
                             createdAt: editorDetails.createdAt,
                             followersCount,
                             followingCount,

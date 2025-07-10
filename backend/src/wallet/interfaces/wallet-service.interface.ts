@@ -9,4 +9,5 @@ export interface IWalletService {
   addMoney(userId: string, amount: number): Promise<Wallet>;
   withdrawMoney(userId: string, amount: number): Promise<Wallet>;
   creditEditorWallet(userId: string, amount: number, quotationId: string): Promise<boolean>;
+  refundUserForExpiredQuotation(userId: string, quotationId: string, amount: number): Promise<boolean>;
 }

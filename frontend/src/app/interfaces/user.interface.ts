@@ -18,6 +18,15 @@ export interface User {
     editorDetails?: EditorDetails;
 }
 
+export interface AuthenticatedUser {
+    userId: string;
+    email: string;
+    role: 'User' | 'Editor' | 'Admin';
+    isSuspended?: boolean;
+    suspendedUntil?: Date | null;
+    warningCount?: number;
+}
+
 enum EditorRequestStatus {
     PENDING = 'Pending',
     APPROVED = 'Approved',
@@ -42,6 +51,7 @@ export interface EditorDetails {
     category?: string[];
     score?: number;
     ratingsCount?: number;
+    warningCount?: number;
     sharedTutorials?: string[];
     tipsAndTricks?: string;
     averageRating?: number;

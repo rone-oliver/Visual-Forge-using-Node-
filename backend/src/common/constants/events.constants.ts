@@ -25,4 +25,9 @@ export enum EventTypes {
   PAYMENT_CREATED = 'payment.created',
   PAYMENT_COMPLETED = 'payment.completed',
   PAYMENT_FAILED = 'payment.failed',
+
+  // Overdue Quotations events
+  PAYMENT_REFUNDED = 'payment.refunded',
+  EDITOR_SUSPENDED = 'editor.suspended',
+  EDITOR_WARNING = 'editor.warning',
 }
