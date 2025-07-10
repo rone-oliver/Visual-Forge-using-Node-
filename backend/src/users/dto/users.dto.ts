@@ -667,6 +667,11 @@ export class CompletedWorkDto {
     @IsOptional()
     feedback?: string;
 
+    @ApiPropertyOptional()
+    @IsNumber()
+    @IsOptional()
+    penalty?: number;
+
     @ApiProperty()
     @IsDate()
     @Type(() => Date)
@@ -884,7 +889,8 @@ export class UpdateQuotationPaymentDto {
     tax: number;
 
     @ApiProperty({ description: 'Date of the payment' })
-    @IsDateString()
+    @IsDate()
+    @Type(() => Date)
     paymentDate: Date;
 }
 

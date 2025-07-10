@@ -49,15 +49,15 @@
       <div class="transaction-list">
         @for (tx of transactions; track tx) {
           <div class="transaction-item">
-            <div class="transaction-icon" [ngClass]="tx.type.toLowerCase()">
+            <div class="transaction-icon" [class]="tx.type.toLowerCase()">
               <mat-icon>{{ tx.type === 'credit' ? 'arrow_upward' : 'arrow_downward' }}</mat-icon>
             </div>
             <div class="transaction-details">
               <p class="transaction-party">{{ tx.description }}</p>
               <p class="transaction-date">{{ tx.createdAt | date:'mediumDate' }}</p>
             </div>
-            <div class="transaction-amount" [ngClass]="tx.type.toLowerCase()">
-              {{ tx.type === 'credit' ? '+' : '-' }} ₹{{ tx.amount | number:'1.2-2' }}
+            <div class="transaction-amount" [class]="tx.type.toLowerCase()">
+              {{ tx.type === 'debit' ? '-' : '+' }} ₹{{ tx.amount | number:'1.2-2' }}
             </div>
           </div>
         }

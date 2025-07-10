@@ -33,6 +33,14 @@
                     {{ quotation.dueDate ? (quotation.dueDate | localDate : 'medium') : 'No deadline' }}
                 </span>
             </div>
+            
+            <div class="policy-info-container">
+                <span class="policy-title">On-Time Delivery Policy</span>
+                <mat-icon 
+                    matTooltip="A tiered penalty system applies for late submissions. A 2-hour grace period is provided. Penalties are deducted from your payment."
+                    matTooltipClass="policy-tooltip"
+                    class="info-icon-tooltip">info_outline</mat-icon>
+            </div>
 
             <!-- File Attachments Section -->
             @if(quotation.attachedFiles && quotation.attachedFiles.length > 0){

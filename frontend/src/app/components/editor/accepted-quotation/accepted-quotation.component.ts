@@ -165,7 +165,6 @@ export class AcceptedQuotationComponent {
     }
     console.log(`Submitting response for quotation ${this.selectedQuotation._id}:`, this.responseText);
     const workData = {
-      userId: this.selectedQuotation.userId,
       quotationId: this.selectedQuotation._id,
       finalFiles: this.uploadedFiles,
       comments: this.responseText

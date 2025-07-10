@@ -273,6 +273,12 @@
                                         Pay Balance Amount (₹{{ work.balanceAmount }})
                                     </button>
                                 </div>
+                                @if (work.penalty && work.penalty > 0) {
+                                    <div class="penalty-credit-info">
+                                        <mat-icon class="info-icon">info_outline</mat-icon>
+                                        <span>A penalty of <strong>₹{{ work.penalty }}</strong> for late submission will be credited to your wallet after payment.</span>
+                                    </div>
+                                }
                             }
 
                             @if (work.finalFiles && work.finalFiles.length > 0) {

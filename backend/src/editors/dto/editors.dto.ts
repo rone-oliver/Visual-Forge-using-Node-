@@ -27,8 +27,16 @@ export class PaginationQueryDto {
 }
 
 export class FileUploadResultDto extends FileAttachmentDto {
+  @ApiProperty({ description: 'Unique ID for the file in storage' })
+  @IsString()
   uniqueId: string;
+
+  @ApiProperty({ description: 'Timestamp of the upload' })
+  @IsNumber()
   timestamp: number;
+
+  @ApiProperty({ description: 'File format or extension' })
+  @IsString()
   format: string;
 }
 

@@ -110,8 +110,12 @@ export class QuotationService implements IQuotationService {
         return this.quotationRepository.findById(quotationId, options);
     }
 
-    async updateQuotationStatus(quotationId: Types.ObjectId, status: QuotationStatus, worksId: Types.ObjectId): Promise<Quotation | null>{
-        return this.quotationRepository.findByIdAndUpdate(quotationId, { status, worksId });
+    async updateQuotationStatus(quotationId: Types.ObjectId, status: QuotationStatus, worksId: Types.ObjectId, penalty?: number): Promise<Quotation | null>{
+        const updateData: any = { status, worksId };
+        if (penalty !== undefined) {
+            updateData.penalty = penalty;
+        }
+        return this.quotationRepository.findByIdAndUpdate(quotationId, updateData);
     }
 
     async getCompletedQuotations(editorId: Types.ObjectId): Promise<CompletedWorkDto[]> {

@@ -9,6 +9,7 @@ export enum WalletTransactionType {
   CREDIT_FROM_WORK = 'credit_from_work',
   WITHDRAWAL = 'withdrawal',
   REFUND = 'refund',
+  COMPENSATION = 'compensation',
 }
 
 export type WalletTransactionDocument = WalletTransaction & Document;

@@ -10,7 +10,7 @@ export interface IQuotationService {
     getPublishedQuotations(editorId: Types.ObjectId, query: GetPublishedQuotationsQueryDto): Promise<PaginatedPublishedQuotationsResponseDto>;
     getAcceptedQuotations(editorId: Types.ObjectId, query: GetAcceptedQuotationsQueryDto): Promise<PaginatedAcceptedQuotationsResponseDto>;
     findById(quotationId: Types.ObjectId, options?: QueryOptions): Promise<Quotation | null>;
-    updateQuotationStatus(quotationId: Types.ObjectId, status: QuotationStatus, worksId: Types.ObjectId): Promise<Quotation | null>;
+    updateQuotationStatus(quotationId: Types.ObjectId, status: QuotationStatus, worksId: Types.ObjectId, penalty?: number): Promise<Quotation | null>;
     getCompletedQuotations(editorId: Types.ObjectId): Promise<CompletedWorkDto[]>;
     findMany(query: FilterQuery<Quotation>): Promise<Quotation[] | null>;
     updateQuotation(query: FilterQuery<Quotation>, update: UpdateQuery<Quotation>):Promise<Quotation | null>;

@@ -99,6 +99,9 @@ export class Quotation {
     @Prop({ type: Types.ObjectId, ref: 'Works'})
     worksId: Types.ObjectId;
 
+    @Prop({ type: Number, default: 0 })
+    penalty: number;
+
     @Prop({ type: String })
     advancePaymentOrderId: string;
 

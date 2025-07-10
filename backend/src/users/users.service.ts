@@ -579,6 +579,7 @@ export class UsersService implements IUsersService {
                     attachedFiles: quotationData.attachedFiles || [],
                     comments: worksData.comments || '',
                     completedAt: worksData.createdAt,
+                    penalty: quotationData.penalty || 0,
                 } as CompletedWorkDto;
             })
         } catch (error) {

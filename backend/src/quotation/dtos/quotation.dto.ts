@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsArray, IsBoolean, IsDateString, IsEnum, IsMongoId, IsNotEmpty, IsNumber, IsOptional, IsString, Min, ValidateNested } from "class-validator";
+import { IsArray, IsBoolean, IsDate, IsDateString, IsEnum, IsMongoId, IsNotEmpty, IsNumber, IsOptional, IsString, Min, ValidateNested } from "class-validator";
 import { Types } from "mongoose";
 import { EditorBidDetailsDto } from "src/editors/dto/editors.dto";
 import { OutputType, QuotationStatus } from "src/quotation/models/quotation.schema";
@@ -50,7 +50,7 @@ export interface FileAttachment {
 export class FileAttachmentDto {
   @ApiProperty({ description: 'URL of the uploaded file' })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   url: string;
 
   @ApiProperty({ description: 'Type of the file', enum: CommonFileType, enumName: 'CommonFileType' })
@@ -75,7 +75,8 @@ export class FileAttachmentDto {
 
   @ApiPropertyOptional({ description: 'Timestamp of when the file was uploaded' })
   @IsOptional()
-  @IsDateString()
+  @IsDate()
+  @Type(() => Date)
   uploadedAt?: Date;
 }
 

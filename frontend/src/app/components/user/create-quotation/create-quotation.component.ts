@@ -7,6 +7,10 @@ import { FileAttachmentResponse, IQuotation, OutputType } from '../../../interfa
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { FilePreviewModalComponent } from '../../mat-dialogs/files-preview-modal/files-preview-modal.component';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 interface FileWithProgress {
   file: File;
@@ -15,7 +19,11 @@ interface FileWithProgress {
 
 @Component({
   selector: 'app-create-quotation',
-  imports: [ReactiveFormsModule, MatIconModule, MatSnackBarModule],
+  imports: [
+    ReactiveFormsModule, MatIconModule, MatSnackBarModule,
+    MatDatepickerModule, MatInputModule, MatFormFieldModule,
+    MatTooltipModule,
+  ],
   templateUrl: './create-quotation.component.html',
   styleUrl: './create-quotation.component.scss'
 })
@@ -26,6 +34,7 @@ export class CreateQuotationComponent implements OnInit{
   uploadedFiles: FileAttachmentResponse[] = [];
   isUploading: boolean = false;
   maxFiles = 5;
+  minDate = new Date(new Date().setHours(new Date().getHours() + 12));
   // uploadProgress = 0;
   // uploadProgress: { [key: string]: number } = {};
 
@@ -39,14 +48,12 @@ export class CreateQuotationComponent implements OnInit{
     private snackBar: MatSnackBar,
     private dialog: MatDialog
   ) {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
 
     this.quotationForm = this.fb.group({
       title: ['', [Validators.required, Validators.pattern('^[a-zA-Z ]*$')]],
       description: ['', Validators.required],
       theme: [''],
-      dueDate: [tomorrow, Validators.required],
+      dueDate: [this.minDate, Validators.required],
       estimatedBudget: ['', [Validators.required, Validators.pattern('^[0-9]*$'), Validators.min(0)]],
       outputType: ['', Validators.required],
       attachedFiles: [[]],
@@ -128,7 +135,9 @@ export class CreateQuotationComponent implements OnInit{
       formData.attachedFiles = this.uploadedFiles;
 
       if (formData.dueDate) {
-        formData.dueDate = new Date(formData.dueDate).toISOString();
+        const date = new Date(formData.dueDate);
+        date.setHours(23, 59, 59, 999);
+        formData.dueDate = date.toISOString();
       }
 
       if (this.isEditMode()) {

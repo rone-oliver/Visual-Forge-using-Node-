@@ -362,6 +362,7 @@ export class UsersController implements IUsersController {
     @Patch('quotations/:quotationId/payment')
     @Roles('User', 'Editor')
     async updateQuotationPayment(@Req() req: Request, @Param('quotationId') quotationId: string, @Body() body: UpdateQuotationPaymentDto): Promise<SuccessResponseDto> {
+        console.log('updateQuotationPayment controller hit: ', body);
         const user = req['user'] as { userId: Types.ObjectId; role: string };
         const paymentType = body.isAdvancePaid ? PaymentType.BALANCE : PaymentType.ADVANCE;
 

@@ -19,6 +19,7 @@ export interface CompletedWork {
     isFullyPaid?: boolean;
     advanceAmount?: number;
     balanceAmount?: number;
+    penalty?: number;
 
     dueDate?: Date | string;
     status: QuotationStatus | string;

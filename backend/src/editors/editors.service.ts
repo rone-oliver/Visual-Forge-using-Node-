@@ -255,6 +255,10 @@ export class EditorsService implements IEditorsService {
                 this.logger.warn(`Quotation with ID ${quotationId} not found`);
                 return false;
             }
+
+            const submissionDate = new Date();
+            const penalty = this._calculatePenalty(quotation.dueDate, submissionDate, quotation.estimatedBudget);
+
             const work = await this.worksService.createWork({
                 editorId: quotation.editorId,
                 userId: quotation.userId,
@@ -272,7 +276,7 @@ export class EditorsService implements IEditorsService {
                 }),
                 comments: comments ?? '',
             });
-            await this.quotationService.updateQuotationStatus(quotation._id, QuotationStatus.COMPLETED, work._id);
+            await this.quotationService.updateQuotationStatus(quotation._id, QuotationStatus.COMPLETED, work._id, penalty);
 
             this.eventEmitter.emit(EventTypes.QUOTATION_COMPLETED, {
                 userId: quotation.userId,
@@ -288,61 +292,6 @@ export class EditorsService implements IEditorsService {
         } catch (error) {
             this.logger.error('Error submitting the quotation response', error);
             throw new Error('Error submitting the quotation response');
-        }
-    }
-
-    private async updateEditorScore(editorId: Types.ObjectId): Promise<void> {
-        try {
-            // Get the editor's profile
-            const editor = await this.editorRepository.findByUserId(editorId);
-            if (!editor) {
-                this.logger.warn(`Editor with ID ${editorId} not found or not an editor`);
-                return;
-            }
-
-            // Get the editor's most recent completed works
-            const recentWorks = await this.worksService.getTwoRecentWorks(editorId);
-
-            // Initialize score variables
-            let scoreIncrement = 10; // Base score for completing a work
-            let currentStreak = editor.streak || 0;
-            let streakMultiplier = 1;
-
-            // If this is not their first work
-            if (recentWorks.length > 1) {
-                const latestWork = recentWorks[0];
-                const previousWork = recentWorks[1];
-
-                // Calculate time difference in days
-                const latestDate = new Date(latestWork.createdAt);
-                const previousDate = new Date(previousWork.createdAt);
-                const daysDifference = Math.floor((latestDate.getTime() - previousDate.getTime()) / (1000 * 60 * 60 * 24));
-
-                // If completed within a week, increase streak
-                if (daysDifference < 7) {
-                    currentStreak++;
-                    // Increase multiplier based on streak length
-                    streakMultiplier = Math.min(3, 1 + (currentStreak * 0.1)); // Cap at 3x
-                } else {
-                    // Streak broken
-                    currentStreak = 1;
-                    streakMultiplier = 1;
-                }
-            } else {
-                // First work
-                currentStreak = 1;
-            }
-
-            // Calculate final score
-            const finalScoreIncrement = Math.round(scoreIncrement * streakMultiplier);
-            const newScore = (editor.score || 0) + finalScoreIncrement;
-
-            // Update editor profile
-            await this.editorRepository.updateScore(editor._id, newScore, currentStreak);
-
-            this.logger.log(`Updated editor ${editorId} score to ${newScore} (streak: ${currentStreak}, multiplier: ${streakMultiplier})`);
-        } catch (error) {
-            this.logger.error('Error updating editor score', error);
         }
     }
 
@@ -587,5 +536,95 @@ export class EditorsService implements IEditorsService {
             hasNextPage: page * limit < total,
             hasPrevPage: page > 1,
         };
+    }
+    
+    private _calculatePenalty(dueDate: Date, submissionDate: Date, amount: number): number {
+        if (!dueDate) return 0;
+
+        const delayInMs = submissionDate.getTime() - dueDate.getTime();
+        const delayInHours = Math.ceil(delayInMs / (1000 * 60 * 60));
+
+        if (delayInHours <= 2) {
+            return 0; // Grace period
+        }
+
+        const effectiveDelayHours = Math.min(delayInHours, 24); // Cap at 24 hours
+
+        let totalPenalty = 0;
+
+        // Tier 1: 2-4 hours (0.5% per hour)
+        if (effectiveDelayHours > 2) {
+            const hoursInTier = Math.min(effectiveDelayHours, 4) - 2;
+            totalPenalty += hoursInTier * 0.005 * amount;
+        }
+
+        // Tier 2: 4-8 hours (1% per hour)
+        if (effectiveDelayHours > 4) {
+            const hoursInTier = Math.min(effectiveDelayHours, 8) - 4;
+            totalPenalty += hoursInTier * 0.01 * amount;
+        }
+
+        // Tier 3: 8-24 hours (1.5% per hour)
+        if (effectiveDelayHours > 8) {
+            const hoursInTier = effectiveDelayHours - 8;
+            totalPenalty += hoursInTier * 0.015 * amount;
+        }
+
+        return parseFloat(totalPenalty.toFixed(2));
+    }
+
+    private async updateEditorScore(editorId: Types.ObjectId): Promise<void> {
+        try {
+            // Get the editor's profile
+            const editor = await this.editorRepository.findByUserId(editorId);
+            if (!editor) {
+                this.logger.warn(`Editor with ID ${editorId} not found or not an editor`);
+                return;
+            }
+
+            // Get the editor's most recent completed works
+            const recentWorks = await this.worksService.getTwoRecentWorks(editorId);
+
+            // Initialize score variables
+            let scoreIncrement = 10; // Base score for completing a work
+            let currentStreak = editor.streak || 0;
+            let streakMultiplier = 1;
+
+            // If this is not their first work
+            if (recentWorks.length > 1) {
+                const latestWork = recentWorks[0];
+                const previousWork = recentWorks[1];
+
+                // Calculate time difference in days
+                const latestDate = new Date(latestWork.createdAt);
+                const previousDate = new Date(previousWork.createdAt);
+                const daysDifference = Math.floor((latestDate.getTime() - previousDate.getTime()) / (1000 * 60 * 60 * 24));
+
+                // If completed within a week, increase streak
+                if (daysDifference < 7) {
+                    currentStreak++;
+                    // Increase multiplier based on streak length
+                    streakMultiplier = Math.min(3, 1 + (currentStreak * 0.1)); // Cap at 3x
+                } else {
+                    // Streak broken
+                    currentStreak = 1;
+                    streakMultiplier = 1;
+                }
+            } else {
+                // First work
+                currentStreak = 1;
+            }
+
+            // Calculate final score
+            const finalScoreIncrement = Math.round(scoreIncrement * streakMultiplier);
+            const newScore = (editor.score || 0) + finalScoreIncrement;
+
+            // Update editor profile
+            await this.editorRepository.updateScore(editor._id, newScore, currentStreak);
+
+            this.logger.log(`Updated editor ${editorId} score to ${newScore} (streak: ${currentStreak}, multiplier: ${streakMultiplier})`);
+        } catch (error) {
+            this.logger.error('Error updating editor score', error);
+        }
     }
 }

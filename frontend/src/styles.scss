@@ -26,6 +26,7 @@
     --color-neutral-700: theme('colors.neutral.700');
     --color-success: #10B981;
     --color-danger: #EF4444;
+    --color-danger-contrast: #ffffff;
 
     // File upload component colors
     --file-pending-bg: theme('colors.neutral.400');
@@ -132,6 +133,20 @@
           text-decoration: underline;
         }
       }
+    }
+  }
+
+  .policy-tooltip {
+    & > div {
+      background-color: var(--color-background, #2c3e50);
+      color: var(--color-text, #ecf0f1);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 14px;
+      line-height: 1.5;
+      max-width: 350px;
+      text-align: left;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
   }
 

@@ -49,11 +49,11 @@ export class AdminWalletService implements IAdminWalletService {
     await this.walletService.creditEditorWallet(quotation.editorId.toString(), editorShare, quotation._id.toString());
 
     await this.adminTransactionRepository.create({
-        flow: TransactionFlow.DEBIT,
-        amount: editorShare,
-        transactionType: AdminTransactionType.EDITOR_PAYOUT,
-        editor: new Types.ObjectId(quotation.editorId),
-        quotation: new Types.ObjectId(quotation._id),
+      flow: TransactionFlow.DEBIT,
+      amount: editorShare,
+      transactionType: AdminTransactionType.EDITOR_PAYOUT,
+      editor: new Types.ObjectId(quotation.editorId),
+      quotation: new Types.ObjectId(quotation._id),
     });
   }
 
