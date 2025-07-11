@@ -42,7 +42,8 @@ export class OverdueQuotationsService {
 
         this.logger.log(`Found ${overdueQuotations.length} overdue quotations to process.`);
 
-        for (const quotation of overdueQuotations) {
+        // for (const quotation of overdueQuotations) {
+        const processingPromises = overdueQuotations.map(async (quotation) => {
             try {
                 // 1. Refund user's advance payment to their wallet
                 if (typeof quotation.advanceAmount === 'number' && quotation.advanceAmount > 0) {
@@ -115,7 +116,9 @@ export class OverdueQuotationsService {
             } catch (error) {
                 this.logger.error(`Failed to process overdue quotation #${quotation._id.toString()}: ${error.message}`, error.stack);
             }
-        }
+        })
+        
+        await Promise.all(processingPromises);
         this.logger.log('Finished overdue quotations job.');
     }
 
