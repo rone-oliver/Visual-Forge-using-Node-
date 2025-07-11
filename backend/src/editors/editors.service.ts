@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, Logger, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, Logger, NotFoundException, ForbiddenException, ConflictException, UnauthorizedException } from '@nestjs/common';
 import { Editor } from './models/editor.schema';
 import { FilterQuery, Types, UpdateQuery } from 'mongoose';
 import { QuotationStatus } from 'src/quotation/models/quotation.schema';
@@ -35,6 +35,7 @@ import { CompletedWorkDto, FileAttachmentDto, GetAcceptedQuotationsQueryDto, Get
 import { IWorkService, IWorkServiceToken } from 'src/works/interfaces/works.service.interface';
 import { IUsersService, IUsersServiceToken } from 'src/users/interfaces/users.service.interface';
 import { calculateAverageRating } from 'src/common/utils/calculation.util';
+import { SuccessResponseDto } from 'src/users/dto/users.dto';
 
 @Injectable()
 export class EditorsService implements IEditorsService {
@@ -408,6 +409,31 @@ export class EditorsService implements IEditorsService {
             createdAt: updatedBid.createdAt,
             updatedAt: updatedBid.updatedAt,
         };
+    }
+
+    async cancelAcceptedBid(bidId: Types.ObjectId, userId: Types.ObjectId): Promise<SuccessResponseDto> {
+        try {
+            const editor = await this.editorRepository.findByUserId(userId);
+            const currentDate = new Date();
+            const oneMonthAgo = new Date();
+            oneMonthAgo.setMonth(currentDate.getMonth() - 1);
+            if(!editor){
+                throw new UnauthorizedException('Editor not found');
+            }
+
+            if (editor.lastWithdrawnDate && (new Date(editor.lastWithdrawnDate) > oneMonthAgo)) {
+                this.logger.debug('Editor is on cooldown period because of withdrawing limit')
+                throw new ConflictException('You are currently in a cooldown period after a recent withdrawal')
+            }
+            const bidResponse = await this.bidsService.withdrawFromWork(bidId, userId);
+            if(bidResponse.success){
+                await this.editorRepository.findByUserIdAndUpdate(userId,{$set:{ lastWithdrawnDate: new Date }})
+            }
+            return { success: true, message: "Work withdrawing successful"};
+        } catch (error) {
+            this.logger.error('Error on cancelling acceptedBid');
+            throw error;
+        }
     }
 
     async deleteBid(bidId: Types.ObjectId, editorId: Types.ObjectId): Promise<void> {

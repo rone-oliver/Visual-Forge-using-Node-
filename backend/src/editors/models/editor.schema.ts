@@ -60,6 +60,9 @@ export class Editor {
   @Prop({ type: Date })
   lastWarningDate?: Date;
 
+  @Prop({ type: Date })
+  lastWithdrawnDate?: Date;
+
   createdAt: Date;
   updatedAt: Date;
 }

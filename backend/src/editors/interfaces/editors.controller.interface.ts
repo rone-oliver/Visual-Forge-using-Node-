@@ -12,6 +12,7 @@ import {
 import { QuotationStatus } from 'src/quotation/models/quotation.schema';
 import { Editor } from '../models/editor.schema';
 import { CompletedWorkDto, FileAttachmentDto, GetAcceptedQuotationsQueryDto, GetPublishedQuotationsQueryDto, PaginatedAcceptedQuotationsResponseDto, PaginatedPublishedQuotationsResponseDto } from 'src/quotation/dtos/quotation.dto';
+import { SuccessResponseDto } from 'src/users/dto/users.dto';
 
 export interface IEditorsController {
     getQuotations(
@@ -46,6 +47,7 @@ export interface IEditorsController {
         bidId: string, 
         req: Request
     ): Promise<void>;
+    cancelAcceptedBid(bidId: string, userId: string): Promise<SuccessResponseDto>;
     getBiddedQuotations(
         editorId: string,
         query: GetBiddedQuotationsQueryDto

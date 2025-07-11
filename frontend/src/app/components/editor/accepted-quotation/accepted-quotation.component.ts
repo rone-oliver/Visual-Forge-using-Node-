@@ -17,6 +17,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MediaProtectionDirective } from '../../../directives/media-protection.directive';
 import { UserService } from '../../../services/user/user.service';
 import { ConfirmationDialogComponent, DialogType } from '../../mat-dialogs/confirmation-dialog/confirmation-dialog.component';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 
 @Component({
@@ -30,7 +31,8 @@ import { ConfirmationDialogComponent, DialogType } from '../../mat-dialogs/confi
     MatInputModule,
     MatRippleModule,
     MatProgressSpinnerModule,
-    MediaProtectionDirective
+    MediaProtectionDirective,
+    MatTooltipModule,
   ],
   templateUrl: './accepted-quotation.component.html',
   styleUrl: './accepted-quotation.component.scss'
@@ -252,6 +254,25 @@ export class AcceptedQuotationComponent {
 
         dialogRef.afterClosed().subscribe(result => {
           if (result) {
+            if(this.selectedQuotation?.isAdvancePaid){
+              this.editorService.cancelAcceptedBid(acceptedBid._id).subscribe({
+                next: () => {
+                  this.snackBar.open('Agreement cancelled successfully.', 'Dismiss', {
+                    duration: 3000,
+                    panelClass: 'success-snack'
+                  });
+                  this.selectedQuotation = null;
+                  this.loadAcceptedQuotations();
+                },
+                error: (err) => {
+                  console.error('Error cancelling bid:', err);
+                  this.snackBar.open(err.error.message || 'Failed to cancel agreement.', 'Dismiss', {
+                    duration: 3000,
+                    panelClass: 'error-snack'
+                  });
+                }
+              });
+            } else {
             this.userService.cancelAcceptedBid(acceptedBid._id).subscribe({
               next: () => {
                 this.snackBar.open('Agreement cancelled successfully.', 'Dismiss', {
@@ -268,7 +289,8 @@ export class AcceptedQuotationComponent {
                   panelClass: 'error-snack'
                 });
               }
-            });
+            })
+            }
           }
         });
       },

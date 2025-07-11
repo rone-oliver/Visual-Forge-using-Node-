@@ -122,4 +122,8 @@ export class EditorService {
   removeTutorial(tutorialUrl: string): Observable<Editor> {
     return this.http.delete<Editor>(`${this.editorApiUrl}/tutorials`, { body: { tutorialUrl } });
   }
+
+  cancelAcceptedBid(bidId: string): Observable<{ success: boolean }> {
+    return this.http.patch<{ success: boolean }>(`${this.editorApiUrl}/bids/${bidId}/cancel`, {});
+  }
 }

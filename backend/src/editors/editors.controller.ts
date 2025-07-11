@@ -24,6 +24,7 @@ import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import { Editor } from './models/editor.schema';
 import { Role } from 'src/common/enums/role.enum';
 import { CompletedWorkDto, FileAttachmentDto, GetAcceptedQuotationsQueryDto, GetPublishedQuotationsQueryDto, PaginatedAcceptedQuotationsResponseDto, PaginatedPublishedQuotationsResponseDto } from 'src/quotation/dtos/quotation.dto';
+import { SuccessResponseDto } from 'src/users/dto/users.dto';
 
 @ApiTags('editor')
 @Controller('editor')
@@ -170,6 +171,22 @@ export class EditorsController implements IEditorsController {
     }
 
     await this.editorService.deleteBid(new Types.ObjectId(bidId), new Types.ObjectId(editor.userId));
+  }
+
+  @Patch('bids/:bidId/cancel')
+  @Roles(Role.EDITOR)
+  @ApiOperation({ summary: 'Cancel Accepted Bid after advance Payment.' })
+  @ApiResponse({ status: 200, description: 'Cancelled accepted bid successfully.' })
+  @ApiResponse({ status: 400, description: 'Invalid bid ID.' })
+  async cancelAcceptedBid(
+    @Param('bidId') bidId: string,
+    @GetUser('userId') userId: string,
+  ): Promise<SuccessResponseDto>{
+    if(!Types.ObjectId.isValid(bidId)){
+      throw new BadRequestException('Invalid bid ID');
+    }
+    
+    return this.editorService.cancelAcceptedBid(new Types.ObjectId(bidId), new Types.ObjectId(userId));
   }
 
   @Post('tutorials')

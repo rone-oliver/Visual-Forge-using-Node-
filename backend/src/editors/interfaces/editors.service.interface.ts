@@ -16,7 +16,7 @@ import {
 import { EditorRequest } from '../models/editorRequest.schema';
 import { FormattedEditor, GetEditorsQueryDto } from 'src/admins/dto/admin.dto';
 import { CompletedWorkDto, FileAttachmentDto, GetAcceptedQuotationsQueryDto, GetPublishedQuotationsQueryDto, PaginatedAcceptedQuotationsResponseDto, PaginatedPublishedQuotationsResponseDto } from 'src/quotation/dtos/quotation.dto';
-import { UserRatingForEditorDto } from 'src/users/dto/users.dto';
+import { SuccessResponseDto, UserRatingForEditorDto } from 'src/users/dto/users.dto';
 
 export const IEditorsServiceToken = Symbol('IEditorsServiceToken');
 
@@ -54,6 +54,8 @@ export interface IEditorsService {
         editorId: Types.ObjectId, 
         bidDto: UpdateEditorBidBodyDto
     ): Promise<BidResponseDto>;
+
+    cancelAcceptedBid(bidId: Types.ObjectId, userId: Types.ObjectId):Promise<SuccessResponseDto>;
 
     deleteBid(bidId: Types.ObjectId, editorId: Types.ObjectId): Promise<void>;
 

@@ -36,4 +36,5 @@ export interface IBidService {
   getBidsCountByAggregation(pipeline: any): Promise<number>;
   getBiddedQuotationsForEditor(pipeline: any): Promise<BiddedQuotationDto[]>;
   findOne(filter: FilterQuery<Bid>): Promise<Bid | null>;
+  withdrawFromWork(bidId: Types.ObjectId, editorId: Types.ObjectId): Promise<SuccessResponseDto>;
 }

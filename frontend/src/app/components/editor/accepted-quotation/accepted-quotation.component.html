@@ -74,20 +74,30 @@
       <!-- Header with Title and Date -->
       <div class="details-header">
         <div>
-        <h2 class="details-title">{{ selectedQuotation.title }}</h2>
-        <span class="details-date">Posted on: {{ selectedQuotation.createdAt ? (selectedQuotation.createdAt |
-          localDate: 'medium') : 'N/A' }}</span>
+          <h2 class="details-title">{{ selectedQuotation.title }}</h2>
+          <span class="details-date">Posted on: {{ selectedQuotation.createdAt ? (selectedQuotation.createdAt |
+            localDate: 'medium') : 'N/A' }}</span>
         </div>
 
         <!-- Cancellation Button -->
-        @if(!selectedQuotation.isAdvancePaid){
         <div class="cancellation-section">
           <button mat-stroked-button color="warn" (click)="openCancelBidConfirmation(selectedQuotation)">
+            @if(selectedQuotation.isAdvancePaid){
+            <mat-icon
+              matTooltip="To ensure project continuity, you can only withdraw from a project (after advance payment) once every 30 days."
+              matTooltipClass="policy-tooltip" class="info-icon-tooltip">info_outline
+            </mat-icon>
+            } @else {
             <mat-icon>cancel</mat-icon>
+            }
+          
+            @if(selectedQuotation.isAdvancePaid){
+            <span>Withdraw from this Work</span>
+            } @else {
             <span>Cancel Agreement</span>
+            }
           </button>
         </div>
-        }
       </div>
       <!-- Description Section -->
       <div class="details-section">
@@ -225,7 +235,8 @@
       } @else {
       <div class="payment-pending-message">
         <mat-icon>info</mat-icon>
-        <span>The user has not yet completed the advance payment. You can submit your response once the payment is confirmed.</span>
+        <span>The user has not yet completed the advance payment. You can submit your response once the payment is
+          confirmed.</span>
       </div>
       }
     </div>

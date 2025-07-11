@@ -230,6 +230,59 @@ export class BidsService implements IBidService{
     }
   }
 
+  async withdrawFromWork(bidId: Types.ObjectId, editorId: Types.ObjectId): Promise<SuccessResponseDto> {
+    const session = await this.connection.startSession();
+    session.startTransaction();
+
+    try {
+      const acceptedBid = await this.bidRepository.findById(bidId, { session });
+
+      if (!acceptedBid || acceptedBid.status !== BidStatus.ACCEPTED) {
+        throw new BadRequestException('Bid to cancel must be an accepted bid.');
+      }
+
+      const quotation = await this.quotationService.findById(acceptedBid.quotationId, { session });
+
+      if (!quotation) {
+        throw new NotFoundException('Associated quotation not found.');
+      }
+
+      if (quotation.status !== QuotationStatus.ACCEPTED) {
+        throw new BadRequestException('Quotation is not in an accepted state.');
+      }
+
+      await this.quotationService.findByIdAndUpdate(
+        quotation._id,
+        { 
+          status: QuotationStatus.PUBLISHED, 
+          $unset: { editorId: 1 } 
+        },
+        { session }
+      );
+
+      acceptedBid.status = BidStatus.REJECTED;
+      await this.bidRepository.save(acceptedBid, { session });
+
+      await this.bidRepository.updateMany(
+        {
+          quotationId: quotation._id,
+          _id: { $ne: acceptedBid._id },
+          status: BidStatus.REJECTED
+        },
+        { status: BidStatus.PENDING },
+        { session }
+      );
+
+      await session.commitTransaction();
+      return { success: true, message: 'Bid cancelled successfully' };
+    } catch (error) {
+      this.logger.error('Error in withdrawing from current Accepted Quotation');
+      throw error;
+    } finally {
+      session.endSession();
+    }
+  }
+
   async updateBid(bidId: Types.ObjectId, editorId: Types.ObjectId, bidAmount: number, notes?:string):Promise<Bid>{
     const bid = await this.bidRepository.findById(bidId);
 
