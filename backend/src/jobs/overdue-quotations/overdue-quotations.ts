@@ -9,6 +9,7 @@ import { EventTypes } from 'src/common/constants/events.constants';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MailService } from 'src/mail/mail.service';
 import { IUsersService, IUsersServiceToken } from 'src/users/interfaces/users.service.interface';
+import { NotificationType } from 'src/notification/models/notification.schema';
 
 @Injectable()
 export class OverdueQuotationsService {
@@ -56,7 +57,7 @@ export class OverdueQuotationsService {
                     this.eventEmitter.emit(EventTypes.PAYMENT_REFUNDED, {
                         recipient: quotation.userId,
                         message: `The quotation #${quotation.title} has expired due to no response from the editor. Your advance payment of $${quotation.advanceAmount} has been refunded to your wallet.`,
-                        type: 'QUOTATION_EXPIRED'
+                        type: NotificationType.QUOTATION_EXPIRED
                     });
                 } else {
                     this.logger.warn(`Skipping refund for quotation #${quotation._id} due to missing or invalid advanceAmount.`);
@@ -92,7 +93,7 @@ export class OverdueQuotationsService {
                         this.eventEmitter.emit(EventTypes.EDITOR_SUSPENDED, {
                             recipient: quotation.editorId,
                             message: `You have been suspended for 2 weeks due to repeated failure to respond to quotations. Your warning count has been reset.`,
-                            type: 'ACCOUNT_SUSPENDED'
+                            type: NotificationType.ACCOUNT_SUSPENDED
                         });
                         if(editor.suspendedUntil && editorUser){
                             await this.mailService.sendSuspensionEmail(editorUser.email, { suspendedUntil: editor.suspendedUntil });
@@ -101,7 +102,7 @@ export class OverdueQuotationsService {
                         this.eventEmitter.emit(EventTypes.EDITOR_WARNING, {
                             recipient: quotation.editorId,
                             message: `You have received a warning for failing to respond to quotation #${quotation.title}. Accumulating 3 warnings will result in a temporary suspension.`,
-                            type: 'EDITOR_WARNING'
+                            type: NotificationType.EDITOR_WARNING
                         });
                         if(editorUser){
                             await this.mailService.sendWarningEmail(editorUser.email, { quotationTitle: quotation.title });

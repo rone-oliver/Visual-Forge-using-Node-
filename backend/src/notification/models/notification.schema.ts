@@ -8,6 +8,9 @@ export enum NotificationType {
     CHAT = 'chat',
     WORK = 'work',
     PAYMENT = 'payment',
+    QUOTATION_EXPIRED = 'quotation_expired',
+    ACCOUNT_SUSPENDED = 'suspended',
+    EDITOR_WARNING = 'warning',
 }
 
 @Schema({ timestamps: true, collection: 'notifications' })

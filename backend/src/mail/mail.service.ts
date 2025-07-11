@@ -8,12 +8,13 @@ export class MailService {
 
   constructor(private readonly configService: ConfigService) {
     this.transporter = nodemailer.createTransport({
-      host: this.configService.get<string>('EMAIL_HOST'),
-      port: this.configService.get<number>('EMAIL_PORT'),
-      secure: this.configService.get<boolean>('EMAIL_SECURE'),
+      // host: this.configService.get<string>('EMAIL_HOST'),
+      // port: this.configService.get<number>('EMAIL_PORT'),
+      // secure: this.configService.get<boolean>('EMAIL_SECURE'),
+      service: 'gmail',
       auth: {
-        user: this.configService.get<string>('EMAIL_USER'),
-        pass: this.configService.get<string>('EMAIL_PASS'),
+        user: this.configService.get<string>('EMAIL'),
+        pass: this.configService.get<string>('EMAIL_APP_PASSWORD'),
       },
     });
   }
@@ -95,7 +96,7 @@ export class MailService {
       </p>
     `;
     const html = this._createThemedEmail('Email Verification', `Your verification code is ${data.otp}`, content);
-    await this._sendMail({ from: this.configService.get<string>('EMAIL_FROM'), to, subject, html });
+    await this._sendMail({ from: this.configService.get<string>('EMAIL'), to, subject, html });
   }
 
   async sendWarningEmail(to: string, data: { quotationTitle: string }): Promise<void> {
@@ -111,7 +112,7 @@ export class MailService {
       <a href="#" class="button" style="display: inline-block; padding: 12px 24px; background-color: var(--accent-light); color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 500;">View My Quotations</a>
     `;
     const html = this._createThemedEmail('Account Warning', 'You have received a warning for inactivity.', content);
-    await this._sendMail({ from: this.configService.get<string>('EMAIL_FROM'), to, subject, html });
+    await this._sendMail({ from: this.configService.get<string>('EMAIL'), to, subject, html });
   }
 
   async sendSuspensionEmail(to: string, data: { suspendedUntil: Date }): Promise<void> {
@@ -131,6 +132,6 @@ export class MailService {
       <a href="#" class="button" style="display: inline-block; padding: 12px 24px; background-color: var(--accent-light); color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 500;">Access My Account</a>
     `;
     const html = this._createThemedEmail('Account Suspension', `Your account is suspended until ${formattedDate}.`, content);
-    await this._sendMail({ from: this.configService.get<string>('EMAIL_FROM'), to, subject, html });
+    await this._sendMail({ from: this.configService.get<string>('EMAIL'), to, subject, html });
   }
 }
