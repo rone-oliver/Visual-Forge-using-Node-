@@ -312,13 +312,13 @@ body {
 }
 
 .auth-buttons .btn-signin {
-    color: var(--color-background);
+    color: var(--color-text);
     border-color: var(--color-neutral-700);
     background-color: var(--color-neutral-700);
 }
 
 .auth-buttons .btn-signup {
-    color: white;
+    color: var(--color-text);
     border-color: var(--color-secondary-400);
     background-color: var(--color-secondary-400);
 }

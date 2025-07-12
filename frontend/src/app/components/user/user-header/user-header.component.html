@@ -47,8 +47,8 @@
     </button>
     @if (!isAuthenticated) {
       <div class="auth-buttons">
-        <a routerLink="/auth/login" class="btn btn-signin bg-primary-light dark:bg-primary-dark text-white">Sign in</a>
-        <a routerLink="/auth/register" class="btn btn-signup border-2 border-primary-light dark:border-primary-dark text-text-light dark:text-text-dark">Sign up</a>
+        <a routerLink="/auth/login" class="btn btn-signin bg-primary-light dark:bg-primary-dark">Sign in</a>
+        <a routerLink="/auth/register" class="btn btn-signup border-2 border-primary-light dark:border-primary-dark">Sign up</a>
       </div>
     }
     @if (isAuthenticated) {

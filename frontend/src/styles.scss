@@ -8,81 +8,156 @@
 
 @layer base {
   :root {
-    --color-primary: theme('colors.primary.light');
-    --color-background: theme('colors.background.light');
-    --color-text: theme('colors.text.light');
-    --color-surface: theme('colors.surface.light');
-    --color-secondary-100: theme('colors.secondary.100');
-    --color-secondary-200: theme('colors.secondary.200');
-    --color-secondary-300: theme('colors.secondary.300');
-    --color-secondary-400: theme('colors.secondary.400');
-    --color-secondary-500: theme('colors.secondary.500');
-    --color-neutral-100: theme('colors.neutral.100');
-    --color-neutral-200: theme('colors.neutral.200');
-    --color-neutral-300: theme('colors.neutral.300');
-    --color-neutral-400: theme('colors.neutral.400');
-    --color-neutral-500: theme('colors.neutral.500');
-    --color-neutral-600: theme('colors.neutral.600');
-    --color-neutral-700: theme('colors.neutral.700');
-    --color-success: #10B981;
-    --color-danger: #EF4444;
-    --color-warning: #FDB52A; // New warning color from secondary palette
-    --color-warning-contrast: #080F25; // Dark text for contrast
+    // Primary colors
+    --color-primary: theme('colors.blue.light.8'); // #8184fa
+    --color-background: theme('colors.background.light'); // #f2f2f2
+    --color-text: theme('colors.text.light.primary'); // #1e1f24
+    --color-surface: theme('colors.surface.light'); // #ffffffcc
+
+    // Secondary colors (from blue scale)
+    --color-secondary-100: theme('colors.blue.light.1'); // #efeff2
+    --color-secondary-200: theme('colors.blue.light.2'); // #e8e9f3
+    --color-secondary-300: theme('colors.blue.light.3'); // #dee1f3
+    --color-secondary-400: theme('colors.blue.light.4'); // #d1d6fb
+    --color-secondary-500: theme('colors.blue.light.5'); // #c3c9ff
+
+    // Neutral colors (from gray scale)
+    --color-neutral-100: theme('colors.gray.light.1'); // #eeeeef
+    --color-neutral-200: theme('colors.gray.light.2'); // #e9eaec
+    --color-neutral-300: theme('colors.gray.light.3'); // #dfe0e3
+    --color-neutral-400: theme('colors.gray.light.4'); // #d6d7db
+    --color-neutral-500: theme('colors.gray.light.5'); // #cecfd5
+    --color-neutral-600: theme('colors.gray.light.6'); // #c6c7cd
+    --color-neutral-700: theme('colors.gray.light.7'); // #b9bbc3
+
+    --color-hover: theme('colors.interactive.light.hover');
+    --color-active: theme('colors.interactive.light.active');
+    --color-focus: theme('colors.interactive.light.focus');
+    --color-disabled: theme('colors.interactive.light.disabled');
+
+    // Semantic colors
+    --color-success: #10B981; // Keep as is
+    --color-danger: #EF4444; // Keep as is
+    --color-warning: theme('colors.blue.light.5'); // #c3c9ff from blue scale
+    --color-warning-contrast: theme('colors.text.light.primary'); // #1e1f24
     --color-danger-contrast: #ffffff;
 
-    // File upload component colors
-    --file-pending-bg: theme('colors.neutral.400');
-    --file-pending-border: theme('colors.neutral.500');
-    --file-pending-hover-bg: theme('colors.neutral.500');
+    --color-border-default: theme('colors.border.light.default');
+    --color-border-subtle: theme('colors.border.light.subtle');
+    --color-border-strong: theme('colors.border.light.strong');
+    --color-border-separator: theme('colors.border.light.separator');
+
+    // Overlay
+    --color-overlay: theme('colors.overlay.light');
+
+    // File upload colors
+    --file-pending-bg: theme('colors.gray.light.4'); // #d6d7db
+    --file-pending-border: theme('colors.gray.light.5'); // #cecfd5
+    --file-pending-hover-bg: theme('colors.gray.light.5'); // #cecfd5
     --file-uploaded-bg: rgba(16, 185, 129, 0.1); // Based on success color
     --file-uploaded-border: rgba(16, 185, 129, 0.3);
     --file-uploaded-hover-bg: rgba(16, 185, 129, 0.2);
-    --color-link: theme('colors.primary.light');
-    --color-link-hover: theme('colors.secondary.300');
-    --color-surface-rgb: 232, 234, 246; // RGB value of surface.light
+
+    --color-link: theme('colors.blue.light.8'); // #8184fa
+    --color-link-hover: theme('colors.blue.light.7'); // #9da4fd
+    --color-surface-rgb: 255, 255, 255; // RGB value of white surface
+    --color-button-primary: theme('colors.blue.light.8');
+    --color-button-secondary: theme('colors.blue.light.5');
+    --color-link-primary: theme('colors.blue.light.8');
+    --color-link-secondary: theme('colors.blue.light.5');
+
+    --color-info: #36b9cc;
+    --color-info-contrast: #ffffff;
+    --color-info-bg: rgba(54, 185, 204, 0.1);
 
     // Admin Theme colours
-    --admin-color-primary: theme('colors.admin.primary.light');
-    --admin-color-secondary: theme('colors.admin.secondary.light');
-    --admin-color-text: theme('colors.admin.text.light');
-    --admin-color-background: theme('colors.admin.background.light');
-    --admin-color-surface: theme('colors.admin.surface.light');
-    --admin-color-border: theme('colors.admin.border.light');
-    --admin-color-success: #1cc88a;
-    --admin-color-info: #36b9cc;
-    --admin-color-warning: #f6c23e;
-    --admin-color-light-grey: #f8f9fc;
+    --admin-color-primary: theme('colors.blue.light.8'); // #8184fa
+    --admin-color-secondary: theme('colors.blue.light.5'); // #c3c9ff
+    --admin-color-text: theme('colors.text.light.primary'); // #1e1f24
+    --admin-color-background: theme('colors.background.light'); // #f2f2f2
+    --admin-color-surface: theme('colors.surface.light'); // #ffffffcc
+    --admin-color-border: theme('colors.border.light.default'); // #d6d7db
+    --admin-color-success: #1cc88a; // Keep as is
+    --admin-color-info: #36b9cc; // Keep as is
+    --admin-color-warning: theme('colors.blue.light.5'); // #c3c9ff
+    --admin-color-light-grey: theme('colors.gray.light.1'); // #eeeeef
   }
 
   .dark {
-    --color-primary: theme('colors.primary.dark');
-    --color-background: theme('colors.background.dark');
-    --color-text: theme('colors.text.dark');
-    --color-surface: theme('colors.surface.dark');
-    --color-success: #059669;
-    --color-danger: #DC2626;
-    --color-warning: #FDB52A; // Consistent warning color for dark mode
-    --color-warning-contrast: #080F25;
+    // Primary colors
+    --color-primary: theme('colors.blue.dark.9'); // #5d62f9
+    --color-background: theme('colors.background.dark'); // #080f25
+    --color-text: theme('colors.text.dark.primary'); // #D9E1FA
+    --color-surface: theme('colors.surface.dark'); // #151C32
 
-    // File upload component colors for dark theme
-    --file-pending-bg: theme('colors.neutral.200');
-    --file-pending-border: theme('colors.neutral.300');
-    --file-pending-hover-bg: theme('colors.neutral.300');
+    // Secondary colors (from blue scale)
+    --color-secondary-100: theme('colors.blue.dark.1'); // #0d0f1e
+    --color-secondary-200: theme('colors.blue.dark.2'); // #131629
+    --color-secondary-300: theme('colors.blue.dark.3'); // #1c2050
+    --color-secondary-400: theme('colors.blue.dark.4'); // #24266f
+    --color-secondary-500: theme('colors.blue.dark.5'); // #2d3082
+
+    // Neutral colors (from gray scale)
+    --color-neutral-100: theme('colors.gray.dark.1'); // #0b101e
+    --color-neutral-200: theme('colors.gray.dark.2'); // #131827
+    --color-neutral-300: theme('colors.gray.dark.3'); // #1a2137
+    --color-neutral-400: theme('colors.gray.dark.4'); // #1e2845
+    --color-neutral-500: theme('colors.gray.dark.5'); // #242f50
+    --color-neutral-600: theme('colors.gray.dark.6'); // #293760
+    --color-neutral-700: theme('colors.gray.dark.7'); // #334478
+
+    --color-hover: theme('colors.interactive.dark.hover');
+    --color-active: theme('colors.interactive.dark.active');
+    --color-focus: theme('colors.interactive.dark.focus');
+    --color-disabled: theme('colors.interactive.dark.disabled');
+
+    // Semantic colors
+    --color-success: #059669; // Keep as is
+    --color-danger: #DC2626; // Keep as is
+    --color-warning: theme('colors.blue.dark.5'); // #2d3082 from blue scale
+    --color-warning-contrast: theme('colors.text.dark.primary'); // #D9E1FA
+
+    --color-border-default: theme('colors.border.dark.default');
+    --color-border-subtle: theme('colors.border.dark.subtle');
+    --color-border-strong: theme('colors.border.dark.strong');
+    --color-border-separator: theme('colors.border.dark.separator');
+
+    // Overlay
+    --color-overlay-dark: theme('colors.overlay.dark');
+
+    // File upload colors
+    --file-pending-bg: theme('colors.gray.dark.2'); // #131827
+    --file-pending-border: theme('colors.gray.dark.3'); // #1a2137
+    --file-pending-hover-bg: theme('colors.gray.dark.3'); // #1a2137
     --file-uploaded-bg: rgba(5, 150, 105, 0.2); // Based on dark success color
     --file-uploaded-border: rgba(5, 150, 105, 0.4);
     --file-uploaded-hover-bg: rgba(5, 150, 105, 0.3);
-    --color-link: theme('colors.secondary.300');
-    --color-link-hover: theme('colors.secondary.400');
-    --color-surface-rgb: 21, 28, 50;
+
+    --color-link: theme('colors.blue.dark.9'); // #5d62f9
+    --color-link-hover: theme('colors.blue.dark.8'); // #4d54c5
+    --color-surface-rgb: 21, 28, 50; // RGB value of dark surface
+    --color-button-primary: theme('colors.blue.dark.9');
+    --color-button-secondary: theme('colors.blue.dark.5');
+    --color-link-primary: theme('colors.blue.dark.9');
+    --color-link-secondary: theme('colors.blue.dark.5');
+
+    --color-info: #36b9cc;
+    --color-info-contrast: #080f25;
+    --color-info-bg: rgba(54, 185, 204, 0.2);
   }
 
   .admin-dark {
-    --admin-color-primary: theme('colors.admin.primary.dark');
-    --admin-color-secondary: theme('colors.admin.secondary.dark');
-    --admin-color-text: theme('colors.admin.text.dark');
-    --admin-color-background: theme('colors.admin.background.dark');
-    --admin-color-surface: theme('colors.admin.surface.dark');
-    --admin-color-border: theme('colors.admin.border.dark');
+    // Admin Theme colours
+    --admin-color-primary: theme('colors.blue.dark.9'); // #5d62f9
+    --admin-color-secondary: theme('colors.blue.dark.5'); // #2d3082
+    --admin-color-text: theme('colors.text.dark.primary'); // #D9E1FA
+    --admin-color-background: theme('colors.background.dark'); // #080f25
+    --admin-color-surface: theme('colors.surface.dark'); // #151C32
+    --admin-color-border: theme('colors.border.dark.default'); // #2a2f47
+    --admin-color-success: #1cc88a; // Keep as is
+    --admin-color-info: #36b9cc; // Keep as is
+    --admin-color-warning: theme('colors.blue.dark.5'); // #2d3082
+    --admin-color-light-grey: theme('colors.gray.dark.1'); // #0b101e
   }
 
   // For success Alerts
@@ -141,7 +216,7 @@
   }
 
   .policy-tooltip {
-    & > div {
+    &>div {
       background-color: var(--color-background, #2c3e50);
       color: var(--color-text, #ecf0f1);
       border-radius: 8px;
@@ -214,14 +289,14 @@
       background-color: var(--color-surface) !important;
       border: 1px solid var(--color-neutral-200);
       border-radius: 8px !important;
-  
+
       .mat-mdc-menu-item {
         color: var(--color-text);
-  
+
         .mat-icon {
           color: var(--color-text);
         }
-  
+
         &:hover:not([disabled]) {
           background-color: var(--color-neutral-100) !important;
         }
