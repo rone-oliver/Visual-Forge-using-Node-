@@ -9,6 +9,7 @@ import { IUsersAuthService } from './interfaces/usersAuth-service.interface';
 import { IOtpService, IOtpServiceToken } from './interfaces/otp.service.interface';
 import { IEditorsService, IEditorsServiceToken } from 'src/editors/interfaces/editors.service.interface';
 import { MailService } from 'src/mail/mail.service';
+import { IHashingService, IHashingServiceToken } from 'src/common/hashing/interfaces/hashing.service.interface';
 
 @Injectable()
 export class UsersAuthService implements IUsersAuthService {
@@ -18,6 +19,7 @@ export class UsersAuthService implements IUsersAuthService {
         private configService: ConfigService,
         @Inject(IEditorsServiceToken) private editorService: IEditorsService,
         @Inject(IOtpServiceToken) private readonly otpService: IOtpService,
+        @Inject(IHashingServiceToken) private readonly hashingService: IHashingService,
         private mailService: MailService,
     ) { }
     private readonly logger = new Logger(UsersAuthService.name);
@@ -76,10 +78,6 @@ export class UsersAuthService implements IUsersAuthService {
         this.setCookies(response, refreshToken);
     }
 
-    async checkPassword(password: string, hashPassword: string): Promise<boolean> {
-        return await bcrypt.compare(password, hashPassword)
-    }
-
     async login(username: string, password: string, response: Response):Promise<{ user: User; accessToken: string; }> {
         try {
             this.logger.log(`Login attempt for user: ${username}`);
@@ -87,7 +85,7 @@ export class UsersAuthService implements IUsersAuthService {
             if (!user) {
                 throw new UnauthorizedException('User not found');
             }
-            const isPasswordValid = await this.checkPassword(password, user.password);
+            const isPasswordValid = await this.hashingService.compare(password, user.password);
             if (!isPasswordValid) {
                 throw new UnauthorizedException('Invalid password');
             }
@@ -204,7 +202,7 @@ export class UsersAuthService implements IUsersAuthService {
         try {
             const user = await this.usersService.findByEmail(email);
             if (!user) throw new Error('User not found');
-            const hashedPassword = await bcrypt.hash(newPassword, 10);
+            const hashedPassword = await this.hashingService.hash(newPassword);
             const status = await this.usersService.updatePassword(user._id, hashedPassword);
             return status ? true : false
         } catch (error) {

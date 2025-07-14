@@ -14,6 +14,7 @@ import { IOtpRepositoryToken } from './interfaces/otp.repository.interface';
 import { OtpRepository } from './repositories/otp.repository';
 import { EditorsModule } from 'src/editors/editors.module';
 import { MailModule } from 'src/mail/mail.module';
+import { HashingModule } from 'src/common/hashing/hashing.module';
 
 @Module({
   imports: [
@@ -22,7 +23,7 @@ import { MailModule } from 'src/mail/mail.module';
       { name:Otp.name, schema: OtpSchema}
     ]),
     UsersModule, PassportModule, ConfigModule, EditorsModule,
-    MailModule,
+    MailModule, HashingModule,
   ],
   controllers: [UsersAuthController],
   providers: [

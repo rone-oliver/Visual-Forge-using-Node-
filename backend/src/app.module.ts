@@ -31,6 +31,7 @@ import { JobsModule } from './jobs/jobs.module';
 import { ReportsModule } from './reports/reports.module';
 import { TransactionModule } from './common/transaction/transaction.module';
 import { MailModule } from './mail/mail.module';
+import { HashingModule } from './common/hashing/hashing.module';
 
 @Module({
   imports: [
@@ -70,7 +71,7 @@ import { MailModule } from './mail/mail.module';
     PaymentModule, ChatModule, NotificationModule, BidsModule,
     AiModule, WalletModule, CommunityModule, RelationshipModule,
     CloudinaryModule, QuotationModule, WorksModule, JobsModule,
-    ReportsModule, TransactionModule, MailModule,
+    ReportsModule, TransactionModule, MailModule, HashingModule,
   ],
   controllers: [AppController, UsersAuthController],
   providers: [

@@ -1,10 +1,9 @@
 import { Injectable, Logger, HttpException, HttpStatus, NotFoundException, InternalServerErrorException, BadRequestException, Inject, forwardRef } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
-import { Model, Types } from 'mongoose';
-import { User, UserDocument } from './models/user.schema';
+import { Types } from 'mongoose';
+import { User } from './models/user.schema';
 import { Quotation } from 'src/quotation/models/quotation.schema';
-import { PaymentStatus, PaymentType, Transaction, TransactionDocument } from 'src/common/transaction/models/transaction.schema';
+import { PaymentStatus, PaymentType } from 'src/common/transaction/models/transaction.schema';
 import { Bid } from 'src/common/bids/models/bids.schema';
 import { IUsersService, UserInfoForChatListDto } from './interfaces/users.service.interface';
 import {
@@ -50,6 +49,7 @@ import { IEditorsService, IEditorsServiceToken } from 'src/editors/interfaces/ed
 import { IReportService, IReportServiceToken } from 'src/reports/interfaces/reports.service.interface';
 import { ITransactionService, ITransactionServiceToken } from 'src/common/transaction/interfaces/transaction.service.interface';
 import { GetTransactionsQueryDto, IFindOptions } from 'src/common/transaction/dtos/transaction.dto';
+import { IHashingService, IHashingServiceToken } from 'src/common/hashing/interfaces/hashing.service.interface';
 
 @Injectable()
 export class UsersService implements IUsersService {
@@ -65,6 +65,7 @@ export class UsersService implements IUsersService {
         @Inject(ICloudinaryServiceToken) private cloudinaryService: ICloudinaryService,
         @Inject(IUserRepositoryToken) private readonly userRepository: IUserRepository,
         @Inject(IBidServiceToken) private bidsService: IBidService,
+        @Inject(IHashingServiceToken) private readonly hashingService: IHashingService,
         private eventEmitter: EventEmitter2,
     ) { }
 
@@ -88,7 +89,7 @@ export class UsersService implements IUsersService {
     async createUser(user: Partial<User>): Promise<User> {
         try {
             if (user.password) {
-                user.password = await bcrypt.hash(user.password, 10);
+                user.password = await this.hashingService.hash(user.password);
             }
             this.logger.log(`Creating new user: ${user.email}`);
             const newUser = await this.userRepository.create(user);
@@ -551,9 +552,9 @@ export class UsersService implements IUsersService {
         try {
             const user = await this.userRepository.findById(userId);
             if (!user) throw new Error('User not found');
-            const isPasswordValid = await bcrypt.compare(resetPasswordDto.currentPassword, user.password);
+            const isPasswordValid = await this.hashingService.compare(resetPasswordDto.currentPassword, user.password);
             if (!isPasswordValid) throw new Error('Current password is incorrect');
-            const hashedPassword = await bcrypt.hash(resetPasswordDto.newPassword, 10);
+            const hashedPassword = await this.hashingService.hash(resetPasswordDto.newPassword);
             await this.userRepository.findOneAndUpdate({ _id: userId }, { $set: { password: hashedPassword } });
             return { success: true };
         } catch (error) {
