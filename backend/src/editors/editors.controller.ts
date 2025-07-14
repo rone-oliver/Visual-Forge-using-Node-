@@ -25,6 +25,7 @@ import { Editor } from './models/editor.schema';
 import { Role } from 'src/common/enums/role.enum';
 import { CompletedWorkDto, FileAttachmentDto, GetAcceptedQuotationsQueryDto, GetPublishedQuotationsQueryDto, PaginatedAcceptedQuotationsResponseDto, PaginatedPublishedQuotationsResponseDto } from 'src/quotation/dtos/quotation.dto';
 import { SuccessResponseDto } from 'src/users/dto/users.dto';
+import { UpdateWorkFilesDto } from 'src/works/dtos/works.dto';
 
 @ApiTags('editor')
 @Controller('editor')
@@ -111,6 +112,27 @@ export class EditorsController implements IEditorsController {
   ): Promise<Omit<FileAttachmentDto,'url'>[]> {
     this.logger.log(`Uploading ${files.length} files`);
     return this.editorService.uploadWorkFiles(files, folder);
+  }
+
+  @Patch('works/:workId/files')
+  @Roles(Role.EDITOR)
+  @UseInterceptors(FilesInterceptor('files',3))
+  @ApiOperation({ summary: 'Update files for a completed work' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Files to upload and/or delete. The `deleteFileIds` should be a JSON stringified array.',
+    type: UpdateWorkFilesDto,
+  })
+  @ApiResponse({ status: 200, description: 'Work files updated successfully.', type: SuccessResponseDto })
+  async updateWorkFiles(
+    @Param('workId') workId: string,
+    @UploadedFiles() files: Express.Multer.File[],
+    @Body() updateWorkFilesDto: UpdateWorkFilesDto,
+  ): Promise<SuccessResponseDto> {
+    if (!Types.ObjectId.isValid(workId)) {
+      throw new BadRequestException('Invalid work ID');
+    }
+    return this.editorService.updateWorkFiles(workId, files, updateWorkFilesDto);
   }
 
   @Get('works')

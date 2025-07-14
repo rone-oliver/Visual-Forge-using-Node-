@@ -1,0 +1,100 @@
+<div class="dialog-container">
+  <h2 mat-dialog-title>Replace or Add Files</h2>
+
+  <mat-dialog-content>
+    <!-- Section for Existing Files -->
+    @if(data.mode === 'replace'){
+    <section class="file-section">
+      <h3>Current Files</h3>
+      <div class="file-grid">
+        @for(file of data.work.finalFiles; track file.uniqueId){
+        <div class="file-item existing-file">
+          <mat-checkbox class="delete-checkbox" (change)="toggleDelete(file.uniqueId)"></mat-checkbox>
+          <div class="preview-wrapper">
+            <!-- Image -->
+            @if(getFileType(file) === 'image'){
+            <img [src]="getCompleteUrl(file)" alt="File preview">
+            }
+            <!-- Video -->
+            @if(getFileType(file) === 'video'){
+              <video controls>
+                <source [src]="getCompleteUrl(file)">
+              </video>
+            }
+            <!-- Audio -->
+            @if(getFileType(file) === 'audio'){
+              <audio controls>
+                <source [src]="getCompleteUrl(file)">
+              </audio>
+            }
+            <!-- Other -->
+            @if(getFileType(file) !== 'image' && getFileType(file) !== 'video' && getFileType(file) !== 'audio'){
+            <mat-icon class="file-icon">insert_drive_file</mat-icon>
+            }
+          </div>
+          <span class="file-name" [title]="file.fileName">{{ file.fileName }}</span>
+        </div>
+        }
+      </div>
+    </section>
+    }
+
+    <!-- Section for New Files -->
+    <section class="file-section">
+      <div class="new-files-header">
+        <h3>Add New Files</h3>
+        <span class="slots-remaining">({{ remainingSlots }} slots remaining)</span>
+      </div>
+      <div class="upload-area">
+        <button type="button" mat-stroked-button (click)="fileInput.click()" [disabled]="remainingSlots <= 0">
+          Choose Files
+        </button>
+        <input hidden #fileInput type="file" multiple (change)="onFileSelected($event)">
+      </div>
+
+      @if(filesToAdd.length > 0){
+      <div class="file-grid">
+        @for(preview of filesToAdd; track preview.file.name){
+        <div class="file-item new-file">
+          <button mat-icon-button class="remove-button" (click)="removeNewFile(preview)" title="Remove file">
+            <mat-icon>cancel</mat-icon>
+          </button>
+          <div class="preview-wrapper">
+            @switch (getFileTypeForAddedFiles(preview.file)) {
+              @case('image'){
+              <img [src]="preview.previewUrl" alt="New file preview">
+              }
+
+              <!-- Video -->
+              @case('video'){
+              <video controls>
+                <source [src]="preview.previewUrl" [type]="preview.file.type">
+              </video>
+              }
+
+              <!-- Audio -->
+              @case('audio'){
+              <audio controls>
+                <source [src]="preview.previewUrl" [type]="preview.file.type">
+              </audio>
+              }
+
+              @default {
+                <mat-icon>insert_drive_file</mat-icon>
+              }
+            }
+          </div>
+          <span class="file-name" [title]="preview.file.name">{{ preview.file.name }}</span>
+        </div>
+        }
+      </div>
+      }
+    </section>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="onCancel()">Cancel</button>
+    <button mat-flat-button color="primary" (click)="onConfirm()"
+      [disabled]="filesToAdd.length === 0 && idsToDelete.size === 0">Confirm</button>
+  </mat-dialog-actions>
+</div>

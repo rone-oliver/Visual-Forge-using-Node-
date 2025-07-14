@@ -90,6 +90,18 @@ export class CloudinaryService implements ICloudinaryService {
         }
     }
 
+    async deleteFile(publicId: string, fileType: FileType): Promise<{ result: string }> {
+        try {
+            const resourceType = this.getResourceType(fileType);
+            const result = await cloudinary.uploader.destroy(publicId, { resource_type: resourceType });
+            this.logger.log(`Successfully deleted file from Cloudinary: ${publicId}`);
+            return result;
+        } catch (error) {
+            this.logger.error(`Error deleting file ${publicId} from Cloudinary: ${error.message}`);
+            throw error;
+        }
+    }
+
     /**
      * Determine file type based on MIME type
      */

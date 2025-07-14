@@ -77,6 +77,24 @@ export class EditorService {
     );
   }
 
+  updateWorkFiles(workId: string, files: File[], deleteFileIds?: string[]): Observable<any> {
+    const formData = new FormData();
+
+    files.forEach(file => {
+      formData.append('files', file);
+    });
+
+    if (deleteFileIds && deleteFileIds.length > 0) {
+      // The backend expects a stringified array for this field when using multipart/form-data
+      // formData.append('deleteFileIds', JSON.stringify(deleteFileIds));
+      deleteFileIds.forEach(id => {
+        formData.append('deleteFileIds', id);
+      });
+    }
+
+    return this.http.patch(`${this.editorApiUrl}/works/${workId}/files`, formData);
+  }
+
   // Bids Services
   createBid(quotationId: string, bidAmount: number, notes?: string): Observable<IBid> {
     return this.http.post<IBid>(`${this.editorApiUrl}/bids`, {

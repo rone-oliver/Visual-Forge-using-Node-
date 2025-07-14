@@ -363,19 +363,9 @@
   }
   
   .work-card-actions {
-    padding: 12px 20px;
+    padding: 20px 20px;
     border-top: 1px solid rgba(0, 0, 0, 0.05);
     display: flex;
-    justify-content: flex-end;
-    
-    .view-details-btn {
-      display: flex;
-      align-items: center;
-      
-      mat-icon {
-        margin-right: 4px;
-        font-size: 18px;
-      }
-    }
+    justify-content: space-evenly;
   }
 }

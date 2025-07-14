@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
     IsArray,
     IsBoolean,
@@ -26,7 +26,7 @@ export class WorkFileAttachmentDto {
     @ApiProperty({ description: 'URL of the uploaded file' })
     @IsUrl()
     @IsNotEmpty()
-    url: string;
+    url?: string;
 
     @ApiProperty({ enum: FileType, description: 'Type of the file' })
     @IsEnum(FileType)
@@ -82,6 +82,20 @@ export class RateWorkDto {
     @IsOptional()
     @MaxLength(1000)
     feedback?: string;
+}
+
+export class UpdateWorkFilesDto {
+    @ApiPropertyOptional({ description: 'An array of unique IDs of the files to be deleted.', type: [String] })
+    @IsOptional()
+    @IsArray()
+    @IsString({ each: true })
+    @Transform(({ value }) => {
+        if(typeof value === 'string'){
+            return [value];
+        }
+        return value;
+    })
+    deleteFileIds?: string[];
 }
 
 export class UpdateWorkPublicStatusDto {

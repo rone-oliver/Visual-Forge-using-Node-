@@ -5,6 +5,7 @@ import { CreateWorkDto, GetPublicWorksQueryDto, PopulatedWork } from "../dtos/wo
 export const IWorkRepositoryToken = Symbol('IWorkRepository');
 
 export interface IWorkRepository {
+    findById(id: Types.ObjectId): Promise<Works | null>;
     createWork(workData: CreateWorkDto): Promise<Works>;
     getTwoRecentWorks(editorId: Types.ObjectId): Promise<Works[]>;
     updateOne(query: FilterQuery<Works>, update: UpdateQuery<Works>): Promise<Works | null>;

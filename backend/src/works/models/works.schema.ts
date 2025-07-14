@@ -7,7 +7,7 @@ export type WorksDocument = Works & Document;
 @Schema()
 export class FileAttachment {
     @Prop()
-    url: string;
+    url?: string;
 
     @Prop({ required: true })
     uniqueId: string;

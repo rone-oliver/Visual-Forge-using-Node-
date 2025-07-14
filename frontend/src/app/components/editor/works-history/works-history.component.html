@@ -98,6 +98,16 @@
                 </div>
               }
             </div>
+            <div class="work-card-actions">
+              <button mat-stroked-button color="primary" (click)="openAddFilesDialog(work)">
+                <mat-icon>add_photo_alternate</mat-icon>
+                Add Files
+              </button>
+              <button mat-stroked-button color="accent" (click)="openReplaceFilesDialog(work)">
+                <mat-icon>sync</mat-icon>
+                Replace Files
+              </button>
+            </div>
           </div>
         </div>
       }

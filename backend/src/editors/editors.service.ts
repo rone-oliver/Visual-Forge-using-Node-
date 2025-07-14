@@ -36,6 +36,7 @@ import { IWorkService, IWorkServiceToken } from 'src/works/interfaces/works.serv
 import { IUsersService, IUsersServiceToken } from 'src/users/interfaces/users.service.interface';
 import { calculateAverageRating } from 'src/common/utils/calculation.util';
 import { SuccessResponseDto } from 'src/users/dto/users.dto';
+import { UpdateWorkFilesDto } from 'src/works/dtos/works.dto';
 
 @Injectable()
 export class EditorsService implements IEditorsService {
@@ -589,7 +590,16 @@ export class EditorsService implements IEditorsService {
     async findMany(filter: FilterQuery<Editor>): Promise<Editor[] | null> {
         return this.editorRepository.findMany(filter);
     }
-    
+
+    async updateWorkFiles(workId: string, files: Express.Multer.File[], updateWorkFilesDto: UpdateWorkFilesDto): Promise<SuccessResponseDto> {
+        try {
+            return await this.worksService.updateWorkFiles(workId, files, updateWorkFilesDto);
+        } catch (error) {
+            this.logger.error(`Failed to update work files for work ${workId}`, error);
+            throw error;
+        }
+    }
+
     private _calculatePenalty(dueDate: Date, submissionDate: Date, amount: number): number {
         if (!dueDate) return 0;
 

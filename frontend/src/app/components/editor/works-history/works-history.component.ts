@@ -1,5 +1,4 @@
-
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -13,6 +12,7 @@ import { FileType } from '../../../interfaces/quotation.interface';
 import { CompletedWork } from '../../../interfaces/completed-word.interface';
 import { FilesPreviewComponent } from '../../user/files-preview/files-preview.component';
 import { MatDialog } from '@angular/material/dialog';
+import { ReplaceFilesDialogComponent } from '../../mat-dialogs/replace-files-dialog/replace-files-dialog.component';
 
 @Component({
   selector: 'app-works-history',
@@ -125,6 +125,52 @@ export class WorksHistoryComponent {
     this.dialog.open(FilesPreviewComponent, {
       width: '800px',
       data: { files, title: 'Client Files' }
+    });
+  }
+
+  openAddFilesDialog(work: CompletedWork): void {
+    const dialogRef = this.dialog.open(ReplaceFilesDialogComponent, {
+      width: '600px',
+      data: { work, mode: 'add' },
+      panelClass: 'modern-dialog',
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && result.filesToAdd.length > 0) {
+        this.editorService.updateWorkFiles(work.worksId, result.filesToAdd, []).subscribe({
+          next: () => {
+            this.showMessage('Files added successfully');
+            this.loadCompletedWorks();
+          },
+          error: (error) => {
+            console.error('Error adding files:', error);
+            this.showMessage('Error adding files');
+          }
+        });
+      }
+    });
+  }
+
+  openReplaceFilesDialog(work: CompletedWork): void {
+    const dialogRef = this.dialog.open(ReplaceFilesDialogComponent, {
+      width: '600px',
+      data: { work, mode: 'replace' },
+      panelClass: 'modern-dialog',
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.editorService.updateWorkFiles(work.worksId, result.filesToAdd, result.idsToDelete).subscribe({
+          next: () => {
+            this.showMessage('Files updated successfully');
+            this.loadCompletedWorks();
+          },
+          error: (error) => {
+            console.error('Error updating files:', error);
+            this.showMessage('Error updating files');
+          }
+        });
+      }
     });
   }
 

@@ -7,7 +7,7 @@ import { OutputType, QuotationStatus } from "src/quotation/models/quotation.sche
 import { FileType as CommonFileType } from 'src/quotation/models/quotation.schema'; 
 
 export class getQuotationsByStatusResponseDto {
-    [key: string]: number;
+  [key: string]: number;
 }
 
 export interface IQuotation {
@@ -51,7 +51,7 @@ export class FileAttachmentDto {
   @ApiProperty({ description: 'URL of the uploaded file' })
   @IsString()
   @IsOptional()
-  url: string;
+  url?: string;
 
   @ApiProperty({ description: 'Type of the file', enum: CommonFileType, enumName: 'CommonFileType' })
   @IsEnum(CommonFileType)

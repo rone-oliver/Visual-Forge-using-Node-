@@ -13,8 +13,15 @@ export class WorkRepository implements IWorkRepository {
     constructor(
         @InjectModel(Works.name) private readonly workModel: Model<WorksDocument>,
         @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
-        @InjectModel(Editor.name) private readonly editorModel: Model<EditorDocument>,
     ) { }
+
+    async findById(id: Types.ObjectId): Promise<Works | null> {
+        try {
+            return this.workModel.findById(id).lean();
+        } catch (error) {
+            throw error;
+        }
+    }
 
     async updateOne(query: FilterQuery<Works>, update: UpdateQuery<Works>): Promise<Works | null> {
         try {

@@ -6,7 +6,7 @@ import { WorkRepository } from './repositories/work.repository';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Works, workSchema } from 'src/works/models/works.schema';
 import { User, userSchema } from 'src/users/models/user.schema';
-import { Editor, editorSchema } from 'src/editors/models/editor.schema';
+import { CloudinaryModule } from 'src/common/cloudinary/cloudinary.module';
 
 @Module({
   providers: [
@@ -23,8 +23,9 @@ import { Editor, editorSchema } from 'src/editors/models/editor.schema';
     MongooseModule.forFeature([
       { name: Works.name, schema: workSchema },
       { name: User.name, schema: userSchema },
-      { name: Editor.name, schema: editorSchema },
-    ])
+      
+    ]),
+    CloudinaryModule,
   ],
   exports: [IWorkServiceToken, IWorkRepositoryToken]
 })

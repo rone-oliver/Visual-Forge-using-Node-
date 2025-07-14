@@ -17,6 +17,7 @@ import { EditorRequest } from '../models/editorRequest.schema';
 import { FormattedEditor, GetEditorsQueryDto } from 'src/admins/dto/admin.dto';
 import { CompletedWorkDto, FileAttachmentDto, GetAcceptedQuotationsQueryDto, GetPublishedQuotationsQueryDto, PaginatedAcceptedQuotationsResponseDto, PaginatedPublishedQuotationsResponseDto } from 'src/quotation/dtos/quotation.dto';
 import { SuccessResponseDto, UserRatingForEditorDto } from 'src/users/dto/users.dto';
+import { UpdateWorkFilesDto } from 'src/works/dtos/works.dto';
 
 export const IEditorsServiceToken = Symbol('IEditorsServiceToken');
 
@@ -39,6 +40,8 @@ export interface IEditorsService {
     submitQuotationResponse(
         workData: SubmitWorkBodyDto
     ): Promise<boolean>;
+
+    updateWorkFiles(workId: string, files: Express.Multer.File[], updateWorkFilesDto: UpdateWorkFilesDto): Promise<SuccessResponseDto>;
 
     getCompletedWorks(editorId: Types.ObjectId): Promise<CompletedWorkDto[]>;
 
