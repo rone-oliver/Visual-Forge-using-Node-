@@ -7,6 +7,9 @@ import { Types } from 'mongoose';
 import { CreateWorkDto, GetPublicWorksQueryDto, PaginatedPublicWorksResponseDto, PublicWorkItemDto, RateWorkDto, UpdateWorkFilesDto, UpdateWorkPublicStatusDto } from './dtos/works.dto';
 import { FileUploadResultDto, SuccessResponseDto } from 'src/users/dto/users.dto';
 import { ICloudinaryService, ICloudinaryServiceToken } from 'src/common/cloudinary/interfaces/cloudinary-service.interface';
+import { ITimelineService, ITimelineServiceToken } from 'src/timeline/interfaces/timeline.service.interface';
+import { TimelineEvent } from 'src/timeline/models/timeline.schema';
+import { IQuotationService, IQuotationServiceToken } from 'src/quotation/interfaces/quotation.service.interface';
 
 @Injectable()
 export class WorksService implements IWorkService {
@@ -15,6 +18,8 @@ export class WorksService implements IWorkService {
     constructor(
         @Inject(IWorkRepositoryToken) private readonly workRepository: IWorkRepository,
         @Inject(ICloudinaryServiceToken) private readonly cloudinaryService: ICloudinaryService,
+        @Inject(ITimelineServiceToken) private readonly timelineService: ITimelineService,
+        @Inject(IQuotationServiceToken) private readonly quotationService: IQuotationService,
     ) { }
 
     async createWork(workData: CreateWorkDto) {
@@ -22,6 +27,24 @@ export class WorksService implements IWorkService {
             return this.workRepository.createWork(workData);
         } catch (error) {
             this.logger.log('Failed to create work', error);
+            throw error;
+        }
+    }
+
+    async findById(workId: Types.ObjectId): Promise<Works | null> {
+        try {
+            return this.workRepository.findById(workId);
+        } catch (error) {
+            this.logger.log('Failed to find work', error);
+            throw error;
+        }
+    }
+
+    async updateWork(workId: Types.ObjectId, updates: Partial<Works>): Promise<Works | null> {
+        try {
+            return this.workRepository.updateOne({ _id: workId }, { $set: updates });
+        } catch (error) {
+            this.logger.log('Failed to update work', error);
             throw error;
         }
     }
@@ -64,6 +87,8 @@ export class WorksService implements IWorkService {
             if (!work) {
                 throw new Error('Work not found');
             }
+            const filesAddedCount = files?.length || 0;
+            const filesDeletedCount = updateWorkFilesDto.deleteFileIds?.length || 0;
 
             if (updateWorkFilesDto.deleteFileIds && updateWorkFilesDto.deleteFileIds.length > 0) {
                 const idsToDelete = updateWorkFilesDto.deleteFileIds;
@@ -83,6 +108,24 @@ export class WorksService implements IWorkService {
             }
 
             await this.workRepository.updateOne({ _id: new Types.ObjectId(workId) }, { $set: { finalFiles: work.finalFiles } });
+            
+            const quotation = await this.quotationService.findOne({ worksId: new Types.ObjectId(workId) });
+            if (!quotation) {
+                throw new Error('Quotation not found');
+            }
+
+            await this.timelineService.create({
+                quotationId: quotation._id,
+                event: TimelineEvent.WORK_REVISED,
+                userId: quotation.userId,
+                editorId: quotation.editorId,
+                message: `Editor updated files: ${filesAddedCount} added, ${filesDeletedCount} removed.`,
+                metadata: { 
+                    filesAdded: filesAddedCount,
+                    filesRemoved: filesDeletedCount
+                },
+            });
+
             return { success: true, message: 'Work files updated successfully' };
         } catch (error) {
             this.logger.error('Failed to update work files', error);

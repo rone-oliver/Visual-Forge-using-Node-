@@ -17,6 +17,7 @@ import { WorksModule } from 'src/works/works.module';
 import { ReportsModule } from 'src/reports/reports.module';
 import { TransactionModule } from 'src/common/transaction/transaction.module';
 import { HashingModule } from 'src/common/hashing/hashing.module';
+import { TimelineModule } from 'src/timeline/timeline.module';
 
 @Module({
   controllers: [UsersController],
@@ -37,7 +38,7 @@ import { HashingModule } from 'src/common/hashing/hashing.module';
     ]),
     PaymentModule, BidsModule, WalletModule, RelationshipModule,
     CloudinaryModule, QuotationModule, WorksModule, ReportsModule,
-    TransactionModule, HashingModule,
+    TransactionModule, HashingModule, TimelineModule,
   ],
   exports: [IUsersServiceToken, IUserRepositoryToken]
 })

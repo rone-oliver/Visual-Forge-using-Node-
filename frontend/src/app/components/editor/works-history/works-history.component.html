@@ -108,7 +108,20 @@
                 Replace Files
               </button>
             </div>
+            <div class="timeline-section">
+              <h4>Project Timeline</h4>
+              @if (work.timeline) {
+                <div class="timeline-wrapper">
+                  <app-timeline-chart 
+                  [timelineEvents]="work.timeline"
+                  [creationDate]="work.createdAt"
+                  [isSatisfied]="work.isSatisfied ?? false">
+                  </app-timeline-chart>
+                </div>
+              }  
+            </div>
           </div>
+
         </div>
       }
     </div>

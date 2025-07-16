@@ -4,47 +4,48 @@ import { IsArray, IsBoolean, IsDate, IsDateString, IsEnum, IsMongoId, IsNotEmpty
 import { Types } from "mongoose";
 import { EditorBidDetailsDto } from "src/editors/dto/editors.dto";
 import { OutputType, QuotationStatus } from "src/quotation/models/quotation.schema";
-import { FileType as CommonFileType } from 'src/quotation/models/quotation.schema'; 
+import { FileType as CommonFileType } from 'src/quotation/models/quotation.schema';
+import { TimelineResponseDto } from "src/timeline/dtos/timeline.dto";
 
 export class getQuotationsByStatusResponseDto {
   [key: string]: number;
 }
 
 export interface IQuotation {
-    _id?: string | Types.ObjectId;
-    userId?: string | Types.ObjectId;
-    title: string;
-    description: string;
-    theme?: string;
-    estimatedBudget?: number;
-    advanceAmount?: number;
-    dueDate?: Date | string;
-    status?: QuotationStatus;
-    outputType: OutputType;
-    editor?: string;
-    editorId?: string | Types.ObjectId;
-    paymentPending?: boolean;
-    attachedFiles?: FileAttachment[];
-    imageUrl?: string;
-    createdAt?: Date | string;
-    updatedAt?: Date | string;
-    bidCount?: number;
+  _id?: string | Types.ObjectId;
+  userId?: string | Types.ObjectId;
+  title: string;
+  description: string;
+  theme?: string;
+  estimatedBudget?: number;
+  advanceAmount?: number;
+  dueDate?: Date | string;
+  status?: QuotationStatus;
+  outputType: OutputType;
+  editor?: string;
+  editorId?: string | Types.ObjectId;
+  paymentPending?: boolean;
+  attachedFiles?: FileAttachment[];
+  imageUrl?: string;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  bidCount?: number;
 }
 
 export enum FileType {
-    IMAGE = 'image',
-    VIDEO = 'video',
-    AUDIO = 'audio',
-    DOCUMENT = 'document'
+  IMAGE = 'image',
+  VIDEO = 'video',
+  AUDIO = 'audio',
+  DOCUMENT = 'document'
 }
 
 export interface FileAttachment {
-    url: string;
-    fileType: FileType;
-    fileName: string;
-    size?: number;
-    mimeType?: string;
-    uploadedAt?: Date;
+  url: string;
+  fileType: FileType;
+  fileName: string;
+  size?: number;
+  mimeType?: string;
+  uploadedAt?: Date;
 }
 
 export class FileAttachmentDto {
@@ -173,7 +174,7 @@ export class PaginationQueryDto {
   searchTerm?: string;
 }
 
-export class GetAcceptedQuotationsQueryDto extends PaginationQueryDto {}
+export class GetAcceptedQuotationsQueryDto extends PaginationQueryDto { }
 
 export class PaginatedAcceptedQuotationsResponseDto {
   @ApiProperty({ type: [AcceptedQuotationItemDto] })
@@ -346,4 +347,11 @@ export class CompletedWorkDto {
   @IsDateString()
   @IsOptional()
   completedAt?: Date;
+
+  @ApiPropertyOptional({ type: [TimelineResponseDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => TimelineResponseDto)
+  timeline?: TimelineResponseDto[];
 }

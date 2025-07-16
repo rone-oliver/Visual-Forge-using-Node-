@@ -32,6 +32,7 @@ import { ReportsModule } from './reports/reports.module';
 import { TransactionModule } from './common/transaction/transaction.module';
 import { MailModule } from './mail/mail.module';
 import { HashingModule } from './common/hashing/hashing.module';
+import { TimelineModule } from './timeline/timeline.module';
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { HashingModule } from './common/hashing/hashing.module';
     AiModule, WalletModule, CommunityModule, RelationshipModule,
     CloudinaryModule, QuotationModule, WorksModule, JobsModule,
     ReportsModule, TransactionModule, MailModule, HashingModule,
+    TimelineModule,
   ],
   controllers: [AppController, UsersAuthController],
   providers: [

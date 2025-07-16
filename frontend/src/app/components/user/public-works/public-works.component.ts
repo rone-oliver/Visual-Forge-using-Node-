@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { UserService } from '../../../services/user/user.service';
 import { EditorService } from '../../../services/editor/editor.service';
-import { Works } from '../../../interfaces/completed-word.interface';
+import { Works } from '../../../interfaces/completed-work.interface';
 import { User } from '../../../interfaces/user.interface';
 import { Editor } from '../../../interfaces/editor.interface';
 import { forkJoin, Observable, of, Subject } from 'rxjs';

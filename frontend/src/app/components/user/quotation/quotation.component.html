@@ -256,12 +256,6 @@
                                 <div class="work-response">
                                     <h4>Editor comments</h4>
                                     <p>{{ work.comments }}</p>
-
-                                    <button class="rate-btn editor-rate editor-rating-btn"
-                                        (click)="openEditorRatingModal(work)">
-                                        <mat-icon>supervisor_account</mat-icon>
-                                        Rate Editor
-                                    </button>
                                 </div>
                             }
 
@@ -330,11 +324,40 @@
                                 </div>
                             }
 
-                            <div class="rating-buttons-container">
-                                <button class="rate-btn work-rate" (click)="openWorkRatingModal(work)">
+                            <div class="work-card-actions">
+                                @if (work.comments) {
+                                    <button class="action-btn editor-rate" (click)="openEditorRatingModal(work)">
+                                        <mat-icon>supervisor_account</mat-icon>
+                                        Rate Editor
+                                    </button>
+                                }
+                                <button class="action-btn work-rate" (click)="openWorkRatingModal(work)">
                                     <mat-icon>star</mat-icon>
-                                    {{ work.rating || work.feedback ? 'Update Work Rating' : 'Rate their Work' }}
+                                    {{ work.rating || work.feedback ? 'Update Rating' : 'Rate Work' }}
                                 </button>
+                                <button class="action-btn feedback-btn" (click)="openFeedbackModal(work.worksId)">
+                                    <mat-icon>feedback</mat-icon>
+                                    Provide Feedback
+                                </button>
+                                @if(!work.isSatisfied){
+                                    <button class="action-btn satisfied-btn" (click)="markAsSatisfied(work.worksId)">
+                                        <mat-icon>check_circle</mat-icon>
+                                        Mark as Satisfied
+                                    </button>
+                                }
+                            </div>
+
+                            <div class="timeline-section">
+                                <h4>Project Timeline</h4>
+                                @if (work.timeline) {
+                                    <div class="timeline-wrapper">
+                                        <app-timeline-chart 
+                                        [timelineEvents]="work.timeline" 
+                                        [creationDate]="work.createdAt"
+                                        [isSatisfied]="work.isSatisfied ?? false">
+                                        </app-timeline-chart>
+                                    </div>
+                                }
                             </div>
                         </div>
                     </div>

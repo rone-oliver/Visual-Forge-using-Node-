@@ -9,10 +9,11 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { EditorService } from '../../../services/editor/editor.service';
 import { LocalDatePipe } from '../../../pipes/date.pipe';
 import { FileType } from '../../../interfaces/quotation.interface';
-import { CompletedWork } from '../../../interfaces/completed-word.interface';
+import { CompletedWork } from '../../../interfaces/completed-work.interface';
 import { FilesPreviewComponent } from '../../user/files-preview/files-preview.component';
 import { MatDialog } from '@angular/material/dialog';
 import { ReplaceFilesDialogComponent } from '../../mat-dialogs/replace-files-dialog/replace-files-dialog.component';
+import { TimelineChartComponent } from '../../shared/timeline-chart/timeline-chart.component';
 
 @Component({
   selector: 'app-works-history',
@@ -23,8 +24,9 @@ import { ReplaceFilesDialogComponent } from '../../mat-dialogs/replace-files-dia
     MatFormFieldModule,
     MatButtonModule,
     MatRippleModule,
-    LocalDatePipe
-],
+    LocalDatePipe,
+    TimelineChartComponent,
+  ],
   templateUrl: './works-history.component.html',
   styleUrl: './works-history.component.scss'
 })
@@ -34,6 +36,7 @@ export class WorksHistoryComponent {
   isLoading: boolean = true;
   searchQuery: string = '';
   FileType = FileType;
+  expandedWorkId: string | null = null;
 
   constructor(
     private editorService: EditorService,
@@ -73,6 +76,10 @@ export class WorksHistoryComponent {
       work.description?.toLowerCase().includes(query) ||
       work.comments?.toLowerCase().includes(query)
     );
+  }
+
+  toggleTimeline(workId: string): void {
+    this.expandedWorkId = this.expandedWorkId === workId ? null : workId;
   }
 
   clearSearch(): void {

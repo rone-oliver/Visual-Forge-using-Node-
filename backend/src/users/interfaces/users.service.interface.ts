@@ -9,7 +9,6 @@ import {
     UpdateQuotationDto,
     UpdateProfileDto,
     ResetPasswordDto,
-    CompletedWorkDto,
     RateEditorDto,
     UserBasicInfoDto,
     BidResponseDto,
@@ -30,6 +29,7 @@ import { FileUploadResultDto as FileUploadResultDtoCloudinary } from 'src/common
 import { GetAllUsersQueryDto } from 'src/admins/dto/admin.dto';
 import { GetPublicWorksQueryDto, PaginatedPublicWorksResponseDto, RateWorkDto, UpdateWorkPublicStatusDto } from 'src/works/dtos/works.dto';
 import { GetTransactionsQueryDto } from 'src/common/transaction/dtos/transaction.dto';
+import { CompletedWorkDto } from 'src/quotation/dtos/quotation.dto';
 
 export const IUsersServiceToken = Symbol('IUsersService');
 
@@ -118,9 +118,6 @@ export interface IUsersService {
     followUser(sourceUserId: Types.ObjectId, targetUserId: Types.ObjectId): Promise<SuccessResponseDto>;
     unfollowUser(sourceUserId: Types.ObjectId, targetUserId: Types.ObjectId): Promise<SuccessResponseDto>;
 
-    // Internal or less-exposed methods (might not need DTOs if purely internal, but good for consistency)
-
-    // Helper methods (if they need to be part of the interface, otherwise keep private in service)
-    // calculateAverageRating(ratings: any[] | undefined): number;
-    // calculateQuotationAmounts(estimatedBudget: number): { advanceAmount: number; balanceAmount: number };
+    submitWorkFeedback(workId: Types.ObjectId, userId: Types.ObjectId, feedback: string): Promise<SuccessResponseDto>;
+    markWorkAsSatisfied(workId: Types.ObjectId, userId: Types.ObjectId): Promise<SuccessResponseDto>;
 }

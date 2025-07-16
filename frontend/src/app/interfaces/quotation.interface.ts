@@ -31,6 +31,13 @@ export interface FileAttachment {
     uploadedAt?: Date;
 }
 
+export interface TimelineEvent {
+    event: string;
+    message: string;
+    metadata?: Record<string, any>;
+    timestamp: number;
+}
+
 export interface FileAttachmentResponse {
     url?: string;
     uniqueId: string;

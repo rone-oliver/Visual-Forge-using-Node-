@@ -29,6 +29,7 @@ import { BidStatus } from '../../common/bids/models/bids.schema';
 import { PaymentType, PaymentStatus, PaymentMethod } from '../../common/transaction/models/transaction.schema';
 import { EditorDetailsDto } from 'src/editors/dto/editors.dto'; // Assuming this exists and is relevant
 import { ReportContext } from 'src/reports/models/report.schema';
+import { TimelineResponseDto } from 'src/timeline/dtos/timeline.dto';
 
 // --- Enums (Re-exported for DTO usage if not directly imported in service/controller) ---
 export { Gender, Language, QuotationStatus, OutputType, FileType, BidStatus, PaymentType, PaymentStatus, PaymentMethod };
@@ -584,116 +585,133 @@ export class AcceptBidParamsDto {
     bidId: string;
 }
 
-// --- Works DTOs ---
-export class CompletedWorkDto {
-    @ApiProperty({ type: String })
-    @IsMongoId()
-    quotationId: string;
-
-    @ApiProperty({ type: String })
-    @IsMongoId()
-    worksId: string;
-
-    @ApiProperty()
+// Continuos Feedback
+export class SubmitFeedbackDto {
+    @ApiProperty({ description: 'Feedback content from the user', example: 'Great work, but one revision is needed.' })
     @IsString()
-    title: string;
-
-    @ApiProperty()
-    @IsString()
-    description: string;
-
-    @ApiPropertyOptional()
-    @IsString()
-    @IsOptional()
-    theme?: string;
-
-    @ApiPropertyOptional()
-    @IsNumber()
-    @IsOptional()
-    estimatedBudget?: number;
-
-    @ApiProperty({ enum: OutputType })
-    @IsEnum(OutputType)
-    outputType: OutputType;
-
-    @ApiPropertyOptional()
-    @IsDateString()
-    @IsOptional()
-    dueDate?: string;
-
-    @ApiPropertyOptional({ type: [FileAttachmentDto] })
-    @IsArray()
-    @ValidateNested({ each: true })
-    @Type(() => FileAttachmentDto)
-    @IsOptional()
-    quotationAttachedFiles?: FileAttachmentDto[];
-
-    @ApiProperty({ enum: QuotationStatus })
-    @IsEnum(QuotationStatus)
-    quotationStatus: QuotationStatus;
-
-    @ApiProperty({ type: String })
-    @IsMongoId()
-    editorId: string; // User ID of the editor
-
-    @ApiProperty({ type: String })
-    @IsMongoId()
-    userId: string; // User ID of the client
-
-    @ApiProperty({ type: [FileUploadResultDto] })
-    @IsArray()
-    @ValidateNested({ each: true })
-    @Type(() => FileUploadResultDto)
-    finalFiles: FileUploadResultDto[];
-
-    @ApiPropertyOptional()
-    @IsString()
-    @IsOptional()
-    comments?: string;
-
-    @ApiProperty()
-    @IsBoolean()
-    isPublic: boolean;
-
-    @ApiPropertyOptional()
-    @IsNumber()
-    @Min(1)
-    @Max(5)
-    @IsOptional()
-    rating?: number;
-
-    @ApiPropertyOptional()
-    @IsString()
-    @IsOptional()
-    feedback?: string;
-
-    @ApiPropertyOptional()
-    @IsNumber()
-    @IsOptional()
-    penalty?: number;
-
-    @ApiProperty()
-    @IsDate()
-    @Type(() => Date)
-    quotationCreatedAt: Date;
-
-    @ApiProperty()
-    @IsDate()
-    @Type(() => Date)
-    workCreatedAt: Date;
-
-    @ApiPropertyOptional({ type: () => UserProfileResponseDto })
-    @ValidateNested()
-    @Type(() => UserProfileResponseDto)
-    @IsOptional()
-    editorDetails?: UserProfileResponseDto;
-
-    @ApiPropertyOptional({ type: () => UserProfileResponseDto })
-    @ValidateNested()
-    @Type(() => UserProfileResponseDto)
-    @IsOptional()
-    clientDetails?: UserProfileResponseDto;
+    @IsNotEmpty()
+    @MinLength(10)
+    @MaxLength(500)
+    feedback: string;
 }
+
+// // --- Works DTOs ---
+// export class CompletedWorkDto {
+//     @ApiProperty({ type: String })
+//     @IsMongoId()
+//     quotationId: string;
+
+//     @ApiProperty({ type: String })
+//     @IsMongoId()
+//     worksId: string;
+
+//     @ApiProperty()
+//     @IsString()
+//     title: string;
+
+//     @ApiProperty()
+//     @IsString()
+//     description: string;
+
+//     @ApiPropertyOptional()
+//     @IsString()
+//     @IsOptional()
+//     theme?: string;
+
+//     @ApiPropertyOptional()
+//     @IsNumber()
+//     @IsOptional()
+//     estimatedBudget?: number;
+
+//     @ApiProperty({ enum: OutputType })
+//     @IsEnum(OutputType)
+//     outputType: OutputType;
+
+//     @ApiPropertyOptional()
+//     @IsDateString()
+//     @IsOptional()
+//     dueDate?: string;
+
+//     @ApiPropertyOptional({ type: [FileAttachmentDto] })
+//     @IsArray()
+//     @ValidateNested({ each: true })
+//     @Type(() => FileAttachmentDto)
+//     @IsOptional()
+//     quotationAttachedFiles?: FileAttachmentDto[];
+
+//     @ApiProperty({ enum: QuotationStatus })
+//     @IsEnum(QuotationStatus)
+//     quotationStatus: QuotationStatus;
+
+//     @ApiProperty({ type: String })
+//     @IsMongoId()
+//     editorId: string; // User ID of the editor
+
+//     @ApiProperty({ type: String })
+//     @IsMongoId()
+//     userId: string; // User ID of the client
+
+//     @ApiProperty({ type: [FileUploadResultDto] })
+//     @IsArray()
+//     @ValidateNested({ each: true })
+//     @Type(() => FileUploadResultDto)
+//     finalFiles: FileUploadResultDto[];
+
+//     @ApiPropertyOptional()
+//     @IsString()
+//     @IsOptional()
+//     comments?: string;
+
+//     @ApiProperty()
+//     @IsBoolean()
+//     isPublic: boolean;
+
+//     @ApiPropertyOptional()
+//     @IsNumber()
+//     @Min(1)
+//     @Max(5)
+//     @IsOptional()
+//     rating?: number;
+
+//     @ApiPropertyOptional()
+//     @IsString()
+//     @IsOptional()
+//     feedback?: string;
+
+//     @ApiPropertyOptional()
+//     @IsNumber()
+//     @IsOptional()
+//     penalty?: number;
+
+//     @ApiPropertyOptional({ type: [TimelineResponseDto] })
+//     @IsOptional()
+//     @IsArray()
+//     @ValidateNested({ each: true })
+//     @Type(() => TimelineResponseDto)
+//     timeline?: TimelineResponseDto[];
+
+//     @ApiProperty()
+//     @IsDate()
+//     @Type(() => Date)
+//     quotationCreatedAt: Date;
+
+//     @ApiProperty()
+//     @IsDate()
+//     @Type(() => Date)
+//     workCreatedAt: Date;
+
+//     @ApiPropertyOptional({ type: () => UserProfileResponseDto })
+//     @ValidateNested()
+//     @Type(() => UserProfileResponseDto)
+//     @IsOptional()
+//     editorDetails?: UserProfileResponseDto;
+
+//     @ApiPropertyOptional({ type: () => UserProfileResponseDto })
+//     @ValidateNested()
+//     @Type(() => UserProfileResponseDto)
+//     @IsOptional()
+//     clientDetails?: UserProfileResponseDto;
+// }
 
 export class UserEditorRatingDto {
     @ApiProperty()

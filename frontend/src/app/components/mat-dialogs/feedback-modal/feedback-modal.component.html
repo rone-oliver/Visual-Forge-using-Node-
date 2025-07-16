@@ -1,0 +1,14 @@
+<h2 mat-dialog-title>Submit Feedback</h2>
+<div mat-dialog-content [formGroup]="form">
+  <mat-form-field appearance="outline" class="w-full">
+    <mat-label>Your Feedback</mat-label>
+    <textarea matInput formControlName="feedback" rows="5" placeholder="Please provide detailed feedback..."></textarea>
+    @if(form.get('feedback')?.hasError('required')) {
+      <mat-error>Feedback is required.</mat-error>
+    }
+  </mat-form-field>
+</div>
+<div mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancel</button>
+  <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="form.invalid">Submit</button>
+</div>

@@ -9,6 +9,7 @@ export interface IQuotationRepository {
     getQuotationsByStatus(): Promise<getQuotationsByStatusResponseDto[]>;
     getAcceptedQuotations(editorId: Types.ObjectId, query: GetAcceptedQuotationsQueryDto);
     getPublishedQuotations(editorId: Types.ObjectId, query: GetPublishedQuotationsQueryDto);
+    find(query: FilterQuery<Quotation>, projection: any, options?: QueryOptions): Promise<Quotation[] | null>;
     findById(quotationId: Types.ObjectId, options?: QueryOptions): Promise<Quotation | null>;
     getCompletedQuotations(editorId: Types.ObjectId): Promise<Quotation[]>;
     findMany(query: FilterQuery<Quotation>): Promise<Quotation[] | null>;

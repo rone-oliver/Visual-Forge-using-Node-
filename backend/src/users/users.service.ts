@@ -1,5 +1,4 @@
-import { Injectable, Logger, HttpException, HttpStatus, NotFoundException, InternalServerErrorException, BadRequestException, Inject, forwardRef } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
+import { Injectable, Logger, HttpException, HttpStatus, NotFoundException, InternalServerErrorException, BadRequestException, Inject, forwardRef, ForbiddenException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { User } from './models/user.schema';
 import { Quotation } from 'src/quotation/models/quotation.schema';
@@ -20,7 +19,6 @@ import {
     QuotationResponseDto,
     UpdateProfileDto,
     ResetPasswordDto,
-    CompletedWorkDto,
     RateEditorDto,
     TransactionResponseDto,
     UserRatingForEditorDto,
@@ -50,6 +48,9 @@ import { IReportService, IReportServiceToken } from 'src/reports/interfaces/repo
 import { ITransactionService, ITransactionServiceToken } from 'src/common/transaction/interfaces/transaction.service.interface';
 import { GetTransactionsQueryDto, IFindOptions } from 'src/common/transaction/dtos/transaction.dto';
 import { IHashingService, IHashingServiceToken } from 'src/common/hashing/interfaces/hashing.service.interface';
+import { CompletedWorkDto } from 'src/quotation/dtos/quotation.dto';
+import { TimelineEvent } from 'src/timeline/models/timeline.schema';
+import { ITimelineService, ITimelineServiceToken } from 'src/timeline/interfaces/timeline.service.interface';
 
 @Injectable()
 export class UsersService implements IUsersService {
@@ -66,6 +67,7 @@ export class UsersService implements IUsersService {
         @Inject(IUserRepositoryToken) private readonly userRepository: IUserRepository,
         @Inject(IBidServiceToken) private bidsService: IBidService,
         @Inject(IHashingServiceToken) private readonly hashingService: IHashingService,
+        @Inject(ITimelineServiceToken) private readonly timelineService: ITimelineService,
         private eventEmitter: EventEmitter2,
     ) { }
 
@@ -565,25 +567,7 @@ export class UsersService implements IUsersService {
 
     async getCompletedWorks(userId: Types.ObjectId): Promise<CompletedWorkDto[]> {
         try {
-            const completedQuotations = await this.quotationService.getCompletedQuotationsForUser(userId);
-
-            if(!completedQuotations) return [];
-            
-            return completedQuotations.map((quotation: Quotation) => {
-                const worksData = quotation.worksId as any || {};
-                const { worksId, ...quotationData } = quotation;
-                return {
-                    ...quotationData,
-                    ...worksData,
-                    quotationId: quotation._id,
-                    worksId: worksData._id || null,
-                    finalFiles: worksData.finalFiles || [],
-                    attachedFiles: quotationData.attachedFiles || [],
-                    comments: worksData.comments || '',
-                    completedAt: worksData.createdAt,
-                    penalty: quotationData.penalty || 0,
-                } as CompletedWorkDto;
-            })
+            return await this.quotationService.getCompletedQuotationsForUser(userId);
         } catch (error) {
             this.logger.error(`Error fetching completed works: ${error}`);
             throw error;
@@ -657,6 +641,59 @@ export class UsersService implements IUsersService {
             this.logger.error(`Error updating work public status: ${error.message}`);
             throw error;
         }
+    }
+
+    async submitWorkFeedback(workId: Types.ObjectId, userId: Types.ObjectId, feedback: string): Promise<SuccessResponseDto> {
+        const quotation = await this.quotationService.findOne({ worksId: new Types.ObjectId(workId) });
+        if (!quotation) {
+            throw new NotFoundException('Quotation not found');
+        }
+        if (quotation.userId.toString() !== userId.toString()) {
+            throw new ForbiddenException('You are not authorized to submit feedback for this work');
+        }
+
+        await this.timelineService.create({
+            quotationId: quotation._id,
+            event: TimelineEvent.FEEDBACK_RECEIVED,
+            userId: userId,
+            editorId: quotation.editorId,
+            message: feedback,
+        });
+
+        this.logger.log(`User ${userId} submitted feedback for work ${workId}`);
+        return { success: true, message: 'Feedback submitted successfully' };
+    }
+
+    async markWorkAsSatisfied(workId: Types.ObjectId, userId: Types.ObjectId): Promise<SuccessResponseDto> {
+        const work = await this.workService.findById(workId);
+        if (!work) {
+            throw new NotFoundException('Work not found');
+        }
+
+        if (work.userId.toString() !== userId.toString()) {
+            throw new ForbiddenException('You are not authorized to mark this work as satisfied');
+        }
+
+        if (work.isSatisfied) {
+            throw new BadRequestException('Work has already been marked as satisfied.');
+        }
+
+        await this.workService.updateWork(workId, { isSatisfied: true });
+
+        const quotation = await this.quotationService.findOne({ worksId: workId });
+        if (!quotation) {
+            this.logger.warn(`Could not find quotation for workId: ${workId} while marking as satisfied`);
+            return { success: true, message: 'Work marked as satisfied, but timeline event could not be created.' };
+        }
+
+        await this.timelineService.create({
+            quotationId: quotation._id,
+            userId: userId,
+            event: TimelineEvent.USER_SATISFIED,
+            message: 'User marked the work as satisfied, completing the project.',
+        });
+
+        return { success: true, message: 'Work marked as satisfied successfully.' };
     }
 
     async getPublicWorks(
@@ -756,12 +793,19 @@ export class UsersService implements IUsersService {
     async acceptBid(bidId: Types.ObjectId, userId: Types.ObjectId): Promise<BidResponseDto> {
         const bid = await this.bidsService.acceptBid(bidId, userId);
 
-        // Get the quotation to send notification
         const quotation = await this.quotationService.findById(bid.quotationId);
 
         if (!quotation) {
             throw new NotFoundException('Quotation not found');
         }
+
+        await this.timelineService.create({
+            quotationId: quotation._id,
+            event: TimelineEvent.EDITOR_ASSIGNED,
+            userId: userId,
+            editorId: quotation.editorId,
+            message: 'Bid Accepted by the user',
+        });
 
         return bid;
     }

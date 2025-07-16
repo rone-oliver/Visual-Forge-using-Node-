@@ -3,11 +3,11 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { UserService } from '../../../services/user/user.service';
 import { Router, RouterModule } from '@angular/router';
-import { FileAttachment, FileType, IPaymentVerification, IQuotation, PaginatedQuotationsResponse, QuotationStatus } from '../../../interfaces/quotation.interface';
+import { FileType, IQuotation, PaginatedQuotationsResponse, QuotationStatus } from '../../../interfaces/quotation.interface';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { FilesPreviewComponent } from '../files-preview/files-preview.component';
-import { CompletedWork } from '../../../interfaces/completed-word.interface';
-import { DatePipe, LocalDatePipe } from '../../../pipes/date.pipe';
+import { CompletedWork } from '../../../interfaces/completed-work.interface';
+import { LocalDatePipe } from '../../../pipes/date.pipe';
 import { RatingModalComponent } from '../../mat-dialogs/rating-modal/rating-modal.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatButton } from '@angular/material/button';
@@ -16,13 +16,19 @@ import { firstValueFrom, Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { IBid } from '../../../interfaces/bid.interface';
 import { BidDialogComponent } from '../../mat-dialogs/bid-dialog/bid-dialog.component';
-import { ConfirmationDialogComponent, DialogType } from '../../mat-dialogs/confirmation-dialog/confirmation-dialog.component';
+import { ConfirmationDialogComponent, ConfirmationDialogData, DialogType } from '../../mat-dialogs/confirmation-dialog/confirmation-dialog.component';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { FormsModule } from '@angular/forms';
+import { TimelineChartComponent } from '../../shared/timeline-chart/timeline-chart.component';
+import { FeedbackModalComponent } from '../../mat-dialogs/feedback-modal/feedback-modal.component';
 
 @Component({
   selector: 'app-quotation',
-  imports: [CommonModule, FormsModule, MatIconModule, RouterModule, MatDialogModule, LocalDatePipe, MatButton, MatPaginatorModule],
+  imports: [
+    CommonModule, FormsModule, MatIconModule, RouterModule,
+    MatDialogModule, LocalDatePipe, MatButton, MatPaginatorModule,
+    TimelineChartComponent,
+  ],
   templateUrl: './quotation.component.html',
   styleUrl: './quotation.component.scss'
 })
@@ -36,6 +42,7 @@ export class QuotationComponent implements OnInit, OnDestroy {
   activeFilter: QuotationStatus | 'All' = 'All';
   searchTerm: string = '';
   protected QuotationStatus = QuotationStatus;
+  expandedWorkId: string | null = null;
 
   // Pagination
   currentPage: number = 1;
@@ -190,6 +197,39 @@ export class QuotationComponent implements OnInit, OnDestroy {
     });
   }
 
+  toggleTimeline(workId: string): void {
+    this.expandedWorkId = this.expandedWorkId === workId ? null : workId;
+  }
+
+  openFeedbackModal(workId: string): void {
+    const dialogRef = this.dialog.open(FeedbackModalComponent, {
+      width: '500px',
+      data: { workId },
+      panelClass: 'modern-dialog'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && result.feedback) {
+        this.userService.submitWorkFeedback(workId, result.feedback).subscribe({
+          next: () => {
+            this.snackBar.open('Feedback submitted successfully!', 'Close', { 
+              duration: 3000,
+              panelClass: 'success-snackbar' 
+            });
+            this.loadCompletedWorks(); 
+          },
+          error: (err) => {
+            console.error('Error submitting feedback:', err);
+            this.snackBar.open('Failed to submit feedback. Please try again.', 'Close', { 
+              duration: 3000,
+              panelClass: 'error-snackbar' 
+            });
+          }
+        });
+      }
+    });
+  }
+
   countFinalFilesByType(work: CompletedWork, fileType: FileType): number {
     if (!work.finalFiles) return 0;
     return work.finalFiles.filter(file => file.fileType === fileType).length;
@@ -295,6 +335,39 @@ export class QuotationComponent implements OnInit, OnDestroy {
     })
   }
 
+  markAsSatisfied(workId: string): void {
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Confirm Satisfaction',
+        message: 'Are you sure you want to mark this work as satisfied? This indicates the project is complete and no further revisions are expected.',
+        confirmText: 'Yes, I\'m Satisfied',
+        cancelText: 'Cancel',
+      },
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.userService.markWorkAsSatisfied(workId).subscribe({
+          next: () => {
+            this.snackBar.open('Work marked as satisfied!', 'Dismiss', {
+              duration: 3000,
+              panelClass: 'success-snack',
+            });
+            this.loadCompletedWorks();
+          },
+          error: (err) => {
+            console.error('Error marking work as satisfied:', err);
+            this.snackBar.open(err.error?.message || 'Failed to mark work as satisfied.', 'Dismiss', {
+              duration: 3000,
+              panelClass: 'error-snack',
+            });
+          },
+        });
+      }
+    });
+  }
+
   openWorkRatingModal(work: CompletedWork): void {
     const dialogRef = this.dialog.open(RatingModalComponent, {
       width: '400px',
@@ -324,23 +397,42 @@ export class QuotationComponent implements OnInit, OnDestroy {
   }
 
   togglePublicStatus(work: any) {
-    const isPublic = !work.isPublic;
-    this.userService.updateWorkPublicStatus(work.worksId, isPublic).subscribe({
-      next: () => {
-        work.isPublic = isPublic;
-        this.snackBar.open(isPublic ? 'Work made public' : 'Work set to private', 'Dismiss', {
-          duration: 3000,
-          panelClass: isPublic ? 'success-snackbar' : 'custom-snackbar'
-        });
-      },
-      error: (err) => {
-        console.error('Error updating public status:', err);
-        this.snackBar.open('Failed to update public status', 'Dismiss', {
-          duration: 3000,
-          panelClass: 'custom-snackbar'
+    const isMakingPublic = !work.isPublic;
+
+    const dialogData: ConfirmationDialogData = {
+      title: 'Confirm Action',
+      message: `Are you sure you want to make this work ${isMakingPublic ? 'public' : 'private'}?`,
+      confirmText: 'Confirm',
+      cancelText: 'Cancel',
+      type: isMakingPublic ? DialogType.INFO : DialogType.WARNING,
+    };
+
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      width: '400px',
+      data: dialogData,
+      panelClass: 'modern-dialog'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.userService.updateWorkPublicStatus(work.worksId, isMakingPublic).subscribe({
+          next: () => {
+            work.isPublic = isMakingPublic;
+            this.snackBar.open(isMakingPublic ? 'Work made public' : 'Work set to private', 'Dismiss', {
+              duration: 3000,
+              panelClass: 'success-snackbar'
+            });
+          },
+          error: (err) => {
+            console.error('Error updating public status:', err);
+            this.snackBar.open('Failed to update public status', 'Dismiss', {
+              duration: 3000,
+              panelClass: 'error-snackbar'
+            });
+          }
         });
       }
-    });
+    })
   }
 
   async initiateAdvancePayment(quotation: IQuotation) {

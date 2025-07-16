@@ -28,7 +28,8 @@ import {
     EditorPublicProfileResponseDto,
     GetPublicEditorsDto,
     PaginatedPublicEditorsDto,
-    ReportUserDto
+    ReportUserDto,
+    SubmitFeedbackDto
 } from './dto/users.dto';
 import { IUsersService, IUsersServiceToken } from './interfaces/users.service.interface';
 import { IUsersController } from './interfaces/users.controller.interface';
@@ -284,6 +285,36 @@ export class UsersController implements IUsersController {
     //     }
     //     return user;
     // }
+
+    @Post('works/:workId/feedback')
+    @Roles(Role.USER, Role.EDITOR)
+    @ApiOperation({ summary: 'Submit feedback for a completed work' })
+    @ApiResponse({ status: 201, description: 'Feedback submitted successfully.', type: SuccessResponseDto })
+    async submitWorkFeedback(
+        @Param('workId') workId: string,
+        @Body() feedbackDto: SubmitFeedbackDto,
+        @GetUser('userId') userId: string,
+    ): Promise<SuccessResponseDto> {
+        if (!Types.ObjectId.isValid(workId)) {
+            throw new BadRequestException('Invalid work ID');
+        }
+        return this.userService.submitWorkFeedback(new Types.ObjectId(workId), new Types.ObjectId(userId), feedbackDto.feedback);
+    }
+
+    @Patch('works/:workId/satisfied')
+    @Roles(Role.USER)
+    @ApiOperation({ summary: 'Mark a work as satisfied' })
+    @ApiResponse({ status: 200, description: 'Work marked as satisfied successfully.', type: SuccessResponseDto })
+    async markWorkAsSatisfied(
+        @Param('workId') workId: string,
+        @GetUser('userId') userId: string,
+    ): Promise<SuccessResponseDto> {
+        if (!Types.ObjectId.isValid(workId)) {
+            throw new BadRequestException('Invalid work ID');
+        }
+        await this.userService.markWorkAsSatisfied(new Types.ObjectId(workId), new Types.ObjectId(userId));
+        return { success: true, message: 'Work marked as satisfied successfully.' };
+    }
 
     @Get('users')
     async getUsers(@Req() req: Request): Promise<UserBasicInfoDto[]> {

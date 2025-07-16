@@ -5,10 +5,12 @@ import { IQuotationRepositoryToken } from './interfaces/quotation.repository.int
 import { QuotationRepository } from './repositories/quotation.repository';
 import { IQuotationServiceToken } from './interfaces/quotation.service.interface';
 import { QuotationService } from './quotation.service';
+import { TimelineModule } from 'src/timeline/timeline.module';
 
 @Module({
     imports: [
         MongooseModule.forFeature([{ name: Quotation.name, schema: QuotationSchema }]),
+        TimelineModule,
     ],
     providers: [
         {

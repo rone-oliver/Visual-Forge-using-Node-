@@ -3,7 +3,7 @@ import { environment } from '../../../environments/environment';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { catchError, Observable } from 'rxjs';
 import { FileAttachmentResponse, GetEditorQuotationsParams, IQuotation, OutputType, PaginatedEditorQuotationsResponse, QuotationStatus } from '../../interfaces/quotation.interface';
-import { CompletedWork } from '../../interfaces/completed-word.interface';
+import { CompletedWork } from '../../interfaces/completed-work.interface';
 import { Editor } from '../../interfaces/editor.interface';
 import { IBid, BidStatus, GetBiddedQuotationsQuery, PaginatedBiddedQuotationsResponse, EditorBid } from '../../interfaces/bid.interface';
 

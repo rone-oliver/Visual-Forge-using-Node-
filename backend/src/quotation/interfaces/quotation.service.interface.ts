@@ -20,6 +20,7 @@ export interface IQuotationService {
     createQuotation(quotation: Partial<Quotation>): Promise<Quotation>;
     findByIdAndUpdate(quotationId: Types.ObjectId, update: UpdateQuery<Quotation>, options?: QueryOptions): Promise<Quotation | null>;
     deleteQuotation(quotationId: Types.ObjectId): Promise<SuccessResponseDto>;
-    getCompletedQuotationsForUser(userId: Types.ObjectId): Promise<Quotation[] | null>;
+    // getCompletedQuotationsForUser(userId: Types.ObjectId): Promise<Quotation[] | null>;
+    getCompletedQuotationsForUser(userId: Types.ObjectId): Promise<CompletedWorkDto[]>
     findOne(query: FilterQuery<Quotation>): Promise<Quotation | null>;
 }

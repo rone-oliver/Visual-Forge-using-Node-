@@ -56,6 +56,9 @@ export class Works {
     @Prop({ type: String, trim: true})
     feedback?: string;
 
+    @Prop({ type: Boolean, default: false })
+    isSatisfied: boolean;
+
     createdAt: Date;
     updatedAt: Date;
 }

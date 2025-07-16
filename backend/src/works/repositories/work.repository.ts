@@ -1,12 +1,12 @@
 import { InjectModel } from "@nestjs/mongoose";
-import { FilterQuery, Model, Types, UpdateQuery } from "mongoose";
+import { FilterQuery, Model, ProjectionType, QueryOptions, Types, UpdateQuery } from "mongoose";
 import { Works, WorksDocument } from "src/works/models/works.schema";
 import { IWorkRepository } from "../interfaces/works.repository.interface";
 import { CreateWorkDto, GetPublicWorksQueryDto, PopulatedWork } from "../dtos/works.dto";
 import { User, UserDocument } from "src/users/models/user.schema";
-import { Editor, EditorDocument } from "src/editors/models/editor.schema";
-import { Logger } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 
+@Injectable()
 export class WorkRepository implements IWorkRepository {
     private readonly logger = new Logger(WorkRepository.name);
     
@@ -15,9 +15,9 @@ export class WorkRepository implements IWorkRepository {
         @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
     ) { }
 
-    async findById(id: Types.ObjectId): Promise<Works | null> {
+    async findById(id: Types.ObjectId, projection?: ProjectionType<Works> | null, options?: QueryOptions): Promise<Works | null> {
         try {
-            return this.workModel.findById(id).lean();
+            return this.workModel.findById(id, projection, options).lean();
         } catch (error) {
             throw error;
         }

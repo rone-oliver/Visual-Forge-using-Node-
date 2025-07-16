@@ -30,6 +30,15 @@ export class QuotationRepository implements IQuotationRepository {
         ]);
     }
 
+    async find(
+        query: FilterQuery<Quotation>,
+        projection: any = null,
+        options?: QueryOptions
+    ): Promise<Quotation[] | null> {
+        const result = await this.quotationModel.find(query, projection, options).exec();
+        return result.length > 0 ? result : null;
+    }
+
     async findById(quotationId: Types.ObjectId, options?: QueryOptions): Promise<Quotation | null>{
         return this.quotationModel.findById(quotationId, null, options).exec();
     }

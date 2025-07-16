@@ -4,7 +4,7 @@ import { EditorPublicProfile, User } from '../../interfaces/user.interface';
 import { catchError, map, Observable, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { FileAttachmentResponse, GetQuotationsParams, IPaymentVerification, PaginatedQuotationsResponse } from '../../interfaces/quotation.interface';
-import { CompletedWork, Works } from '../../interfaces/completed-word.interface';
+import { CompletedWork, Works } from '../../interfaces/completed-work.interface';
 import { IBid } from '../../interfaces/bid.interface';
 import { PaginatedTransactionResponse } from '../../interfaces/transaction.interface';
 import { GetPublicEditorsDto, PaginatedPublicEditors } from '../../interfaces/user.interface';
@@ -179,7 +179,15 @@ export class UserService {
     return this.http.put<boolean>(`${this.userApiUrl}/quotations/${workId}/rating`, { rating, feedback }).pipe(
       map(response => response),
       catchError(error => { throw error })
-    )
+    );
+  }
+
+  submitWorkFeedback(workId: string, feedback: string): Observable<any> {
+    return this.http.post(`${this.userApiUrl}/works/${workId}/feedback`, { feedback });
+  }
+
+  markWorkAsSatisfied(workId: string): Observable<{ success: boolean }> {
+    return this.http.patch<{ success: boolean }>(`${this.userApiUrl}/works/${workId}/satisfied`, {});
   }
 
   rateEditor(editorId: string, rating: number, feedback: string): Observable<boolean> {

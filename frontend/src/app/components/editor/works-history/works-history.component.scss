@@ -369,3 +369,26 @@
     justify-content: space-evenly;
   }
 }
+
+.timeline-section {
+  margin-top: 1rem;
+  border-top: 1px solid var(--color-neutral-200);
+  padding-top: 1rem;
+
+  h4 {
+    color: var(--color-primary);
+    background-color: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-left: 0.75rem;
+    text-decoration: underline;
+  }
+  
+  .timeline-wrapper {
+    padding: 1rem;
+    background-color: var(--color-surface);
+    border-radius: 8px;
+    margin-top: 0.5rem;
+  }
+}

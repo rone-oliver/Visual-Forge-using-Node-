@@ -6,12 +6,15 @@ import { AcceptedQuotationItemDto, CompletedWorkDto, GetAcceptedQuotationsQueryD
 import { FilterQuery, PipelineStage, QueryOptions, Types, UpdateQuery } from 'mongoose';
 import { WorksDocument } from 'src/works/models/works.schema';
 import { SuccessResponseDto } from 'src/users/dto/users.dto';
+import { TimelineEvent } from 'src/timeline/models/timeline.schema';
+import { ITimelineService, ITimelineServiceToken } from 'src/timeline/interfaces/timeline.service.interface';
 
 @Injectable()
 export class QuotationService implements IQuotationService {
     private readonly logger = new Logger(QuotationService.name);
     constructor(
         @Inject(IQuotationRepositoryToken) private readonly quotationRepository: IQuotationRepository,
+        @Inject(ITimelineServiceToken) private readonly timelineService: ITimelineService,
     ) { }
 
     async countAllQuotations(): Promise<number> {
@@ -115,61 +118,37 @@ export class QuotationService implements IQuotationService {
         if (penalty !== undefined) {
             updateData.penalty = penalty;
         }
-        return this.quotationRepository.findByIdAndUpdate(quotationId, updateData);
+        const updatedQuotation = await this.quotationRepository.findByIdAndUpdate(quotationId, updateData);
+        if (updatedQuotation && status === QuotationStatus.ACCEPTED) {
+            await this.timelineService.create({
+                quotationId: updatedQuotation._id,
+                userId: updatedQuotation.userId,
+                editorId: updatedQuotation.editorId,
+                event: TimelineEvent.EDITOR_ASSIGNED,
+                message: 'Editor accepted the quotation and work has started.',
+            });
+        }
+
+        return updatedQuotation;
     }
 
     async getCompletedQuotations(editorId: Types.ObjectId): Promise<CompletedWorkDto[]> {
-        try {
-            const completedQuotations = await this.quotationRepository.getCompletedQuotations(editorId);
-            return completedQuotations.map(quotation => {
-                const worksData = quotation.worksId as unknown as WorksDocument;
-                const qData = quotation as unknown as QuotationDocument;
-    
-                const completedWork: CompletedWorkDto = {
-                    quotationId: qData._id,
-                    worksId: worksData?._id,
-                    title: qData.title,
-                    description: qData.description,
-                    theme: qData.theme,
-                    estimatedBudget: qData.estimatedBudget,
-                    advanceAmount: qData.advanceAmount,
-                    dueDate: qData.dueDate,
-                    status: qData.status,
-                    outputType: qData.outputType,
-                    attachedFiles: qData.attachedFiles?.map(f => ({
-                        url: f.url ? f.url : '',
-                        fileType: f.fileType,
-                        fileName: f.fileName,
-                        size: f.size,
-                        mimeType: f.mimeType,
-                        uploadedAt: f.uploadedAt,
-                    })),
-                    userId: qData.userId, // Client's ID
-                    editorId: qData.editorId, // Editor's ID
-                    finalFiles: worksData?.finalFiles?.map(f => ({
-                        url: f.url,
-                        fileType: f.fileType,
-                        fileName: f.fileName,
-                        size: f.size,
-                        mimeType: f.mimeType,
-                        uploadedAt: f.uploadedAt,
-                        uniqueId: f.uniqueId,
-                        timestamp: f.timestamp
-                    })) || [],
-                    comments: worksData?.comments || '',
-                    isPublic: worksData?.isPublic, // from Works schema if exists
-                    rating: worksData?.rating, // from Works schema if exists
-                    feedback: worksData?.feedback, // from Works schema if exists
-                    createdAt: qData.createdAt, // Quotation creation
-                    updatedAt: qData.updatedAt, // Quotation update
-                    completedAt: worksData?.createdAt, // Work submission time
-                };
-                return completedWork;
-            })
-        } catch (error) {
-            this.logger.error('Error getting the completed works', error);
-            throw new Error('Error getting the completed works');
+        const quotations = await this.quotationRepository.find(
+            {
+                $or: [
+                    { editorId },
+                    { editorId: new Types.ObjectId(editorId) }
+                ],
+                status: QuotationStatus.COMPLETED
+            },
+            null,
+            { populate: 'worksId'}
+        )
+        if(!quotations || quotations.length === 0){
+            this.logger.debug('No quotations found for editor');
+            return [];
         }
+        return this._mapQuotationsToCompletedWorkDtos(quotations);
     }
 
     async findMany(query: FilterQuery<Quotation>): Promise<Quotation[] | null> {
@@ -189,7 +168,18 @@ export class QuotationService implements IQuotationService {
     }
 
     async createQuotation(quotation: Partial<Quotation>): Promise<Quotation> {
-        return this.quotationRepository.create(quotation);
+        const createdQuotation = await this.quotationRepository.create(quotation);
+
+        if(createdQuotation){
+            await this.timelineService.create({
+                quotationId: createdQuotation._id,
+                userId: createdQuotation.userId,
+                event: TimelineEvent.QUOTATION_CREATED,
+                message: 'Quotation created and published by user.',
+            })
+        }
+
+        return createdQuotation;
     }
 
     async findByIdAndUpdate(quotationId: Types.ObjectId, update: UpdateQuery<Quotation>, options?: QueryOptions): Promise<Quotation | null> {
@@ -211,8 +201,65 @@ export class QuotationService implements IQuotationService {
         }
     }
 
-    async getCompletedQuotationsForUser(userId: Types.ObjectId): Promise<Quotation[] | null> {
-        return this.quotationRepository.getCompletedQuotationsForUser(userId);
+    async getCompletedQuotationsForUser(userId: Types.ObjectId): Promise<CompletedWorkDto[]> {
+        const quotations = await this.quotationRepository.find(
+            { userId, status: QuotationStatus.COMPLETED },
+            null,
+            { populate: 'worksId'}
+        );
+        if(!quotations){
+            this.logger.debug('No quotations found for user');
+            return [];
+        }
+        return this._mapQuotationsToCompletedWorkDtos(quotations);
+    }
+
+    private async _mapQuotationsToCompletedWorkDtos(quotations: Quotation[]): Promise<CompletedWorkDto[]> {
+        if (!quotations || quotations.length === 0) {
+            return [];
+        }
+
+        const completedWorksPromises = quotations.map(async (quotation) => {
+            const worksData = quotation.worksId as any | null;
+            const timelineEvents = await this.timelineService.findByQuotationId(quotation._id);
+
+            const timelineDto = timelineEvents.map(event => ({
+                event: event.event,
+                message: event.message,
+                metadata: event.metadata,
+                timestamp: event.timestamp,
+            }));
+
+            return {
+                quotationId: quotation._id,
+                worksId: worksData?._id,
+                title: quotation.title,
+                description: quotation.description,
+                theme: quotation.theme,
+                estimatedBudget: quotation.estimatedBudget,
+                advanceAmount: quotation.advanceAmount,
+                balanceAmount: quotation.balanceAmount,
+                dueDate: quotation.dueDate,
+                status: quotation.status,
+                outputType: quotation.outputType,
+                attachedFiles: quotation.attachedFiles as any,
+                userId: quotation.userId,
+                editorId: quotation.editorId,
+                finalFiles: worksData?.finalFiles as any || [],
+                comments: worksData?.comments || '',
+                isPublic: worksData?.isPublic,
+                rating: worksData?.rating,
+                feedback: worksData?.feedback,
+                isSatisfied: worksData?.isSatisfied,
+                createdAt: quotation.createdAt,
+                updatedAt: quotation.updatedAt,
+                completedAt: worksData?.createdAt,
+                penalty: quotation.penalty,
+                timeline: timelineDto,
+            };
+        });
+
+        return Promise.all(completedWorksPromises);
     }
 
     async findOne(query: FilterQuery<Quotation>): Promise<Quotation | null> {

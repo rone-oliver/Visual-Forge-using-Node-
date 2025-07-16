@@ -1,0 +1,19 @@
+<div class="horizontal-timeline-container">
+  <div class="timeline-bar"></div>
+
+  @for (event of eventPositions(); track event.timestamp) {
+    <div 
+      [class.timeline-event-dot]="!event.isEndpoint"
+      [class.timeline-endpoint-dot]="event.isEndpoint"
+      [class.satisfied]="event.isEndpoint && isSatisfied()"
+      [style.left.%]="event.position"
+      [matTooltip]="event.message + '\n' + (event.timestamp | date: 'medium')"
+      matTooltipClass="policy-tooltip"
+      (click)="$event.stopPropagation()"
+    ></div>
+  }
+
+  @if (eventPositions().length === 0) {
+    <div class="empty-state-message">No timeline events yet.</div>
+  }
+</div>

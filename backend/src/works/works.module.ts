@@ -7,6 +7,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Works, workSchema } from 'src/works/models/works.schema';
 import { User, userSchema } from 'src/users/models/user.schema';
 import { CloudinaryModule } from 'src/common/cloudinary/cloudinary.module';
+import { TimelineModule } from 'src/timeline/timeline.module';
+import { QuotationModule } from 'src/quotation/quotation.module';
 
 @Module({
   providers: [
@@ -23,9 +25,8 @@ import { CloudinaryModule } from 'src/common/cloudinary/cloudinary.module';
     MongooseModule.forFeature([
       { name: Works.name, schema: workSchema },
       { name: User.name, schema: userSchema },
-      
     ]),
-    CloudinaryModule,
+    CloudinaryModule, TimelineModule, QuotationModule,
   ],
   exports: [IWorkServiceToken, IWorkRepositoryToken]
 })

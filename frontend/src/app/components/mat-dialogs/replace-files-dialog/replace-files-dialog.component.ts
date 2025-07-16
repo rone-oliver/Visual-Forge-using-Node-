@@ -1,6 +1,6 @@
 import { Component, Inject, SecurityContext } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { CompletedWork } from '../../../interfaces/completed-word.interface';
+import { CompletedWork } from '../../../interfaces/completed-work.interface';
 import { MatListModule } from '@angular/material/list';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';

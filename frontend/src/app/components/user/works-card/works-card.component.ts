@@ -1,7 +1,7 @@
 import { Component, ElementRef, Input, OnInit, AfterViewInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { trigger, state, style, transition, animate } from '@angular/animations';
-import { Works } from '../../../interfaces/completed-word.interface';
+import { Works } from '../../../interfaces/completed-work.interface';
 import { User } from '../../../interfaces/user.interface';
 import { Editor } from '../../../interfaces/editor.interface';
 import { MatIconModule } from '@angular/material/icon';

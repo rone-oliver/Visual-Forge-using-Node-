@@ -1,5 +1,5 @@
 import { Editor } from "./editor.interface";
-import { FileAttachmentResponse, OutputType, QuotationStatus } from "./quotation.interface";
+import { FileAttachmentResponse, OutputType, QuotationStatus, TimelineEvent } from "./quotation.interface";
 import { User } from "./user.interface";
 
 export interface CompletedWork {
@@ -39,9 +39,11 @@ export interface CompletedWork {
     feedback?: string;
 
     // Timestamps
-    createdAt?: Date | string;
+    createdAt: Date | string;
     updatedAt?: Date | string;
     completedAt?: Date | string;
+    timeline?: TimelineEvent[];
+    isSatisfied?: boolean;
 }
 
 export interface Works {

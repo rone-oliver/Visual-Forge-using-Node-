@@ -8,7 +8,6 @@ import {
     CreateQuotationDto,
     UpdateQuotationDto, 
     EditorRequestStatusResponseDto,
-    CompletedWorkDto,
     QuotationResponseDto,
     UpdateProfileImageDto,
     ResetPasswordDto,
@@ -27,10 +26,9 @@ import {
 } from '../dto/users.dto';
 import { BidResponseDto } from '../dto/users.dto';
 import { FileUploadResultDto as FileUploadResultDtoCloudinary } from 'src/common/cloudinary/dtos/cloudinary.dto'; 
-import { User } from '../models/user.schema';
-import { Types } from 'mongoose';
 import { Bid } from 'src/common/bids/models/bids.schema';
 import { GetPublicWorksQueryDto, PaginatedPublicWorksResponseDto, UpdateWorkPublicStatusDto } from 'src/works/dtos/works.dto';
+import { CompletedWorkDto } from 'src/quotation/dtos/quotation.dto';
 
 export interface IUsersController {
     getUserProfile(req: Request): Promise<UserProfileResponseDto>;

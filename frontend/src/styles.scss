@@ -24,22 +24,22 @@
     --color-neutral-500: theme('colors.neutral.500');
     --color-neutral-600: theme('colors.neutral.600');
     --color-neutral-700: theme('colors.neutral.700');
-    --color-success: #10B981;
-    --color-danger: #EF4444;
-    --color-warning: #FDB52A; // New warning color from secondary palette
-    --color-warning-contrast: #080F25; // Dark text for contrast
+    --color-success: #00FA6B;
+    --color-danger: #FF4757;
+    --color-warning: #FDB52A;
+    --color-warning-contrast: #080F25;
     --color-danger-contrast: #ffffff;
 
     // File upload component colors
     --file-pending-bg: theme('colors.neutral.400');
     --file-pending-border: theme('colors.neutral.500');
     --file-pending-hover-bg: theme('colors.neutral.500');
-    --file-uploaded-bg: rgba(16, 185, 129, 0.1); // Based on success color
+    --file-uploaded-bg: rgba(16, 185, 129, 0.1);
     --file-uploaded-border: rgba(16, 185, 129, 0.3);
     --file-uploaded-hover-bg: rgba(16, 185, 129, 0.2);
     --color-link: theme('colors.primary.light');
     --color-link-hover: theme('colors.secondary.300');
-    --color-surface-rgb: 232, 234, 246; // RGB value of surface.light
+    --color-surface-rgb: 232, 234, 246;
 
     // Admin Theme colours
     --admin-color-primary: theme('colors.admin.primary.light');
@@ -59,17 +59,16 @@
     --color-background: theme('colors.background.dark');
     --color-text: theme('colors.text.dark');
     --color-surface: theme('colors.surface.dark');
-    --color-success: #059669;
-    --color-danger: #DC2626;
-    --color-warning: #FDB52A; // Consistent warning color for dark mode
+    --color-success: #1AE052;
+    --color-danger: #FF4757;
+    --color-warning: #FDB52A;
     --color-warning-contrast: #080F25;
 
     // File upload component colors for dark theme
     --file-pending-bg: theme('colors.neutral.200');
     --file-pending-border: theme('colors.neutral.300');
     --file-pending-hover-bg: theme('colors.neutral.300');
-    --file-uploaded-bg: rgba(5, 150, 105, 0.2); // Based on dark success color
-    --file-uploaded-border: rgba(5, 150, 105, 0.4);
+    --file-uploaded-bg: rgba(5, 150, 105, 0.2);
     --file-uploaded-hover-bg: rgba(5, 150, 105, 0.3);
     --color-link: theme('colors.secondary.300');
     --color-link-hover: theme('colors.secondary.400');
@@ -106,6 +105,36 @@
       .mat-mdc-snack-bar-actions {
         .mdc-button {
           color: white;
+          font-weight: 500;
+
+          &:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+          }
+        }
+      }
+    }
+  }
+
+  .error-snackbar {
+    &.mat-mdc-snack-bar-container {
+      --mat-snackbar-container-color: var(--color-danger);
+      --mat-mdc-snack-bar-button-color: var(--color-danger-contrast);
+      --mat-snackbar-supporting-text-color: var(--color-danger-contrast);
+
+      .mdc-snackbar__surface {
+        background-color: var(--color-danger);
+        border-radius: 12px;
+        padding: 8px 16px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        backdrop-filter: blur(10px);
+      }
+
+      .mat-mdc-snack-bar-actions {
+        .mdc-button {
+          color: var(--color-danger-contrast);
           font-weight: 500;
 
           &:hover {
@@ -161,6 +190,10 @@
       background-color: var(--color-surface) !important;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
       padding: 0 !important;
+    }
+
+    .mdc-notched-outline__notch {
+      border-right: none !important;
     }
   }
 

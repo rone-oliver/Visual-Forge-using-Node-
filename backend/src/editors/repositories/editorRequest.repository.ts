@@ -2,7 +2,9 @@ import { IEditorRequestsRepository } from "../interfaces/editorRequests.reposito
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
 import { EditorRequest, EditorRequestDocument, EditorRequestStatus } from "src/editors/models/editorRequest.schema";
+import { Injectable } from "@nestjs/common";
 
+@Injectable()
 export class EditorRequestsRepository implements IEditorRequestsRepository {
     constructor(
         @InjectModel(EditorRequest.name) private editorRequestModel: Model<EditorRequestDocument>
