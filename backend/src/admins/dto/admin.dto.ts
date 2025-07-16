@@ -1,5 +1,8 @@
 import { Types } from "mongoose";
 import { Categories, EditorRequestStatus } from "src/editors/models/editorRequest.schema";
+import { TopQuotationByBidsDto, TopUserDto } from "src/quotation/dtos/quotation.dto";
+import { TopEditorDto } from "src/works/dtos/works.dto";
+import { ApiProperty } from "@nestjs/swagger";
 
 export interface GetAllUsersQueryDto {
   isEditor?: boolean;
@@ -48,6 +51,20 @@ export interface FormattedEditor {
     socialLinks?: any;
 }
 
+export class FinancialSummaryDto {
+    @ApiProperty()
+    totalRevenue: number;
+
+    @ApiProperty()
+    totalPayouts: number;
+
+    @ApiProperty()
+    netProfit: number;
+
+    @ApiProperty()
+    totalPlatformFee: number;
+}
+
 export interface DashboardResponseDto {
   totalUsers: number;
   totalEditors: number;
@@ -61,4 +78,12 @@ export interface DashboardResponseDto {
     Expired: number;
     Cancelled: number;
   };
+  transactionCounts: {
+    credit: number;
+    debit: number;
+  };
+  financialSummary: FinancialSummaryDto;
+  topUsersByQuotations: TopUserDto[];
+  topEditorsByCompletedWorks: TopEditorDto[];
+  topQuotationsByBids: TopQuotationByBidsDto[];
 }

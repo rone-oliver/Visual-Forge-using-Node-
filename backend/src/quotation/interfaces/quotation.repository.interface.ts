@@ -1,10 +1,11 @@
 import { FilterQuery, PipelineStage, QueryOptions, Types, UpdateQuery } from "mongoose";
-import { GetAcceptedQuotationsQueryDto, GetPublishedQuotationsQueryDto, getQuotationsByStatusResponseDto, PaginatedAcceptedQuotationsResponseDto, PaginatedPublishedQuotationsResponseDto } from "../dtos/quotation.dto";
+import { GetAcceptedQuotationsQueryDto, GetPublishedQuotationsQueryDto, getQuotationsByStatusResponseDto, PaginatedAcceptedQuotationsResponseDto, PaginatedPublishedQuotationsResponseDto, TopQuotationByBidsDto, TopUserDto } from "../dtos/quotation.dto";
 import { Quotation } from "../models/quotation.schema";
 
 export const IQuotationRepositoryToken = Symbol('IQuotationRepository');
 
 export interface IQuotationRepository {
+    getTopUsersByQuotationCount(limit: number): Promise<TopUserDto[]>;
     countDocuments(filter?: any): Promise<number>;
     getQuotationsByStatus(): Promise<getQuotationsByStatusResponseDto[]>;
     getAcceptedQuotations(editorId: Types.ObjectId, query: GetAcceptedQuotationsQueryDto);
@@ -20,4 +21,5 @@ export interface IQuotationRepository {
     findByIdAndDelete(quotationId: Types.ObjectId): Promise<void>;
     getCompletedQuotationsForUser(userId: Types.ObjectId): Promise<Quotation[] | null>;
     findOne(query: FilterQuery<Quotation>): Promise<Quotation | null>;
+    getTopQuotationsByBidCount(limit: number): Promise<TopQuotationByBidsDto[]>;
 }

@@ -7,6 +7,7 @@ import { IWalletService, IWalletServiceToken } from './interfaces/wallet-service
 import { Types } from 'mongoose';
 import { PaginatedLedgerResponseDto } from './dto/wallet.dto';
 import { IPaymentService, IPaymentServiceToken } from 'src/common/payment/interfaces/payment-service.interface';
+import { FinancialSummaryDto } from 'src/admins/dto/admin.dto';
 
 @Injectable()
 export class AdminWalletService implements IAdminWalletService {
@@ -72,6 +73,22 @@ export class AdminWalletService implements IAdminWalletService {
       currentPage: page,
       itemsPerPage: limit,
       totalBalance: balance
+    };
+  }
+
+  async getTransactionCountByFlow(): Promise<{ credit: number; debit: number }> {
+    return this.adminTransactionRepository.getTransactionCountByFlow();
+  }
+
+  async getFinancialSummary(): Promise<FinancialSummaryDto> {
+    const { totalRevenue, totalPlatformFee, totalPayouts } = await this.adminTransactionRepository.getFinancialSummary();
+    const netProfit = totalRevenue - totalPayouts;
+
+    return {
+      totalRevenue,
+      totalPlatformFee,
+      totalPayouts,
+      netProfit,
     };
   }
 }

@@ -10,6 +10,8 @@ import { AdminRepository } from './repositories/admin.repository';
 import { QuotationModule } from 'src/quotation/quotation.module';
 import { EditorsModule } from 'src/editors/editors.module';
 import { ReportsModule } from 'src/reports/reports.module';
+import { WalletModule } from 'src/wallet/wallet.module';
+import { WorksModule } from 'src/works/works.module';
 
 @Module({
   providers: [
@@ -27,7 +29,8 @@ import { ReportsModule } from 'src/reports/reports.module';
     UsersModule, QuotationModule, EditorsModule, ReportsModule,
     MongooseModule.forFeature([
       { name: Admin.name, schema: adminSchema },
-    ])
+    ]),
+    WalletModule, WorksModule,
   ],
   exports: [
     IAdminsServiceToken,

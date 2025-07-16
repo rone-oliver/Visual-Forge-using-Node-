@@ -4,6 +4,7 @@ import {
     IsArray,
     IsBoolean,
     IsDate,
+    IsEmail,
     IsEnum,
     IsInt,
     IsMongoId,
@@ -195,6 +196,24 @@ export class PaginatedPublicWorksResponseDto {
     @ApiProperty({ description: 'Total number of public works' })
     @IsInt()
     total: number;
+}
+
+export class TopEditorDto {
+    @ApiProperty()
+    @IsMongoId()
+    _id: Types.ObjectId;
+
+    @ApiProperty()
+    @IsString()
+    fullname: string;
+
+    @ApiProperty()
+    @IsEmail()
+    email: string;
+
+    @ApiProperty()
+    @IsNumber()
+    completedWorksCount: number;
 }
 
 export type PopulatedUser = {

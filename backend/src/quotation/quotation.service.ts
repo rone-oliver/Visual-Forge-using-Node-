@@ -1,10 +1,9 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { IQuotationService } from './interfaces/quotation.service.interface';
 import { IQuotationRepository, IQuotationRepositoryToken } from './interfaces/quotation.repository.interface';
-import { Quotation, QuotationDocument, QuotationStatus } from './models/quotation.schema';
-import { AcceptedQuotationItemDto, CompletedWorkDto, GetAcceptedQuotationsQueryDto, GetPublishedQuotationsQueryDto, getQuotationsByStatusResponseDto, PaginatedAcceptedQuotationsResponseDto, PaginatedPublishedQuotationsResponseDto, PublishedQuotationItemDto } from './dtos/quotation.dto';
+import { Quotation, QuotationStatus } from './models/quotation.schema';
+import { AcceptedQuotationItemDto, CompletedWorkDto, GetAcceptedQuotationsQueryDto, GetPublishedQuotationsQueryDto, getQuotationsByStatusResponseDto, PaginatedAcceptedQuotationsResponseDto, PaginatedPublishedQuotationsResponseDto, PublishedQuotationItemDto, TopQuotationByBidsDto, TopUserDto } from './dtos/quotation.dto';
 import { FilterQuery, PipelineStage, QueryOptions, Types, UpdateQuery } from 'mongoose';
-import { WorksDocument } from 'src/works/models/works.schema';
 import { SuccessResponseDto } from 'src/users/dto/users.dto';
 import { TimelineEvent } from 'src/timeline/models/timeline.schema';
 import { ITimelineService, ITimelineServiceToken } from 'src/timeline/interfaces/timeline.service.interface';
@@ -16,6 +15,22 @@ export class QuotationService implements IQuotationService {
         @Inject(IQuotationRepositoryToken) private readonly quotationRepository: IQuotationRepository,
         @Inject(ITimelineServiceToken) private readonly timelineService: ITimelineService,
     ) { }
+
+    async getTopUsersByQuotationCount(limit: number): Promise<TopUserDto[]> {
+        return this.quotationRepository.getTopUsersByQuotationCount(limit);
+    }
+
+    async getTopQuotationsByBidCount(limit: number): Promise<TopQuotationByBidsDto[]> {
+        try {
+            this.logger.log(`Fetching top ${limit} quotations by bid count.`);
+            const topQuotations = await this.quotationRepository.getTopQuotationsByBidCount(limit);
+            this.logger.log(`Successfully fetched top ${limit} quotations by bid count.`);
+            return topQuotations;
+        } catch (error) {
+            this.logger.error(`Failed to fetch top quotations by bid count: ${error.message}`, error.stack);
+            throw new Error('Failed to fetch top quotations by bid count.');
+        }
+    }
 
     async countAllQuotations(): Promise<number> {
         return this.quotationRepository.countDocuments();

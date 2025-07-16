@@ -4,7 +4,7 @@ import { IWorkRepository, IWorkRepositoryToken } from './interfaces/works.reposi
 import { Logger } from '@nestjs/common';
 import { Works } from './models/works.schema';
 import { Types } from 'mongoose';
-import { CreateWorkDto, GetPublicWorksQueryDto, PaginatedPublicWorksResponseDto, PublicWorkItemDto, RateWorkDto, UpdateWorkFilesDto, UpdateWorkPublicStatusDto } from './dtos/works.dto';
+import { CreateWorkDto, GetPublicWorksQueryDto, PaginatedPublicWorksResponseDto, PublicWorkItemDto, RateWorkDto, TopEditorDto, UpdateWorkFilesDto, UpdateWorkPublicStatusDto } from './dtos/works.dto';
 import { FileUploadResultDto, SuccessResponseDto } from 'src/users/dto/users.dto';
 import { ICloudinaryService, ICloudinaryServiceToken } from 'src/common/cloudinary/interfaces/cloudinary-service.interface';
 import { ITimelineService, ITimelineServiceToken } from 'src/timeline/interfaces/timeline.service.interface';
@@ -170,6 +170,15 @@ export class WorksService implements IWorkService {
             return { works: publicWorksDto, total };
         } catch (error) {
             this.logger.error('Failed to get public works', error);
+            throw error;
+        }
+    }
+
+    async getTopEditorsByCompletedWorks(limit: number): Promise<TopEditorDto[]> {
+        try {
+            return this.workRepository.getTopEditorsByCompletedWorks(limit);
+        } catch (error) {
+            this.logger.error('Failed to get top editors by completed works', error);
             throw error;
         }
     }

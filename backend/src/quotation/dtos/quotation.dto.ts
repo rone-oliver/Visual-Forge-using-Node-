@@ -1,11 +1,30 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsArray, IsBoolean, IsDate, IsDateString, IsEnum, IsMongoId, IsNotEmpty, IsNumber, IsOptional, IsString, Min, ValidateNested } from "class-validator";
+import { IsArray, IsBoolean, IsDate, IsDateString, IsEmail, IsEnum, IsMongoId, IsNotEmpty, IsNumber, IsOptional, IsString, Min, ValidateNested } from "class-validator";
 import { Types } from "mongoose";
 import { EditorBidDetailsDto } from "src/editors/dto/editors.dto";
 import { OutputType, QuotationStatus } from "src/quotation/models/quotation.schema";
 import { FileType as CommonFileType } from 'src/quotation/models/quotation.schema';
 import { TimelineResponseDto } from "src/timeline/dtos/timeline.dto";
+import { UserBasicInfoDto } from "src/users/dto/users.dto";
+
+export class TopUserDto {
+  @ApiProperty()
+  @IsMongoId()
+  _id: Types.ObjectId;
+
+  @ApiProperty()
+  @IsString()
+  fullname: string;
+
+  @ApiProperty()
+  @IsEmail()
+  email: string;
+
+  @ApiProperty()
+  @IsNumber()
+  quotationCount: number;
+}
 
 export class getQuotationsByStatusResponseDto {
   [key: string]: number;
@@ -241,6 +260,29 @@ export class PaginatedPublishedQuotationsResponseDto {
   @ApiProperty({ description: 'Number of items per page' })
   @IsNumber()
   itemsPerPage: number;
+}
+
+export class TopQuotationByBidsDto {
+  @ApiProperty()
+  @IsMongoId()
+  _id: Types.ObjectId;
+
+  @ApiProperty()
+  @IsString()
+  title: string;
+
+  @ApiProperty({ enum: QuotationStatus })
+  @IsEnum(QuotationStatus)
+  status: QuotationStatus;
+
+  @ApiProperty()
+  @IsNumber()
+  bidCount: number;
+
+  @ApiProperty({ type: () => UserBasicInfoDto })
+  @ValidateNested()
+  @Type(() => UserBasicInfoDto)
+  user: UserBasicInfoDto;
 }
 
 // For CompletedWork response

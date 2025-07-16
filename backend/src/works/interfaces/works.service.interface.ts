@@ -1,6 +1,6 @@
 import { Types } from "mongoose";
 import { Works } from "../models/works.schema";
-import { CreateWorkDto, GetPublicWorksQueryDto, PaginatedPublicWorksResponseDto, RateWorkDto, UpdateWorkFilesDto, UpdateWorkPublicStatusDto } from "../dtos/works.dto";
+import { CreateWorkDto, GetPublicWorksQueryDto, PaginatedPublicWorksResponseDto, RateWorkDto, TopEditorDto, UpdateWorkFilesDto, UpdateWorkPublicStatusDto } from "../dtos/works.dto";
 import { SuccessResponseDto } from "src/users/dto/users.dto";
 
 export const IWorkServiceToken = Symbol('IWorkService');
@@ -14,4 +14,5 @@ export interface IWorkService {
     getPublicWorks(filter: GetPublicWorksQueryDto): Promise<PaginatedPublicWorksResponseDto>;
     updateWorkFiles(workId: string, files: Express.Multer.File[], updateWorkFilesDto: UpdateWorkFilesDto): Promise<SuccessResponseDto>;
     updateWork(workId: Types.ObjectId, updates: Partial<Works>): Promise<Works | null>;
+    getTopEditorsByCompletedWorks(limit: number): Promise<TopEditorDto[]>;
 }

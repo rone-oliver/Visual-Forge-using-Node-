@@ -1,20 +1,22 @@
 import { Component, OnInit } from '@angular/core';
-import { Chart, ChartConfiguration, ChartData, ChartType, registerables } from 'chart.js';
-import { DashboardResponseDto, DashboardService } from '../../../services/admin/dashboard.service';
+import { Chart, ChartConfiguration, ChartData, registerables } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import { MatIconModule } from '@angular/material/icon';
+import { DashboardResponseDto } from '../../../interfaces/admin.interface';
+import { DashboardService } from '../../../services/admin/dashboard.service';
+import { CurrencyPipe } from '@angular/common';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [BaseChartDirective, MatIconModule],
+  imports: [BaseChartDirective, MatIconModule, CurrencyPipe],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit {
 
   dashboardData: DashboardResponseDto | null = null;
-  public userDoughnutChartData!: ChartData<'doughnut'>;
-  public userDoughnutChartOptions: ChartConfiguration['options'];
+  public transactionPieChartData!: ChartData<'pie'>;
+  public transactionPieChartOptions: ChartConfiguration['options'];
   public quotationBarChartData!: ChartData<'bar'>;
   public quotationBarChartOptions: ChartConfiguration['options'];
 
@@ -35,19 +37,19 @@ export class DashboardComponent implements OnInit {
     const adminPrimaryColor = getComputedStyle(document.documentElement).getPropertyValue('--admin-color-primary').trim();
     const adminSecondaryColor = getComputedStyle(document.documentElement).getPropertyValue('--admin-color-secondary').trim();
 
-    // Doughnut chart for users and editors
-    this.userDoughnutChartData = {
-      labels: ['Users', 'Editors'],
+    // Pie chart for transactions
+    this.transactionPieChartData = {
+      labels: ['Credits', 'Debits'],
       datasets: [
         {
-          data: [this.dashboardData.totalUsers - this.dashboardData.totalEditors, this.dashboardData.totalEditors],
+          data: [this.dashboardData.transactionCounts.credit, this.dashboardData.transactionCounts.debit],
           backgroundColor: [adminPrimaryColor, adminSecondaryColor],
           hoverBackgroundColor: [adminPrimaryColor, adminSecondaryColor],
           borderColor: 'transparent'
         }
       ]
     };
-    this.userDoughnutChartOptions = {
+    this.transactionPieChartOptions = {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {

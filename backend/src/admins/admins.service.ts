@@ -12,7 +12,9 @@ import { IQuotationService, IQuotationServiceToken } from 'src/quotation/interfa
 import { IEditorsService, IEditorsServiceToken } from 'src/editors/interfaces/editors.service.interface';
 import { IUsersService, IUsersServiceToken } from 'src/users/interfaces/users.service.interface';
 import { IReportService, IReportServiceToken } from 'src/reports/interfaces/reports.service.interface';
+import { IAdminWalletService, IAdminWalletServiceToken } from 'src/wallet/interfaces/admin-wallet.service.interface';
 import { UpdateReportDto } from 'src/reports/dtos/reports.dto';
+import { IWorkService, IWorkServiceToken } from 'src/works/interfaces/works.service.interface';
 
 @Injectable()
 export class AdminsService implements IAdminsService {
@@ -25,6 +27,8 @@ export class AdminsService implements IAdminsService {
         @Inject(IReportServiceToken) private readonly reportsService: IReportService,
         @Inject(IQuotationServiceToken) private readonly quotationService: IQuotationService,
         @Inject(IUsersServiceToken) private readonly usersService: IUsersService,
+        @Inject(IAdminWalletServiceToken) private readonly adminWalletService: IAdminWalletService,
+        @Inject(IWorkServiceToken) private readonly worksService: IWorkService,
     ) { };
 
     async findOne(filter: Partial<Admin>): Promise<Admin | null> {
@@ -135,12 +139,21 @@ export class AdminsService implements IAdminsService {
 
     async getDashboardData(): Promise<DashboardResponseDto> {
         try {
-            const [totalUsers, totalEditors, totalEditorRequests, totalReports, totalQuotations] = await Promise.all([
+            const [
+                totalUsers, totalEditors, totalEditorRequests, totalReports, 
+                totalQuotations, transactionCounts, financialSummary, topUsersByQuotations, 
+                topEditorsByCompletedWorks, topQuotationsByBids
+            ] = await Promise.all([
                 this.usersService.countAllUsers(),
                 this.editorService.countAllEditors(),
                 this.editorService.countEditorRequests(),
                 this.reportsService.countDocuments(),
                 this.quotationService.countAllQuotations(),
+                this.adminWalletService.getTransactionCountByFlow(),
+                this.adminWalletService.getFinancialSummary(),
+                this.quotationService.getTopUsersByQuotationCount(5),
+                this.worksService.getTopEditorsByCompletedWorks(5),
+                this.quotationService.getTopQuotationsByBidCount(5),
             ]);
             const quotationsByStatus = await this.quotationService.getQuotationsByStatus();
 
@@ -156,7 +169,12 @@ export class AdminsService implements IAdminsService {
                     Completed: quotationsByStatus.Completed,
                     Expired: quotationsByStatus.Expired,
                     Cancelled: quotationsByStatus.Cancelled,
-                }
+                },
+                transactionCounts,
+                financialSummary,
+                topUsersByQuotations,
+                topEditorsByCompletedWorks,
+                topQuotationsByBids,
             };
         } catch (error) {
             this.logger.error(`Error fetching dashboard data: ${error.message}`);

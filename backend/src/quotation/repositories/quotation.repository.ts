@@ -3,7 +3,7 @@ import { InjectModel } from "@nestjs/mongoose";
 import { FilterQuery, Model, PipelineStage, QueryOptions, Types, UpdateQuery } from "mongoose";
 import { OutputType, Quotation, QuotationDocument, QuotationStatus } from "../models/quotation.schema";
 import { IQuotationRepository } from "../interfaces/quotation.repository.interface";
-import { GetAcceptedQuotationsQueryDto, GetPublishedQuotationsQueryDto, getQuotationsByStatusResponseDto, PaginatedAcceptedQuotationsResponseDto, PaginatedPublishedQuotationsResponseDto, PublishedQuotationItemDto } from "../dtos/quotation.dto";
+import { GetAcceptedQuotationsQueryDto, GetPublishedQuotationsQueryDto, getQuotationsByStatusResponseDto, PaginatedAcceptedQuotationsResponseDto, PaginatedPublishedQuotationsResponseDto, PublishedQuotationItemDto, TopQuotationByBidsDto, TopUserDto } from "../dtos/quotation.dto";
 
 @Injectable()
 export class QuotationRepository implements IQuotationRepository {
@@ -289,5 +289,93 @@ export class QuotationRepository implements IQuotationRepository {
 
     async findMany(query: FilterQuery<Quotation>): Promise<Quotation[] | null> {
         return this.quotationModel.find(query);
+    }
+
+    async getTopUsersByQuotationCount(limit: number): Promise<TopUserDto[]> {
+        return this.quotationModel.aggregate([
+            {
+                $group: {
+                    _id: '$userId',
+                    quotationCount: { $sum: 1 },
+                },
+            },
+            { $sort: { quotationCount: -1 } },
+            { $limit: limit },
+            {
+                $addFields: {
+                    convertedUserId: { $toObjectId: '$_id' }
+                }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'convertedUserId',
+                    foreignField: '_id',
+                    as: 'userDetails',
+                },
+            },
+            {
+                $unwind: '$userDetails',
+            },
+            {
+                $project: {
+                    _id: '$userDetails._id',
+                    fullname: '$userDetails.fullname',
+                    email: '$userDetails.email',
+                    quotationCount: 1,
+                },
+            },
+        ]);
+    }
+
+    async getTopQuotationsByBidCount(limit: number): Promise<TopQuotationByBidsDto[]> {
+        return this.quotationModel.aggregate([
+            {
+                $lookup: {
+                    from: 'bids',
+                    localField: '_id',
+                    foreignField: 'quotationId',
+                    as: 'bids',
+                },
+            },
+            {
+                $addFields: {
+                    bidCount: { $size: '$bids' },
+                },
+            },
+            { $sort: { bidCount: -1 } },
+            { $limit: limit },
+            {
+                $addFields: {
+                    convertedUserId: { $toObjectId: '$userId' }
+                }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'convertedUserId',
+                    foreignField: '_id',
+                    as: 'userDetails',
+                },
+            },
+            {
+                $unwind: '$userDetails',
+            },
+            {
+                $project: {
+                    _id: '$userDetails._id',
+                    title: 1,
+                    status: 1,
+                    bidCount: 1,
+                    user: {
+                        _id: '$userDetails._id',
+                        username: '$userDetails.username',
+                        fullname: '$userDetails.fullname',
+                        email: '$userDetails.email',
+                        profileImage: '$userDetails.profileImage',
+                    },
+                },
+            },
+        ]);
     }
 }

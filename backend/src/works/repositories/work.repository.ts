@@ -2,7 +2,7 @@ import { InjectModel } from "@nestjs/mongoose";
 import { FilterQuery, Model, ProjectionType, QueryOptions, Types, UpdateQuery } from "mongoose";
 import { Works, WorksDocument } from "src/works/models/works.schema";
 import { IWorkRepository } from "../interfaces/works.repository.interface";
-import { CreateWorkDto, GetPublicWorksQueryDto, PopulatedWork } from "../dtos/works.dto";
+import { CreateWorkDto, GetPublicWorksQueryDto, PopulatedWork, TopEditorDto } from "../dtos/works.dto";
 import { User, UserDocument } from "src/users/models/user.schema";
 import { Injectable, Logger } from "@nestjs/common";
 
@@ -95,5 +95,37 @@ export class WorkRepository implements IWorkRepository {
         ]);
 
         return [works, total];
+    }
+
+    async getTopEditorsByCompletedWorks(limit: number): Promise<TopEditorDto[]> {
+        return this.workModel.aggregate([
+            {
+                $group: {
+                    _id: '$editorId',
+                    completedWorksCount: { $sum: 1 },
+                },
+            },
+            { $sort: { completedWorksCount: -1 } },
+            { $limit: limit },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'editor',
+                },
+            },
+            {
+                $unwind: '$editor',
+            },
+            {
+                $project: {
+                    _id: '$editor._id',
+                    fullname: '$editor.fullname',
+                    email: '$editor.email',
+                    completedWorksCount: '$completedWorksCount',
+                },
+            },
+        ]);
     }
 }
