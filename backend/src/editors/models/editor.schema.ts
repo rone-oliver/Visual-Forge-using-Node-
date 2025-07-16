@@ -29,6 +29,7 @@ export class Editor {
       feedback: { type: String },
       userId: { type: Types.ObjectId, ref: 'User', required: true }
     }],
+    _id: false,
     default: []
   })
   ratings?: Rating[];

@@ -262,8 +262,8 @@ export class EditorsService implements IEditorsService {
             const penalty = this._calculatePenalty(quotation.dueDate, submissionDate, quotation.estimatedBudget);
 
             const work = await this.worksService.createWork({
-                editorId: quotation.editorId,
-                userId: quotation.userId,
+                editorId: new Types.ObjectId(quotation.editorId),
+                userId: new Types.ObjectId(quotation.userId),
                 finalFiles: finalFiles.map(file => {
                     const processedUniqueId = file.uniqueId
                         ? String(file.uniqueId).replace(/ /g, '%20')
@@ -277,7 +277,7 @@ export class EditorsService implements IEditorsService {
                     };
                 }),
                 comments: comments ?? '',
-            });
+            }, workData.quotationId);
             await this.quotationService.updateQuotationStatus(quotation._id, QuotationStatus.COMPLETED, work._id, penalty);
 
             this.eventEmitter.emit(EventTypes.QUOTATION_COMPLETED, {

@@ -57,7 +57,7 @@ export class CommonService implements ICommonService {
       );
       res.status(200).json({ message: 'Theme preference updated' });
     } else {
-      this.preferenceModel.create({ userId, preferences: { theme } })
+      this.preferenceModel.create({ userId: new Types.ObjectId(userId), preferences: { theme } })
       res.status(201).json({ message: 'Theme preference created' });
     }
   }

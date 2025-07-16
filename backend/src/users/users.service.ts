@@ -449,7 +449,7 @@ export class UsersService implements IUsersService {
             }
             const quotationDataForDb = {
                 ...createQuotationDto,
-                userId,
+                userId: new Types.ObjectId(userId),
                 advanceAmount: calculatedAdvanceAmount,
                 balanceAmount: calculatedBalanceAmount,
                 attachedFiles: createQuotationDto.attachedFiles?.map(file => {
@@ -653,10 +653,10 @@ export class UsersService implements IUsersService {
         }
 
         await this.timelineService.create({
-            quotationId: quotation._id,
+            quotationId: new Types.ObjectId(quotation._id),
             event: TimelineEvent.FEEDBACK_RECEIVED,
-            userId: userId,
-            editorId: quotation.editorId,
+            userId: new Types.ObjectId(userId),
+            editorId: new Types.ObjectId(quotation.editorId),
             message: feedback,
         });
 
@@ -687,8 +687,8 @@ export class UsersService implements IUsersService {
         }
 
         await this.timelineService.create({
-            quotationId: quotation._id,
-            userId: userId,
+            quotationId: new Types.ObjectId(quotation._id),
+            userId: new Types.ObjectId(userId),
             event: TimelineEvent.USER_SATISFIED,
             message: 'User marked the work as satisfied, completing the project.',
         });
@@ -800,10 +800,10 @@ export class UsersService implements IUsersService {
         }
 
         await this.timelineService.create({
-            quotationId: quotation._id,
+            quotationId: new Types.ObjectId(quotation._id),
             event: TimelineEvent.EDITOR_ASSIGNED,
-            userId: userId,
-            editorId: quotation.editorId,
+            userId: new Types.ObjectId(userId),
+            editorId: new Types.ObjectId(quotation.editorId),
             message: 'Bid Accepted by the user',
         });
 

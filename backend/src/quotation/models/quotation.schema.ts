@@ -87,7 +87,7 @@ export class Quotation {
     @Prop({ type: Date})
     dueDate: Date;
 
-    @Prop({ type: [{ type: FileAttachment }] })
+    @Prop({ type: [{ type: FileAttachment }], _id: false })
     attachedFiles: FileAttachment[];
 
     @Prop({ type: String, enum: QuotationStatus, default: QuotationStatus.PUBLISHED})

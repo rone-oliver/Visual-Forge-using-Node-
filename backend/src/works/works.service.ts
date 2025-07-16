@@ -22,9 +22,20 @@ export class WorksService implements IWorkService {
         @Inject(IQuotationServiceToken) private readonly quotationService: IQuotationService,
     ) { }
 
-    async createWork(workData: CreateWorkDto) {
+    async createWork(workData: CreateWorkDto, quotationId: string) {
         try {
-            return this.workRepository.createWork(workData);
+            const work = await this.workRepository.createWork(workData);
+            await this.timelineService.create({
+                quotationId: new Types.ObjectId(quotationId),
+                event: TimelineEvent.FIRST_DRAFT_SUBMITTED,
+                userId: new Types.ObjectId(workData.userId),
+                editorId: new Types.ObjectId(workData.editorId),
+                message: `Editor submitted ${workData.finalFiles.length} files`,
+                metadata: { 
+                    filesAdded: workData.finalFiles.length
+                },
+            });
+            return work;
         } catch (error) {
             this.logger.log('Failed to create work', error);
             throw error;
@@ -33,7 +44,7 @@ export class WorksService implements IWorkService {
 
     async findById(workId: Types.ObjectId): Promise<Works | null> {
         try {
-            return this.workRepository.findById(workId);
+            return await this.workRepository.findById(workId);
         } catch (error) {
             this.logger.log('Failed to find work', error);
             throw error;
@@ -42,7 +53,7 @@ export class WorksService implements IWorkService {
 
     async updateWork(workId: Types.ObjectId, updates: Partial<Works>): Promise<Works | null> {
         try {
-            return this.workRepository.updateOne({ _id: workId }, { $set: updates });
+            return await this.workRepository.updateOne({ _id: workId }, { $set: updates });
         } catch (error) {
             this.logger.log('Failed to update work', error);
             throw error;
@@ -115,10 +126,10 @@ export class WorksService implements IWorkService {
             }
 
             await this.timelineService.create({
-                quotationId: quotation._id,
+                quotationId: new Types.ObjectId(quotation._id),
                 event: TimelineEvent.WORK_REVISED,
-                userId: quotation.userId,
-                editorId: quotation.editorId,
+                userId: new Types.ObjectId(quotation.userId),
+                editorId: new Types.ObjectId(quotation.editorId),
                 message: `Editor updated files: ${filesAddedCount} added, ${filesDeletedCount} removed.`,
                 metadata: { 
                     filesAdded: filesAddedCount,
