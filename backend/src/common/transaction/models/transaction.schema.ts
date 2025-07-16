@@ -15,26 +15,29 @@ export enum PaymentStatus {
 export enum PaymentMethod {
     RAZORPAY = 'razorpay',
     PAYPAL = 'paypal',
-    STRIPE = 'stripe'
+    STRIPE = 'stripe',
+    WALLET = 'wallet',
 }
 export type TransactionDocument = Transaction & Document;
 
 @Schema({ timestamps: true, collection: 'Transactions' })
 export class Transaction {
+    _id: Types.ObjectId;
+    
     @Prop({ required: true, type: Types.ObjectId, ref: 'Quotation' })
     quotationId: Types.ObjectId;
 
     @Prop({ required: true, type: Types.ObjectId, ref: 'User' })
     userId: Types.ObjectId;
 
-    @Prop({ required: true })
-    paymentId: string;
+    @Prop({ type: String, required: false })
+    paymentId?: string;
 
-    @Prop({ required: true })
-    orderId: string;
+    @Prop({ type: String, required: false })
+    orderId?: string;
 
-    @Prop({ required: true })
-    razorpayPaymentMethod: string;
+    @Prop({ type: String, required: false })
+    razorpayPaymentMethod?: string;
 
     @Prop({ required: true })
     currency: string;
@@ -63,7 +66,7 @@ export class Transaction {
     @Prop({ required: true, enum: PaymentStatus, default: PaymentStatus.PENDING })
     status: PaymentStatus;
 
-    @Prop({ required: true, default: Date.now })
+    @Prop({ type: Date, default: Date.now })
     paymentDate: Date;
 
     createdAt: Date;

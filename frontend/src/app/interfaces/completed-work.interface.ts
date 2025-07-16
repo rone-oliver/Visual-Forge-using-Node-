@@ -18,7 +18,7 @@ export interface CompletedWork {
     isAdvancePaid?: boolean;
     isFullyPaid?: boolean;
     advanceAmount?: number;
-    balanceAmount?: number;
+    balanceAmount: number;
     penalty?: number;
 
     dueDate?: Date | string;

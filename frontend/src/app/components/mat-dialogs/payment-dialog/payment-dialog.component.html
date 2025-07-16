@@ -1,0 +1,67 @@
+<div class="payment-dialog-container">
+    <h2 mat-dialog-title>Choose Payment Method</h2>
+
+    <mat-dialog-content>
+        @if (isLoading) {
+            <div class="loading-container">
+                <mat-spinner diameter="50"></mat-spinner>
+                <p>Loading wallet details...</p>
+            </div>
+        }
+
+        @if (error) {
+            <div class="error-container">
+                <mat-icon color="warn">error_outline</mat-icon>
+                <p>{{ error }}</p>
+            </div>
+        }
+
+        @if (!isLoading && !error) {
+            <div class="payment-options">
+                <!-- Wallet Payment Option -->
+                <div class="payment-option wallet-option" [class.disabled]="!isSufficientBalance">
+                    <div class="option-header">
+                        <mat-icon>account_balance_wallet</mat-icon>
+                        <h3>Pay with Wallet</h3>
+                    </div>
+                    <div class="option-body">
+                        <p>Available Balance: <strong>{{ wallet?.balance | currency:'INR' }}</strong></p>
+                        <p>Amount to Pay: <strong>{{ data.amount | currency:'INR' }}</strong></p>
+                        @if (isSufficientBalance) {
+                            <p class="remaining-balance">
+                                Remaining Balance: 
+                                <strong>{{ (wallet!.balance - data.amount) | currency:'INR' }}</strong>
+                            </p>
+                        } @else {
+                            <div class="insufficient-balance-warning">
+                                <mat-icon color="warn">warning</mat-icon>
+                                <span>Insufficient Balance</span>
+                            </div>
+                        }
+                    </div>
+                    <button mat-flat-button color="primary" (click)="onWalletPay()" [disabled]="!isSufficientBalance">
+                        Pay from Wallet
+                    </button>
+                </div>
+
+                <!-- Razorpay Payment Option -->
+                <div class="payment-option razorpay-option">
+                     <div class="option-header">
+                        <mat-icon>credit_card</mat-icon>
+                        <h3>Pay with Razorpay</h3>
+                    </div>
+                    <div class="option-body">
+                        <p>Use Razorpay to pay with UPI, Credit/Debit Cards, Net Banking, etc.</p>
+                    </div>
+                    <button mat-stroked-button color="primary" (click)="onRazorpayPay()">
+                        Proceed to Razorpay
+                    </button>
+                </div>
+            </div>
+        }
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end">
+        <button mat-button (click)="onCancel()">Cancel</button>
+    </mat-dialog-actions>
+</div>

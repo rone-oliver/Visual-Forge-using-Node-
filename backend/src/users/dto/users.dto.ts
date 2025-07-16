@@ -927,11 +927,11 @@ export class TransactionResponseDto {
 
     @ApiProperty()
     @IsString()
-    paymentId: string;
+    paymentId?: string;
 
     @ApiProperty()
     @IsString()
-    orderId: string;
+    orderId?: string;
 
     @ApiProperty()
     @IsNumber()

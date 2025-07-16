@@ -3,7 +3,7 @@ import { IWalletService, IWalletServiceToken } from './interfaces/wallet-service
 import { RolesGuard } from 'src/auth/guards/role.guard';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { IWalletController } from './interfaces/wallet-controller.interface';
-import { GetTransactionsDto, UpdateWalletDto } from './dto/wallet.dto';
+import { GetTransactionsDto, PayFromWalletDto, UpdateWalletDto } from './dto/wallet.dto';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
 
 @Controller('user/wallet')
@@ -37,5 +37,10 @@ export class WalletController implements IWalletController {
     @Post('withdraw')
     async withdrawMoney(@GetUser('userId') userId: string, @Body() body: UpdateWalletDto) {
         return this.walletService.withdrawMoney(userId, body.amount);
+    }
+
+    @Post('pay')
+    async payFromWallet(@GetUser('userId') userId: string, @Body() body: PayFromWalletDto) {
+        return this.walletService.payFromWallet(userId, body);
     }
 }

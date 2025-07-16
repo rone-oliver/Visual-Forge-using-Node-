@@ -1,7 +1,9 @@
-import { IsOptional, IsInt, IsDateString, IsNotEmpty, IsNumber, Min } from 'class-validator';
+import { IsOptional, IsInt, IsDateString, IsNotEmpty, IsNumber, Min, IsMongoId, IsEnum, IsPositive, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 import { WalletTransaction } from '../models/wallet-transaction.schema';
 import { AdminTransaction } from '../models/admin-transaction.schema';
+import { PaymentType } from 'src/common/transaction/models/transaction.schema';
+import { WalletTransactionType } from '../models/wallet-transaction.schema';
 
 // For GET /wallet/transactions
 export class GetTransactionsDto {
@@ -30,6 +32,21 @@ export class UpdateWalletDto {
   @IsNumber()
   @Min(1)
   amount: number;
+}
+
+export class PayFromWalletDto {
+    @IsMongoId()
+    @IsNotEmpty()
+    quotationId: string;
+
+    @IsNumber()
+    @IsPositive()
+    @IsNotEmpty()
+    amount: number;
+
+    @IsEnum(PaymentType)
+    @IsNotEmpty()
+    paymentType: PaymentType;
 }
 
 export class PaginatedWalletTransactionsResponseDto {

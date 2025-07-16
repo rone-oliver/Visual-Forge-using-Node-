@@ -254,6 +254,8 @@ export class QuotationService implements IQuotationService {
                 estimatedBudget: quotation.estimatedBudget,
                 advanceAmount: quotation.advanceAmount,
                 balanceAmount: quotation.balanceAmount,
+                isAdvancePaid: quotation.isAdvancePaid,
+                isFullyPaid: quotation.isFullyPaid,
                 dueDate: quotation.dueDate,
                 status: quotation.status,
                 outputType: quotation.outputType,

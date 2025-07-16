@@ -24,14 +24,16 @@
         <p class="transaction-description">{{ transaction.paymentType === 'advance' ? `Advance Payment for` : `Balance Payment for` }} {{'quotation: ' + transaction.quotationId.title }}</p>
         <p class="transaction-date">{{ transaction.paymentDate | localDate:'long' }}</p>
         <div class="transaction-meta">
-          <span>Method: {{ transaction.razorpayPaymentMethod | titlecase }}</span>
+          <span>Method: {{ (transaction.razorpayPaymentMethod || transaction.paymentMethod) | titlecase }}</span>
           @if(transaction.bank){
             <span>Bank: {{ transaction.bank }}</span>
           }
           @if(transaction.wallet){
             <span>Wallet: {{ transaction.wallet }}</span>
           }
-          <span>Payment ID: {{ transaction.paymentId }}</span>
+          @if(transaction.paymentMethod !== 'wallet'){
+            <span>Payment ID: {{ transaction.paymentId }}</span>
+          }
         </div>
       </div>
       <div class="transaction-amount">

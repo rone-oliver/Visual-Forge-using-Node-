@@ -21,6 +21,8 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { FormsModule } from '@angular/forms';
 import { TimelineChartComponent } from '../../shared/timeline-chart/timeline-chart.component';
 import { FeedbackModalComponent } from '../../mat-dialogs/feedback-modal/feedback-modal.component';
+import { PaymentType, WalletService } from '../../../services/user/wallet.service';
+import { PaymentDialogComponent, PaymentMethod } from '../../mat-dialogs/payment-dialog/payment-dialog.component';
 
 @Component({
   selector: 'app-quotation',
@@ -60,6 +62,7 @@ export class QuotationComponent implements OnInit, OnDestroy {
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private paymentService: PaymentService,
+    private readonly walletService: WalletService,
     private router: Router,
   ) { }
 
@@ -212,17 +215,17 @@ export class QuotationComponent implements OnInit, OnDestroy {
       if (result && result.feedback) {
         this.userService.submitWorkFeedback(workId, result.feedback).subscribe({
           next: () => {
-            this.snackBar.open('Feedback submitted successfully!', 'Close', { 
+            this.snackBar.open('Feedback submitted successfully!', 'Close', {
               duration: 3000,
-              panelClass: 'success-snackbar' 
+              panelClass: 'success-snackbar'
             });
-            this.loadCompletedWorks(); 
+            this.loadCompletedWorks();
           },
           error: (err) => {
             console.error('Error submitting feedback:', err);
-            this.snackBar.open('Failed to submit feedback. Please try again.', 'Close', { 
+            this.snackBar.open('Failed to submit feedback. Please try again.', 'Close', {
               duration: 3000,
-              panelClass: 'error-snackbar' 
+              panelClass: 'error-snackbar'
             });
           }
         });
@@ -436,87 +439,109 @@ export class QuotationComponent implements OnInit, OnDestroy {
   }
 
   async initiateAdvancePayment(quotation: IQuotation) {
-    try {
-      if (!quotation.advanceAmount) {
-        console.error('Advance amount not specified');
-        return;
-      }
-      const order = await firstValueFrom(
-        this.paymentService.createOrder(quotation.advanceAmount, 'INR',quotation._id)
-      );
-
-      const paymentResult = await this.paymentService.openRazorpayCheckout(order);
-      console.log('paymentResult from component: ', paymentResult);
-
-      // After successful payment and verification
-      await firstValueFrom(
-        this.userService.updateQuotationPayment(true, quotation._id, quotation.advanceAmount, paymentResult)
-      );
-
-      this.snackBar.open('Payment successful!', 'Close', {
-        duration: 3000,
-        panelClass: 'success-snack'
-      });
-
-      // Refresh quotations list
-      this.loadQuotations();
-
-    } catch (error: any) {
-      console.error('Payment or update failed:', error);
-      this.snackBar.open(
-        error && typeof error.error === 'object' && 'message' in error.error 
-          ? error.error.message 
-          : 'Payment process failed. Please reload the page and Try Again',
-        'Dismiss',
-        {
-          duration: 3000,
-          panelClass: 'error-snack'
-        }
-      );
+    if (!quotation.advanceAmount) {
+      console.error('Advance amount not specified');
+      return;
     }
+    this.openPaymentDialog(quotation, quotation.advanceAmount, PaymentType.ADVANCE);
   }
 
   async initiateBalancePayment(work: CompletedWork) {
-    try {
-      if(!work.balanceAmount){
-        console.error('Balance amount not specified');
-        return;
+    if (!work.balanceAmount) {
+      console.error('Balance amount not specified');
+      return;
+    }
+    this.openPaymentDialog(work, work.balanceAmount, PaymentType.BALANCE);
+  }
+
+  private openPaymentDialog(item: IQuotation | CompletedWork, amount: number, paymentType: PaymentType): void {
+    const quotationId = '_id' in item ? item._id : item.quotationId;
+
+    const dialogRef = this.dialog.open(PaymentDialogComponent, {
+      width: '600px',
+      data: {
+        amount,
+        quotationId: quotationId,
+        paymentType
+      },
+      panelClass: 'modern-dialog'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (!result) return;
+
+      if (result.paymentMethod === PaymentMethod.WALLET) {
+        this.handleWalletPayment(quotationId, amount, paymentType);
+      } else if (result.paymentMethod === PaymentMethod.Razorpay) {
+        this.handleRazorpayPayment(item, amount, paymentType);
       }
+    });
+  }
+
+  private handleWalletPayment(quotationId: string, amount: number, paymentType: PaymentType): void {
+    this.walletService.payWithWallet({ quotationId, amount, paymentType }).subscribe({
+      next: () => {
+        this.snackBar.open('Payment successful!', 'Dismiss', {
+          duration: 3000,
+          panelClass: ['success-snackbar']
+        });
+        this.refreshData();
+      },
+      error: (err) => {
+        this.snackBar.open(err.error?.message || 'Payment failed. Please try again.', 'Dismiss', {
+          duration: 4000,
+          panelClass: ['error-snackbar']
+        });
+      }
+    });
+  }
+
+  private async handleRazorpayPayment(item: IQuotation | CompletedWork, amount: number, paymentType: PaymentType): Promise<void> {
+    try {
+      const quotationId = '_id' in item ? item._id : item.quotationId;
+      const isAdvance = paymentType === PaymentType.ADVANCE;
+
+      const paymentData = {
+        amount: amount,
+        currency: 'INR',
+        quotationId: quotationId,
+      };
+
       const order = await firstValueFrom(
-        this.paymentService.createOrder(work.balanceAmount, 'INR', work.quotationId)
+        this.paymentService.createOrder(paymentData.amount, paymentData.currency, paymentData.quotationId)
       );
 
       const paymentResult = await this.paymentService.openRazorpayCheckout(order);
-      console.log('paymentResult from component: ', paymentResult);
 
-      // After successful payment and verification
       await firstValueFrom(
-        this.userService.updateQuotationPayment(false, work.quotationId, work.balanceAmount, paymentResult)
+        this.userService.updateQuotationPayment(isAdvance, quotationId, paymentData.amount, paymentResult)
       );
 
       this.snackBar.open('Payment successful!', 'Close', {
         duration: 3000,
-        panelClass: 'success-snack'
+        panelClass: 'success-snackbar'
       });
-
-      // Refresh completed quotations list
-      this.loadCompletedWorks();
-
+      this.refreshData();
     } catch (error) {
-      console.error('Payment or update failed:', error);
-      this.snackBar.open('Payment process failed', 'Dismiss', {
+      console.error('Razorpay Payment process failed:', error);
+      this.snackBar.open('Razorpay Payment process failed', 'Dismiss', {
         duration: 3000,
-        panelClass: 'error-snack'
+        panelClass: 'error-snackbar'
       });
+    }
+  }
+
+  private refreshData(): void {
+    if (this.activeFilter === QuotationStatus.COMPLETED) {
+      this.loadCompletedWorks();
+    } else {
+      this.loadQuotations();
     }
   }
 
   editQuotation(quotation: IQuotation, event?: MouseEvent) {
     event?.stopPropagation();
 
-    // Navigate to edit page with the quotation ID
-    // Only allow editing for quotations that are not yet accepted or in progress
-    
     if (quotation.status === 'Published' || quotation.status === 'Cancelled') {
       this.router.navigate(['/user/edit-quotation', quotation._id]);
     } else {
@@ -530,9 +555,7 @@ export class QuotationComponent implements OnInit, OnDestroy {
   deleteQuotation(quotation: IQuotation, event?: MouseEvent): void {
     event?.stopPropagation();
 
-    // Only allow deleting quotations that are not accepted or in progress
     if (quotation.status === 'Published' || quotation.status === 'Cancelled' || quotation.status === 'Expired') {
-      // Show confirmation dialog
       const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
         width: '400px',
         data: {
@@ -600,7 +623,7 @@ export class QuotationComponent implements OnInit, OnDestroy {
                   duration: 3000,
                   panelClass: 'success-snack'
                 });
-                this.loadQuotations(); // Refresh the list
+                this.loadQuotations();
               },
               error: (err) => {
                 console.error('Error cancelling bid:', err);

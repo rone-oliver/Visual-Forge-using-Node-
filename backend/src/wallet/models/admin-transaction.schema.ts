@@ -40,7 +40,10 @@ export class AdminTransaction extends Document {
   commission: number;
 
   @Prop({ type: String })
-  razorpayPaymentId?: string;
+  paymentId?: string;
+
+  @Prop({ type: String })
+  description?: string;
 
   @Prop({ type: String })
   razorpayTransferId?: string;

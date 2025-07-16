@@ -9,6 +9,7 @@ export interface Transaction {
   createdAt: string;
   paymentDate: string;
   paymentId: string;
+  paymentMethod: string;
   orderId: string;
   razorpayPaymentMethod: string;
   currency: string;

@@ -1,5 +1,6 @@
 import { Wallet } from '../models/wallet.schema';
-import { PaginatedWalletTransactionsResponseDto } from '../dto/wallet.dto';
+import { PaginatedWalletTransactionsResponseDto, PayFromWalletDto } from '../dto/wallet.dto';
+import { TransactionResponseDto } from 'src/users/dto/users.dto';
 
 export const IWalletServiceToken = Symbol('IWalletService')
 
@@ -10,4 +11,5 @@ export interface IWalletService {
   withdrawMoney(userId: string, amount: number): Promise<Wallet>;
   creditEditorWallet(userId: string, amount: number, quotationId: string): Promise<boolean>;
   refundUserForExpiredQuotation(userId: string, quotationId: string, amount: number): Promise<boolean>;
+  payFromWallet(userId: string, payFromWalletDto: PayFromWalletDto): Promise<TransactionResponseDto>;
 }

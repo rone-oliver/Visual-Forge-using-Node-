@@ -16,6 +16,7 @@ import { IAdminTransactionRepositoryToken } from './interfaces/admin-transaction
 import { IAdminWalletServiceToken } from './interfaces/admin-wallet.service.interface';
 import { PaymentModule } from 'src/common/payment/payment.module';
 import { QuotationModule } from 'src/quotation/quotation.module';
+import { TransactionModule } from 'src/common/transaction/transaction.module';
 
 @Module({
   imports:[
@@ -25,7 +26,7 @@ import { QuotationModule } from 'src/quotation/quotation.module';
       { name: AdminTransaction.name, schema: AdminTransactionSchema }
     ]),
     forwardRef(() => UsersModule),
-    PaymentModule, QuotationModule,
+    PaymentModule, QuotationModule, TransactionModule,
   ],
   controllers: [WalletController, AdminWalletController],
   providers: [
