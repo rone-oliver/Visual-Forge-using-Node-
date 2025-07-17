@@ -10,16 +10,16 @@ export class TokenService {
   constructor() { }
   setToken(token: string, userType: 'User' | 'Admin'): void {
     const key = userType === 'User' ? this.userTokenKey : this.adminTokenKey;
-    sessionStorage.setItem(key, token);
+    localStorage.setItem(key, token);
   }
 
   getToken(userType: 'User' | 'Admin'): string | null {
     const key = userType === 'User' ? this.userTokenKey : this.adminTokenKey;
-    return sessionStorage.getItem(key);
+    return localStorage.getItem(key);
   }
 
   clearToken(userType: 'User' | 'Admin'): void {
     const key = userType === 'User' ? this.userTokenKey : this.adminTokenKey;
-    sessionStorage.removeItem(key);
+    localStorage.removeItem(key);
   }
 }
