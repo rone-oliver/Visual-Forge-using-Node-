@@ -11,6 +11,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { FilesPreviewComponent } from '../files-preview/files-preview.component';
 
 interface FileWithProgress {
   file: File;
@@ -27,11 +28,12 @@ interface FileWithProgress {
   templateUrl: './create-quotation.component.html',
   styleUrl: './create-quotation.component.scss'
 })
-export class CreateQuotationComponent implements OnInit{
+export class CreateQuotationComponent implements OnInit {
   quotationForm: FormGroup;
   outputTypes = Object.values(OutputType);
   selectedFiles: File[] = [];
   uploadedFiles: FileAttachmentResponse[] = [];
+  filesToDelete: Set<string> = new Set();
   isUploading: boolean = false;
   maxFiles = 5;
   minDate = new Date(new Date().setHours(new Date().getHours() + 12));
@@ -60,7 +62,6 @@ export class CreateQuotationComponent implements OnInit{
     });
   }
 
-  // Getters for easy access from the template
   get title() { return this.quotationForm.get('title'); }
   get description() { return this.quotationForm.get('description'); }
   get dueDate() { return this.quotationForm.get('dueDate'); }
@@ -73,16 +74,13 @@ export class CreateQuotationComponent implements OnInit{
     this.route.paramMap.subscribe(params => {
       const quotationId = params.get('id');
       if (quotationId) {
-        // We're in edit mode, fetch the quotation data
         this.userService.getQuotationById(quotationId).subscribe({
           next: (quotation) => {
-            // Populate the form with existing data
             this.populateForm(quotation);
           },
           error: (error) => {
             console.error('Error fetching quotation:', error);
             this.showMessage('Error loading quotation data');
-            // Navigate back to quotations list if we can't load the data
             this.router.navigate(['/user/quotations']);
           }
         });
@@ -91,15 +89,11 @@ export class CreateQuotationComponent implements OnInit{
   }
 
   private populateForm(quotation: IQuotation): void {
-    // Format the date properly for the form
-    let dueDate = '';
+    let dueDate: Date | null = null;
     if (quotation.dueDate) {
-      const date = new Date(quotation.dueDate);
-      // Format to YYYY-MM-DDThh:mm
-      dueDate = date.toISOString().slice(0, 16);
+      dueDate = new Date(quotation.dueDate);
     }
-    
-    // Set form values from the quotation
+
     this.quotationForm.patchValue({
       title: quotation.title,
       description: quotation.description,
@@ -109,7 +103,6 @@ export class CreateQuotationComponent implements OnInit{
       outputType: quotation.outputType,
     });
 
-    // Handle attached files if they exist
     if (quotation.attachedFiles && quotation.attachedFiles.length > 0) {
       this.uploadedFiles = [...quotation.attachedFiles as FileAttachmentResponse[]];
       this.quotationForm.get('attachedFiles')?.setValue(this.uploadedFiles);
@@ -125,7 +118,7 @@ export class CreateQuotationComponent implements OnInit{
   }
 
   onSubmit() {
-    if(this.isUploading){
+    if (this.isUploading) {
       this.showMessage('Please wait for file uploads to complete');
       return;
     }
@@ -148,7 +141,12 @@ export class CreateQuotationComponent implements OnInit{
           return;
         }
 
-        this.userService.updateQuotation(quotationId, formData).subscribe({
+        const updatePayload = {
+          ...formData,
+          filesToDelete: Array.from(this.filesToDelete)
+        };
+
+        this.userService.updateQuotation(quotationId, updatePayload).subscribe({
           next: (response) => {
             console.log('Quotation updated successfully');
             this.showMessage('Quotation updated successfully');
@@ -182,7 +180,7 @@ export class CreateQuotationComponent implements OnInit{
   onFileSelected(event: Event) {
     const files = (event.target as HTMLInputElement).files;
     if (!files || files.length === 0) return;
-    if (this.selectedFiles.length + files.length > this.maxFiles) {
+    if (this.selectedFiles.length + this.uploadedFiles.length + files.length > this.maxFiles) {
       this.showMessage(`You can only upload a maximum of ${this.maxFiles} files`);
       return;
     }
@@ -192,8 +190,17 @@ export class CreateQuotationComponent implements OnInit{
 
   removeFile(index: number) {
     this.selectedFiles.splice(index, 1);
-    if(this.fileInput){
+    if (this.fileInput) {
       this.fileInput.nativeElement.value = '';
+    }
+  }
+
+  markFileForDeletion(uniqueId: string): void {
+    this.filesToDelete.add(uniqueId);
+    this.uploadedFiles = this.uploadedFiles.filter(f => f.uniqueId !== uniqueId);
+    const attachedFilesControl = this.quotationForm.get('attachedFiles');
+    if (attachedFilesControl) {
+      attachedFilesControl.setValue(this.uploadedFiles);
     }
   }
 
@@ -202,18 +209,17 @@ export class CreateQuotationComponent implements OnInit{
       this.showMessage('Please select files to upload');
       return;
     }
-    
+
     this.isUploading = true;
 
     this.userService.uploadQuotationFiles(this.selectedFiles).subscribe({
       next: (results) => {
         this.uploadedFiles = [...this.uploadedFiles, ...results];
-        // Add the uploaded files to the form
         const attachedFilesControl = this.quotationForm.get('attachedFiles');
         if (attachedFilesControl) {
-            attachedFilesControl.setValue(this.uploadedFiles);
+          attachedFilesControl.setValue(this.uploadedFiles);
         }
-        this.selectedFiles = []; // Clear selected files
+        this.selectedFiles = [];
         this.isUploading = false;
         this.showMessage('Files uploaded successfully');
       },
@@ -249,6 +255,15 @@ export class CreateQuotationComponent implements OnInit{
       width: '80vw',
       height: '80vh',
       panelClass: ['file-preview-dialog']
+    });
+  }
+
+  previewFile(file: FileAttachmentResponse): void {
+    this.dialog.open(FilesPreviewComponent, {
+      data: { files: [file], fileType: file.fileType },
+      width: '80vw',
+      height: '80vh',
+      panelClass: 'file-preview-dialog',
     });
   }
 }

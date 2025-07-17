@@ -320,7 +320,7 @@ export class UsersService implements IUsersService {
             const page = params.page || 1;
             const limit = params.limit || 10;
             const skip = (page - 1) * limit;
-            const matchQuery: any = { userId };
+            const matchQuery: any = { userId: new Types.ObjectId(userId) };
 
             if (params.status && params.status !== 'All') {
                 matchQuery.status = params.status;
@@ -490,8 +490,46 @@ export class UsersService implements IUsersService {
         }
     }
 
-    async updateQuotation(quotationId: Types.ObjectId, quotation: UpdateQuotationDto): Promise<QuotationResponseDto | null> {
+    async updateQuotation(quotationId: Types.ObjectId, userId: Types.ObjectId, updateQuotationDto: UpdateQuotationDto): Promise<QuotationResponseDto | null> {
         try {
+            const { filesToDelete, ...updateData } = updateQuotationDto;
+
+            const quotation = await this.quotationService.findById(quotationId);
+            if (!quotation) {
+                throw new NotFoundException('Quotation not found');
+            }
+    
+            if (quotation.userId.toString() !== userId.toString()) {
+                throw new ForbiddenException('You are not authorized to update this quotation.');
+            }
+
+            if (filesToDelete && filesToDelete.length > 0) {
+                const idsToDelete = filesToDelete;
+                const filesMarkedForDelete = quotation.attachedFiles.filter(file => idsToDelete.includes(file.uniqueId));
+            
+                const deletePromises = filesMarkedForDelete.map(file =>
+                    this.cloudinaryService.deleteFile(file.uniqueId, file.fileType)
+                );
+            
+                try {
+                    await Promise.all(deletePromises); // If ANY promise in deletePromises rejects, this line will throw an error
+                    this.logger.log('Files deleted successfully');
+                    // This line only runs if ALL deletions succeed
+                    quotation.attachedFiles = quotation.attachedFiles.filter(file => !idsToDelete.includes(file.uniqueId));
+                } catch (error) {
+                    // If Promise.all rejects, the error will be caught here.
+                    this.logger.error(`One or more files failed to delete from Cloudinary. Original error: ${error.message}`);
+                    // You might want to re-throw the error or handle it gracefully here
+                    throw error; // Propagate the error up if this method shouldn't continue
+                }
+            }
+            let currentFiles = [...quotation.attachedFiles];
+
+            if (updateData.attachedFiles && updateData.attachedFiles.length > 0) {
+                this.logger.debug('attached files count: ',updateData.attachedFiles)
+                currentFiles.push(...updateData.attachedFiles);
+            }
+
             let advanceAmountCalc: number | undefined;
             let balanceAmountCalc: number | undefined;
             if (quotation.estimatedBudget) {
@@ -500,11 +538,18 @@ export class UsersService implements IUsersService {
                 balanceAmountCalc = balanceAmount;
             }
             const quotationDataForDb = {
-                ...quotation,
+                ...updateData,
                 advanceAmount: advanceAmountCalc,
                 balanceAmount: balanceAmountCalc,
+                attachedFiles: currentFiles,
             }
+            
             const updatedQuotation = await this.quotationService.findByIdAndUpdate(quotationId, quotationDataForDb) as unknown as QuotationResponseDto;
+            if (!updatedQuotation) {
+                throw new InternalServerErrorException('Failed to update quotation.');
+            }
+            this.logger.debug('Quotation updated successfully',updatedQuotation);
+
             return updatedQuotation;
         } catch (error) {
             this.logger.error(`Error updating quotation: ${error.message}`);

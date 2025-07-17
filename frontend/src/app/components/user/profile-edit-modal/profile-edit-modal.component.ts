@@ -29,7 +29,6 @@ import { MatListModule } from '@angular/material/list';
 ],
   templateUrl: './profile-edit-modal.component.html',
   styleUrls: ['./profile-edit-modal.component.scss'],
-  // This is important to allow our deep styles to affect Angular Material components
   encapsulation: ViewEncapsulation.None
 })
 export class ProfileEditModalComponent implements OnInit {

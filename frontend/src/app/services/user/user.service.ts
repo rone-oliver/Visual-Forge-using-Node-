@@ -115,14 +115,14 @@ export class UserService {
   }
 
   createQuotation(quotation: any): Observable<boolean> {
-    return this.http.post<boolean>(`${this.userApiUrl}/quotations`, { quotation }).pipe(
+    return this.http.post<boolean>(`${this.userApiUrl}/quotations`, quotation).pipe(
       map(response => response),
       catchError(err => { throw err })
     )
   }
 
   updateQuotation(id: string, quotation: any): Observable<boolean> {
-    return this.http.patch<boolean>(`${this.userApiUrl}/quotations/${id}`, { quotation }).pipe(
+    return this.http.patch<boolean>(`${this.userApiUrl}/quotations/${id}`, quotation).pipe(
       map(response => response),
       catchError(err => { throw err })
     )

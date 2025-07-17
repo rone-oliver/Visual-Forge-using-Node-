@@ -21,18 +21,19 @@
     @for(transaction of transactions; track transaction._id){
     <div class="transaction-item">
       <div class="transaction-details">
-        <p class="transaction-description">{{ transaction.paymentType === 'advance' ? `Advance Payment for` : `Balance Payment for` }} {{'quotation: ' + transaction.quotationId.title }}</p>
+        <p class="transaction-description">{{ transaction.paymentType === 'advance' ? `Advance Payment for` : `Balance
+          Payment for` }} {{'quotation: ' + transaction.quotationId.title }}</p>
         <p class="transaction-date">{{ transaction.paymentDate | localDate:'long' }}</p>
         <div class="transaction-meta">
           <span>Method: {{ (transaction.razorpayPaymentMethod || transaction.paymentMethod) | titlecase }}</span>
           @if(transaction.bank){
-            <span>Bank: {{ transaction.bank }}</span>
+          <span>Bank: {{ transaction.bank }}</span>
           }
           @if(transaction.wallet){
-            <span>Wallet: {{ transaction.wallet }}</span>
+          <span>Wallet: {{ transaction.wallet }}</span>
           }
           @if(transaction.paymentMethod !== 'wallet'){
-            <span>Payment ID: {{ transaction.paymentId }}</span>
+          <span>Payment ID: {{ transaction.paymentId }}</span>
           }
         </div>
       </div>
@@ -40,31 +41,27 @@
         <p class="amount">- {{ transaction.amount | currency:transaction.currency }}</p>
         <p class="status" [class]="'status-' + transaction.status.toLowerCase()">{{ transaction.status }}</p>
         <div class="transaction-fees">
-            <span>Fee: {{ transaction.fee | currency:transaction.currency }}</span>
-            <span>Tax: {{ transaction.tax | currency:transaction.currency }}</span>
+          <span>Fee: {{ transaction.fee | currency:transaction.currency }}</span>
+          <span>Tax: {{ transaction.tax | currency:transaction.currency }}</span>
         </div>
       </div>
     </div>
     }
   </div>
 
-  <mat-paginator
-    [length]="totalItems"
-    [pageSize]="itemsPerPage"
-    [pageIndex]="currentPage - 1"
-    [pageSizeOptions]="[5, 10, 25, 100]"
-    (page)="handlePageEvent($event)"
-    aria-label="Select page of transactions"
-    class="app-paginator"
-    panelClass="custom-paginator-dropdown">
+  <mat-paginator [length]="totalItems" [pageSize]="itemsPerPage" [pageIndex]="currentPage - 1"
+    [pageSizeOptions]="[5, 10, 25, 100]" (page)="handlePageEvent($event)" aria-label="Select page of transactions"
+    class="app-paginator" panelClass="custom-paginator-dropdown">
   </mat-paginator>
   }
 
   @else if(!loading && !error && transactions.length === 0){
   <div class="empty-state">
     <mat-icon>receipt_long</mat-icon>
-    <p>No transactions found.</p>
-    <span>You haven't made any payments yet.</span>
+    <div class="empty-state-content">
+      <p class="empty-state-title">No Transactions Found</p>
+      <span class="empty-state-message">You haven't made any payments yet.</span>
+    </div>
   </div>
   }
 </div>

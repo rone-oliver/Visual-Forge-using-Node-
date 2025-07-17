@@ -48,8 +48,8 @@ export interface IUsersController {
     getCompletedWorks(req: Request): Promise<CompletedWorkDto[]>;
     getQuotation(quotationId: string): Promise<QuotationResponseDto | null>;
     getBidsByQuotation(quotationId: string, req: Request): Promise<BidResponseDto[]>;
-    createQuotation(req: Request, body:{quotation: CreateQuotationDto}): Promise<SuccessResponseDto>;
-    updateQuotation(quotationId: string, dto: UpdateQuotationDto): Promise<QuotationResponseDto | null>;
+    createQuotation(userId: string, quotation: CreateQuotationDto): Promise<SuccessResponseDto>;
+    updateQuotation(quotationId: string, userId: string, dto: UpdateQuotationDto): Promise<QuotationResponseDto | null>;
     deleteQuotation(quotationId: string): Promise<SuccessResponseDto>;
 
     updateProfileImage(req: Request, dto: UpdateProfileImageDto): Promise<SuccessResponseDto>;

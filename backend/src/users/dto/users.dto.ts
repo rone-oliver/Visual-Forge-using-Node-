@@ -36,10 +36,15 @@ export { Gender, Language, QuotationStatus, OutputType, FileType, BidStatus, Pay
 
 // --- Base/Helper DTOs ---
 export class FileAttachmentDto {
-    @ApiProperty({ description: 'URL of the attached file', example: 'https://example.com/file.jpg' })
+    @ApiProperty({ description: 'Unique identifier for the file', example: 'uniqueId123' })
     @IsString()
     @IsNotEmpty()
-    url: string;
+    uniqueId: string;
+
+    @ApiProperty({ description: 'Timestamp of the file upload', example: 1672531200000 })
+    @IsNumber()
+    @IsNotEmpty()
+    timestamp: number;
 
     @ApiProperty({ enum: FileType, description: 'Type of the file' })
     @IsEnum(FileType)
@@ -65,12 +70,13 @@ export class FileAttachmentDto {
     @IsDate()
     @Type(() => Date)
     @IsOptional()
-    uploadedAt?: Date;
+    uploadedAt: Date;
 }
 
 export class quotationFileAttachmentDto extends FileAttachmentDto {
-    uniqueId: string;
-    timestamp: number;
+    @ApiProperty({ description: 'Format of the file', example: 'jpg' })
+    @IsString()
+    @IsNotEmpty()
     format: string;
 }
 
@@ -257,13 +263,18 @@ export class UpdateProfileDto {
     @IsOptional()
     fullname?: string;
 
+    @ApiPropertyOptional({ example: 'roneootan611@gmail.com' })
+    @IsString()
+    @IsOptional()
+    username?: string;
+
     @ApiPropertyOptional({ example: 'A full-stack developer with a passion for AI.' })
     @IsString()
     @MaxLength(500)
     @IsOptional()
     about?: string;
 
-    @ApiPropertyOptional({ example: '+1987654321' })
+    @ApiPropertyOptional({ example: '+910987654321' })
     @IsString()
     @Matches(/^\+?[0-9]{7,15}$/, { message: 'Invalid mobile number format' })
     @IsOptional()
@@ -335,7 +346,7 @@ export class CreateQuotationDto {
     @ApiProperty({ description: 'Detailed description of the quotation requirements', example: 'Need a modern and minimalist logo...' })
     @IsString()
     @IsNotEmpty()
-    @MinLength(20)
+    @MinLength(2)
     @MaxLength(2000)
     description: string;
 
@@ -357,10 +368,10 @@ export class CreateQuotationDto {
     outputType: OutputType;
 
     @ApiPropertyOptional({ description: 'Due date for the quotation' })
-    @IsDateString()
+    @IsDate()
     @IsOptional()
     @Type(() => Date)
-    dueDate?: Date; // Use string for input, transform to Date in service
+    dueDate?: Date;
 
     @ApiPropertyOptional({ type: [quotationFileAttachmentDto], description: 'Files attached to the quotation' })
     @IsArray()
@@ -381,7 +392,7 @@ export class UpdateQuotationDto {
     @ApiPropertyOptional({ description: 'Detailed description', example: 'Updated requirements...' })
     @IsString()
     @IsOptional()
-    @MinLength(20)
+    @MinLength(2)
     @MaxLength(2000)
     description?: string;
 
@@ -407,12 +418,18 @@ export class UpdateQuotationDto {
     @IsOptional()
     dueDate?: string;
 
-    @ApiPropertyOptional({ type: [FileAttachmentDto], description: 'Files attached to the quotation' })
+    @ApiPropertyOptional({ type: [quotationFileAttachmentDto], description: 'Files attached to the quotation' })
     @IsArray()
     @ValidateNested({ each: true })
-    @Type(() => FileAttachmentDto)
+    @Type(() => quotationFileAttachmentDto)
     @IsOptional()
-    attachedFiles?: FileAttachmentDto[];
+    attachedFiles?: quotationFileAttachmentDto[];
+
+    @ApiPropertyOptional({ type: [String], description: 'Array of unique file IDs to delete' })
+    @IsArray()
+    @IsString({ each: true })
+    @IsOptional()
+    filesToDelete?: string[];
 }
 
 export class QuotationResponseDto extends CreateQuotationDto {

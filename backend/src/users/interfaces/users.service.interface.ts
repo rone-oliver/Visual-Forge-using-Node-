@@ -55,7 +55,7 @@ export interface IUsersService {
     getQuotations(userId: Types.ObjectId, params: GetQuotationsParamsDto): Promise<PaginatedQuotationsResponseDto>;
     getQuotation(quotationId: Types.ObjectId): Promise<QuotationResponseDto | null>;
     createQuotation(userId: Types.ObjectId, createQuotationDto: CreateQuotationDto): Promise<QuotationResponseDto>;
-    updateQuotation(quotationId: Types.ObjectId, updateQuotationDto: UpdateQuotationDto): Promise<QuotationResponseDto | null>;
+    updateQuotation(quotationId: Types.ObjectId, userId: Types.ObjectId, updateQuotationDto: UpdateQuotationDto): Promise<QuotationResponseDto | null>;
     deleteQuotation(quotationId: Types.ObjectId): Promise<SuccessResponseDto>;
 
     getCompletedWorks(userId: Types.ObjectId): Promise<CompletedWorkDto[]>;

@@ -209,9 +209,14 @@
                                 @for(file of uploadedFiles; track file){
                                     <div class="file-item-uploaded rounded p-2 flex items-center">
                                         <span class="truncate max-w-xs text-text">{{ file.fileName }}</span>
-                                        <a [href]="file.url" target="_blank" class="ml-2 file-link flex items-center justify-center w-5 h-5">
-                                            <mat-icon class="flex items-center justify-center text-base">open_in_new</mat-icon>
-                                        </a>
+                                        <div class="file-actions">
+                                          <button mat-icon-button type="button" (click)="previewFile(file)" title="Preview file">
+                                            <mat-icon>visibility</mat-icon>
+                                          </button>
+                                          <button mat-icon-button type="button" (click)="markFileForDeletion(file.uniqueId)" title="Remove file">
+                                            <mat-icon>close</mat-icon>
+                                          </button>
+                                        </div>
                                     </div>
                                 }
                             </div>

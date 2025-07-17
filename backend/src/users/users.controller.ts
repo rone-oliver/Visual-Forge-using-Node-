@@ -161,19 +161,26 @@ export class UsersController implements IUsersController {
 
     @Post('quotations')
     @Roles('User', 'Editor')
-    async createQuotation(@Req() req: Request, @Body() body: { quotation: CreateQuotationDto }): Promise<SuccessResponseDto> {
-        const user = req['user'] as { userId: Types.ObjectId; role: string };
-        const success = await this.userService.createQuotation(user.userId, body.quotation);
-        if (success) {
-            return { success: true };
+    async createQuotation(@GetUser('userId') userId: string, @Body() createQuotationDto: CreateQuotationDto): Promise<SuccessResponseDto> {
+        try {
+            const quotation = await this.userService.createQuotation(new Types.ObjectId(userId), createQuotationDto);
+            return {
+                message: 'Quotation created successfully',
+                success: true,
+            };
+        } catch (error) {
+            throw new InternalServerErrorException('Failed to create quotation');
         }
-        return { success: false };
     }
 
     @Patch('quotations/:quotationId')
     @Roles('User', 'Editor')
-    async updateQuotation(@Param('quotationId') quotationId: string, @Body() dto: UpdateQuotationDto) {
-        return await this.userService.updateQuotation(new Types.ObjectId(quotationId), dto);
+    async updateQuotation(
+        @Param('quotationId') quotationId: string, 
+        @GetUser('userId') userId: string,
+        @Body() dto: UpdateQuotationDto
+    ) {
+        return await this.userService.updateQuotation(new Types.ObjectId(quotationId),new Types.ObjectId(userId), dto);
     }
 
     @Delete('quotations/:quotationId')
