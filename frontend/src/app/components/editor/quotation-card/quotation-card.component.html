@@ -154,7 +154,9 @@
                         <span class="date">Placed on {{ currentEditorBid.bidCreatedAt ? (currentEditorBid.bidCreatedAt | localDate:'medium') : 'N/A' }}</span>
                     </div>
                     
-                    <p class="bid-notes-display" @if(currentEditorBid.bidNotes)>{{ currentEditorBid.bidNotes }}</p>
+                    @if (currentEditorBid.bidNotes) {
+                        <p class="bid-notes-display">{{ currentEditorBid.bidNotes }}</p>
+                    }
                     
                     <!-- Actions for an existing bid (Edit/Delete), only if status is Pending -->
                     @if(currentEditorBid.bidStatus === 'Pending'){

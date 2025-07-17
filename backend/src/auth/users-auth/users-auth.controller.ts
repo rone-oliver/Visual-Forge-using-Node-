@@ -30,7 +30,7 @@ export class UsersAuthController {
     @Post('register')
     @HttpCode(HttpStatus.CREATED)
     async register(
-        @Body() userData: User,
+        @Body() userData: Partial<User>,
     ){
         return await this.usersAuthService.register(userData);
     }

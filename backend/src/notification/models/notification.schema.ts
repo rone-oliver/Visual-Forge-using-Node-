@@ -23,7 +23,7 @@ export class Notification {
     @Prop({ type: String, required: true })
     message: string;
 
-    @Prop({ type: Boolean, default: false })
+    @Prop({ type: Boolean, default: true })
     unread: boolean;
 
     @Prop({ type: String, enum: NotificationType, default: NotificationType.GENERAL })

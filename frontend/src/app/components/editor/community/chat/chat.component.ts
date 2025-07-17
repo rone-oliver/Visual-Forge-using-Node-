@@ -58,9 +58,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   ngOnDestroy(): void {
-    if (this.community?._id) {
-      this.communityService.leaveCommunity(this.community._id);
-    }
     if (this.messagesSubscription) {
       this.messagesSubscription.unsubscribe();
     }
@@ -89,6 +86,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   reportCommunity(): void {
+    console.log('not implemented')
   }
 
   leaveCommunity(): void {

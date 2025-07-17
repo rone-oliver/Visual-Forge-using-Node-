@@ -48,7 +48,7 @@ export class CommonService implements ICommonService {
     }
 
     const theme = isDark ? 'dark' : 'light';
-    const existingPreference = await this.preferenceModel.findOne({ userId });
+    const existingPreference = await this.preferenceModel.findOne({ userId: new Types.ObjectId(userId) });
 
     if (existingPreference) {
       await this.preferenceModel.updateOne(
@@ -68,7 +68,7 @@ export class CommonService implements ICommonService {
     }
 
     try {
-      const preference = await this.preferenceModel.findOne({ userId });
+      const preference = await this.preferenceModel.findOne({ userId: new Types.ObjectId(userId) });
       if (preference && preference.preferences && preference.preferences.theme) {
         res.status(200).json({ isDark: preference.preferences.theme === 'dark' ? true : false });
       } else {

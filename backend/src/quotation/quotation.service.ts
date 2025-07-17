@@ -218,7 +218,7 @@ export class QuotationService implements IQuotationService {
 
     async getCompletedQuotationsForUser(userId: Types.ObjectId): Promise<CompletedWorkDto[]> {
         const quotations = await this.quotationRepository.find(
-            { userId, status: QuotationStatus.COMPLETED },
+            { userId: new Types.ObjectId(userId), status: QuotationStatus.COMPLETED },
             null,
             { populate: 'worksId'}
         );

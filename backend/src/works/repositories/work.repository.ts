@@ -62,7 +62,7 @@ export class WorkRepository implements IWorkRepository {
                 this.userModel.find({ fullname: { $regex: searchTerm, $options: 'i' }, isEditor: true }).select('_id').lean()
             ]);
 
-            const userIds = matchingUsers.map(user => user._id.toString());
+            const userIds = matchingUsers.map(user => new Types.ObjectId(user._id));
             const editorIds = matchingEditors.map(editor => new Types.ObjectId(editor._id));
 
             if (userIds.length > 0 || editorIds.length > 0) {

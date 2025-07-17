@@ -42,9 +42,9 @@
     <mat-label>Gender</mat-label>
     <mat-select (selectionChange)="onGenderChange()" [(ngModel)]="selectedGender">
       <mat-option [value]="''">All</mat-option>
-      <mat-option value="male">Male</mat-option>
-      <mat-option value="female">Female</mat-option>
-      <mat-option value="others">Others</mat-option>
+      <mat-option value="Male">Male</mat-option>
+      <mat-option value="Female">Female</mat-option>
+      <mat-option value="Others">Others</mat-option>
     </mat-select>
   </mat-form-field>
 
@@ -59,7 +59,7 @@
   </mat-select>
 </mat-form-field> -->
 
-<mat-form-field appearance="fill" color="primary" class="filter-mat-select">
+<!-- <mat-form-field appearance="fill" color="primary" class="filter-mat-select">
   <mat-label>Beh. Rating</mat-label>
   <mat-select (selectionChange)="onBehRatingChange()" [(ngModel)]="selectedBehRating">
     <mat-option [value]="null">All</mat-option>
@@ -69,7 +69,7 @@
       </mat-option>
     }
   </mat-select>
-</mat-form-field>
+</mat-form-field> -->
 </div>
 
 <div class="content-area">

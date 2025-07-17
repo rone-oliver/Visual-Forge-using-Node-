@@ -15,7 +15,7 @@
     </div>
 
     <div class="chat-list-scrollable">
-      @for (chat of filteredChats; track chat) {
+      @for (chat of filteredChats; track chat._id) {
         <div class="chat-item"
           [ngClass]="{'active': chat._id === selectedChatId}"
           (click)="selectChat(chat)">
@@ -97,21 +97,21 @@
               <h2 class="recipient-name">{{ recipient?.username || 'Loading...' }}</h2>
             </div>
             <div class="header-actions">
-              <button mat-icon-button class="call-button" (click)="initiateCall()">
+              <!-- <button mat-icon-button class="call-button" (click)="initiateCall()">
                 <mat-icon>call</mat-icon>
-              </button>
+              </button> -->
               <button mat-icon-button [matMenuTriggerFor]="menu">
                 <mat-icon>more_vert</mat-icon>
               </button>
               <mat-menu #menu="matMenu">
-                <button mat-menu-item (click)="clearChat()">
+                <!-- <button mat-menu-item (click)="clearChat()">
                   <mat-icon>delete_sweep</mat-icon>
                   <span>Clear chat</span>
                 </button>
                 <button mat-menu-item (click)="blockUser()">
                   <mat-icon>block</mat-icon>
                   <span>Block user</span>
-                </button>
+                </button> -->
                 <button mat-menu-item (click)="reportUser()">
                   <mat-icon>flag</mat-icon>
                   <span>Report user</span>

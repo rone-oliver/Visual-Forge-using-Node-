@@ -37,7 +37,7 @@ export class EditorsController implements IEditorsController {
   ) { };
 
   @Get('quotations')
-  @Roles('Editor')
+  @Roles(Role.EDITOR)
   @ApiOperation({ summary: 'Get quotations for the editor (published or accepted)' })
   @ApiQuery({ name: 'status', enum: QuotationStatus, description: 'Filter quotations by status (Published, Accepted)' })
   @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number for pagination' })

@@ -89,7 +89,7 @@ export class QuotationRepository implements IQuotationRepository {
 
         const matchStage: any = {
             status: QuotationStatus.PUBLISHED,
-            userId: { $ne: editorId },
+            userId: { $ne: new Types.ObjectId(editorId) },
         };
 
         if (mediaType && mediaType !== OutputType.MIXED && mediaType !== 'All') {

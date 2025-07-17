@@ -826,7 +826,7 @@ export class UsersService implements IUsersService {
     }
 
     async getBidsByQuotation(quotationId: Types.ObjectId, userId: Types.ObjectId): Promise<BidResponseDto[]> {
-        const quotation = await this.quotationService.findOne({ _id: quotationId, userId: userId.toString() });
+        const quotation = await this.quotationService.findOne({ _id: new Types.ObjectId(quotationId), userId: new Types.ObjectId(userId) });
         if (!quotation) {
             throw new NotFoundException('Quotation not found or does not belong to you');
         }
@@ -932,7 +932,7 @@ export class UsersService implements IUsersService {
         }
     
         if (category) {
-          matchStage.category = category;
+          matchStage.category = { $regex: category, $options: 'i' };
         }
     
         const pipeline: any[] = [

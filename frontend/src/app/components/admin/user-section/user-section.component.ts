@@ -41,7 +41,7 @@ export class UserSectionComponent implements OnInit {
     { key: 'username', header: 'Username', sortable: true},
     { key: 'mobileNumber', header: 'Phone', placeholder:'Not provided' },
     { key: 'gender', header: 'Gender', placeholder:'Not specified' },
-    { key: 'behaviourRating', header: 'Rating', sortable: true, placeholder:'Not Rated' },
+    // { key: 'behaviourRating', header: 'Rating', sortable: true, placeholder:'Not Rated' },
     { key: 'isEditor', header: 'Editor Status', type: 'boolean' },
     { key: 'createdAt', header: 'Joined', type: 'date', sortable: true },
     { key: 'type', header: 'Actions', type: 'actions' }

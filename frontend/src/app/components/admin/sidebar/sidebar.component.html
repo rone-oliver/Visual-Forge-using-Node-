@@ -50,14 +50,14 @@
           <mat-icon class="expand-icon">chevron_right</mat-icon>
         </a>
       </li>
-      <li class="menu-item" [class.active]="activeTab === 'programs'"
+      <!-- <li class="menu-item" [class.active]="activeTab === 'programs'"
         (click)="toggleFilter('programs')">
         <a [routerLink]="['/admin/programs']" class="menu-link">
           <mat-icon class="menu-icon">campaign</mat-icon>
           <span class="menu-text">Programs</span>
           <mat-icon class="expand-icon">chevron_right</mat-icon>
         </a>
-      </li>
+      </li> -->
       <li class="menu-item" [class.active]="activeTab === 'ledger'"
         (click)="toggleFilter('ledger')">
         <a [routerLink]="['/admin/wallet/ledger']" class="menu-link">
@@ -79,18 +79,18 @@
 
   <!-- Bottom Section -->
   <div class="sidebar-footer">
-    <a [routerLink]="['/admin/settings']" class="menu-link" [class.active]="activeTab === 'settings'"
+    <!-- <a [routerLink]="['/admin/settings']" class="menu-link" [class.active]="activeTab === 'settings'"
       (click)="toggleFilter('settings')">
       <mat-icon class="menu-icon">settings</mat-icon>
       <span class="menu-text">Settings</span>
       <mat-icon class="expand-icon">chevron_right</mat-icon>
-    </a>
+    </a> -->
     <div class="user-profile">
       <div class="avatar">
         <img src="assets/images/man.png" alt="User Avatar" appMediaProtection>
       </div>
       <div class="user-info">
-        <div class="user-name">John Carter</div>
+        <div class="user-name">Admin</div>
         <div class="user-role">Account settings</div>
       </div>
       <mat-icon class="expand-icon">chevron_right</mat-icon>

@@ -1,6 +1,5 @@
 import { Injectable, UnauthorizedException, Logger, HttpStatus, HttpException, Inject } from '@nestjs/common';
 import { User } from 'src/users/models/user.schema';
-import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
@@ -101,10 +100,20 @@ export class UsersAuthService implements IUsersAuthService {
         }
     }
 
-    async register(userData: User): Promise<any> {
+    async register(userData: Partial<User>): Promise<any> {
         try {
             this.logger.log('New user registration attempt');
 
+            if(!userData.username){
+                throw new HttpException({
+                    success: false,
+                    error: {
+                        message: 'Username is required',
+                        usernameExists: false,
+                        emailExists: false
+                    }
+                }, HttpStatus.BAD_REQUEST);
+            }
             const existingUserByUsername = await this.usersService.findByUsername(userData.username);
             if (existingUserByUsername) {
                 throw new HttpException({
@@ -117,6 +126,16 @@ export class UsersAuthService implements IUsersAuthService {
                 }, HttpStatus.BAD_REQUEST);
             }
 
+            if(!userData.email){
+                throw new HttpException({
+                    success: false,
+                    error: {
+                        message: 'Email is required',
+                        usernameExists: false,
+                        emailExists: false
+                    }
+                }, HttpStatus.BAD_REQUEST);
+            }
             const existingUserByEmail = await this.usersService.findByEmail(userData.email);
             if (existingUserByEmail) {
                 throw new HttpException({

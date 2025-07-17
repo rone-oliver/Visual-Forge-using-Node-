@@ -119,10 +119,23 @@ export class BidsService implements IBidService{
       if (quotation.status !== QuotationStatus.PUBLISHED) {
         throw new BadRequestException('Cannot accept bid on a quotation that is not published');
       }
-  
+
+      let advanceAmountCalc: number | undefined;
+      let balanceAmountCalc: number | undefined;
+      if (quotation.estimatedBudget) {
+        const { advanceAmount, balanceAmount } = this.calculateQuotationAmounts(quotation.estimatedBudget);
+        advanceAmountCalc = advanceAmount;
+        balanceAmountCalc = balanceAmount;
+      }
+
       await this.quotationService.findByIdAndUpdate(
         bid.quotationId,
-        { status: QuotationStatus.ACCEPTED, editorId: bid.editorId },
+        {
+          status: QuotationStatus.ACCEPTED, editorId: bid.editorId,
+          estimatedBudget: bid.bidAmount,
+          advanceAmount: advanceAmountCalc,
+          balanceAmount: balanceAmountCalc,
+        },
         { session }
       );
   
@@ -158,6 +171,14 @@ export class BidsService implements IBidService{
     } finally {
       session.endSession();
     }
+  }
+
+  // will move to util
+  private calculateQuotationAmounts(estimatedBudget: number): { advanceAmount: number, balanceAmount: number } {
+    const advancePercentage = 0.4;
+    const advanceAmount = Math.round(estimatedBudget * advancePercentage);
+    const balanceAmount = estimatedBudget - advanceAmount;
+    return { advanceAmount, balanceAmount };
   }
 
   async getAcceptedBid(quotationId: Types.ObjectId, editorId: Types.ObjectId): Promise<Bid> {
