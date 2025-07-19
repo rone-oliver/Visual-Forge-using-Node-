@@ -24,8 +24,8 @@ import { IPaginatedResponse, IWalletTransaction } from '../../../../interfaces/w
   styleUrl: './wallet.component.scss'
 })
 export class WalletComponent implements OnInit {
-  currentBalance: number = 0;
-  currency: string = 'INR';
+  currentBalance = 0;
+  currency = 'INR';
   transactions: IWalletTransaction[] = [];
   isLoading = true;
   error: string | null = null;

@@ -21,7 +21,7 @@ import { MatButtonModule } from '@angular/material/button';
 })
 export class EditorProfileComponent implements OnInit {
   editorProfile$!: Observable<EditorPublicProfile>;
-  isOwner: boolean = false;
+  isOwner = false;
 
   private refreshTrigger$ = new BehaviorSubject<void>(undefined);
 

@@ -20,10 +20,10 @@ import { LocalDatePipe } from '../../../../pipes/date.pipe';
 })
 export class TransactionHistoryComponent implements OnInit {
   transactions: Transaction[] = [];
-  totalItems:number = 0;
-  currentPage:number = 1;
-  itemsPerPage:number = 10;
-  loading:boolean = true;
+  totalItems = 0;
+  currentPage = 1;
+  itemsPerPage = 10;
+  loading = true;
   error:string | null = null;
 
   constructor(private userService: UserService) { }

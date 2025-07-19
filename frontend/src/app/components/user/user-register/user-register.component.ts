@@ -31,14 +31,14 @@ declare global {
   templateUrl: './user-register.component.html',
   styleUrl: './user-register.component.scss'
 })
-export class UserRegisterComponent implements OnInit {
+export class UserRegisterComponent implements OnInit, OnDestroy {
   isVerifying = false;
-  errorMessage: string = '';
-  successMessage: string = '';
+  errorMessage = '';
+  successMessage = '';
   canResendOtp = false;
   countdownValue = 0;
   private countdownSubscription: Subscription | null = null;
-  private registrationEmail: string = '';
+  private registrationEmail = '';
   private readonly COUNTDOWN_STORAGE_KEY = 'otpCountdownEndTime';
   private readonly EMAIL_STORAGE_KEY = 'registrationEmail';
 

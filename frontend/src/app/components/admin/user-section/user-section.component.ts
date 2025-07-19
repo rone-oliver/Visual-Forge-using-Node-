@@ -15,16 +15,16 @@ import { debounceTime } from 'rxjs';
   styleUrl: './user-section.component.scss'
 })
 export class UserSectionComponent implements OnInit {
-  searchQuery: string = '';
+  searchQuery = '';
   searchControl = new FormControl();
   users: User[] = [];
   filteredUsers: User[] = [];
-  loading: boolean = true;
+  loading = true;
   activeFilters: string[] = [];
-  private _hideEditors: boolean = false;
-  selectedAge: string = '';
+  private _hideEditors = false;
+  selectedAge = '';
   selectedBehRating: number | null = null;
-  selectedGender: string = '';
+  selectedGender = '';
 
   // Pagination properties
   totalUsers = 0;
@@ -47,7 +47,7 @@ export class UserSectionComponent implements OnInit {
     { key: 'type', header: 'Actions', type: 'actions' }
   ];
 
-  ageLabelMap: { [key: string]: string } = {
+  ageLabelMap: Record<string, string> = {
     below18: 'Below 18',
     '18to30': 'Between 18 and 30',
     '30to60': 'Between 30 and 60',
@@ -72,7 +72,7 @@ export class UserSectionComponent implements OnInit {
 
   loadUsers(): void {
     this.loading = true;
-    let params: any = {
+    const params: any = {
       page: this.currentPage,
       limit: this.pageSize,
       sortBy: this.sortBy,

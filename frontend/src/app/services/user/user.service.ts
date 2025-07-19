@@ -74,7 +74,7 @@ export class UserService {
   }
 
   getTransactionHistory(page: number, limit: number): Observable<PaginatedTransactionResponse> {
-    let params = new HttpParams()
+    const params = new HttpParams()
       .set('page', page.toString())
       .set('limit', limit.toString());
 
@@ -215,10 +215,10 @@ export class UserService {
   }
 
   getPublicWorks(
-    page: number = 1,
-    limit: number = 10,
+    page = 1,
+    limit = 10,
     rating: number | null = null,
-    search: string = ''
+    search = ''
   ): Observable<{ works: Works[], total: number }> {
     let params = new HttpParams()
       .set('page',page.toString())

@@ -25,9 +25,9 @@ export class QuotationCardComponent implements OnInit {
 
   FileType = FileType;
   bidAmount: number | null = null;
-  bidNotes: string = '';
+  bidNotes = '';
 
-  isEditMode: boolean = false;
+  isEditMode = false;
 
   constructor(
     private dialog: MatDialog,

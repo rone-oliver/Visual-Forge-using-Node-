@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, SimpleChanges,  } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, SimpleChanges, OnChanges,  } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormControl, Validators, ValidatorFn, AbstractControl } from '@angular/forms';
@@ -22,9 +22,9 @@ interface FormControlConfig {
   templateUrl: './form.component.html',
   styleUrl: './form.component.scss'
 })
-export class FormComponent implements OnInit {
+export class FormComponent implements OnInit, OnChanges {
   @Input() formControls: FormControlConfig[]=[];
-  @Input() submitButtonLabel: string = 'Submit';
+  @Input() submitButtonLabel = 'Submit';
   @Output() formSubmit = new EventEmitter<any>();
 
   myForm!: FormGroup;
@@ -49,7 +49,7 @@ export class FormComponent implements OnInit {
   }
 
   createForm(){
-    const controls : { [key:string]: FormControl}={};
+    const controls : Record<string, FormControl>={};
     this.formControls.forEach((control: FormControlConfig)=>{
       if(control.type === 'password'){
         control.isPasswordField = true;

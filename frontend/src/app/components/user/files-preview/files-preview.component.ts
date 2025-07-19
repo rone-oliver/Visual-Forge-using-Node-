@@ -17,8 +17,8 @@ import { CloudinaryUrlBuilder } from '../../../../utils/cloudinary/cloudinary-ur
 })
 export class FilesPreviewComponent implements OnDestroy {
   private destroy$ = new Subject<void>();
-  downloadProgress: { [key:string]: number} = {};
-  isDownloading: { [key: string]: boolean } = {};
+  downloadProgress: Record<string, number> = {};
+  isDownloading: Record<string, boolean> = {};
 
   constructor(
     private http: HttpClient,

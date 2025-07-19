@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -30,11 +30,11 @@ import { TimelineChartComponent } from '../../shared/timeline-chart/timeline-cha
   templateUrl: './works-history.component.html',
   styleUrl: './works-history.component.scss'
 })
-export class WorksHistoryComponent {
+export class WorksHistoryComponent implements OnInit {
   completedWorks: CompletedWork[] = [];
   filteredWorks: CompletedWork[] = [];
-  isLoading: boolean = true;
-  searchQuery: string = '';
+  isLoading = true;
+  searchQuery = '';
   FileType = FileType;
   expandedWorkId: string | null = null;
 

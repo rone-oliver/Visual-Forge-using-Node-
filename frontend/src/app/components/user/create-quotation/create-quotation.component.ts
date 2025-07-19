@@ -33,8 +33,8 @@ export class CreateQuotationComponent implements OnInit {
   outputTypes = Object.values(OutputType);
   selectedFiles: File[] = [];
   uploadedFiles: FileAttachmentResponse[] = [];
-  filesToDelete: Set<string> = new Set();
-  isUploading: boolean = false;
+  filesToDelete = new Set<string>();
+  isUploading = false;
   maxFiles = 5;
   minDate = new Date(new Date().setHours(new Date().getHours() + 12));
   // uploadProgress = 0;

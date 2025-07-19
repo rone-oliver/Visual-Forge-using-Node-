@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { LocalDatePipe } from '../../../pipes/date.pipe';
@@ -37,24 +37,24 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   templateUrl: './accepted-quotation.component.html',
   styleUrl: './accepted-quotation.component.scss'
 })
-export class AcceptedQuotationComponent {
+export class AcceptedQuotationComponent implements OnInit {
   acceptedQuotations: IQuotation[] = [];
   selectedQuotation: IQuotation | null = null;
-  searchQuery: string = '';
-  isLoading: boolean = true;
-  responseText: string = '';
+  searchQuery = '';
+  isLoading = true;
+  responseText = '';
   FileType = FileType;
   selectedFiles: File[] = [];
   uploadedFiles: FileAttachmentResponse[] = [];
-  isUploading: boolean = false;
+  isUploading = false;
   maxFiles = 3;
 
   // Pagination
-  itemsPerPage: number = 15;
-  currentPage: number = 1;
-  totalItems: number = 0;
-  hasMore: boolean = false;
-  isLoadingMore: boolean = false;
+  itemsPerPage = 15;
+  currentPage = 1;
+  totalItems = 0;
+  hasMore = false;
+  isLoadingMore = false;
 
   // Search
   private searchSubject = new Subject<string>();

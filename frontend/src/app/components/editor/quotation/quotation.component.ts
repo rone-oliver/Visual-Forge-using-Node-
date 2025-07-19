@@ -32,17 +32,17 @@ export class QuotationComponent implements OnInit, OnDestroy {
   selectedMediaType: OutputType = OutputType.MIXED;
 
   // Pagination
-  currentPage: number =1;
-  itemsPerPage: number = 10;
-  totalItems: number = 0;
+  currentPage =1;
+  itemsPerPage = 10;
+  totalItems = 0;
 
   // Search
-  searchTerm: string = '';
+  searchTerm = '';
   private searchSubject = new Subject<string>();
   private searchSubscription!: Subscription;
 
   // Loading and error
-  isLoading: boolean = false;
+  isLoading = false;
   error: string | null = null;    
 
   constructor(

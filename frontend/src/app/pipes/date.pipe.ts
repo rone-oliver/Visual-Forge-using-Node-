@@ -16,7 +16,7 @@ export class DatePipe implements PipeTransform {
   name: 'localDate',
 })
 export class LocalDatePipe implements PipeTransform{
-  transform(value: string | Date | null, format: string = 'short'): string {
+  transform(value: string | Date | null, format = 'short'): string {
     if (!value) return '';
     
     const date = typeof value === 'string' ? new Date(value) : value;

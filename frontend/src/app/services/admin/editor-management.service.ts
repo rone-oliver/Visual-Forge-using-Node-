@@ -29,7 +29,7 @@ export class EditorManagementService {
     return this._http.patch<boolean>(`${this.adminUrl}/requests/editor/${requestId}/reject`,{ reason });
   }
 
-  getEditors(params?:{[key:string]:any}): Observable<{editors:any[],total: number}>{
+  getEditors(params?:Record<string, any>): Observable<{editors:any[],total: number}>{
     let httpParams = new HttpParams();
     if(params){
       this._logger.debug('params:',params);

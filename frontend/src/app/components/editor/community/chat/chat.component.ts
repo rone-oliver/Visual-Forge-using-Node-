@@ -28,7 +28,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   community: Community | null = null;
   messages: CommunityMessage[] = [];
-  newMessageContent: string = '';
+  newMessageContent = '';
   userId: string | null = null;
   private messagesSubscription!: Subscription;
 
@@ -50,7 +50,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
         });
         this.communityService.joinCommunity(id);
         this.communityService.loadMessages(id);
-        this.messagesSubscription = this.communityService.messages$.subscribe(messages => {
+        this.messagesSubscription = this.communityService._messages$.subscribe(messages => {
           this.messages = messages;
         });
       }

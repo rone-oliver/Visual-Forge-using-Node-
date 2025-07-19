@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject, OnInit, OnDestroy } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -42,7 +42,7 @@ export interface UserSearchDialogData {
   templateUrl: './user-search.component.html',
   styleUrls: ['./user-search.component.scss']
 })
-export class UserSearchComponent implements OnInit {
+export class UserSearchComponent implements OnInit, OnDestroy {
   users: User[] = [];
   filteredUsers: User[] = [];
   searchQuery = '';

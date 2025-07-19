@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { UserService } from '../../../services/user/user.service';
 import { EditorService } from '../../../services/editor/editor.service';
 import { Works } from '../../../interfaces/completed-work.interface';
@@ -29,10 +29,10 @@ import { WorksCardComponent } from '../works-card/works-card.component';
     ])
   ]
 })
-export class PublicWorksComponent implements OnInit {
+export class PublicWorksComponent implements OnInit, OnDestroy {
   works: Works[] = [];
-  usersMap: Map<string, User> = new Map();
-  editorsMap: Map<string, Editor> = new Map();
+  usersMap = new Map<string, User>();
+  editorsMap = new Map<string, Editor>();
   isLoading = false;
   error: string | null = null;
 

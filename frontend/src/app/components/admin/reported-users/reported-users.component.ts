@@ -151,7 +151,7 @@ export class ReportedUsersComponent implements OnInit {
     });
   }
 
-  private showSnackbar(message: string, panelClass: string = 'custom-snackbar'): void {
+  private showSnackbar(message: string, panelClass = 'custom-snackbar'): void {
     this.snackBar.open(message, 'Close', {
       duration: 3000,
       panelClass: ['custom-snackbar', panelClass],

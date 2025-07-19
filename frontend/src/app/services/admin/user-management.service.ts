@@ -35,7 +35,7 @@ export class UserManagementService {
 
   constructor() { }
 
-  getAllUsers(params?: {[key:string]: any}):Observable<UserResponse>{
+  getAllUsers(params?: Record<string, any>):Observable<UserResponse>{
     let httpParams = new HttpParams();
     if(params){
       this._logger.debug('params:',params);

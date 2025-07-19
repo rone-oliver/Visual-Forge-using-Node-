@@ -29,7 +29,7 @@ import { MediaProtectionDirective } from '../../../directives/media-protection.d
 })
 export class BidDialogComponent implements OnInit {
   bids: IBid[] = [];
-  loading: boolean = true;
+  loading = true;
   error: string | null = null;
   
   constructor(

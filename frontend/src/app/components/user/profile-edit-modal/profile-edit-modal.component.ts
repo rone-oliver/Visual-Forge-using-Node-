@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit, ViewEncapsulation } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Inject, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { Language } from '../../../interfaces/user.interface';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -31,11 +31,13 @@ import { MatListModule } from '@angular/material/list';
   styleUrls: ['./profile-edit-modal.component.scss'],
   encapsulation: ViewEncapsulation.None
 })
-export class ProfileEditModalComponent implements OnInit {
+export class ProfileEditModalComponent implements OnInit, AfterViewInit {
   editUser: any;
   languages = [Language.ENGLISH, Language.SPANISH, Language.FRENCH, Language.GERMAN, Language.HINDI];
   sharedTutorials: string[] = [];
   newTutorialUrl = '';
+
+  @ViewChild('fullname', { read: ElementRef }) fullnameInputRef!: ElementRef;
 
   constructor(
     public dialogRef: MatDialogRef<ProfileEditModalComponent>,
@@ -50,6 +52,12 @@ export class ProfileEditModalComponent implements OnInit {
   ngOnInit() {
     // Make the dialog scrollable and set max-height
     this.dialogRef.updateSize('600px', '90vh');
+  }
+
+  ngAfterViewInit(): void {
+    if(this.fullnameInputRef){
+      this.fullnameInputRef.nativeElement.focus();
+    }
   }
 
   addTutorial(): void {

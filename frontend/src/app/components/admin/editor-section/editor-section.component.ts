@@ -34,7 +34,7 @@ export class EditorSectionComponent implements OnInit {
   categoryFilterControl = new FormControl<string[]>([]);
   ratingFilterControl = new FormControl(0);
   
-  searchQuery: string = '';
+  searchQuery = '';
   
   // Sidebar visibility state
   sidebarVisible = false;
@@ -47,7 +47,7 @@ export class EditorSectionComponent implements OnInit {
   editorRequests: EditorRequest[] = [];
   editors: Editor[] = [];
 
-  loading: boolean = false;
+  loading = false;
 
   // Pagination properties
   totalEditors = 0;

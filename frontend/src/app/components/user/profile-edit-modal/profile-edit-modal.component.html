@@ -14,7 +14,7 @@
         <mat-form-field appearance="outline" class="form-field">
           <mat-label>Full Name</mat-label>
           <input matInput [(ngModel)]="editUser.fullname" name="fullname" required minlength="2"
-            #fullname="ngModel" autofocus />
+            #fullname="ngModel" />
           <mat-icon matSuffix>person</mat-icon>
           @if (fullname.invalid && (fullname.dirty || fullname.touched)) {
             <mat-error>

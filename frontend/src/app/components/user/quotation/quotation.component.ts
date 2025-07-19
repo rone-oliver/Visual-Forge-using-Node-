@@ -35,21 +35,21 @@ import { PaymentDialogComponent, PaymentMethod } from '../../mat-dialogs/payment
   styleUrl: './quotation.component.scss'
 })
 export class QuotationComponent implements OnInit, OnDestroy {
-  loading: boolean = true;
+  loading = true;
   quotations: IQuotation[] = [];
   completedWorks: CompletedWork[] = [];
-  completedWorksSearch: string = '';
-  completedWorksLoading: boolean = false;
+  completedWorksSearch = '';
+  completedWorksLoading = false;
   FileType = FileType;
   activeFilter: QuotationStatus | 'All' = 'All';
-  searchTerm: string = '';
+  searchTerm = '';
   protected QuotationStatus = QuotationStatus;
   expandedWorkId: string | null = null;
 
   // Pagination
-  currentPage: number = 1;
-  itemsPerPage: number = 10; // Default items per page
-  totalItems: number = 0;
+  currentPage = 1;
+  itemsPerPage = 10; // Default items per page
+  totalItems = 0;
 
   private searchSubject = new Subject<string>();
   private searchSubscription!: Subscription;

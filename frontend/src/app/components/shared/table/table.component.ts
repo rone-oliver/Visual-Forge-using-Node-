@@ -25,22 +25,22 @@ export class TableComponent {
   @Input() data: any[] = [];
 
   @Input() columns: TableColumn[] = [];
-  @Input() pageSize: number = 10;
+  @Input() pageSize = 10;
   totalItems = input<number>(0); // Total items for backend pagination
   currentPage = input<number>(1); // Current page controlled by parent
-  @Input() showPagination: boolean = true;
+  @Input() showPagination = true;
 
-  @Input() loading: boolean = false;
+  @Input() loading = false;
 
-  @Input() emptyMessage: string = 'No data available';
-  @Input() blockedStatusKey: string = 'isBlocked'; // Default key
+  @Input() emptyMessage = 'No data available';
+  @Input() blockedStatusKey = 'isBlocked'; // Default key
 
   @Output() rowClick = new EventEmitter<any>();
   @Output() actionClick = new EventEmitter<{ action: string, item: any}>();
   pageChange = output<number>();
   sortChange = output<{key: string, direction: 'asc' | 'desc'}>();
 
-  defaultPlaceholder: string = 'N/A'
+  defaultPlaceholder = 'N/A'
   sortColumn: string | null = null;
   sortDirection: 'asc' | 'desc' = 'asc';
 

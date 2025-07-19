@@ -37,22 +37,22 @@ declare global {
   styleUrl: './login.component.scss'
 })
 export class LoginComponent implements OnInit, OnDestroy {
-  errorMessage: string = '';
-  successMessage: string = '';
-  showPassword: boolean = false;
+  errorMessage = '';
+  successMessage = '';
+  showPassword = false;
 
-  showForgotPassword: boolean = false;
+  showForgotPassword = false;
   forgotPasswordStep: 'email' | 'otp' | 'newPassword' = 'email';
-  isSubmittingForgotPassword: boolean = false;
-  otpCountdown: number = 0;
+  isSubmittingForgotPassword = false;
+  otpCountdown = 0;
   countdownInterval: any;
-  storedEmail: string = '';
+  storedEmail = '';
 
   private readonly COUNTDOWN_STORAGE_KEY = 'forgotPasswordCountdown';
   private readonly EMAIL_STORAGE_KEY = 'forgotPasswordEmail';
   private readonly STEP_STORAGE_KEY = 'forgotPasswordStep';
   private countdownSubscription: Subscription | null = null;
-  canResendOtp: boolean = true;
+  canResendOtp = true;
 
   constructor(
     private authService: AuthService,
@@ -222,7 +222,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     });
   }
 
-  startCountdown(seconds: number = 30) {
+  startCountdown(seconds = 30) {
     // Clear any existing countdown
     this.stopCountdown();
 

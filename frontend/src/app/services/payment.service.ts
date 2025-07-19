@@ -1,10 +1,10 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
-import { catchError, map, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
 import { IPaymentVerification } from '../interfaces/quotation.interface';
 
-declare var Razorpay: any;
+declare let Razorpay: any;
 
 @Injectable({
   providedIn: 'root'
