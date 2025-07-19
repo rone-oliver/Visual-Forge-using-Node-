@@ -30,6 +30,26 @@ export default tseslint.config(
           style: "kebab-case",
         },
       ],
+      // "@typescript-eslint/explicit-member-accessibility": [
+      //   "warn",
+      //   {
+      //     "accessibility": "explicit",
+      //     "overrides": {
+      //       "constructors": "no-public"
+      //     }
+      //   }
+      // ],
+      "@typescript-eslint/naming-convention": [
+        "warn",
+        {
+          "selector": "memberLike",
+          "modifiers": ["private"],
+          "format": ["camelCase"],
+          "leadingUnderscore": "require"
+        }
+      ],
+      "@typescript-eslint/no-explicit-any": "warn",
+      "no-console": ["warn", { "allow": ["warn", "error"] }]
     },
   },
   {
