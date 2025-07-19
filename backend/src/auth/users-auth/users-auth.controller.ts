@@ -8,7 +8,7 @@ import { VerifyOtpDto } from './dtos/users-auth.dto';
 @Controller('auth/user')
 export class UsersAuthController {
     constructor(
-        @Inject(IUsersAuthServiceToken) private usersAuthService: IUsersAuthService,
+        @Inject(IUsersAuthServiceToken) private readonly _usersAuthService: IUsersAuthService,
     ){};
 
     @Public()
@@ -18,7 +18,7 @@ export class UsersAuthController {
         @Res({passthrough: true}) response: Response
     ){
         if(loginData.username && loginData.password){
-            return await this.usersAuthService.login(
+            return await this._usersAuthService.login(
                 loginData.username,
                 loginData.password,
                 response
@@ -32,13 +32,13 @@ export class UsersAuthController {
     async register(
         @Body() userData: Partial<User>,
     ){
-        return await this.usersAuthService.register(userData);
+        return await this._usersAuthService.register(userData);
     }
 
     @Public()
     @Post('resend-otp')
     async resendOtp(@Body() body:{email:string}){
-        return await this.usersAuthService.resendOtp(body.email);
+        return await this._usersAuthService.resendOtp(body.email);
     }
 
     @Public()
@@ -58,7 +58,7 @@ export class UsersAuthController {
                 };
             }
             console.log(email, otp);
-            const result = await this.usersAuthService.verifyOtp(email,otp);
+            const result = await this._usersAuthService.verifyOtp(email,otp);
             return result;
         } catch (error) {
             return {
@@ -74,19 +74,19 @@ export class UsersAuthController {
     @Public()
     @Post('forgot-password')
     async sendPasswordResetOtp(@Body() body:{email:string}){
-        return await this.usersAuthService.resendOtp(body.email);
+        return await this._usersAuthService.resendOtp(body.email);
     }
 
     @Public()
     @Post('verify-reset-otp')
     async verifyPasswordResetOtp(@Body() body:{email:string, otp:string}){
-        return await this.usersAuthService.verifyOtp(body.email,body.otp);
+        return await this._usersAuthService.verifyOtp(body.email,body.otp);
     }
 
     @Public()
     @Post('reset-password')
     async resetPassword(@Body() body:{email:string, newPassword:string}){
-        const result = await this.usersAuthService.resetPassword(body.email,body.newPassword);
+        const result = await this._usersAuthService.resetPassword(body.email,body.newPassword);
         return result;
     }
 }

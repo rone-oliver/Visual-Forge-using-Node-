@@ -10,41 +10,40 @@ import { INotificationGateway, INotificationGatewayToken } from './interfaces/no
 
 @Injectable()
 export class NotificationService implements INotificationService {
-    private readonly logger = new Logger(NotificationService.name);
+    private readonly _logger = new Logger(NotificationService.name);
 
     constructor(
-        @Inject(INotificationRepositoryToken) private readonly notificationRepository: INotificationRepository,
-        @Inject(forwardRef(() => INotificationGatewayToken)) 
-        @Inject(INotificationGatewayToken) private readonly notificationGateway: INotificationGateway,
+        @Inject(INotificationRepositoryToken) private readonly _notificationRepository: INotificationRepository,
+        @Inject(forwardRef(() => INotificationGatewayToken)) private readonly _notificationGateway: INotificationGateway,
     ) { }
 
     async createNotification(params: CreateNotificationDto): Promise<Notification | null> {
         try {
-            const notification = await this.notificationRepository.create(params);
+            const notification = await this._notificationRepository.create(params);
 
             try {
                 // Separate try-catch for WebSocket operations to prevent DB transaction failure
-                this.notificationGateway.sendNotificationToUser(
+                this._notificationGateway.sendNotificationToUser(
                     notification.userId.toString(),
                     notification
                 );
             } catch (socketError) {
-                this.logger.error(`Failed to send notification via WebSocket: ${socketError.message}`, socketError.stack);
+                this._logger.error(`Failed to send notification via WebSocket: ${socketError.message}`, socketError.stack);
                 // Continue execution - we still want to return the notification even if real-time delivery failed
             }
             
             return notification;
         } catch (error) {
-            this.logger.error(`Failed to create notification: ${error.message}`, error.stack);
+            this._logger.error(`Failed to create notification: ${error.message}`, error.stack);
             return null;
         }
     }
 
     async getNotificationsByUserId(userId: string): Promise<Notification[]> {
         try {
-            return await this.notificationRepository.findByUserId(userId);
+            return await this._notificationRepository.findByUserId(userId);
         } catch (error) {
-            this.logger.error(`Failed to get notifications for user ${userId}: ${error.message}`, error.stack);
+            this._logger.error(`Failed to get notifications for user ${userId}: ${error.message}`, error.stack);
             return [];
         }
     }
@@ -58,7 +57,7 @@ export class NotificationService implements INotificationService {
         title: string, 
         bidAmount: number
     }) {
-        this.logger.log(`Handling bid accepted event for bid ${payload.bidId}`);
+        this._logger.log(`Handling bid accepted event for bid ${payload.bidId}`);
         
         try {
             // Notify the user who accepted the bid
@@ -86,7 +85,7 @@ export class NotificationService implements INotificationService {
             });
 
         } catch (error) {
-            this.logger.error(`Failed to handle bid accepted event: ${error.message}`, error.stack);
+            this._logger.error(`Failed to handle bid accepted event: ${error.message}`, error.stack);
         }
     }
 
@@ -97,7 +96,7 @@ export class NotificationService implements INotificationService {
         title: string,
         amount: number
     }) {
-        this.logger.log(`Handling quotation created event for quotation ${payload.quotationId}`);
+        this._logger.log(`Handling quotation created event for quotation ${payload.quotationId}`);
         
         try {
             // Notify the user who created the quotation
@@ -108,7 +107,7 @@ export class NotificationService implements INotificationService {
                 quotationId: payload.quotationId.toString(),
             });
         } catch (error) {
-            this.logger.error(`Failed to handle quotation created event: ${error.message}`, error.stack);
+            this._logger.error(`Failed to handle quotation created event: ${error.message}`, error.stack);
         }
     }
 
@@ -123,7 +122,7 @@ export class NotificationService implements INotificationService {
         data: any,
         worksId: Types.ObjectId
     }) {
-        this.logger.log(`Handling quotation completed event for quotation ${payload.quotationId}`);
+        this._logger.log(`Handling quotation completed event for quotation ${payload.quotationId}`);
         
         try {
             // Notify the user who created the quotation
@@ -136,13 +135,13 @@ export class NotificationService implements INotificationService {
                 data: payload.data,
             });
         } catch (error) {
-            this.logger.error(`Failed to handle quotation completed event: ${error.message}`, error.stack);
+            this._logger.error(`Failed to handle quotation completed event: ${error.message}`, error.stack);
         }
     }
 
     @OnEvent(EventTypes.PAYMENT_REFUNDED)
     async handlePaymentRefunded(payload: { recipient: Types.ObjectId, message: string, type: NotificationType }) {
-        this.logger.log(`Handling payment refunded event for user ${payload.recipient}`);
+        this._logger.log(`Handling payment refunded event for user ${payload.recipient}`);
         await this.createNotification({
             userId: payload.recipient.toString(),
             message: payload.message,
@@ -152,7 +151,7 @@ export class NotificationService implements INotificationService {
 
     @OnEvent(EventTypes.EDITOR_WARNING)
     async handleEditorWarning(payload: { recipient: Types.ObjectId, message: string, type: NotificationType }) {
-        this.logger.log(`Handling editor warning event for editor ${payload.recipient}`);
+        this._logger.log(`Handling editor warning event for editor ${payload.recipient}`);
         await this.createNotification({
             userId: payload.recipient.toString(),
             message: payload.message,
@@ -162,7 +161,7 @@ export class NotificationService implements INotificationService {
 
     @OnEvent(EventTypes.EDITOR_SUSPENDED)
     async handleEditorSuspended(payload: { recipient: Types.ObjectId, message: string, type: NotificationType }) {
-        this.logger.log(`Handling editor suspended event for editor ${payload.recipient}`);
+        this._logger.log(`Handling editor suspended event for editor ${payload.recipient}`);
         await this.createNotification({
             userId: payload.recipient.toString(),
             message: payload.message,
@@ -172,21 +171,21 @@ export class NotificationService implements INotificationService {
 
     async getUnreadNotificationsByUserId(userId: string): Promise<Notification[]> {
         try {
-            return await this.notificationRepository.findUnreadByUserId(userId);
+            return await this._notificationRepository.findUnreadByUserId(userId);
         } catch (error) {
-            this.logger.error(`Failed to get unread notifications for user ${userId}: ${error.message}`, error.stack);
+            this._logger.error(`Failed to get unread notifications for user ${userId}: ${error.message}`, error.stack);
             return [];
         }
     }
 
     async markAsRead(notificationId: string): Promise<Notification> {
-        const notification = await this.notificationRepository.update(notificationId, { unread: false });
+        const notification = await this._notificationRepository.update(notificationId, { unread: false });
         if (!notification) {
             throw new NotFoundException(`Notification with ID "${notificationId}" not found`);
         }
 
         // Notify the gateway to push the status update to the client
-        this.notificationGateway.sendStatusUpdate(notification.userId.toString(), {
+        this._notificationGateway.sendStatusUpdate(notification.userId.toString(), {
             notificationId,
             status: 'read'
         });
@@ -195,17 +194,17 @@ export class NotificationService implements INotificationService {
     }
 
     async markAllAsRead(userId: string): Promise<any> {
-        const result = await this.notificationRepository.updateMany({ userId, unread: true }, { unread: false });
+        const result = await this._notificationRepository.updateMany({ userId, unread: true }, { unread: false });
         
         const updatedCount = result.modifiedCount || 0;
         
         try {
             if (updatedCount > 0) {
-                this.notificationGateway.sendBulkStatusUpdate(userId, 'read');
-                this.logger.log(`Marked ${updatedCount} notifications as read for user ${userId}`);
+                this._notificationGateway.sendBulkStatusUpdate(userId, 'read');
+                this._logger.log(`Marked ${updatedCount} notifications as read for user ${userId}`);
             }
         } catch (socketError) {
-            this.logger.error(`Failed to send bulk status update via WebSocket: ${socketError.message}`, socketError.stack);
+            this._logger.error(`Failed to send bulk status update via WebSocket: ${socketError.message}`, socketError.stack);
         }
         
         return true;
@@ -213,19 +212,19 @@ export class NotificationService implements INotificationService {
 
     async deleteNotification(notificationId: string): Promise<boolean> {
         try {
-            const notification = await this.notificationRepository.findById(notificationId);
+            const notification = await this._notificationRepository.findById(notificationId);
             if (!notification) {
                 throw new NotFoundException(`Notification with ID ${notificationId} not found`);
             }
             
             const userId = notification.userId.toString();
             
-            await this.notificationRepository.delete(notificationId);
+            await this._notificationRepository.delete(notificationId);
             
             try {
-                this.notificationGateway.sendBulkStatusUpdate(userId, 'deleted');
+                this._notificationGateway.sendBulkStatusUpdate(userId, 'deleted');
             } catch (socketError) {
-                this.logger.error(`Failed to send deletion update via WebSocket: ${socketError.message}`, socketError.stack);
+                this._logger.error(`Failed to send deletion update via WebSocket: ${socketError.message}`, socketError.stack);
             }
             
             return true;
@@ -233,16 +232,16 @@ export class NotificationService implements INotificationService {
             if (error instanceof NotFoundException) {
                 throw error; // Re-throw NotFoundException for proper HTTP response
             }
-            this.logger.error(`Failed to delete notification ${notificationId}: ${error.message}`, error.stack);
+            this._logger.error(`Failed to delete notification ${notificationId}: ${error.message}`, error.stack);
             return false;
         }
     }
 
     async getUnreadCount(userId: string): Promise<number> {
         try {
-            return await this.notificationRepository.countUnread(userId);
+            return await this._notificationRepository.countUnread(userId);
         } catch (error) {
-            this.logger.error(`Failed to get unread count for user ${userId}: ${error.message}`, error.stack);
+            this._logger.error(`Failed to get unread count for user ${userId}: ${error.message}`, error.stack);
             return 0;
         }
     }

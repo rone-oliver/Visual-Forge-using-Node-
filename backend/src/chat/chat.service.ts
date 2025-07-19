@@ -7,28 +7,28 @@ import { IChatService } from './interfaces/chat-service.interface';
 
 @Injectable()
 export class ChatService implements IChatService {
-  private readonly logger = new Logger(ChatService.name);
+  private readonly _logger = new Logger(ChatService.name);
   
   constructor(
-    @Inject(IChatRepositoryToken) private readonly chatRepository: IChatRepository,
-    @Inject(IUsersServiceToken) private readonly userService: IUsersService,
+    @Inject(IChatRepositoryToken) private readonly _chatRepository: IChatRepository,
+    @Inject(IUsersServiceToken) private readonly _userService: IUsersService,
   ) { }
 
   async getChatList(currentUserId: Types.ObjectId) {
-    return this.chatRepository.getChatList(currentUserId);
+    return this._chatRepository.getChatList(currentUserId);
   }
 
   async getMessagesBetweenUsers(currentUserId: Types.ObjectId, recipientId: Types.ObjectId) {
-    return this.chatRepository.findMessagesBetweenUsers(currentUserId, recipientId);
+    return this._chatRepository.findMessagesBetweenUsers(currentUserId, recipientId);
   }
 
   async updateMessageStatus(messageId: string, status: MessageStatus): Promise<Message | null> {
-    return this.chatRepository.updateMessageStatus(messageId, status);
+    return this._chatRepository.updateMessageStatus(messageId, status);
   }
 
   async getUserInfoForChatList(userId: Types.ObjectId) {
     try {
-      const user = await this.userService.getUserInfoForChatList(userId);
+      const user = await this._userService.getUserInfoForChatList(userId);
       if (!user) {
         return {
           username: 'Unknown User',
@@ -38,7 +38,7 @@ export class ChatService implements IChatService {
       }
       return user;
     } catch (error) {
-      this.logger.error(`Error in getUserInfoForChatList: ${error.message}`);
+      this._logger.error(`Error in getUserInfoForChatList: ${error.message}`);
       return {
         username: 'Unknown User',
         profileImage: null,
@@ -49,18 +49,18 @@ export class ChatService implements IChatService {
 
   async createNewChat(senderId: Types.ObjectId, recipientId: Types.ObjectId){
     try {
-      return this.chatRepository.create(senderId, recipientId, 'Hi');
+      return this._chatRepository.create(senderId, recipientId, 'Hi');
     } catch (error) {
-      this.logger.error(`Error in createNewChat: ${error.message}`);
+      this._logger.error(`Error in createNewChat: ${error.message}`);
       throw error;
     }
   }
 
   async createMessage(senderId: Types.ObjectId, recipientId: Types.ObjectId, content: string): Promise<Message> {
     try {
-      return this.chatRepository.create(senderId, recipientId, content);
+      return this._chatRepository.create(senderId, recipientId, content);
     } catch (error) {
-      this.logger.error(`Error in createMessage: ${error.message}`);
+      this._logger.error(`Error in createMessage: ${error.message}`);
       throw error;
     }
   }

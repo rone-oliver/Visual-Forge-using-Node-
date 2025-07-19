@@ -16,38 +16,38 @@ import { UpdateReportDto } from 'src/reports/dtos/reports.dto';
 @Controller('admin')
 @UseGuards(AuthGuard, RolesGuard)
 export class AdminsController implements IAdminsController {
-    private readonly logger = new Logger(AdminsController.name);
+    private readonly _logger = new Logger(AdminsController.name);
     constructor(
-        @Inject(IAdminsServiceToken) private adminService: IAdminsService
+        @Inject(IAdminsServiceToken) private _adminService: IAdminsService
     ) { };
     @Get('users')
     @Roles(Role.ADMIN)
     async getAllUsers(
         @Query() query: GetAllUsersQueryDto,
     ): Promise<{ users: User[]; total: number }> {
-        return await this.adminService.getAllUsers(query);
+        return await this._adminService.getAllUsers(query);
     }
 
     @Get('requests/editor')
     @Roles(Role.ADMIN)
     async getEditorRequests(): Promise<FormattedEditorRequest[]> {
-        this.logger.log('Attempting to fetch all editor requests');
-        return await this.adminService.getEditorRequests();
+        this._logger.log('Attempting to fetch all editor requests');
+        return await this._adminService.getEditorRequests();
     }
 
     @Patch('requests/editor/:reqId/approve')
     @Roles(Role.ADMIN)
     async approveRequest(@Req() req: Request, @Param('reqId') reqId: string): Promise<boolean> {
-        this.logger.log(`Attempting to approve editor request with ID: ${reqId} by admin ID: ${req['user'].userId}`);
+        this._logger.log(`Attempting to approve editor request with ID: ${reqId} by admin ID: ${req['user'].userId}`);
         const admin = req['user'] as { userId: Types.ObjectId, role: string }
-        return await this.adminService.approveRequest(new Types.ObjectId(reqId), admin.userId);
+        return await this._adminService.approveRequest(new Types.ObjectId(reqId), admin.userId);
     }
 
     @Patch('requests/editor/:reqId/reject')
     @Roles(Role.ADMIN)
     async rejectRequest(@Param('reqId') reqId: string, @Body() body: { reason: string }): Promise<boolean> {
-        this.logger.log(`Attempting to reject editor request with ID: ${reqId}`);
-        return await this.adminService.rejectRequest(new Types.ObjectId(reqId), body.reason);
+        this._logger.log(`Attempting to reject editor request with ID: ${reqId}`);
+        return await this._adminService.rejectRequest(new Types.ObjectId(reqId), body.reason);
     }
 
     @Get('editors')
@@ -55,8 +55,8 @@ export class AdminsController implements IAdminsController {
     async getEditors(
         @Query() query: GetEditorsQueryDto,
     ): Promise<{ editors: FormattedEditor[]; total: number }> {
-        this.logger.log('Delegating to EditorsService to fetch editors');
-        return await this.adminService.getEditors(query);
+        this._logger.log('Delegating to EditorsService to fetch editors');
+        return await this._adminService.getEditors(query);
     }
 
     @Patch('users/:userId/block')
@@ -64,8 +64,8 @@ export class AdminsController implements IAdminsController {
     @ApiResponse({ status: 200, description: 'User blocked successfully.', type: SuccessResponseDto })
     @Roles(Role.ADMIN)
     async blockUser(@Param('userId') userId: string): Promise<SuccessResponseDto> {
-        this.logger.log(`Attempting to block user with ID: ${userId}`);
-        return await this.adminService.blockUser(new Types.ObjectId(userId));
+        this._logger.log(`Attempting to block user with ID: ${userId}`);
+        return await this._adminService.blockUser(new Types.ObjectId(userId));
     }
 
     @Get('reports/pending')
@@ -73,7 +73,7 @@ export class AdminsController implements IAdminsController {
     @ApiResponse({ status: 200, description: 'A list of pending reports.', type: [Report] })
     @Roles(Role.ADMIN)
     async getPendingReports(): Promise<Report[]> {
-        return await this.adminService.getPendingReports();
+        return await this._adminService.getPendingReports();
     }
 
     @Patch('reports/:reportId')
@@ -84,13 +84,13 @@ export class AdminsController implements IAdminsController {
         @Param('reportId') reportId: string,
         @Body() updateDto: UpdateReportDto,
     ): Promise<Report> {
-        return await this.adminService.updateReport(reportId, updateDto);
+        return await this._adminService.updateReport(reportId, updateDto);
     }
 
     @Get('dashboard')
     @Roles(Role.ADMIN)
     async getDashboardData(): Promise<DashboardResponseDto> {
-        this.logger.log('Attempting to fetch dashboard data');
-        return await this.adminService.getDashboardData();
+        this._logger.log('Attempting to fetch dashboard data');
+        return await this._adminService.getDashboardData();
     }
 }

@@ -8,14 +8,14 @@ import { Injectable } from "@nestjs/common";
 @Injectable()
 export class TimelineRepository implements ITimelineRepository {
     constructor(
-        @InjectModel(Timeline.name) private timelineModel: Model<TimelineDocument>,
+        @InjectModel(Timeline.name) private readonly _timelineModel: Model<TimelineDocument>,
     ){};
 
     async create(createTimelineDto: CreateTimelineDto): Promise<Timeline> {
-        return await this.timelineModel.create(createTimelineDto);
+        return await this._timelineModel.create(createTimelineDto);
     }
 
     async findByQuotationId(quotationId: Types.ObjectId): Promise<Timeline[]> {
-        return this.timelineModel.find({ quotationId }).sort({ timestamp: 1 }).exec();
+        return this._timelineModel.find({ quotationId }).sort({ timestamp: 1 }).exec();
     }
 }

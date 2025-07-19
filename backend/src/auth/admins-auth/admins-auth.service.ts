@@ -7,39 +7,40 @@ import { ConfigService } from '@nestjs/config';
 import { IAdminsService, IAdminsServiceToken } from 'src/admins/interfaces/admins.service.interface';
 import { IAdminsAuthService } from './interfaces/adminsAuth-service.interface';
 import { AdminLoginResponseDto } from './dtos/admins-auth.dto';
+import { IHashingService, IHashingServiceToken } from 'src/common/hashing/interfaces/hashing.service.interface';
 
 @Injectable()
 export class AdminsAuthService implements IAdminsAuthService {
     constructor(
-        @Inject(IAdminsServiceToken) private adminsService: IAdminsService,
-        private jwtService: JwtService,
-        private configService: ConfigService,
+        @Inject(IAdminsServiceToken) private readonly _adminsService: IAdminsService,
+        @Inject(IHashingServiceToken) private readonly _hashingService: IHashingService,
+        private _jwtService: JwtService,
+        private _configService: ConfigService,
     ) { };
-    private readonly logger = new Logger(AdminsAuthService.name);
+    private readonly _logger = new Logger(AdminsAuthService.name);
     // Helper
     private async generateTokens(admin: Admin) {
         const [accessToken, refreshToken] = await Promise.all([
-            this.jwtService.signAsync(
+            this._jwtService.signAsync(
                 {
                     userId: admin._id,
                     username: admin.username,
                     role: 'Admin'
                 },
                 { 
-                    secret: this.configService.get<string>('JWT_SECRET'),
-                    expiresIn: this.configService.get<string>('ACCESS_TOKEN_EXPIRATION')
-                    // expiresIn: '1m' 
+                    secret: this._configService.get<string>('JWT_SECRET'),
+                    expiresIn: this._configService.get<string>('ACCESS_TOKEN_EXPIRATION')
                 }
             ),
-            this.jwtService.signAsync(
+            this._jwtService.signAsync(
                 {
                     userId: admin._id,
                     username: admin.username,
                     role: 'Admin'
                 },
                 { 
-                    secret: this.configService.get<string>('JWT_SECRET'),
-                    expiresIn: this.configService.get<string>('REFRESH_TOKEN_EXPIRATION')
+                    secret: this._configService.get<string>('JWT_SECRET'),
+                    expiresIn: this._configService.get<string>('REFRESH_TOKEN_EXPIRATION')
                 }
             )
         ]);
@@ -47,7 +48,7 @@ export class AdminsAuthService implements IAdminsAuthService {
         return { accessToken, refreshToken };
     }
 
-    private setCookies(response: Response, refreshToken: string) {
+    private _setCookies(response: Response, refreshToken: string) {
         response.cookie('adminRefreshToken', refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -56,16 +57,17 @@ export class AdminsAuthService implements IAdminsAuthService {
         })
     }
     setRefreshTokenCookie(response: Response, refreshToken: string) {
-        this.setCookies(response, refreshToken);
+        this._setCookies(response, refreshToken);
     }
 
     async checkPassword(password: string, hashPassword: string): Promise<boolean> {
-        return await bcrypt.compare(password, hashPassword);
+        // return await bcrypt.compare(password, hashPassword);
+        return await this._hashingService.compare(password, hashPassword);
     }
 
     async login(username: string, password: string, response: Response): Promise<AdminLoginResponseDto> {
         try {
-            const admin = await this.adminsService.findOne({ username });
+            const admin = await this._adminsService.findOne({ username });
             if (!admin) {
                 throw new UnauthorizedException('Admin not found');
             }
@@ -74,14 +76,14 @@ export class AdminsAuthService implements IAdminsAuthService {
                 throw new UnauthorizedException('Invalid password');
             }
             const tokens = await this.generateTokens(admin);
-            this.setCookies(response, tokens.refreshToken);
+            this._setCookies(response, tokens.refreshToken);
             return { admin, accessToken: tokens.accessToken };
         } catch (error) {
-            this.logger.error(`Login failed for admin ${username}: ${error.message}`);
+            this._logger.error(`Login failed for admin ${username}: ${error.message}`);
             throw error;
         }
     }
     async register(registerData: { username: string,password: string }): Promise<Admin> {
-        return this.adminsService.createAdmin(registerData);
+        return this._adminsService.createAdmin(registerData);
     }
 }

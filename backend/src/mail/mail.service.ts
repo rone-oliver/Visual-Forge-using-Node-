@@ -4,10 +4,10 @@ import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class MailService {
-  private transporter: nodemailer.Transporter;
+  private _transporter: nodemailer.Transporter;
 
   constructor(private readonly configService: ConfigService) {
-    this.transporter = nodemailer.createTransport({
+    this._transporter = nodemailer.createTransport({
       // host: this.configService.get<string>('EMAIL_HOST'),
       // port: this.configService.get<number>('EMAIL_PORT'),
       // secure: this.configService.get<boolean>('EMAIL_SECURE'),
@@ -20,7 +20,7 @@ export class MailService {
   }
 
   private async _sendMail(mailOptions: nodemailer.SendMailOptions) {
-    await this.transporter.sendMail(mailOptions);
+    await this._transporter.sendMail(mailOptions);
   }
 
   private _createThemedEmail(title: string, preheader: string, contentHtml: string): string {

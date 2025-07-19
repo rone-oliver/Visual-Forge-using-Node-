@@ -11,19 +11,19 @@ import { Role } from 'src/common/enums/role.enum';
 @UseGuards(AuthGuard,RolesGuard)
 export class ChatController {
   constructor(
-      @Inject(IChatServiceToken) private readonly chatService: IChatService,
+      @Inject(IChatServiceToken) private readonly _chatService: IChatService,
   ){};
 
   @Get('list')
   @Roles(Role.USER,Role.EDITOR)
   async getChatList(@GetUser('userId') userId: string) {
-    return this.chatService.getChatList(new Types.ObjectId(userId));
+    return this._chatService.getChatList(new Types.ObjectId(userId));
   }
 
   @Post('')
   @Roles(Role.USER,Role.EDITOR)
   async createNewChat(@GetUser('userId') userId: string, @Body() body: { recipientId: string }){
-    return this.chatService.createNewChat(new Types.ObjectId(userId), new Types.ObjectId(body.recipientId));
+    return this._chatService.createNewChat(new Types.ObjectId(userId), new Types.ObjectId(body.recipientId));
   }
 
   @Get('messages/:recipientId')
@@ -32,12 +32,12 @@ export class ChatController {
     @GetUser('userId') userId: string,
     @Param('recipientId') recipientId: string,
   ) {
-    return this.chatService.getMessagesBetweenUsers(new Types.ObjectId(userId), new Types.ObjectId(recipientId));
+    return this._chatService.getMessagesBetweenUsers(new Types.ObjectId(userId), new Types.ObjectId(recipientId));
   }
 
   @Get(':userId')
   @Roles(Role.USER,Role.EDITOR)
   async getUserInfo(@Param('userId') userId: string){
-    return this.chatService.getUserInfoForChatList(new Types.ObjectId(userId));
+    return this._chatService.getUserInfoForChatList(new Types.ObjectId(userId));
   }
 }

@@ -31,31 +31,31 @@ import { IAiService, IAiServiceToken } from 'src/ai/interfaces/ai-service.interf
 @Roles(Role.USER, Role.EDITOR) 
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect, IChatGateway {
     @WebSocketServer() server: Server;
-    private readonly logger = new Logger(ChatGateway.name);
-    private userSocketMap: Map<string, string> = new Map();
+    private readonly _logger = new Logger(ChatGateway.name);
+    private _userSocketMap: Map<string, string> = new Map();
 
     constructor(
-        @Inject(IChatServiceToken) private readonly chatService: IChatService,
-        @Inject(IAiServiceToken) private readonly aiService: IAiService,
+        @Inject(IChatServiceToken) private readonly _chatService: IChatService,
+        @Inject(IAiServiceToken) private readonly _aiService: IAiService,
     ) { }
 
     async handleConnection(client: Socket, ...args: any[]) {
-        this.logger.log(`Client connected: ${client.id}`);
+        this._logger.log(`Client connected: ${client.id}`);
         try {
             // const user = client['user'] as { userId: string, role: string };
             const userId = client.handshake.query.userId as string;
             if (!userId) {
-                this.logger.warn(`Client ${client.id} connected without userId`);
+                this._logger.warn(`Client ${client.id} connected without userId`);
                 return client.disconnect();
             }
             client['userId'] = userId;
     
-            this.userSocketMap.set(userId, client.id);
+            this._userSocketMap.set(userId, client.id);
     
             client.emit('connected', { message: 'Successfully connected to chat!' });
-            this.logger.log(`Client ${client.id} associated with user: ${userId}`);
+            this._logger.log(`Client ${client.id} associated with user: ${userId}`);
         } catch (error) {
-            this.logger.error('Error in handleConnection:', error);
+            this._logger.error('Error in handleConnection:', error);
             client.disconnect();
         }
     }
@@ -64,11 +64,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect, IC
         try {
             const userId = client.handshake.query.userId as string;
             if (userId) {
-                this.userSocketMap.delete(userId);
+                this._userSocketMap.delete(userId);
             }
-            this.logger.warn(`Client disconnected: ${client.id}`);
+            this._logger.warn(`Client disconnected: ${client.id}`);
         } catch (error) {
-            this.logger.error('Error in handleDisconnect:', error);
+            this._logger.error('Error in handleDisconnect:', error);
         }
     }
 
@@ -77,17 +77,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect, IC
         @ConnectedSocket() client: Socket,
         @MessageBody() payload: { recipientId: string; content: string }
     ) {
-        this.logger.log(`Message received from ${client.handshake.query.userId}: ${payload.content} to ${payload.recipientId}`);
+        this._logger.log(`Message received from ${client.handshake.query.userId}: ${payload.content} to ${payload.recipientId}`);
 
         try {
             const sender = client['userId'] as string;
             if (!sender) {
-                this.logger.warn(`Sender ID not found for socket ${client.id}`);
+                this._logger.warn(`Sender ID not found for socket ${client.id}`);
                 client.emit('messageError', { error: 'User not authenticated' });
                 return;
             }
 
-            const newMessage = await this.chatService.createMessage(
+            const newMessage = await this._chatService.createMessage(
                 new Types.ObjectId(sender),
                 new Types.ObjectId(payload.recipientId),
                 payload.content,
@@ -95,11 +95,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect, IC
             
             client.emit('newMessage', newMessage);
             
-            const recipientSocketId = this.userSocketMap.get(payload.recipientId);
+            const recipientSocketId = this._userSocketMap.get(payload.recipientId);
             if (recipientSocketId) {
                 this.server.to(recipientSocketId).emit('newMessage', newMessage);
                 
-                const updatedMessage = await this.chatService.updateMessageStatus(newMessage._id.toString(), MessageStatus.DELIVERED);
+                const updatedMessage = await this._chatService.updateMessageStatus(newMessage._id.toString(), MessageStatus.DELIVERED);
                 
                 if (updatedMessage) {
                     client.emit('messageStatusUpdate', { 
@@ -109,7 +109,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect, IC
                 }
             }
         } catch (error) {
-            this.logger.error('Error saving and sending message:', error);
+            this._logger.error('Error saving and sending message:', error);
             client.emit('messageError', { error: 'Failed to send message' });
         }
     }
@@ -122,22 +122,22 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect, IC
         try {
             const { messageId, status } = payload;
             
-            const updatedMessage = await this.chatService.updateMessageStatus(messageId, status);
+            const updatedMessage = await this._chatService.updateMessageStatus(messageId, status);
             
             if (!updatedMessage) return;
             
-            const senderSocketId = this.userSocketMap.get(updatedMessage.sender.toString());
+            const senderSocketId = this._userSocketMap.get(updatedMessage.sender.toString());
             if (senderSocketId) {
                 this.server.to(senderSocketId).emit('messageStatusUpdate', { messageId, status });
             }
         } catch (error) {
-            this.logger.error('Error updating message status:', error);
+            this._logger.error('Error updating message status:', error);
         }
     }
 
     @SubscribeMessage('typing')
     handleTyping(@ConnectedSocket() client: Socket, @MessageBody() payload: { recipientId: string }): void {
-        const recipientSocketId = this.userSocketMap.get(payload.recipientId);
+        const recipientSocketId = this._userSocketMap.get(payload.recipientId);
         if (recipientSocketId) {
             const user = client['user'] as { userId: string };
             this.server.to(recipientSocketId).emit('typing', { userId: user.userId });
@@ -146,7 +146,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect, IC
 
     @SubscribeMessage('stopTyping')
     handleStopTyping(@ConnectedSocket() client: Socket, @MessageBody() payload: { recipientId: string }): void {
-        const recipientSocketId = this.userSocketMap.get(payload.recipientId);
+        const recipientSocketId = this._userSocketMap.get(payload.recipientId);
         if (recipientSocketId) {
             const user = client['user'] as { userId: string };
             this.server.to(recipientSocketId).emit('stopTyping', { userId: user.userId });
@@ -158,12 +158,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect, IC
         @ConnectedSocket() client: Socket,
         @MessageBody() payload: { messages: Message[] }
     ) {
-        this.logger.log(`Smart reply request received from ${client['userId']}`);
+        this._logger.log(`Smart reply request received from ${client['userId']}`);
         try {
-            const suggestions = await this.aiService.generateSmartReplies(payload.messages, client['userId']);
+            const suggestions = await this._aiService.generateSmartReplies(payload.messages, client['userId']);
             client.emit('smartRepliesResult', { suggestions });
         } catch (error) {
-            this.logger.error('Error getting smart replies:', error.message);
+            this._logger.error('Error getting smart replies:', error.message);
             client.emit('smartRepliesResult', { error: 'Failed to generate smart replies.' });
         }
     }

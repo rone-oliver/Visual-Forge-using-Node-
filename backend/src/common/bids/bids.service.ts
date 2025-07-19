@@ -1,8 +1,8 @@
 import { BadRequestException, Inject, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
-import { InjectConnection, InjectModel } from '@nestjs/mongoose';
-import { Bid, BidDocument, BidStatus } from './models/bids.schema';
-import { Connection, FilterQuery, Model, Types } from 'mongoose';
-import { Quotation, QuotationDocument, QuotationStatus } from '../../quotation/models/quotation.schema';
+import { InjectConnection } from '@nestjs/mongoose';
+import { Bid, BidStatus } from './models/bids.schema';
+import { Connection, FilterQuery, Types } from 'mongoose';
+import { QuotationStatus } from '../../quotation/models/quotation.schema';
 import { BidResponseDto } from './dto/bid-response.dto';
 import { CreateBidDto } from './dto/create-bid.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -25,17 +25,17 @@ interface PopulatedBid extends Omit<Bid, 'editorId'> {
 
 @Injectable()
 export class BidsService implements IBidService{
-  private readonly logger = new Logger(BidsService.name);
+  private readonly _logger = new Logger(BidsService.name);
   constructor(
-    @Inject(IQuotationServiceToken) private quotationService: IQuotationService,
-    @Inject(IBidRepositoryToken) private bidRepository: IBidRepository,
-    private eventEmitter: EventEmitter2,
-    @InjectConnection() private readonly connection: Connection,
+    @Inject(IQuotationServiceToken) private readonly _quotationService: IQuotationService,
+    @Inject(IBidRepositoryToken) private readonly _bidRepository: IBidRepository,
+    private _eventEmitter: EventEmitter2,
+    @InjectConnection() private readonly _connection: Connection,
   ) { };
 
   async create(createBidDto: CreateBidDto, editorId: Types.ObjectId): Promise<Bid> {
     try {
-      const quotation = await this.quotationService.findById(new Types.ObjectId(createBidDto.quotationId));
+      const quotation = await this._quotationService.findById(new Types.ObjectId(createBidDto.quotationId));
   
       if (!quotation) {
         throw new NotFoundException('Quotation not found');
@@ -46,7 +46,7 @@ export class BidsService implements IBidService{
       }
   
       // Check if editor already has a bid for this quotation
-      const existingBid = await this.bidRepository.findByFilters({
+      const existingBid = await this._bidRepository.findByFilters({
         quotationId: new Types.ObjectId(createBidDto.quotationId),
         editorId,
       });
@@ -62,9 +62,9 @@ export class BidsService implements IBidService{
         dueDate: quotation.dueDate,
       };
   
-      return this.bidRepository.create(newBid);
+      return this._bidRepository.create(newBid);
     } catch (error) {
-      this.logger.error(`Failed to create bid: ${error.message}`, error.stack);
+      this._logger.error(`Failed to create bid: ${error.message}`, error.stack);
     if (error instanceof NotFoundException || error instanceof BadRequestException) {
       throw error; // Re-throw NestJS exceptions
     }
@@ -73,7 +73,7 @@ export class BidsService implements IBidService{
   }
 
   async findAllByQuotation(quotationId: Types.ObjectId): Promise<BidResponseDto[]> {
-    const bids = await this.bidRepository.findAllByQuotation(quotationId);
+    const bids = await this._bidRepository.findAllByQuotation(quotationId);
 
     return bids.map(bid => ({
       ...bid,
@@ -90,23 +90,23 @@ export class BidsService implements IBidService{
   }
 
   async findAllByEditor(editorId: Types.ObjectId): Promise<Bid[]> {
-    const bids = await this.bidRepository.findAllByEditor(editorId);
-    this.logger.log(`Found ${bids.length} bids for editor ${editorId}`);
+    const bids = await this._bidRepository.findAllByEditor(editorId);
+    this._logger.log(`Found ${bids.length} bids for editor ${editorId}`);
     return bids;
   }
 
   async acceptBid(bidId: Types.ObjectId, userId: Types.ObjectId): Promise<Bid> {
-    const session = await this.connection.startSession();
+    const session = await this._connection.startSession();
     session.startTransaction();
 
     try {
-      const bid = await this.bidRepository.findById(bidId, { session });
+      const bid = await this._bidRepository.findById(bidId, { session });
   
       if (!bid) {
         throw new NotFoundException('Bid not found');
       }
   
-      const quotation = await this.quotationService.findById(bid.quotationId);
+      const quotation = await this._quotationService.findById(bid.quotationId);
   
       if (!quotation) {
         throw new NotFoundException('Quotation not found');
@@ -128,7 +128,7 @@ export class BidsService implements IBidService{
         balanceAmountCalc = balanceAmount;
       }
 
-      await this.quotationService.findByIdAndUpdate(
+      await this._quotationService.findByIdAndUpdate(
         bid.quotationId,
         {
           status: QuotationStatus.ACCEPTED, editorId: bid.editorId,
@@ -140,7 +140,7 @@ export class BidsService implements IBidService{
       );
   
       // Reject all other bids for this quotation
-      await this.bidRepository.updateMany(
+      await this._bidRepository.updateMany(
         {
           quotationId: bid.quotationId,
           _id: { $ne: bidId }
@@ -151,9 +151,9 @@ export class BidsService implements IBidService{
   
       // Update this bid to accepted
       bid.status = BidStatus.ACCEPTED;
-      const updateBid = await this.bidRepository.save(bid, { session });
+      const updateBid = await this._bidRepository.save(bid, { session });
 
-      this.eventEmitter.emit(EventTypes.BID_ACCEPTED, {
+      this._eventEmitter.emit(EventTypes.BID_ACCEPTED, {
         bidId: bid._id,
         quotationId: bid.quotationId,
         editorId: bid.editorId,
@@ -166,7 +166,7 @@ export class BidsService implements IBidService{
       return updateBid;
     } catch (error) {
       await session.abortTransaction();
-      this.logger.error(`Failed to accept bid: ${error.message}`, error.stack);
+      this._logger.error(`Failed to accept bid: ${error.message}`, error.stack);
       throw error;
     } finally {
       session.endSession();
@@ -182,22 +182,22 @@ export class BidsService implements IBidService{
   }
 
   async getAcceptedBid(quotationId: Types.ObjectId, editorId: Types.ObjectId): Promise<Bid> {
-    const bid = await this.bidRepository.getAcceptedBid(quotationId, editorId);
+    const bid = await this._bidRepository.getAcceptedBid(quotationId, editorId);
     return bid;
   }
 
   async cancelAcceptedBid(bidId: Types.ObjectId, requesterId: Types.ObjectId): Promise<SuccessResponseDto> {
-    const session = await this.connection.startSession();
+    const session = await this._connection.startSession();
     session.startTransaction();
 
     try {
-      const acceptedBid = await this.bidRepository.findById(bidId, { session });
+      const acceptedBid = await this._bidRepository.findById(bidId, { session });
 
       if (!acceptedBid || acceptedBid.status !== BidStatus.ACCEPTED) {
         throw new BadRequestException('Bid to cancel must be an accepted bid.');
       }
 
-      const quotation = await this.quotationService.findById(acceptedBid.quotationId, { session });
+      const quotation = await this._quotationService.findById(acceptedBid.quotationId, { session });
 
       if (!quotation) {
         throw new NotFoundException('Associated quotation not found.');
@@ -218,7 +218,7 @@ export class BidsService implements IBidService{
         throw new BadRequestException('Cannot cancel a bid after an advance payment has been made.');
       }
 
-      await this.quotationService.findByIdAndUpdate(
+      await this._quotationService.findByIdAndUpdate(
         quotation._id,
         { 
           status: QuotationStatus.PUBLISHED, 
@@ -228,9 +228,9 @@ export class BidsService implements IBidService{
       );
 
       acceptedBid.status = BidStatus.REJECTED;
-      await this.bidRepository.save(acceptedBid, { session });
+      await this._bidRepository.save(acceptedBid, { session });
 
-      await this.bidRepository.updateMany(
+      await this._bidRepository.updateMany(
         {
           quotationId: quotation._id,
           _id: { $ne: acceptedBid._id },
@@ -244,7 +244,7 @@ export class BidsService implements IBidService{
       return { success: true, message: 'Bid cancelled successfully' };
     } catch (error) {
       await session.abortTransaction();
-      this.logger.error(`Failed to cancel accepted bid: ${error.message}`, error.stack);
+      this._logger.error(`Failed to cancel accepted bid: ${error.message}`, error.stack);
       throw error;
     } finally {
       session.endSession();
@@ -252,17 +252,17 @@ export class BidsService implements IBidService{
   }
 
   async withdrawFromWork(bidId: Types.ObjectId, editorId: Types.ObjectId): Promise<SuccessResponseDto> {
-    const session = await this.connection.startSession();
+    const session = await this._connection.startSession();
     session.startTransaction();
 
     try {
-      const acceptedBid = await this.bidRepository.findById(bidId, { session });
+      const acceptedBid = await this._bidRepository.findById(bidId, { session });
 
       if (!acceptedBid || acceptedBid.status !== BidStatus.ACCEPTED) {
         throw new BadRequestException('Bid to cancel must be an accepted bid.');
       }
 
-      const quotation = await this.quotationService.findById(acceptedBid.quotationId, { session });
+      const quotation = await this._quotationService.findById(acceptedBid.quotationId, { session });
 
       if (!quotation) {
         throw new NotFoundException('Associated quotation not found.');
@@ -272,7 +272,7 @@ export class BidsService implements IBidService{
         throw new BadRequestException('Quotation is not in an accepted state.');
       }
 
-      await this.quotationService.findByIdAndUpdate(
+      await this._quotationService.findByIdAndUpdate(
         quotation._id,
         { 
           status: QuotationStatus.PUBLISHED, 
@@ -282,9 +282,9 @@ export class BidsService implements IBidService{
       );
 
       acceptedBid.status = BidStatus.REJECTED;
-      await this.bidRepository.save(acceptedBid, { session });
+      await this._bidRepository.save(acceptedBid, { session });
 
-      await this.bidRepository.updateMany(
+      await this._bidRepository.updateMany(
         {
           quotationId: quotation._id,
           _id: { $ne: acceptedBid._id },
@@ -297,7 +297,8 @@ export class BidsService implements IBidService{
       await session.commitTransaction();
       return { success: true, message: 'Bid cancelled successfully' };
     } catch (error) {
-      this.logger.error('Error in withdrawing from current Accepted Quotation');
+      await session.abortTransaction();
+      this._logger.error('Error in withdrawing from current Accepted Quotation');
       throw error;
     } finally {
       session.endSession();
@@ -305,7 +306,7 @@ export class BidsService implements IBidService{
   }
 
   async updateBid(bidId: Types.ObjectId, editorId: Types.ObjectId, bidAmount: number, notes?:string):Promise<Bid>{
-    const bid = await this.bidRepository.findById(bidId);
+    const bid = await this._bidRepository.findById(bidId);
 
     if (!bid) {
       throw new NotFoundException('Bid not found');
@@ -321,11 +322,11 @@ export class BidsService implements IBidService{
 
     bid.bidAmount = bidAmount;
     bid.notes = notes || bid.notes;
-    return await this.bidRepository.save(bid);
+    return await this._bidRepository.save(bid);
   }
 
   async deleteBid(bidId: Types.ObjectId, editorId: Types.ObjectId): Promise<void> {
-    const bid = await this.bidRepository.findById(bidId);
+    const bid = await this._bidRepository.findById(bidId);
 
     if (!bid) {
       throw new NotFoundException('Bid not found');
@@ -339,18 +340,18 @@ export class BidsService implements IBidService{
       throw new BadRequestException('Cannot delete a bid that has been accepted or rejected');
     }
 
-    await this.bidRepository.delete(bidId);
+    await this._bidRepository.delete(bidId);
   }
 
   async getBiddedQuotationsForEditor(pipeline: any): Promise<BiddedQuotationDto[]> {
-    return await this.bidRepository.getBiddedQuotationsForEditor(pipeline);
+    return await this._bidRepository.getBiddedQuotationsForEditor(pipeline);
   }
 
   async getBidsCountByAggregation(pipeline: any): Promise<number> {
-    return await this.bidRepository.getBidsCountByAggregation(pipeline);
+    return await this._bidRepository.getBidsCountByAggregation(pipeline);
   }
 
   async findOne(filter: FilterQuery<Bid>): Promise<Bid | null> {
-    return this.bidRepository.findOne(filter);
+    return this._bidRepository.findOne(filter);
   }
 }

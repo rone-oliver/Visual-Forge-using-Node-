@@ -8,20 +8,20 @@ import { IWalletRepository } from "../interfaces/wallet-repository.interface";
 @Injectable()
 export class WalletRepository implements IWalletRepository {
     constructor(
-        @InjectModel(Wallet.name) private readonly walletModel: Model<WalletDocument>,
-        @InjectModel(WalletTransaction.name) private readonly walletTransactionModel: Model<WalletTransactionDocument>
+        @InjectModel(Wallet.name) private readonly _walletModel: Model<WalletDocument>,
+        @InjectModel(WalletTransaction.name) private readonly _walletTransactionModel: Model<WalletTransactionDocument>
     ) { }
 
     async findWalletByUserId(userId: string): Promise<Wallet | null> {
-        return this.walletModel.findOne({ user: new Types.ObjectId(userId)}).exec();
+        return this._walletModel.findOne({ user: new Types.ObjectId(userId)}).exec();
     }
 
     async createWallet(userId: string): Promise<Wallet> {
-        return this.walletModel.create({ user: new Types.ObjectId(userId) });
+        return this._walletModel.create({ user: new Types.ObjectId(userId) });
     }
 
     async updateWalletBalance(userId: string, amount: number): Promise<Wallet> {
-        const updatedWallet = await this.walletModel.findOneAndUpdate(
+        const updatedWallet = await this._walletModel.findOneAndUpdate(
             { user: new Types.ObjectId(userId) }, 
             { $inc: { balance: amount } }, 
             { new: true }
@@ -38,7 +38,7 @@ export class WalletRepository implements IWalletRepository {
         page: number, 
         limit: number,
     ): Promise<WalletTransaction[]> {
-        return this.walletTransactionModel
+        return this._walletTransactionModel
             .find(query)
             .sort({ createdAt: -1 })
             .skip((page - 1) * limit)
@@ -47,7 +47,7 @@ export class WalletRepository implements IWalletRepository {
     }
 
     async createTransaction(userId: string, walletId: string, amount: number, type: WalletTransactionType, description: string): Promise<WalletTransaction> {
-        const transaction = await this.walletTransactionModel.create({
+        const transaction = await this._walletTransactionModel.create({
             user: new Types.ObjectId(userId),
             wallet: new Types.ObjectId(walletId),
             amount,
@@ -58,6 +58,6 @@ export class WalletRepository implements IWalletRepository {
     }
 
     async countTransactions(query: any): Promise<number> {
-        return this.walletTransactionModel.countDocuments(query);
+        return this._walletTransactionModel.countDocuments(query);
     }
 }

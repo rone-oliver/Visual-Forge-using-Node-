@@ -6,21 +6,21 @@ import { IQuotationService, IQuotationServiceToken } from 'src/quotation/interfa
 
 @Injectable()
 export class ReconciliationJob {
-    private readonly logger = new Logger(ReconciliationJob.name);
+    private readonly _logger = new Logger(ReconciliationJob.name);
 
     constructor(
-        @Inject(IPaymentServiceToken) private readonly paymentService: IPaymentService,
-        @Inject(IQuotationServiceToken) private readonly quotationService: IQuotationService,
+        @Inject(IPaymentServiceToken) private readonly _paymentService: IPaymentService,
+        @Inject(IQuotationServiceToken) private readonly _quotationService: IQuotationService,
     ) {}
 
     @Cron(CronExpression.EVERY_10_MINUTES)
     async handleReconciliation() {
         try {
-            this.logger.log('Starting payment reconciliation job...');
-            await this.paymentService.reconcileStuckPayments(this.quotationService);
-            this.logger.log('Payment reconciliation job completed successfully');
+            this._logger.log('Starting payment reconciliation job...');
+            await this._paymentService.reconcileStuckPayments(this._quotationService);
+            this._logger.log('Payment reconciliation job completed successfully');
         } catch (error) {
-            this.logger.error('Error in reconciliation job:', error);
+            this._logger.error('Error in reconciliation job:', error);
         }
     }
 }

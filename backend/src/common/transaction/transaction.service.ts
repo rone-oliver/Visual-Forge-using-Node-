@@ -8,22 +8,22 @@ import { IFindOptions } from './dtos/transaction.dto';
 export class TransactionService implements ITransactionService {
 
     constructor(
-        @Inject(ITransactionRepositoryToken) private readonly transactionRepository: ITransactionRepository
+        @Inject(ITransactionRepositoryToken) private readonly _transactionRepository: ITransactionRepository
     ) {}
 
     async createTransaction(transactionData: Partial<Transaction>): Promise<Transaction> {
-        return this.transactionRepository.create(transactionData);
+        return this._transactionRepository.create(transactionData);
     }
 
     async getTransactions(conditions: any, options?: IFindOptions): Promise<Transaction[]> {
-        return this.transactionRepository.find(conditions, options);
+        return this._transactionRepository.find(conditions, options);
     }
 
     async countTransactions(conditions: any): Promise<number> {
-        return this.transactionRepository.count(conditions);
+        return this._transactionRepository.count(conditions);
     }
 
     async getTransactionsByQuotationId(quotationId: string): Promise<Transaction[]> {
-        return this.transactionRepository.findByQuotationId(quotationId);
+        return this._transactionRepository.findByQuotationId(quotationId);
     }
 }

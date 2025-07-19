@@ -15,16 +15,16 @@ import { IAdminWalletService, IAdminWalletServiceToken } from './interfaces/admi
 @Injectable()
 export class WalletService implements IWalletService {
   constructor(
-    @Inject(IWalletRepositoryToken) private readonly walletRepo: IWalletRepository,
-    @Inject(IQuotationServiceToken) private readonly quotationService: IQuotationService,
-    @Inject(ITransactionServiceToken) private readonly transactionService: ITransactionService,
-    @Inject(forwardRef(()=>IAdminWalletServiceToken)) private readonly adminWalletService: IAdminWalletService,
+    @Inject(IWalletRepositoryToken) private readonly _walletRepo: IWalletRepository,
+    @Inject(IQuotationServiceToken) private readonly _quotationService: IQuotationService,
+    @Inject(ITransactionServiceToken) private readonly _transactionService: ITransactionService,
+    @Inject(forwardRef(()=>IAdminWalletServiceToken)) private readonly _adminWalletService: IAdminWalletService,
   ) {}
 
   async getWallet(userId: string) {
-    let wallet = await this.walletRepo.findWalletByUserId(userId);
+    let wallet = await this._walletRepo.findWalletByUserId(userId);
     if (!wallet) {
-        wallet = await this.walletRepo.createWallet(userId);
+        wallet = await this._walletRepo.createWallet(userId);
     }
     return wallet;
   }
@@ -37,8 +37,8 @@ export class WalletService implements IWalletService {
     }
 
     const [transactions, total] = await Promise.all([
-      this.walletRepo.findTransactions(query, page, limit),
-      this.walletRepo.countTransactions(query),
+      this._walletRepo.findTransactions(query, page, limit),
+      this._walletRepo.countTransactions(query),
     ]);
 
     return {
@@ -55,9 +55,9 @@ export class WalletService implements IWalletService {
     }
 
     const wallet = await this.getWallet(userId);
-    const updatedWallet = await this.walletRepo.updateWalletBalance(userId, amount);
+    const updatedWallet = await this._walletRepo.updateWalletBalance(userId, amount);
 
-    await this.walletRepo.createTransaction(
+    await this._walletRepo.createTransaction(
       userId,
       wallet._id.toString(),
       amount,
@@ -73,7 +73,7 @@ export class WalletService implements IWalletService {
       throw new BadRequestException('Amount must be positive.');
     }
 
-    const quotation = await this.quotationService.findById(new Types.ObjectId(quotationId));
+    const quotation = await this._quotationService.findById(new Types.ObjectId(quotationId));
     if (!quotation) {
       throw new NotFoundException(`Quotation with ID ${quotationId} not found`);
     }
@@ -83,8 +83,8 @@ export class WalletService implements IWalletService {
 
     if (finalAmountForEditor > 0) {
       const editorWallet = await this.getWallet(editorUserId);
-      await this.walletRepo.updateWalletBalance(editorUserId, finalAmountForEditor);
-      await this.walletRepo.createTransaction(
+      await this._walletRepo.updateWalletBalance(editorUserId, finalAmountForEditor);
+      await this._walletRepo.createTransaction(
         editorUserId,
         editorWallet._id.toString(),
         finalAmountForEditor,
@@ -95,8 +95,8 @@ export class WalletService implements IWalletService {
 
     if (penalty > 0) {
       const userWallet = await this.getWallet(quotation.userId.toString());
-      await this.walletRepo.updateWalletBalance(quotation.userId.toString(), penalty);
-      await this.walletRepo.createTransaction(
+      await this._walletRepo.updateWalletBalance(quotation.userId.toString(), penalty);
+      await this._walletRepo.createTransaction(
         quotation.userId.toString(),
         userWallet._id.toString(),
         penalty,
@@ -119,9 +119,9 @@ export class WalletService implements IWalletService {
         throw new BadRequestException('Insufficient funds.');
     }
 
-    const updatedWallet = await this.walletRepo.updateWalletBalance(userId, -amount);
+    const updatedWallet = await this._walletRepo.updateWalletBalance(userId, -amount);
 
-    await this.walletRepo.createTransaction(
+    await this._walletRepo.createTransaction(
         userId,
         wallet._id.toString(),
         amount,
@@ -138,9 +138,9 @@ export class WalletService implements IWalletService {
     }
 
     const wallet = await this.getWallet(userId);
-    await this.walletRepo.updateWalletBalance(userId, amount);
+    await this._walletRepo.updateWalletBalance(userId, amount);
 
-    await this.walletRepo.createTransaction(
+    await this._walletRepo.createTransaction(
       userId,
       wallet._id.toString(),
       amount,
@@ -159,7 +159,7 @@ export class WalletService implements IWalletService {
       throw new BadRequestException('Insufficient funds.');
     }
 
-    const quotation = await this.quotationService.findById(new Types.ObjectId(quotationId));
+    const quotation = await this._quotationService.findById(new Types.ObjectId(quotationId));
     if (!quotation) {
       throw new NotFoundException(`Quotation with ID ${quotationId} not found`);
     }
@@ -174,11 +174,11 @@ export class WalletService implements IWalletService {
       throw new BadRequestException('This quotation has already been fully paid.');
     }
 
-    await this.quotationService.updateQuotation({ _id: quotation._id }, { $set: { isPaymentInProgress: true } });
+    await this._quotationService.updateQuotation({ _id: quotation._id }, { $set: { isPaymentInProgress: true } });
 
-    await this.walletRepo.updateWalletBalance(userId, -amount);
+    await this._walletRepo.updateWalletBalance(userId, -amount);
 
-    await this.walletRepo.createTransaction(
+    await this._walletRepo.createTransaction(
       userId,
       wallet._id.toString(),
       amount,
@@ -186,7 +186,7 @@ export class WalletService implements IWalletService {
       `Payment for quotation #${quotationId}`
     );
 
-    const transaction = await this.transactionService.createTransaction({
+    const transaction = await this._transactionService.createTransaction({
       userId: new Types.ObjectId(userId),
       quotationId: new Types.ObjectId(quotationId),
       amount: amount,
@@ -203,13 +203,13 @@ export class WalletService implements IWalletService {
     } else {
       update.isFullyPaid = true;
     }
-    const updatedQuotation = await this.quotationService.updateQuotation(
+    const updatedQuotation = await this._quotationService.updateQuotation(
       { _id: new Types.ObjectId(quotationId) },
       { $set: update }
     ) as Quotation;
 
     if (updatedQuotation.isFullyPaid) {
-      await this.adminWalletService.recordUserPayment(updatedQuotation, transaction._id.toString());
+      await this._adminWalletService.recordUserPayment(updatedQuotation, transaction._id.toString());
     }
 
     return transaction;

@@ -68,9 +68,9 @@ export class UsersController implements IUsersController {
     private readonly logger = new Logger(UsersController.name);
 
     constructor(
-        @Inject(IUsersServiceToken) private readonly userService: IUsersService,
-        @Inject(IPaymentServiceToken) private paymentService: IPaymentService,
-        @Inject(IQuotationServiceToken) private quotationService: IQuotationService,
+        @Inject(IUsersServiceToken) private readonly _userService: IUsersService,
+        @Inject(IPaymentServiceToken) private readonly _paymentService: IPaymentService,
+        @Inject(IQuotationServiceToken) private readonly _quotationService: IQuotationService,
     ) { };
 
     @Get('profile')
@@ -78,7 +78,7 @@ export class UsersController implements IUsersController {
     async getUserProfile(@Req() req: Request): Promise<UserProfileResponseDto> {
         console.log('controller hitted on /user/profile');
         const user = req['user'] as { userId: Types.ObjectId; role: string }
-        const userDet = await this.userService.getUserDetails(user.userId);
+        const userDet = await this._userService.getUserDetails(user.userId);
         console.log('user profile data', userDet);
         if (!userDet) {
             throw new NotFoundException('User not found');
@@ -90,7 +90,7 @@ export class UsersController implements IUsersController {
     @Roles('User')
     async requestForEditor(@Req() req: Request) {
         const user = req['user'] as { userId: Types.ObjectId; role: string };
-        const response = await this.userService.requestForEditor(user.userId);
+        const response = await this._userService.requestForEditor(user.userId);
         return response;
     }
 
@@ -98,7 +98,7 @@ export class UsersController implements IUsersController {
     @Roles('User')
     async getEditorRequestStatus(@Req() req: Request) {
         const user = req['user'] as { userId: Types.ObjectId; role: string };
-        const status = await this.userService.getEditorRequestStatus(user.userId);
+        const status = await this._userService.getEditorRequestStatus(user.userId);
         return status;
     }
 
@@ -113,7 +113,7 @@ export class UsersController implements IUsersController {
             page: query.page ? parseInt(query.page.toString(), 10) : 1,
             limit: query.limit ? parseInt(query.limit.toString(), 10) : 10,
         };
-        return this.userService.getTransactionHistory(user.userId.toString(), params);
+        return this._userService.getTransactionHistory(user.userId.toString(), params);
     }
 
     @Get('quotations')
@@ -129,7 +129,7 @@ export class UsersController implements IUsersController {
             status: query.status,
             searchTerm: query.searchTerm,
         }
-        return this.userService.getQuotations(user.userId, params);
+        return this._userService.getQuotations(user.userId, params);
     }
 
     @Get('quotations/completed')
@@ -137,14 +137,14 @@ export class UsersController implements IUsersController {
     @Roles('User', 'Editor')
     async getCompletedWorks(@Req() req: Request) {
         const user = req['user'] as { userId: Types.ObjectId, role: string }
-        const quotations = await this.userService.getCompletedWorks(user.userId);
+        const quotations = await this._userService.getCompletedWorks(user.userId);
         return quotations;
     }
 
     @Get('quotations/:quotationId')
     @Roles('User', 'Editor')
     async getQuotation(@Param('quotationId') quotationId: string) {
-        return await this.userService.getQuotation(new Types.ObjectId(quotationId));
+        return await this._userService.getQuotation(new Types.ObjectId(quotationId));
     }
 
     @Get('quotations/:quotationId/bids')
@@ -156,14 +156,14 @@ export class UsersController implements IUsersController {
             throw new BadRequestException('Invalid quotation ID');
         }
 
-        return this.userService.getBidsByQuotation(new Types.ObjectId(quotationId), new Types.ObjectId(user.userId));
+        return this._userService.getBidsByQuotation(new Types.ObjectId(quotationId), new Types.ObjectId(user.userId));
     }
 
     @Post('quotations')
     @Roles('User', 'Editor')
     async createQuotation(@GetUser('userId') userId: string, @Body() createQuotationDto: CreateQuotationDto): Promise<SuccessResponseDto> {
         try {
-            const quotation = await this.userService.createQuotation(new Types.ObjectId(userId), createQuotationDto);
+            const quotation = await this._userService.createQuotation(new Types.ObjectId(userId), createQuotationDto);
             return {
                 message: 'Quotation created successfully',
                 success: true,
@@ -180,20 +180,20 @@ export class UsersController implements IUsersController {
         @GetUser('userId') userId: string,
         @Body() dto: UpdateQuotationDto
     ) {
-        return await this.userService.updateQuotation(new Types.ObjectId(quotationId),new Types.ObjectId(userId), dto);
+        return await this._userService.updateQuotation(new Types.ObjectId(quotationId),new Types.ObjectId(userId), dto);
     }
 
     @Delete('quotations/:quotationId')
     @Roles('User', 'Editor')
     async deleteQuotation(@Param('quotationId') quotationId: string) {
-        return await this.userService.deleteQuotation(new Types.ObjectId(quotationId));
+        return await this._userService.deleteQuotation(new Types.ObjectId(quotationId));
     }
 
     @Patch('profile/image')
     @Roles('User', 'Editor')
     async updateProfileImage(@Req() req: Request, @Body() dto: UpdateProfileImageDto): Promise<SuccessResponseDto> {
         const user = req['user'] as { userId: Types.ObjectId, role: string }
-        const success = await this.userService.updateProfileImage(user.userId, dto.profileImageUrl);
+        const success = await this._userService.updateProfileImage(user.userId, dto.profileImageUrl);
         if (success) {
             return { success: true };
         }
@@ -204,7 +204,7 @@ export class UsersController implements IUsersController {
     @Roles('User', 'Editor')
     async updateProfile(@Req() req: Request, @Body() dto: UpdateProfileDto): Promise<SuccessResponseDto> {
         const user = req['user'] as { userId: Types.ObjectId, role: string }
-        const success = await this.userService.updateProfile(user.userId, dto);
+        const success = await this._userService.updateProfile(user.userId, dto);
         if (success) {
             return { success: true };
         }
@@ -216,7 +216,7 @@ export class UsersController implements IUsersController {
     async resetPassword(@Req() req: Request, @Body() body: { currentPassword: string, newPassword: string }) {
         const user = req['user'] as { userId: Types.ObjectId, role: string }
         try {
-            const response = await this.userService.resetPassword(user.userId, body);
+            const response = await this._userService.resetPassword(user.userId, body);
             return response;
         } catch (error) {
             throw new BadRequestException(error.message);
@@ -232,7 +232,7 @@ export class UsersController implements IUsersController {
         @Body('folder') folder?: string,
     ): Promise<FileUploadResultDtoCloudinary[]> {
         this.logger.log(`Uploading ${files.length} files`);
-        const result = await this.userService.uploadFiles(files, folder);
+        const result = await this._userService.uploadFiles(files, folder);
         return result;
     }
 
@@ -241,7 +241,7 @@ export class UsersController implements IUsersController {
     async rateWork(@Req() req: Request, @Param('workId') workId: string, @Body() body: UserEditorRatingDto) {
         const user = req['user'] as { userId: Types.ObjectId, role: string }
         console.log('worksId from controller:', workId);
-        const success = await this.userService.rateWork(workId, body);
+        const success = await this._userService.rateWork(workId, body);
         if (!success) {
             throw new InternalServerErrorException('Work rating failed');
         }
@@ -251,7 +251,7 @@ export class UsersController implements IUsersController {
     @Patch('quotations/:workId/public')
     async updateWorkPublicStatus(@Req() req: Request, @Param('workId') workId: string, @Body() body: UpdateWorkPublicStatusDto) {
         const user = req['user'] as { userId: Types.ObjectId, role: string }
-        const success = await this.userService.updateWorkPublicStatus(workId, body);
+        const success = await this._userService.updateWorkPublicStatus(workId, body);
         if (!success) {
             throw new InternalServerErrorException('Work Status update failed')
         }
@@ -263,14 +263,14 @@ export class UsersController implements IUsersController {
     async rateEditor(@Req() req: Request, @Body() body: RateEditorDto): Promise<SuccessResponseDto> {
         this.logger.log('rating editor:', body.editorId, body.rating, body.feedback);
         const user = req['user'] as { userId: Types.ObjectId, role: string }
-        return await this.userService.rateEditor(user.userId, body);
+        return await this._userService.rateEditor(user.userId, body);
     }
 
     @Get('editor/rating')
     @Roles('User', 'Editor')
     async getCurrentEditorRating(@Req() req: Request, @Query('editorId') editorId: string) {
         const user = req['user'] as { userId: Types.ObjectId, role: string }
-        const rating = await this.userService.getCurrentEditorRating(user.userId, editorId);
+        const rating = await this._userService.getCurrentEditorRating(user.userId, editorId);
         return rating;
     }
 
@@ -279,14 +279,14 @@ export class UsersController implements IUsersController {
     async getPublicWorks(
         @Query() query: GetPublicWorksQueryDto,
     ): Promise<PaginatedPublicWorksResponseDto> {
-        const works = await this.userService.getPublicWorks(query);
+        const works = await this._userService.getPublicWorks(query);
         return works;
     }
 
     // @Get('')
     // async getUser(@Query('id') id: string): Promise<UserBasicInfoDto> {
     //     console.log('getUser controller hit. id: ',id);
-    //     const user = await this.userService.getUser(new Types.ObjectId(id));
+    //     const user = await this._userService.getUser(new Types.ObjectId(id));
     //     if (!user) {
     //         throw new NotFoundException('User not found');
     //     }
@@ -305,7 +305,7 @@ export class UsersController implements IUsersController {
         if (!Types.ObjectId.isValid(workId)) {
             throw new BadRequestException('Invalid work ID');
         }
-        return this.userService.submitWorkFeedback(new Types.ObjectId(workId), new Types.ObjectId(userId), feedbackDto.feedback);
+        return this._userService.submitWorkFeedback(new Types.ObjectId(workId), new Types.ObjectId(userId), feedbackDto.feedback);
     }
 
     @Patch('works/:workId/satisfied')
@@ -319,14 +319,14 @@ export class UsersController implements IUsersController {
         if (!Types.ObjectId.isValid(workId)) {
             throw new BadRequestException('Invalid work ID');
         }
-        await this.userService.markWorkAsSatisfied(new Types.ObjectId(workId), new Types.ObjectId(userId));
+        await this._userService.markWorkAsSatisfied(new Types.ObjectId(workId), new Types.ObjectId(userId));
         return { success: true, message: 'Work marked as satisfied successfully.' };
     }
 
     @Get('users')
     async getUsers(@Req() req: Request): Promise<UserBasicInfoDto[]> {
         const user = req['user'] as { userId: Types.ObjectId, role: string }
-        return this.userService.getUsers(new Types.ObjectId(user.userId));
+        return this._userService.getUsers(new Types.ObjectId(user.userId));
     }
 
     // @Get('editors/:id')
@@ -343,13 +343,13 @@ export class UsersController implements IUsersController {
         @Param('id') id: string,
         @GetUser('userId') userId: string,
     ): Promise<EditorPublicProfileResponseDto> {
-        return this.userService.getEditorPublicProfile(id, userId);
+        return this._userService.getEditorPublicProfile(id, userId);
     }
 
     @Post('payment')
     @Roles('User', 'Editor')
     async createPayment(@Req() req: Request, @Body() body: CreatePaymentDto): Promise<CreatePaymentResponseDto> {
-        const quotation = await this.quotationService.findById(new Types.ObjectId(body.quotationId));
+        const quotation = await this._quotationService.findById(new Types.ObjectId(body.quotationId));
         if (quotation) {
             if (quotation.isPaymentInProgress) {
                 this.logger.warn('An existing payment is in progress');
@@ -359,9 +359,9 @@ export class UsersController implements IUsersController {
                 });
             }
         }
-        const razorpayOrder = await this.paymentService.createRazorpayOrder(body.amount, body.currency, body.quotationId);
+        const razorpayOrder = await this._paymentService.createRazorpayOrder(body.amount, body.currency, body.quotationId);
         if (razorpayOrder) {
-            await this.quotationService.updateQuotation(
+            await this._quotationService.updateQuotation(
                 { _id: body.quotationId },
                 { isPaymentInProgress: true, }
             )
@@ -393,7 +393,7 @@ export class UsersController implements IUsersController {
     @Roles(Role.USER, Role.EDITOR)
     async verifyPayment(@Req() req: Request, @Body() body: { razorpay_order_id: string, razorpay_payment_id: string, razorpay_signature: string }) {
         const user = req['user'] as { userId: Types.ObjectId, role: string }
-        const payment = await this.paymentService.verifyPayment(body.razorpay_order_id, body.razorpay_payment_id, body.razorpay_signature);
+        const payment = await this._paymentService.verifyPayment(body.razorpay_order_id, body.razorpay_payment_id, body.razorpay_signature);
         return payment;
     }
 
@@ -419,7 +419,7 @@ export class UsersController implements IUsersController {
         };
         console.log('paymentDetails: ', paymentDetails);
 
-        const success = await this.userService.createTransaction(user.userId, new Types.ObjectId(quotationId), paymentDetails);
+        const success = await this._userService.createTransaction(user.userId, new Types.ObjectId(quotationId), paymentDetails);
         if (!success) {
             throw new InternalServerErrorException('Create Transaction failed for quotationId: ', quotationId)
         }
@@ -435,7 +435,7 @@ export class UsersController implements IUsersController {
             throw new BadRequestException('Invalid bid ID');
         }
 
-        return this.userService.acceptBid(new Types.ObjectId(bidId), user.userId);
+        return this._userService.acceptBid(new Types.ObjectId(bidId), user.userId);
     }
 
     @Get('bids/:quotationId/accepted')
@@ -448,7 +448,7 @@ export class UsersController implements IUsersController {
             throw new BadRequestException('Invalid quotation ID');
         }
 
-        return this.userService.getAcceptedBid(new Types.ObjectId(quotationId), new Types.ObjectId(editorId));
+        return this._userService.getAcceptedBid(new Types.ObjectId(quotationId), new Types.ObjectId(editorId));
     }
 
     @Patch('bids/:bidId/cancel')
@@ -463,7 +463,7 @@ export class UsersController implements IUsersController {
         if (!Types.ObjectId.isValid(bidId)) {
             throw new BadRequestException('Invalid bid ID');
         }
-        return await this.userService.cancelAcceptedBid(new Types.ObjectId(bidId), new Types.ObjectId(requesterId));
+        return await this._userService.cancelAcceptedBid(new Types.ObjectId(bidId), new Types.ObjectId(requesterId));
     }
 
     @Public()
@@ -473,7 +473,7 @@ export class UsersController implements IUsersController {
     getPublicEditors(
         @Query() query: GetPublicEditorsDto,
     ): Promise<PaginatedPublicEditorsDto> {
-        return this.userService.getPublicEditors(query);
+        return this._userService.getPublicEditors(query);
     }
 
     @Post('reports')
@@ -481,7 +481,7 @@ export class UsersController implements IUsersController {
         @Body() reportDto: ReportUserDto,
         @GetUser('userId') userId: string,
     ): Promise<SuccessResponseDto> {
-        return this.userService.reportUser(reportDto, userId);
+        return this._userService.reportUser(reportDto, userId);
     }
 
     @Post('follow/:id')
@@ -491,7 +491,7 @@ export class UsersController implements IUsersController {
     async followUser(@Param('id') id: string, @GetUser('userId') userId: string): Promise<SuccessResponseDto> {
         const sourceUserId = new Types.ObjectId(userId);
         const targetUserId = new Types.ObjectId(id);
-        return this.userService.followUser(sourceUserId, targetUserId);
+        return this._userService.followUser(sourceUserId, targetUserId);
     }
 
     @Delete('follow/:id')
@@ -501,6 +501,6 @@ export class UsersController implements IUsersController {
     async unfollowUser(@Param('id') id: string, @GetUser('userId') userId: string): Promise<SuccessResponseDto> {
         const sourceUserId = new Types.ObjectId(userId);
         const targetUserId = new Types.ObjectId(id);
-        return this.userService.unfollowUser(sourceUserId, targetUserId);
+        return this._userService.unfollowUser(sourceUserId, targetUserId);
     }
 }

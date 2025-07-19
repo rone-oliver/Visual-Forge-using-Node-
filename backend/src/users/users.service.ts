@@ -54,56 +54,56 @@ import { ITimelineService, ITimelineServiceToken } from 'src/timeline/interfaces
 
 @Injectable()
 export class UsersService implements IUsersService {
-    private readonly logger = new Logger(UsersService.name);
+    private readonly _logger = new Logger(UsersService.name);
     constructor(
-        @Inject(forwardRef(()=>IEditorsServiceToken)) private readonly editorService: IEditorsService,
-        @Inject(IQuotationServiceToken) private readonly quotationService: IQuotationService,
-        @Inject(IWorkServiceToken) private readonly workService: IWorkService,
-        @Inject(ITransactionServiceToken) private readonly transactionService: ITransactionService,
-        @Inject(IReportServiceToken) private readonly reportService: IReportService,
-        @Inject(IAdminWalletServiceToken) private readonly adminWalletService: IAdminWalletService,
-        @Inject(IRelationshipServiceToken) private readonly relationshipService: IRelationshipService,
-        @Inject(ICloudinaryServiceToken) private cloudinaryService: ICloudinaryService,
-        @Inject(IUserRepositoryToken) private readonly userRepository: IUserRepository,
-        @Inject(IBidServiceToken) private bidsService: IBidService,
-        @Inject(IHashingServiceToken) private readonly hashingService: IHashingService,
-        @Inject(ITimelineServiceToken) private readonly timelineService: ITimelineService,
-        private eventEmitter: EventEmitter2,
+        @Inject(forwardRef(()=>IEditorsServiceToken)) private readonly _editorService: IEditorsService,
+        @Inject(IQuotationServiceToken) private readonly _quotationService: IQuotationService,
+        @Inject(IWorkServiceToken) private readonly _workService: IWorkService,
+        @Inject(ITransactionServiceToken) private readonly _transactionService: ITransactionService,
+        @Inject(IReportServiceToken) private readonly _reportService: IReportService,
+        @Inject(IAdminWalletServiceToken) private readonly _adminWalletService: IAdminWalletService,
+        @Inject(IRelationshipServiceToken) private readonly _relationshipService: IRelationshipService,
+        @Inject(ICloudinaryServiceToken) private readonly _cloudinaryService: ICloudinaryService,
+        @Inject(IUserRepositoryToken) private readonly _userRepository: IUserRepository,
+        @Inject(IBidServiceToken) private readonly _bidsService: IBidService,
+        @Inject(IHashingServiceToken) private readonly _hashingService: IHashingService,
+        @Inject(ITimelineServiceToken) private readonly _timelineService: ITimelineService,
+        private _eventEmitter: EventEmitter2,
     ) { }
 
     async findOne(filter: Partial<User>): Promise<User | null> {
         try {
-            return this.userRepository.findOne(filter);
+            return this._userRepository.findOne(filter);
         } catch (error) {
-            this.logger.error(`Error finding user: ${error.message}`);
+            this._logger.error(`Error finding user: ${error.message}`);
             throw new HttpException('User not found', HttpStatus.NOT_FOUND);
         }
     }
 
     async findByUsername(username: string) {
-        return await this.userRepository.findOne({ username });
+        return await this._userRepository.findOne({ username });
     }
 
     async findByEmail(email: string) {
-        return await this.userRepository.findOne({ email });
+        return await this._userRepository.findOne({ email });
     }
 
     async createUser(user: Partial<User>): Promise<User> {
         try {
             if (user.password) {
-                user.password = await this.hashingService.hash(user.password);
+                user.password = await this._hashingService.hash(user.password);
             }
-            this.logger.log(`Creating new user: ${user.email}`);
-            const newUser = await this.userRepository.create(user);
-            await this.adminWalletService.creditWelcomeBonus(newUser._id.toString());
+            this._logger.log(`Creating new user: ${user.email}`);
+            const newUser = await this._userRepository.create(user);
+            await this._adminWalletService.creditWelcomeBonus(newUser._id.toString());
             return newUser;
         } catch (error) {
-            this.logger.error(`Error creating user: ${error.message}`);
+            this._logger.error(`Error creating user: ${error.message}`);
             throw error;
         }
     }
 
-    private async generateUniqueUsername(): Promise<string> {
+    private async _generateUniqueUsername(): Promise<string> {
         let isUnique = false;
         let username = '';
 
@@ -111,7 +111,7 @@ export class UsersService implements IUsersService {
             const randomString = Math.random().toString(36).substring(2, 6);
             username = `user_${randomString}`;
 
-            const existingUser = await this.userRepository.findOne({ username });
+            const existingUser = await this._userRepository.findOne({ username });
             if (!existingUser) {
                 isUnique = true;
             }
@@ -122,61 +122,61 @@ export class UsersService implements IUsersService {
     async createGoogleUser(user: Partial<User>): Promise<User> {
         try {
             if (!user.username) {
-                user.username = await this.generateUniqueUsername();
+                user.username = await this._generateUniqueUsername();
             }
             user.isVerified = true;
             return this.createUser(user);
         } catch (error) {
-            this.logger.error(`Failed to create Google user: ${error.message}`);
+            this._logger.error(`Failed to create Google user: ${error.message}`);
             throw error;
         }
     }
 
     async updateUserGoogleId(userId: Types.ObjectId, googleId: string): Promise<User | null> {
         try {
-            return await this.userRepository.findOneAndUpdate({ _id: userId }, { $set: { googleId } });
+            return await this._userRepository.findOneAndUpdate({ _id: userId }, { $set: { googleId } });
         } catch (error) {
-            this.logger.error(`Error updating user: ${error.message}`);
+            this._logger.error(`Error updating user: ${error.message}`);
             throw error;
         }
     }
 
     async updateOne(filter: Partial<User>, update: Partial<User>) {
         try {
-            await this.userRepository.findOneAndUpdate(filter, update);
-            this.logger.log("User data updated successfully");
+            await this._userRepository.findOneAndUpdate(filter, update);
+            this._logger.log("User data updated successfully");
         } catch (error) {
-            this.logger.error(`Error updating User: ${error.message}`);
+            this._logger.error(`Error updating User: ${error.message}`);
             throw error;
         }
     }
 
     async updatePassword(userId: Types.ObjectId, password: string): Promise<boolean> {
         try {
-            this.logger.log(userId, password)
-            await this.userRepository.findOneAndUpdate({ _id: userId }, { $set: { password } });
-            this.logger.log("Password updated successfully");
+            this._logger.log(userId, password)
+            await this._userRepository.findOneAndUpdate({ _id: userId }, { $set: { password } });
+            this._logger.log("Password updated successfully");
             return true;
         } catch (error) {
-            this.logger.error(`Error updating password: ${error.message}`);
+            this._logger.error(`Error updating password: ${error.message}`);
             throw error;
         }
     }
 
     async getUserDetails(userId: Types.ObjectId): Promise<UserProfileResponseDto | null> {
         try {
-            this.logger.log(`Fetching user details for ID: ${userId}`);
-            const user = await this.userRepository.findById(userId);
+            this._logger.log(`Fetching user details for ID: ${userId}`);
+            const user = await this._userRepository.findById(userId);
             if (user && user.isEditor) {
-                this.logger.log('Fetching the editor details');
+                this._logger.log('Fetching the editor details');
                 console.log('user id: ', user._id);
-                const editorDetails = await this.editorService.findByUserId(user._id);
+                const editorDetails = await this._editorService.findByUserId(user._id);
                 if (editorDetails) {
-                    this.logger.log('Editor details: ', editorDetails);
+                    this._logger.log('Editor details: ', editorDetails);
 
                     const [followersCount, followingCount] = await Promise.all([
-                        this.relationshipService.getFollowers({ userId: user._id, limit: 0, skip: 0 }).then(f => f.length),
-                        this.relationshipService.getFollowing({ userId: user._id, limit: 0, skip: 0 }).then(f => f.length),
+                        this._relationshipService.getFollowers({ userId: user._id, limit: 0, skip: 0 }).then(f => f.length),
+                        this._relationshipService.getFollowing({ userId: user._id, limit: 0, skip: 0 }).then(f => f.length),
                     ]);
 
                     return {
@@ -187,7 +187,7 @@ export class UsersService implements IUsersService {
                             tipsAndTricks: editorDetails.tipsAndTricks || '',
                             sharedTutorials: editorDetails.sharedTutorials || [],
                             ratingsCount: editorDetails.ratings?.length || 0,
-                            averageRating: this.calculateAverageRating(editorDetails.ratings),
+                            averageRating: this._calculateAverageRating(editorDetails.ratings),
                             socialLinks: editorDetails.socialLinks || {},
                             warningCount: editorDetails.warningCount || 0,
                             createdAt: editorDetails.createdAt,
@@ -199,35 +199,35 @@ export class UsersService implements IUsersService {
             }
             return user;
         } catch (error) {
-            this.logger.error(`Error fetching user details: ${error.message}`);
+            this._logger.error(`Error fetching user details: ${error.message}`);
             throw error;
         }
     }
 
     async getUsers(currentUserId: Types.ObjectId): Promise<UserBasicInfoDto[]> {
         try {
-            const { items } = await this.userRepository.find({ _id: { $ne: currentUserId } });
+            const { items } = await this._userRepository.find({ _id: { $ne: currentUserId } });
             return items;
         } catch (error) {
-            this.logger.error(`Error fetching users: ${error.message}`);
+            this._logger.error(`Error fetching users: ${error.message}`);
             throw error;
         }
     }
 
     async getUserInfoForChatList(userId: Types.ObjectId): Promise<UserInfoForChatListDto> {
         try {
-            const userInfo = await this.userRepository.findById(userId, { username: 1, profileImage: 1, isOnline: 1 });
+            const userInfo = await this._userRepository.findById(userId, { username: 1, profileImage: 1, isOnline: 1 });
             if(!userInfo){
                 throw new NotFoundException('No user info found for your chats');
             }
             return userInfo;
         } catch (error) {
-            this.logger.error(`Error fetching user info for chat list: ${error.message}`);
+            this._logger.error(`Error fetching user info for chat list: ${error.message}`);
             throw error;
         }
     }
 
-    private calculateAverageRating(ratings: any[] | undefined): number {
+    private _calculateAverageRating(ratings: any[] | undefined): number {
         if (!ratings || ratings.length === 0) return 0;
 
         const sum = ratings.reduce((acc, curr) => acc + curr.rating, 0);
@@ -237,35 +237,35 @@ export class UsersService implements IUsersService {
     async requestForEditor(userId: Types.ObjectId): Promise<SuccessResponseDto> {
         try {
 
-            const user = await this.userRepository.findById(userId, { isEditor: 1 });
+            const user = await this._userRepository.findById(userId, { isEditor: 1 });
             if (user && !user.isEditor) {
-                this.logger.log(`User ${userId} is not an editor. Proceeding with request.`);
-                if(await this.editorService.checkEditorRequest(userId)){
-                    this.logger.log(`User ${userId} already has an editor request`);
-                    await this.editorService.deleteEditorRequest(userId);
+                this._logger.log(`User ${userId} is not an editor. Proceeding with request.`);
+                if(await this._editorService.checkEditorRequest(userId)){
+                    this._logger.log(`User ${userId} already has an editor request`);
+                    await this._editorService.deleteEditorRequest(userId);
                 }
-                await this.editorService.createEditorRequests(userId);
-                this.logger.log(`Editor request created for user ${userId}`);
+                await this._editorService.createEditorRequests(userId);
+                this._logger.log(`Editor request created for user ${userId}`);
                 return { success: true };
             }
-            this.logger.log(`User ${userId} is already an editor or not found`);
+            this._logger.log(`User ${userId} is already an editor or not found`);
             return { success: false };
         } catch (error) {
-            this.logger.error(`Error requesting editor role: ${error.message}`);
+            this._logger.error(`Error requesting editor role: ${error.message}`);
             return { success: false };
         }
     }
 
     async getEditorRequestStatus(userId: Types.ObjectId): Promise<EditorRequestStatusResponseDto> {
         try {
-            const request = await this.editorService.findEditorRequest(userId);
+            const request = await this._editorService.findEditorRequest(userId);
             if (request) {
-                this.logger.log(`Editor request status for user ${userId}: ${request.status}`);
+                this._logger.log(`Editor request status for user ${userId}: ${request.status}`);
                 return { status: request.status };
             }
             return { status: null };
         } catch (error) {
-            this.logger.error(`Error fetching editor request status: ${error.message}`);
+            this._logger.error(`Error fetching editor request status: ${error.message}`);
             throw error;
         }
     }
@@ -296,8 +296,8 @@ export class UsersService implements IUsersService {
             };
 
             const [transactions, totalItems] = await Promise.all([
-                this.transactionService.getTransactions(findCondition, findOptions),
-                this.transactionService.countTransactions(findCondition)
+                this._transactionService.getTransactions(findCondition, findOptions),
+                this._transactionService.countTransactions(findCondition)
             ]);
 
             const totalPages = Math.ceil(totalItems / limit);
@@ -310,7 +310,7 @@ export class UsersService implements IUsersService {
                 limit,
             };
         } catch (error) {
-            this.logger.error(`Error fetching transaction history for user ${userId}: ${error.message}`);
+            this._logger.error(`Error fetching transaction history for user ${userId}: ${error.message}`);
             throw new InternalServerErrorException('Failed to fetch transaction history.');
         }
     }
@@ -333,7 +333,7 @@ export class UsersService implements IUsersService {
                 ]
             }
 
-            const totalItems = await this.quotationService.countQuotationsByFilter(matchQuery);
+            const totalItems = await this._quotationService.countQuotationsByFilter(matchQuery);
             const totalPages = Math.ceil(totalItems / limit);
 
             const aggregationPipeline: any[] = [
@@ -412,8 +412,8 @@ export class UsersService implements IUsersService {
                 { $limit: limit },
             ]
 
-            const quotations = await this.quotationService.aggregate(aggregationPipeline);
-            this.logger.log(`quotations from getQuotations for user: `,quotations)
+            const quotations = await this._quotationService.aggregate(aggregationPipeline);
+            this._logger.log(`quotations from getQuotations for user: `,quotations)
             
             return {
                 quotations: quotations as QuotationWithBidCountDto[],
@@ -423,12 +423,12 @@ export class UsersService implements IUsersService {
                 itemsPerPage: limit
             }
         } catch (error) {
-            this.logger.error(`Error fetching quotations: ${error}`);
+            this._logger.error(`Error fetching quotations: ${error}`);
             throw error;
         }
     }
 
-    private calculateQuotationAmounts(estimatedBudget: number): { advanceAmount: number, balanceAmount: number } {
+    private _calculateQuotationAmounts(estimatedBudget: number): { advanceAmount: number, balanceAmount: number } {
         const advancePercentage = 0.4;
         const advanceAmount = Math.round(estimatedBudget * advancePercentage);
         const balanceAmount = estimatedBudget - advanceAmount;
@@ -437,13 +437,13 @@ export class UsersService implements IUsersService {
 
     async createQuotation(userId: Types.ObjectId, createQuotationDto: CreateQuotationDto): Promise<QuotationResponseDto> {
         try {
-            this.logger.log(createQuotationDto);
+            this._logger.log(createQuotationDto);
             let calculatedAdvanceAmount: number | undefined;
             let calculatedBalanceAmount: number | undefined;
 
             if (!createQuotationDto.dueDate) throw new Error('Due date is required');
             if (createQuotationDto.estimatedBudget) {
-                const { advanceAmount, balanceAmount } = this.calculateQuotationAmounts(createQuotationDto.estimatedBudget);
+                const { advanceAmount, balanceAmount } = this._calculateQuotationAmounts(createQuotationDto.estimatedBudget);
                 calculatedAdvanceAmount = advanceAmount;
                 calculatedBalanceAmount = balanceAmount;
             }
@@ -465,9 +465,9 @@ export class UsersService implements IUsersService {
                     };
                 })
             }
-            const savedQuotation = await this.quotationService.createQuotation(quotationDataForDb);
+            const savedQuotation = await this._quotationService.createQuotation(quotationDataForDb);
 
-            this.eventEmitter.emit(EventTypes.QUOTATION_CREATED,{
+            this._eventEmitter.emit(EventTypes.QUOTATION_CREATED,{
                 quotationId: savedQuotation._id.toString(),
                 userId: userId.toString(),
                 title: savedQuotation.title,
@@ -475,17 +475,17 @@ export class UsersService implements IUsersService {
             })
             return savedQuotation as unknown as QuotationResponseDto;
         } catch (error) {
-            this.logger.error(`Error creating quotation: ${error.message}`);
+            this._logger.error(`Error creating quotation: ${error.message}`);
             throw error;
         }
     }
 
     async getQuotation(quotationId: Types.ObjectId): Promise<QuotationResponseDto | null> {
         try {
-            const quotation = await this.quotationService.findById(quotationId) as unknown as QuotationResponseDto;
+            const quotation = await this._quotationService.findById(quotationId) as unknown as QuotationResponseDto;
             return quotation;
         } catch (error) {
-            this.logger.error(`Error fetching quotation: ${error.message}`);
+            this._logger.error(`Error fetching quotation: ${error.message}`);
             throw error;
         }
     }
@@ -494,7 +494,7 @@ export class UsersService implements IUsersService {
         try {
             const { filesToDelete, ...updateData } = updateQuotationDto;
 
-            const quotation = await this.quotationService.findById(quotationId);
+            const quotation = await this._quotationService.findById(quotationId);
             if (!quotation) {
                 throw new NotFoundException('Quotation not found');
             }
@@ -508,17 +508,17 @@ export class UsersService implements IUsersService {
                 const filesMarkedForDelete = quotation.attachedFiles.filter(file => idsToDelete.includes(file.uniqueId));
             
                 const deletePromises = filesMarkedForDelete.map(file =>
-                    this.cloudinaryService.deleteFile(file.uniqueId, file.fileType)
+                    this._cloudinaryService.deleteFile(file.uniqueId, file.fileType)
                 );
             
                 try {
                     await Promise.all(deletePromises); // If ANY promise in deletePromises rejects, this line will throw an error
-                    this.logger.log('Files deleted successfully');
+                    this._logger.log('Files deleted successfully');
                     // This line only runs if ALL deletions succeed
                     quotation.attachedFiles = quotation.attachedFiles.filter(file => !idsToDelete.includes(file.uniqueId));
                 } catch (error) {
                     // If Promise.all rejects, the error will be caught here.
-                    this.logger.error(`One or more files failed to delete from Cloudinary. Original error: ${error.message}`);
+                    this._logger.error(`One or more files failed to delete from Cloudinary. Original error: ${error.message}`);
                     // You might want to re-throw the error or handle it gracefully here
                     throw error; // Propagate the error up if this method shouldn't continue
                 }
@@ -526,14 +526,14 @@ export class UsersService implements IUsersService {
             let currentFiles = [...quotation.attachedFiles];
 
             if (updateData.attachedFiles && updateData.attachedFiles.length > 0) {
-                this.logger.debug('attached files count: ',updateData.attachedFiles)
+                this._logger.debug('attached files count: ',updateData.attachedFiles)
                 currentFiles.push(...updateData.attachedFiles);
             }
 
             let advanceAmountCalc: number | undefined;
             let balanceAmountCalc: number | undefined;
             if (quotation.estimatedBudget) {
-                const { advanceAmount, balanceAmount } = this.calculateQuotationAmounts(quotation.estimatedBudget);
+                const { advanceAmount, balanceAmount } = this._calculateQuotationAmounts(quotation.estimatedBudget);
                 advanceAmountCalc = advanceAmount;
                 balanceAmountCalc = balanceAmount;
             }
@@ -544,152 +544,152 @@ export class UsersService implements IUsersService {
                 attachedFiles: currentFiles,
             }
             
-            const updatedQuotation = await this.quotationService.findByIdAndUpdate(quotationId, quotationDataForDb) as unknown as QuotationResponseDto;
+            const updatedQuotation = await this._quotationService.findByIdAndUpdate(quotationId, quotationDataForDb) as unknown as QuotationResponseDto;
             if (!updatedQuotation) {
                 throw new InternalServerErrorException('Failed to update quotation.');
             }
-            this.logger.debug('Quotation updated successfully',updatedQuotation);
+            this._logger.debug('Quotation updated successfully',updatedQuotation);
 
             return updatedQuotation;
         } catch (error) {
-            this.logger.error(`Error updating quotation: ${error.message}`);
+            this._logger.error(`Error updating quotation: ${error.message}`);
             throw error;
         }
     }
 
     async deleteQuotation(quotationId: Types.ObjectId): Promise<SuccessResponseDto> {
         try {
-            await this.quotationService.deleteQuotation(quotationId);
+            await this._quotationService.deleteQuotation(quotationId);
             return { success: true };
         } catch (error) {
-            this.logger.error(`Error deleting quotation: ${error.message}`);
+            this._logger.error(`Error deleting quotation: ${error.message}`);
             throw error;
         }
     }
 
     async updateProfileImage(userId: Types.ObjectId, profileImageUrl: string): Promise<UserBaseResponseDto | null> {
         try {
-            return await this.userRepository.findOneAndUpdate({ _id: userId }, { profileImage: profileImageUrl });
+            return await this._userRepository.findOneAndUpdate({ _id: userId }, { profileImage: profileImageUrl });
         } catch (error) {
-            this.logger.error(`Error updating profile image: ${error.message}`);
+            this._logger.error(`Error updating profile image: ${error.message}`);
             throw error;
         }
     }
 
     async uploadFiles(files: Express.Multer.File[], folder?: string): Promise<FileUploadResultDtoCloudinary[]> {
         try {
-            const uploadPromises = await this.cloudinaryService.uploadFiles(files, folder);
+            const uploadPromises = await this._cloudinaryService.uploadFiles(files, folder);
             return Promise.all(uploadPromises);
         } catch (error) {
-            this.logger.error(`Error in uploadFiles: ${error.message}`);
+            this._logger.error(`Error in uploadFiles: ${error.message}`);
             throw error;
         }
     }
 
     async updateProfile(userId: Types.ObjectId, updateProfileDto: UpdateProfileDto): Promise<UserProfileResponseDto | null> {
         try {
-            return await this.userRepository.findOneAndUpdate({ _id: userId }, { $set: updateProfileDto })
+            return await this._userRepository.findOneAndUpdate({ _id: userId }, { $set: updateProfileDto })
         } catch (error) {
-            this.logger.error(`Error updating profile: ${error.message}`);
+            this._logger.error(`Error updating profile: ${error.message}`);
             throw error;
         }
     }
 
     async resetPassword(userId: Types.ObjectId, resetPasswordDto: ResetPasswordDto): Promise<SuccessResponseDto> {
         try {
-            const user = await this.userRepository.findById(userId);
+            const user = await this._userRepository.findById(userId);
             if (!user) throw new Error('User not found');
-            const isPasswordValid = await this.hashingService.compare(resetPasswordDto.currentPassword, user.password);
+            const isPasswordValid = await this._hashingService.compare(resetPasswordDto.currentPassword, user.password);
             if (!isPasswordValid) throw new Error('Current password is incorrect');
-            const hashedPassword = await this.hashingService.hash(resetPasswordDto.newPassword);
-            await this.userRepository.findOneAndUpdate({ _id: userId }, { $set: { password: hashedPassword } });
+            const hashedPassword = await this._hashingService.hash(resetPasswordDto.newPassword);
+            await this._userRepository.findOneAndUpdate({ _id: userId }, { $set: { password: hashedPassword } });
             return { success: true };
         } catch (error) {
-            this.logger.error(`Error resetting password: ${error.message}`);
+            this._logger.error(`Error resetting password: ${error.message}`);
             throw error;
         }
     }
 
     async getCompletedWorks(userId: Types.ObjectId): Promise<CompletedWorkDto[]> {
         try {
-            return await this.quotationService.getCompletedQuotationsForUser(userId);
+            return await this._quotationService.getCompletedQuotationsForUser(userId);
         } catch (error) {
-            this.logger.error(`Error fetching completed works: ${error}`);
+            this._logger.error(`Error fetching completed works: ${error}`);
             throw error;
         }
     }
 
     async rateWork(workId: string, rateWorkDto: RateWorkDto): Promise<SuccessResponseDto> {
         try {
-            return this.workService.rateWork(workId, rateWorkDto);
+            return this._workService.rateWork(workId, rateWorkDto);
         } catch (error) {
-            this.logger.error(`Error rating work: ${error.message}`);
+            this._logger.error(`Error rating work: ${error.message}`);
             throw error;
         }
     }
 
     async rateEditor(userId: Types.ObjectId, rateEditorDto: RateEditorDto): Promise<SuccessResponseDto> {
         try {
-            this.logger.log('rating editor dto from service:', rateEditorDto.editorId, rateEditorDto.rating, rateEditorDto.feedback, userId);
+            this._logger.log('rating editor dto from service:', rateEditorDto.editorId, rateEditorDto.rating, rateEditorDto.feedback, userId);
             const editorObjectId = new Types.ObjectId(rateEditorDto.editorId);
 
-            await this.editorService.updateEditor(editorObjectId, {
+            await this._editorService.updateEditor(editorObjectId, {
                 $pull: { ratings: { userId: userId } },
             });
 
-            const result = await this.editorService.updateEditor(editorObjectId, {
+            const result = await this._editorService.updateEditor(editorObjectId, {
                 $push: { ratings: { rating: rateEditorDto.rating, feedback: rateEditorDto.feedback, userId } },
             });
 
             if (result) {
-                this.logger.log('rating editor success');
+                this._logger.log('rating editor success');
                 return { success: true };
             } else {
-                this.logger.error('rating editor failed: Editor not found or not updated');
+                this._logger.error('rating editor failed: Editor not found or not updated');
                 throw new NotFoundException('Editor not found or rating could not be updated.');
             }
         } catch (error) {
-            this.logger.error('rating editor failed', error);
+            this._logger.error('rating editor failed', error);
             throw new InternalServerErrorException('Failed to rate editor');
         }
     }
 
     async getCurrentEditorRating(userId: Types.ObjectId, editorId: string):Promise<UserRatingForEditorDto | null> {
         try {
-            const editor = await this.editorService.getEditorRating(new Types.ObjectId(editorId));
+            const editor = await this._editorService.getEditorRating(new Types.ObjectId(editorId));
             if (editor?.ratings && editor.ratings.length > 0) {
-                this.logger.log(`Editor ratings for user ${editorId}: ${editor.ratings}`);
+                this._logger.log(`Editor ratings for user ${editorId}: ${editor.ratings}`);
                 const specificRating = editor.ratings.find((rating) => rating.userId.equals(userId));
                 if (specificRating) {
-                    this.logger.log(`Current rating of user ${userId} on editor ${editorId}: ${specificRating.rating}`);
+                    this._logger.log(`Current rating of user ${userId} on editor ${editorId}: ${specificRating.rating}`);
                     return {
                         rating: specificRating.rating,
                         feedback: specificRating.feedback,
                         userId: specificRating.userId.toString(), // Convert ObjectId to string
                     };
                 }
-                this.logger.log(`No specific rating found for user ${userId} on editor ${editorId}`);
+                this._logger.log(`No specific rating found for user ${userId} on editor ${editorId}`);
                 return null;
             }
-            this.logger.log(`No ratings found for editor ${editorId}`);
+            this._logger.log(`No ratings found for editor ${editorId}`);
             return null;
         } catch (error) {
-            this.logger.error(`Error getting current editor rating: ${error.message}`);
+            this._logger.error(`Error getting current editor rating: ${error.message}`);
             throw error;
         }
     }
 
     async updateWorkPublicStatus(worksId: string, updateWorkPublicStatusDto: UpdateWorkPublicStatusDto): Promise<SuccessResponseDto> {
         try {
-            return this.workService.updateWorkPublicStatus(worksId, updateWorkPublicStatusDto);
+            return this._workService.updateWorkPublicStatus(worksId, updateWorkPublicStatusDto);
         } catch (error) {
-            this.logger.error(`Error updating work public status: ${error.message}`);
+            this._logger.error(`Error updating work public status: ${error.message}`);
             throw error;
         }
     }
 
     async submitWorkFeedback(workId: Types.ObjectId, userId: Types.ObjectId, feedback: string): Promise<SuccessResponseDto> {
-        const quotation = await this.quotationService.findOne({ worksId: new Types.ObjectId(workId) });
+        const quotation = await this._quotationService.findOne({ worksId: new Types.ObjectId(workId) });
         if (!quotation) {
             throw new NotFoundException('Quotation not found');
         }
@@ -697,7 +697,7 @@ export class UsersService implements IUsersService {
             throw new ForbiddenException('You are not authorized to submit feedback for this work');
         }
 
-        await this.timelineService.create({
+        await this._timelineService.create({
             quotationId: new Types.ObjectId(quotation._id),
             event: TimelineEvent.FEEDBACK_RECEIVED,
             userId: new Types.ObjectId(userId),
@@ -705,12 +705,12 @@ export class UsersService implements IUsersService {
             message: feedback,
         });
 
-        this.logger.log(`User ${userId} submitted feedback for work ${workId}`);
+        this._logger.log(`User ${userId} submitted feedback for work ${workId}`);
         return { success: true, message: 'Feedback submitted successfully' };
     }
 
     async markWorkAsSatisfied(workId: Types.ObjectId, userId: Types.ObjectId): Promise<SuccessResponseDto> {
-        const work = await this.workService.findById(workId);
+        const work = await this._workService.findById(workId);
         if (!work) {
             throw new NotFoundException('Work not found');
         }
@@ -723,15 +723,15 @@ export class UsersService implements IUsersService {
             throw new BadRequestException('Work has already been marked as satisfied.');
         }
 
-        await this.workService.updateWork(workId, { isSatisfied: true });
+        await this._workService.updateWork(workId, { isSatisfied: true });
 
-        const quotation = await this.quotationService.findOne({ worksId: workId });
+        const quotation = await this._quotationService.findOne({ worksId: workId });
         if (!quotation) {
-            this.logger.warn(`Could not find quotation for workId: ${workId} while marking as satisfied`);
+            this._logger.warn(`Could not find quotation for workId: ${workId} while marking as satisfied`);
             return { success: true, message: 'Work marked as satisfied, but timeline event could not be created.' };
         }
 
-        await this.timelineService.create({
+        await this._timelineService.create({
             quotationId: new Types.ObjectId(quotation._id),
             userId: new Types.ObjectId(userId),
             event: TimelineEvent.USER_SATISFIED,
@@ -745,24 +745,24 @@ export class UsersService implements IUsersService {
         params: GetPublicWorksQueryDto,
     ): Promise<PaginatedPublicWorksResponseDto> {
         try {
-            this.logger.log(`Delegating getPublicWorks to WorksService with params: ${JSON.stringify(params)}`);
-            return this.workService.getPublicWorks(params);
+            this._logger.log(`Delegating getPublicWorks to WorksService with params: ${JSON.stringify(params)}`);
+            return this._workService.getPublicWorks(params);
         } catch (error) {
-            this.logger.error(`Error getting public works: ${error.message}`);
+            this._logger.error(`Error getting public works: ${error.message}`);
             throw error;
         }
     }
 
     async getUser(userId: Types.ObjectId): Promise<UserBasicInfoDto | null> {
         try {
-            const user = await this.userRepository.findById(userId);
+            const user = await this._userRepository.findById(userId);
             if (!user) {
-                this.logger.log('User not found');
+                this._logger.log('User not found');
                 throw new Error('User not found');
             }
             return user;
         } catch (error) {
-            this.logger.error(`Error getting user: ${error.message}`);
+            this._logger.error(`Error getting user: ${error.message}`);
             throw error;
         }
     }
@@ -781,7 +781,7 @@ export class UsersService implements IUsersService {
         paymentType: PaymentType
     }): Promise<TransactionResponseDto>{
         try {
-            const transaction = await this.transactionService.createTransaction({
+            const transaction = await this._transactionService.createTransaction({
                 userId: new Types.ObjectId(userId),
                 quotationId: new Types.ObjectId(quotationId),
                 paymentId: paymentDetails.paymentId,
@@ -799,52 +799,52 @@ export class UsersService implements IUsersService {
             });
 
             if (paymentDetails.paymentType === PaymentType.ADVANCE) {
-                await this.quotationService.updateQuotation(
+                await this._quotationService.updateQuotation(
                     { _id: quotationId },
                     { $set: { isAdvancePaid: true } }
                 );
             } else {
-                await this.quotationService.updateQuotation(
+                await this._quotationService.updateQuotation(
                     { _id: quotationId },
                     { $set: { isFullyPaid: true } }
                 );
             }
-            const quotation = await this.quotationService.updateQuotation({ _id: quotationId }, { isPaymentInProgress: false }) as Quotation;
+            const quotation = await this._quotationService.updateQuotation({ _id: quotationId }, { isPaymentInProgress: false }) as Quotation;
             if(quotation.isFullyPaid){
-                await this.adminWalletService.recordUserPayment(quotation, paymentDetails.paymentId);
+                await this._adminWalletService.recordUserPayment(quotation, paymentDetails.paymentId);
             }
 
             return transaction;
         } catch (error) {
-            this.logger.error(`Error updating quotation payment: ${error.message}`);
+            this._logger.error(`Error updating quotation payment: ${error.message}`);
             throw error;
         }
     }
 
     async getQuotationTransactions(quotationId: Types.ObjectId) {
-        return this.transactionService.getTransactionsByQuotationId(quotationId.toString());
+        return this._transactionService.getTransactionsByQuotationId(quotationId.toString());
     }
 
     async getBidsByQuotation(quotationId: Types.ObjectId, userId: Types.ObjectId): Promise<BidResponseDto[]> {
-        const quotation = await this.quotationService.findOne({ _id: new Types.ObjectId(quotationId), userId: new Types.ObjectId(userId) });
+        const quotation = await this._quotationService.findOne({ _id: new Types.ObjectId(quotationId), userId: new Types.ObjectId(userId) });
         if (!quotation) {
             throw new NotFoundException('Quotation not found or does not belong to you');
         }
 
-        const bids = await this.bidsService.findAllByQuotation(quotation._id);
+        const bids = await this._bidsService.findAllByQuotation(quotation._id);
         return bids;
     }
 
     async acceptBid(bidId: Types.ObjectId, userId: Types.ObjectId): Promise<BidResponseDto> {
-        const bid = await this.bidsService.acceptBid(bidId, userId);
+        const bid = await this._bidsService.acceptBid(bidId, userId);
 
-        const quotation = await this.quotationService.findById(bid.quotationId);
+        const quotation = await this._quotationService.findById(bid.quotationId);
 
         if (!quotation) {
             throw new NotFoundException('Quotation not found');
         }
 
-        await this.timelineService.create({
+        await this._timelineService.create({
             quotationId: new Types.ObjectId(quotation._id),
             event: TimelineEvent.EDITOR_ASSIGNED,
             userId: new Types.ObjectId(userId),
@@ -856,41 +856,41 @@ export class UsersService implements IUsersService {
     }
 
     async getAcceptedBid(quotationId: Types.ObjectId, editorId: Types.ObjectId): Promise<Bid> {
-        const bid = await this.bidsService.getAcceptedBid(quotationId, editorId);
+        const bid = await this._bidsService.getAcceptedBid(quotationId, editorId);
         return bid;
     }
 
     async cancelAcceptedBid(bidId: Types.ObjectId, requesterId: Types.ObjectId): Promise<SuccessResponseDto> {
-        await this.bidsService.cancelAcceptedBid(bidId, requesterId);
+        await this._bidsService.cancelAcceptedBid(bidId, requesterId);
         return { success: true, message: 'Bid cancelled successfully' };
     }
 
     async getEditorPublicProfile(editorId: string, currentUserId?:string): Promise<EditorPublicProfileResponseDto> {
         if (!Types.ObjectId.isValid(editorId)) {
-            this.logger.log(`Invalid editor ID format: ${editorId}`);
+            this._logger.log(`Invalid editor ID format: ${editorId}`);
             throw new BadRequestException('Invalid editor ID format.');
         }
 
         const editorObjectId = new Types.ObjectId(editorId);
 
-        const editor = await this.editorService.getEditorUserCombined(editorObjectId);
+        const editor = await this._editorService.getEditorUserCombined(editorObjectId);
 
         if (!editor || !editor.userId) {
-            this.logger.log(`Editor with user ID ${editorId} not found.`);
+            this._logger.log(`Editor with user ID ${editorId} not found.`);
             throw new NotFoundException(`Editor with user ID ${editorId} not found.`);
         }
 
         const user = editor.userId as unknown as User;
 
         const [followersCount, followingCount, isFollowing] = await Promise.all([
-            this.relationshipService.getFollowers({ userId: editorObjectId, limit: 0, skip: 0 }).then(f => f.length),
-            this.relationshipService.getFollowing({ userId: editorObjectId, limit: 0, skip: 0 }).then(f => f.length),
+            this._relationshipService.getFollowers({ userId: editorObjectId, limit: 0, skip: 0 }).then(f => f.length),
+            this._relationshipService.getFollowing({ userId: editorObjectId, limit: 0, skip: 0 }).then(f => f.length),
             currentUserId && Types.ObjectId.isValid(currentUserId)
-                ? this.relationshipService.isFollowing(new Types.ObjectId(currentUserId), editorObjectId)
+                ? this._relationshipService.isFollowing(new Types.ObjectId(currentUserId), editorObjectId)
                 : Promise.resolve(false),
         ]);
 
-        const averageRating = this.calculateAverageRating(editor.ratings);
+        const averageRating = this._calculateAverageRating(editor.ratings);
 
         const sharedTutorials = (editor.sharedTutorials || [])
             .map(getYouTubeEmbedUrl)
@@ -974,7 +974,7 @@ export class UsersService implements IUsersService {
           },
         );
     
-        const result = await this.editorService.getPublicEditors(pipeline);
+        const result = await this._editorService.getPublicEditors(pipeline);
 
         const data = result[0]?.data || [];
         const total = result[0]?.total.length > 0 ? result[0].total[0].count : 0;
@@ -989,55 +989,55 @@ export class UsersService implements IUsersService {
 
     async reportUser(reportDto: ReportUserDto, reporterId: string): Promise<SuccessResponseDto> {
         try {
-            return this.reportService.reportUser(reporterId, reportDto);
+            return this._reportService.reportUser(reporterId, reportDto);
         } catch (error) {
-            this.logger.error(`Error reporting user: ${error.message}`);
+            this._logger.error(`Error reporting user: ${error.message}`);
             throw error;
         }
     }
 
     async followUser(sourceUserId: Types.ObjectId, targetUserId: Types.ObjectId): Promise<SuccessResponseDto> {
         try {
-            await this.relationshipService.createRelationship({
+            await this._relationshipService.createRelationship({
                 sourceUser: sourceUserId,
                 targetUser: targetUserId,
                 type: RelationshipType.FOLLOWS,
             });
             return { success: true, message: 'User followed successfully' };
         } catch (error) {
-            this.logger.error(`Error following user: ${error.message}`);
+            this._logger.error(`Error following user: ${error.message}`);
             throw error;
         }
     }
 
     async unfollowUser(sourceUserId: Types.ObjectId, targetUserId: Types.ObjectId): Promise<SuccessResponseDto> {
         try {
-            await this.relationshipService.removeRelationship({
+            await this._relationshipService.removeRelationship({
                 sourceUser: sourceUserId,
                 targetUser: targetUserId,
                 type: RelationshipType.FOLLOWS,
             });
             return { success: true, message: 'User unfollowed successfully' };
         } catch (error) {
-            this.logger.error(`Error unfollowing user: ${error.message}`);
+            this._logger.error(`Error unfollowing user: ${error.message}`);
             throw error;
         }
     }
 
     async getUserById(userId: Types.ObjectId): Promise<User | null> {
-        return this.userRepository.findById(userId);
+        return this._userRepository.findById(userId);
     }
 
     async blockUser(userId: Types.ObjectId): Promise<User | null> {
-        const user = await this.userRepository.findById(userId);
+        const user = await this._userRepository.findById(userId);
         if (!user) {
             throw new NotFoundException('User not found');
         }
-        return this.userRepository.findOneAndUpdate({ _id: userId }, { isBlocked: !user.isBlocked });
+        return this._userRepository.findOneAndUpdate({ _id: userId }, { isBlocked: !user.isBlocked });
     }
 
     async countAllUsers(): Promise<number> {
-        return this.userRepository.countDocuments();
+        return this._userRepository.countDocuments();
     }
 
     async getAllUsersForAdmin(
@@ -1066,21 +1066,21 @@ export class UsersService implements IUsersService {
             ];
         }
 
-        const total = await this.userRepository.countDocuments(filter);
-        const users = await this.userRepository.getUsersForAdmin(filter,(parseInt(page) - 1) * parseInt(limit),parseInt(limit));
+        const total = await this._userRepository.countDocuments(filter);
+        const users = await this._userRepository.getUsersForAdmin(filter,(parseInt(page) - 1) * parseInt(limit),parseInt(limit));
         return { users, total };
     }
 
     async makeUserEditor(userId: Types.ObjectId): Promise<User | null> {
         try {
-            return this.userRepository.findOneAndUpdate({ _id: userId }, { isEditor: true });
+            return this._userRepository.findOneAndUpdate({ _id: userId }, { isEditor: true });
         } catch (error) {
-            this.logger.error(`Error making user editor: ${error.message}`);
+            this._logger.error(`Error making user editor: ${error.message}`);
             throw error;
         }
     }
 
     async isExistingUser(userId: Types.ObjectId): Promise<boolean> {
-        return this.userRepository.exists({ _id: userId });
+        return this._userRepository.exists({ _id: userId });
     }
 }

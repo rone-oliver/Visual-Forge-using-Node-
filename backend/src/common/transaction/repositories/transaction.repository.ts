@@ -7,18 +7,18 @@ import { IFindOptions } from "../dtos/transaction.dto";
 
 @Injectable()
 export class TransactionRepository implements ITransactionRepository {
-    private readonly logger = new Logger(TransactionRepository.name);
+    private readonly _logger = new Logger(TransactionRepository.name);
 
     constructor(
-        @InjectModel(Transaction.name) private readonly transactionModel: Model<TransactionDocument>,
+        @InjectModel(Transaction.name) private readonly _transactionModel: Model<TransactionDocument>,
     ) {};
 
     async create(transactionData: Partial<Transaction>): Promise<Transaction> {
-        return this.transactionModel.create(transactionData);
+        return this._transactionModel.create(transactionData);
     }
 
     async find(conditions: any, options?: IFindOptions): Promise<Transaction[]> {
-        const query = this.transactionModel.find(conditions);
+        const query = this._transactionModel.find(conditions);
 
         if (options?.sort) {
             query.sort(options.sort);
@@ -40,11 +40,11 @@ export class TransactionRepository implements ITransactionRepository {
     }
 
     async count(conditions: any): Promise<number> {
-        return this.transactionModel.countDocuments(conditions).exec();
+        return this._transactionModel.countDocuments(conditions).exec();
     }
 
     async findByQuotationId(quotationId: string): Promise<Transaction[]> {
-        return this.transactionModel.find({ quotationId: new Types.ObjectId(quotationId) })
+        return this._transactionModel.find({ quotationId: new Types.ObjectId(quotationId) })
         .sort({ createdAt: -1 })
         .exec();
     }

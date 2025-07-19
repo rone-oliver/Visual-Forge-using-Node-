@@ -16,11 +16,11 @@ export enum RazorpayAccountType {
 
 @Injectable()
 export class PaymentService implements IPaymentService {
-    private readonly logger = new Logger(PaymentService.name);
-    private readonly razorpay: Razorpay;
-    private readonly razorpayKeyId: string;
-    private readonly razorpayKeySecret: string;
-    private readonly DEFAULT_CURRENCY = 'INR';
+    private readonly _logger = new Logger(PaymentService.name);
+    private readonly _razorpay: Razorpay;
+    private readonly _razorpayKeyId: string;
+    private readonly _razorpayKeySecret: string;
+    private readonly _DEFAULT_CURRENCY = 'INR';
 
     constructor(
         private readonly configService: ConfigService,
@@ -31,17 +31,17 @@ export class PaymentService implements IPaymentService {
         if (!keyId || !keySecret) {
             throw new Error('Razorpay credentials are not configured');
         }
-        this.razorpayKeyId = keyId;
-        this.razorpayKeySecret = keySecret;
-        this.razorpay = new Razorpay({
-            key_id: this.razorpayKeyId,
-            key_secret: this.razorpayKeySecret,
+        this._razorpayKeyId = keyId;
+        this._razorpayKeySecret = keySecret;
+        this._razorpay = new Razorpay({
+            key_id: this._razorpayKeyId,
+            key_secret: this._razorpayKeySecret,
         });
     }
 
-    async createRazorpayOrder(amount: number, currency: string = this.DEFAULT_CURRENCY, quotationId: string, receipt?: string) {
+    async createRazorpayOrder(amount: number, currency: string = this._DEFAULT_CURRENCY, quotationId: string, receipt?: string) {
         try {
-            const order = await this.razorpay.orders.create({
+            const order = await this._razorpay.orders.create({
                 amount: amount * 100, // Amount in paise
                 currency: currency,
                 receipt: receipt,
@@ -65,29 +65,29 @@ export class PaymentService implements IPaymentService {
             //     "created_at": 1694857598
             // }
         } catch (error) {
-            this.logger.error('Error creating Razorpay order:', error);
+            this._logger.error('Error creating Razorpay order:', error);
             throw new Error('Failed to create Razorpay order');
         }
     }
 
     async fetchPaymentDetails(paymentId: string) {
         try {
-            const payment = await this.razorpay.payments.fetch(paymentId);
+            const payment = await this._razorpay.payments.fetch(paymentId);
             // payment.status will be: 'created', 'authorized', 'captured', 'failed', etc.
             // payment.amount_paid will have the actual paid amount
             return payment;
         } catch (error) {
-            this.logger.error('Error fetching payment details:', error);
+            this._logger.error('Error fetching payment details:', error);
             throw new Error('Failed to fetch payment details');
         }
     }
 
     async fetchOrderStatus(orderId: string) {
         try {
-            const order = await this.razorpay.orders.fetch(orderId);
+            const order = await this._razorpay.orders.fetch(orderId);
             return order;
         } catch (error) {
-            this.logger.error('Error fetching order status: ',error);
+            this._logger.error('Error fetching order status: ',error);
             throw new Error('Failed to fetch order status');
         }
     }
@@ -101,7 +101,7 @@ export class PaymentService implements IPaymentService {
                 isPaymentInProgress: true,
             });
             if(!stuckQuotations){
-                this.logger.warn('No quotations found for clearing the payment states');
+                this._logger.warn('No quotations found for clearing the payment states');
                 return;
             }
 
@@ -111,9 +111,9 @@ export class PaymentService implements IPaymentService {
                 });
             }
 
-            this.logger.log(`Reconciled ${stuckQuotations.length} stuck quotations`);
+            this._logger.log(`Reconciled ${stuckQuotations.length} stuck quotations`);
         } catch (error) {
-            this.logger.error('Error in payment reconciliation job:', error);
+            this._logger.error('Error in payment reconciliation job:', error);
             throw error;
         }
     }
@@ -138,31 +138,31 @@ export class PaymentService implements IPaymentService {
                     break;
             }
         } catch (error) {
-            this.logger.error('Error handling Razorpay webhook:', error);
+            this._logger.error('Error handling Razorpay webhook:', error);
             throw error;
         }
     }
 
     async refundPayment(paymentId: string, amount: number) {
         try {
-            const refund = await this.razorpay.payments.refund(paymentId, {
+            const refund = await this._razorpay.payments.refund(paymentId, {
                 amount: amount * 100, // Amount in paise
             });
             return refund;
         } catch (error) {
-            this.logger.error('Error processing refund:', error);
+            this._logger.error('Error processing refund:', error);
             throw new Error('Failed to process refund');
         }
     }
 
     async verifyPayment(razorpayOrderId: string, razorpayPaymentId: string, razorpaySignature: string){
         const generatedSignature = crypto
-            .createHmac('sha256', this.razorpayKeySecret)
+            .createHmac('sha256', this._razorpayKeySecret)
             .update(razorpayOrderId + '|' + razorpayPaymentId)
             .digest('hex');
 
         if (generatedSignature !== razorpaySignature) {
-            this.logger.warn(`Payment verification failed for orderId: ${razorpayOrderId}`);
+            this._logger.warn(`Payment verification failed for orderId: ${razorpayOrderId}`);
             return { success: false, message: 'Payment verification failed' };
         }
 
@@ -173,7 +173,7 @@ export class PaymentService implements IPaymentService {
                 ...paymentDetails,
             };
         } catch (error) {
-            this.logger.error(`Failed to fetch payment details for paymentId: ${razorpayPaymentId}`, error);
+            this._logger.error(`Failed to fetch payment details for paymentId: ${razorpayPaymentId}`, error);
             return { success: false, message: 'Failed to fetch payment details' };
         }
     }
@@ -181,7 +181,7 @@ export class PaymentService implements IPaymentService {
     async getAccountBalance(): Promise<number> {
         try {
             const url = 'https://api.razorpay.com/v1/banking_balances';
-            const authToken = Buffer.from(`${this.razorpayKeyId}:${this.razorpayKeySecret}`).toString('base64');
+            const authToken = Buffer.from(`${this._razorpayKeyId}:${this._razorpayKeySecret}`).toString('base64');
 
             const { data } = await firstValueFrom(
                 this.httpService.get(url, {
@@ -200,10 +200,10 @@ export class PaymentService implements IPaymentService {
                 }
             }
             
-            this.logger.warn('No RazorpayX current account balance was found.');
+            this._logger.warn('No RazorpayX current account balance was found.');
             return 0;
         } catch (error) {
-            this.logger.error('Error fetching Razorpay banking balance:', error.response?.data || error.message);
+            this._logger.error('Error fetching Razorpay banking balance:', error.response?.data || error.message);
             throw new Error('Failed to fetch Razorpay banking balance');
         }
     }

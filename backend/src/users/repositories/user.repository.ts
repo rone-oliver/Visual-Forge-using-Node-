@@ -8,41 +8,41 @@ import { BaseRepository } from "src/common/database/base.repository";
 @Injectable()
 export class UserRepository extends BaseRepository<User, UserDocument> implements IUserRepository {
     constructor(
-        @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+        @InjectModel(User.name) private readonly _userModel: Model<UserDocument>,
     ) {
-        super(userModel);
+        super(_userModel);
     };
 
     // async create(user: Partial<User>): Promise<User> {
-    //     return this.userModel.create(user);
+    //     return this._userModel.create(user);
     // }
 
     // async find(filter: FilterQuery<User>): Promise<User[]> {
-    //     return this.userModel.find(filter).exec();
+    //     return this._userModel.find(filter).exec();
     // }
 
     // async findOne(filter: FilterQuery<User>): Promise<User | null> {
-    //     return this.userModel.findOne(filter).exec();
+    //     return this._userModel.findOne(filter).exec();
     // }
 
     // async findById(id: Types.ObjectId, projection?: ProjectionType<User>): Promise<User | null> {
-    //     return this.userModel.findById(id, projection).exec();
+    //     return this._userModel.findById(id, projection).exec();
     // }
 
     // async findOneAndUpdate(filter: FilterQuery<User>, update: UpdateQuery<User>): Promise<User | null> {
-    //     return this.userModel.findOneAndUpdate(filter, update, { new: true }).exec();
+    //     return this._userModel.findOneAndUpdate(filter, update, { new: true }).exec();
     // }
 
     // async exists(filter: FilterQuery<User>): Promise<boolean> {
-    //     const result = await this.userModel.exists(filter).exec();
+    //     const result = await this._userModel.exists(filter).exec();
     //     return !!result;
     // }
 
     async countDocuments(filter?: FilterQuery<User>): Promise<number> {
-        return this.userModel.countDocuments(filter).exec();
+        return this._userModel.countDocuments(filter).exec();
     }
 
     async getUsersForAdmin(filter: FilterQuery<User>, skip: number, limit: number, projection?: ProjectionType<User>): Promise<User[]> {
-        return this.userModel.find(filter, projection).skip(skip).limit(limit).exec();
+        return this._userModel.find(filter, projection).skip(skip).limit(limit).exec();
     }
 }

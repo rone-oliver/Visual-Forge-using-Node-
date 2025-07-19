@@ -9,12 +9,12 @@ import { CreateCommunityDto } from '../dto/community.dto';
 @Injectable()
 export class CommunityRepository implements ICommunityRepository {
   constructor(
-    @InjectModel(Community.name) private communityModel: Model<CommunityDocument>,
-    @InjectModel(CommunityMessage.name) private communityMessageModel: Model<CommunityMessageDocument>,
+    @InjectModel(Community.name) private readonly _communityModel: Model<CommunityDocument>,
+    @InjectModel(CommunityMessage.name) private readonly _communityMessageModel: Model<CommunityMessageDocument>,
   ) {}
 
   async create(createCommunityDto: CreateCommunityDto, creatorId: string): Promise<Community> {
-    const newCommunity = new this.communityModel({
+    const newCommunity = new this._communityModel({
       ...createCommunityDto,
       creator: new Types.ObjectId(creatorId),
       members: [new Types.ObjectId(creatorId)], // Creator is a member by default
@@ -23,7 +23,7 @@ export class CommunityRepository implements ICommunityRepository {
   }
 
   async findAll(): Promise<Community[]> {
-    const results = await this.communityModel.aggregate([
+    const results = await this._communityModel.aggregate([
       {
         $lookup: {
           from: 'users',
@@ -66,7 +66,7 @@ export class CommunityRepository implements ICommunityRepository {
   }
 
   async findById(id: string): Promise<Community> {
-    const results = await this.communityModel.aggregate([
+    const results = await this._communityModel.aggregate([
       {
         $match: { _id: new Types.ObjectId(id) },
       },
@@ -116,7 +116,7 @@ export class CommunityRepository implements ICommunityRepository {
   }
 
   async isUserMember(communityId: string, userId: string): Promise<boolean> {
-    const count = await this.communityModel.countDocuments({
+    const count = await this._communityModel.countDocuments({
       _id: new Types.ObjectId(communityId),
       members: new Types.ObjectId(userId),
     });
@@ -124,7 +124,7 @@ export class CommunityRepository implements ICommunityRepository {
   }
 
   async addMember(communityId: string, userId: string): Promise<Community> {
-    const community = await this.communityModel.findByIdAndUpdate(
+    const community = await this._communityModel.findByIdAndUpdate(
       communityId,
       { $addToSet: { members: new Types.ObjectId(userId) } },
       { new: true },
@@ -136,16 +136,15 @@ export class CommunityRepository implements ICommunityRepository {
   }
 
   async addMessage(communityId: string, senderId: string, content: string): Promise<CommunityMessage> {
-    const newMessage = new this.communityMessageModel({
+    return await this._communityMessageModel.create({
       community: new Types.ObjectId(communityId),
       sender: new Types.ObjectId(senderId),
       content,
     });
-    return newMessage.save();
   }
 
   async getMessages(communityId: string, limit: number = 50): Promise<CommunityMessage[]> {
-    const messages = await this.communityMessageModel.aggregate([
+    const messages = await this._communityMessageModel.aggregate([
       {
         $match: {
           community: new Types.ObjectId(communityId),
@@ -192,10 +191,10 @@ export class CommunityRepository implements ICommunityRepository {
   }
 
   async getMessageById(messageId: string): Promise<CommunityMessage | null> {
-    return this.communityMessageModel.findById(messageId).populate('sender', 'fullname email').exec();
+    return this._communityMessageModel.findById(messageId).populate('sender', 'fullname email').exec();
   }
 
   async leaveCommunity(communityId: string, userId: string): Promise<Community | null> {
-    return this.communityModel.findByIdAndUpdate(communityId, { $pull: { members: new Types.ObjectId(userId)}}).exec();
+    return this._communityModel.findByIdAndUpdate(communityId, { $pull: { members: new Types.ObjectId(userId)}}).exec();
   }
 }

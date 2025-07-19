@@ -40,57 +40,57 @@ import { UpdateWorkFilesDto } from 'src/works/dtos/works.dto';
 
 @Injectable()
 export class EditorsService implements IEditorsService {
-    private readonly logger = new Logger(EditorsService.name);
+    private readonly _logger = new Logger(EditorsService.name);
     constructor(
-        @Inject(IEditorRepositoryToken) private readonly editorRepository: IEditorRepository,
-        @Inject(IQuotationServiceToken) private readonly quotationService: IQuotationService,
-        @Inject(IWorkServiceToken) private readonly worksService: IWorkService,
-        @Inject(IUsersServiceToken) private readonly userService: IUsersService,
-        @Inject(IRelationshipServiceToken) private readonly relationshipService: IRelationshipService,
-        @Inject(ICloudinaryServiceToken) private readonly cloudinaryService: ICloudinaryService,
-        @Inject(IEditorRequestsRepositoryToken) private readonly editorRequestsRepository: IEditorRequestsRepository,
-        @Inject(IBidServiceToken) private readonly bidsService: IBidService,
-        private eventEmitter: EventEmitter2,
+        @Inject(IEditorRepositoryToken) private readonly _editorRepository: IEditorRepository,
+        @Inject(IQuotationServiceToken) private readonly _quotationService: IQuotationService,
+        @Inject(IWorkServiceToken) private readonly _worksService: IWorkService,
+        @Inject(IUsersServiceToken) private readonly _userService: IUsersService,
+        @Inject(IRelationshipServiceToken) private readonly _relationshipService: IRelationshipService,
+        @Inject(ICloudinaryServiceToken) private readonly _cloudinaryService: ICloudinaryService,
+        @Inject(IEditorRequestsRepositoryToken) private readonly _editorRequestsRepository: IEditorRequestsRepository,
+        @Inject(IBidServiceToken) private readonly _bidsService: IBidService,
+        private _eventEmitter: EventEmitter2,
     ) { };
 
     async getEditorRequests(): Promise<EditorRequest[]> {
-        return this.editorRequestsRepository.getEditorRequests();
+        return this._editorRequestsRepository.getEditorRequests();
     }
 
     async approveEditorRequest(requestId: Types.ObjectId, adminId: Types.ObjectId): Promise<boolean> {
         try {
-            const request = await this.editorRequestsRepository.approveEditorRequest(requestId, adminId);
+            const request = await this._editorRequestsRepository.approveEditorRequest(requestId, adminId);
             if (request && request.userId) {
-                await this.userService.makeUserEditor(request.userId);
-                await this.editorRepository.create({ userId: new Types.ObjectId(request.userId), category: [request.categories] });
+                await this._userService.makeUserEditor(request.userId);
+                await this._editorRepository.create({ userId: new Types.ObjectId(request.userId), category: [request.categories] });
                 return true;
             }
             return false;
         } catch (error) {
-            this.logger.error(`Error approving request: ${error.message}`);
+            this._logger.error(`Error approving request: ${error.message}`);
             throw new HttpException('Failed to approve request', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     async rejectEditorRequest(requestId: Types.ObjectId, reason: string): Promise<boolean> {
         try {
-            const request = await this.editorRequestsRepository.rejectEditorRequest(requestId, reason);
+            const request = await this._editorRequestsRepository.rejectEditorRequest(requestId, reason);
             return request !== null;
         } catch (error) {
-            this.logger.error(`Error rejecting request: ${error.message}`);
+            this._logger.error(`Error rejecting request: ${error.message}`);
             throw new HttpException('Failed to reject request', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     async countEditorRequests(): Promise<number> {
-        return this.editorRequestsRepository.countEditorRequests();
+        return this._editorRequestsRepository.countEditorRequests();
     }
 
     async getEditorsForAdmin(
         query: GetEditorsQueryDto,
     ): Promise<{ editors: FormattedEditor[]; total: number }> {
         try {
-            this.logger.log('Fetching editor with these query:', query);
+            this._logger.log('Fetching editor with these query:', query);
 
             const {
                 page = '1',
@@ -165,7 +165,7 @@ export class EditorsService implements IEditorsService {
             }
 
             const countPipeline = [...pipeline, { $count: 'total' }];
-            const totalResult = (await this.editorRepository.aggregate(countPipeline)) as unknown as { total: number }[];
+            const totalResult = (await this._editorRepository.aggregate(countPipeline)) as unknown as { total: number }[];
             const total = totalResult.length > 0 ? totalResult[0].total : 0;
 
             // pipeline.push({
@@ -196,38 +196,38 @@ export class EditorsService implements IEditorsService {
                 },
             });
 
-            const editors = await this.editorRepository.aggregate(pipeline);
+            const editors = await this._editorRepository.aggregate(pipeline);
 
             return { editors: editors as unknown as FormattedEditor[], total };
         } catch (error) {
-            this.logger.error(`Error fetching editors: ${error.message}`);
+            this._logger.error(`Error fetching editors: ${error.message}`);
             throw new HttpException('No editors found', HttpStatus.NOT_FOUND);
         }
     }
 
     async countAllEditors(): Promise<number> {
-        return this.editorRepository.countDocuments();
+        return this._editorRepository.countDocuments();
     }
 
     async getPublishedQuotations(
         editorId: Types.ObjectId,
         params: GetPublishedQuotationsQueryDto
     ): Promise<PaginatedPublishedQuotationsResponseDto> {
-        return this.quotationService.getPublishedQuotations(editorId, params);
+        return this._quotationService.getPublishedQuotations(editorId, params);
     }
 
     async getAcceptedQuotations(
         editorId: Types.ObjectId,
         params: GetAcceptedQuotationsQueryDto
     ): Promise<PaginatedAcceptedQuotationsResponseDto> {
-        return this.quotationService.getAcceptedQuotations(editorId, params);
+        return this._quotationService.getAcceptedQuotations(editorId, params);
     }
 
     async uploadWorkFiles(files: Express.Multer.File[], folder?: string): Promise<Omit<FileAttachmentDto,'url'>[]> {
         if (!files || files.length === 0) {
             throw new BadRequestException('No files uploaded.');
         }
-        const uploadResults = await this.cloudinaryService.uploadFiles(files, folder);
+        const uploadResults = await this._cloudinaryService.uploadFiles(files, folder);
         return uploadResults.map(result => ({
             // url: result.url,
             fileType: result.fileType as FileType, // Assuming FileType enum matches
@@ -242,26 +242,26 @@ export class EditorsService implements IEditorsService {
     }
 
     async checkEditorRequest(userId: Types.ObjectId): Promise<boolean> {
-        return this.editorRequestsRepository.checkEditorRequest(userId);
+        return this._editorRequestsRepository.checkEditorRequest(userId);
     }
 
     async deleteEditorRequest(userId: Types.ObjectId): Promise<EditorRequest | null> {
-        return this.editorRequestsRepository.deleteRequest(userId);
+        return this._editorRequestsRepository.deleteRequest(userId);
     }
 
     async submitQuotationResponse(workData: SubmitWorkBodyDto) {
         try {
             const { quotationId, finalFiles, comments } = workData;
-            const quotation = await this.quotationService.findById(new Types.ObjectId(quotationId));
+            const quotation = await this._quotationService.findById(new Types.ObjectId(quotationId));
             if (!quotation) {
-                this.logger.warn(`Quotation with ID ${quotationId} not found`);
+                this._logger.warn(`Quotation with ID ${quotationId} not found`);
                 return false;
             }
 
             const submissionDate = new Date();
             const penalty = this._calculatePenalty(quotation.dueDate, submissionDate, quotation.estimatedBudget);
 
-            const work = await this.worksService.createWork({
+            const work = await this._worksService.createWork({
                 editorId: new Types.ObjectId(quotation.editorId),
                 userId: new Types.ObjectId(quotation.userId),
                 finalFiles: finalFiles.map(file => {
@@ -278,9 +278,9 @@ export class EditorsService implements IEditorsService {
                 }),
                 comments: comments ?? '',
             }, workData.quotationId);
-            await this.quotationService.updateQuotationStatus(quotation._id, QuotationStatus.COMPLETED, work._id, penalty);
+            await this._quotationService.updateQuotationStatus(quotation._id, QuotationStatus.COMPLETED, work._id, penalty);
 
-            this.eventEmitter.emit(EventTypes.QUOTATION_COMPLETED, {
+            this._eventEmitter.emit(EventTypes.QUOTATION_COMPLETED, {
                 userId: quotation.userId,
                 type: NotificationType.WORK,
                 message: `Your work "${quotation.title}" has been completed`,
@@ -289,30 +289,30 @@ export class EditorsService implements IEditorsService {
                 worksId: work._id
             })
 
-            await this.updateEditorScore(quotation.editorId);
+            await this._updateEditorScore(quotation.editorId);
             return true;
         } catch (error) {
-            this.logger.error('Error submitting the quotation response', error);
+            this._logger.error('Error submitting the quotation response', error);
             throw new Error('Error submitting the quotation response');
         }
     }
 
     async getCompletedWorks(editorId: Types.ObjectId): Promise<CompletedWorkDto[]> {
-        return this.quotationService.getCompletedQuotations(editorId);
+        return this._quotationService.getCompletedQuotations(editorId);
     }
 
     async getEditor(editorId: string): Promise<EditorDetailsResponseDto | null> {
         try {
-            const user = await this.userService.getUserById(new Types.ObjectId(editorId));
+            const user = await this._userService.getUserById(new Types.ObjectId(editorId));
             if (user && user.isEditor) {
-                this.logger.log('Fetching the editor details');
-                const editorDetailsDoc = await this.editorRepository.findByUserIdAndLean(user._id);
+                this._logger.log('Fetching the editor details');
+                const editorDetailsDoc = await this._editorRepository.findByUserIdAndLean(user._id);
 
                 if (editorDetailsDoc) {
-                    this.logger.log('Editor details: ', editorDetailsDoc)
+                    this._logger.log('Editor details: ', editorDetailsDoc)
                     const [followersCount, followingCount] = await Promise.all([
-                        this.relationshipService.getFollowerCount(user._id),
-                        this.relationshipService.getFollowingCount(user._id),
+                        this._relationshipService.getFollowerCount(user._id),
+                        this._relationshipService.getFollowingCount(user._id),
                     ]);
                     const userDto: UserForEditorDetailsDto = {
                         _id: user._id,
@@ -336,7 +336,7 @@ export class EditorsService implements IEditorsService {
 
                     return { ...userDto, editorDetails: editorDto };
                 } else {
-                    this.logger.warn(`No editor sub-document found for user ID: ${user._id}`);
+                    this._logger.warn(`No editor sub-document found for user ID: ${user._id}`);
                     // Still return user details if they are an editor, but editorDetails might be minimal or absent
                     const userDto: UserForEditorDetailsDto = {
                         _id: user._id,
@@ -351,13 +351,13 @@ export class EditorsService implements IEditorsService {
             }
             return null;
         } catch (error) {
-            this.logger.error('Error getting the editor', error);
+            this._logger.error('Error getting the editor', error);
             throw new Error('Error getting the editor');
         }
     }
 
     async createBid(editorId: Types.ObjectId, bidDto: CreateEditorBidBodyDto): Promise<BidResponseDto> {
-        let editor = await this.editorRepository.findByUserId(editorId);
+        let editor = await this._editorRepository.findByUserId(editorId);
         if (!editor) {
             throw new NotFoundException('Editor not found');
         }
@@ -390,7 +390,7 @@ export class EditorsService implements IEditorsService {
             status: BidStatus.PENDING
         } as unknown as CreateBidDto;
 
-        return await this.bidsService.create(bidData, editorId);
+        return await this._bidsService.create(bidData, editorId);
     }
 
     async updateBid(
@@ -399,7 +399,7 @@ export class EditorsService implements IEditorsService {
         bidDto: UpdateEditorBidBodyDto
     ): Promise<BidResponseDto> {
         const { bidAmount, notes } = bidDto;
-        const updatedBid = await this.bidsService.updateBid(bidId, editorId, bidAmount, notes);
+        const updatedBid = await this._bidsService.updateBid(bidId, editorId, bidAmount, notes);
         return {
             _id: updatedBid._id,
             quotationId: updatedBid.quotationId,
@@ -414,7 +414,7 @@ export class EditorsService implements IEditorsService {
 
     async cancelAcceptedBid(bidId: Types.ObjectId, userId: Types.ObjectId): Promise<SuccessResponseDto> {
         try {
-            const editor = await this.editorRepository.findByUserId(userId);
+            const editor = await this._editorRepository.findByUserId(userId);
             const currentDate = new Date();
             const oneMonthAgo = new Date();
             oneMonthAgo.setMonth(currentDate.getMonth() - 1);
@@ -423,29 +423,29 @@ export class EditorsService implements IEditorsService {
             }
 
             if (editor.lastWithdrawnDate && (new Date(editor.lastWithdrawnDate) > oneMonthAgo)) {
-                this.logger.debug('Editor is on cooldown period because of withdrawing limit')
+                this._logger.debug('Editor is on cooldown period because of withdrawing limit')
                 throw new ConflictException('You are currently in a cooldown period after a recent withdrawal')
             }
-            const bidResponse = await this.bidsService.withdrawFromWork(bidId, userId);
+            const bidResponse = await this._bidsService.withdrawFromWork(bidId, userId);
             if(bidResponse.success){
-                await this.editorRepository.findByUserIdAndUpdate(userId,{$set:{ lastWithdrawnDate: new Date }})
+                await this._editorRepository.findByUserIdAndUpdate(userId,{$set:{ lastWithdrawnDate: new Date }})
             }
             return { success: true, message: "Work withdrawing successful"};
         } catch (error) {
-            this.logger.error('Error on cancelling acceptedBid');
+            this._logger.error('Error on cancelling acceptedBid');
             throw error;
         }
     }
 
     async deleteBid(bidId: Types.ObjectId, editorId: Types.ObjectId): Promise<void> {
-        return this.bidsService.deleteBid(bidId, editorId);
+        return this._bidsService.deleteBid(bidId, editorId);
     }
 
     async getEditorBidForQuotation(
         quotationId: Types.ObjectId,
         editorId: Types.ObjectId,
     ): Promise<EditorBidDto> {
-        const bid = await this.bidsService.findOne({
+        const bid = await this._bidsService.findOne({
             quotationId,
             editorId,
         });
@@ -466,39 +466,39 @@ export class EditorsService implements IEditorsService {
     }
 
     async addTutorial(editorId: string, addTutorialDto: AddTutorialDto): Promise<Editor> {
-        return this.editorRepository.addSharedTutorial(editorId, addTutorialDto.tutorialUrl);
+        return this._editorRepository.addSharedTutorial(editorId, addTutorialDto.tutorialUrl);
     }
 
     async removeTutorial(editorId: string, removeTutorialDto: RemoveTutorialDto): Promise<Editor> {
-        return this.editorRepository.removeSharedTutorial(editorId, removeTutorialDto.tutorialUrl);
+        return this._editorRepository.removeSharedTutorial(editorId, removeTutorialDto.tutorialUrl);
     }
 
     async createEditorRequests(userId: Types.ObjectId): Promise<EditorRequest> {
-        return this.editorRequestsRepository.create(userId);
+        return this._editorRequestsRepository.create(userId);
     }
 
     async findEditorRequest(userId: Types.ObjectId): Promise<EditorRequest | null> {
-        return this.editorRequestsRepository.findOne(userId);
+        return this._editorRequestsRepository.findOne(userId);
     }
 
     async findByUserId(userId: Types.ObjectId): Promise<Editor | null> {
-        return this.editorRepository.findByUserIdAndLean(userId);
+        return this._editorRepository.findByUserIdAndLean(userId);
     }
 
     async updateEditor(userId: Types.ObjectId, update: UpdateQuery<Editor>): Promise<Editor | null> {
-        return this.editorRepository.findByUserIdAndUpdate(userId, update);
+        return this._editorRepository.findByUserIdAndUpdate(userId, update);
     }
 
     async getEditorRating(userId: Types.ObjectId): Promise<Editor | null> {
-        return this.editorRepository.getEditorRating(userId);
+        return this._editorRepository.getEditorRating(userId);
     }
 
     async getEditorUserCombined(userId: Types.ObjectId): Promise<Editor | null> {
-        return this.editorRepository.getEditorUserCombined(userId);
+        return this._editorRepository.getEditorUserCombined(userId);
     }
 
     async getPublicEditors(pipeline: any[]): Promise<any[]> {
-        return this.editorRepository.getPublicEditors(pipeline);
+        return this._editorRepository.getPublicEditors(pipeline);
     }
 
     async getBiddedQuotations(editorId: string, query: GetBiddedQuotationsQueryDto): Promise<PaginatedBiddedQuotationsResponseDto> {
@@ -548,7 +548,7 @@ export class EditorsService implements IEditorsService {
         }
 
         const countPipeline = [...pipeline, { $count: 'total' }];
-        const total = await this.bidsService.getBidsCountByAggregation(countPipeline);
+        const total = await this._bidsService.getBidsCountByAggregation(countPipeline);
 
         const dataPipeline = [
             ...pipeline,
@@ -574,7 +574,7 @@ export class EditorsService implements IEditorsService {
             }
         ];
 
-        const data = await this.bidsService.getBiddedQuotationsForEditor(dataPipeline);
+        const data = await this._bidsService.getBiddedQuotationsForEditor(dataPipeline);
 
         return {
             data,
@@ -588,14 +588,14 @@ export class EditorsService implements IEditorsService {
     }
 
     async findMany(filter: FilterQuery<Editor>): Promise<Editor[] | null> {
-        return this.editorRepository.findMany(filter);
+        return this._editorRepository.findMany(filter);
     }
 
     async updateWorkFiles(workId: string, files: Express.Multer.File[], updateWorkFilesDto: UpdateWorkFilesDto): Promise<SuccessResponseDto> {
         try {
-            return await this.worksService.updateWorkFiles(workId, files, updateWorkFilesDto);
+            return await this._worksService.updateWorkFiles(workId, files, updateWorkFilesDto);
         } catch (error) {
-            this.logger.error(`Failed to update work files for work ${workId}`, error);
+            this._logger.error(`Failed to update work files for work ${workId}`, error);
             throw error;
         }
     }
@@ -635,17 +635,17 @@ export class EditorsService implements IEditorsService {
         return parseFloat(totalPenalty.toFixed(2));
     }
 
-    private async updateEditorScore(editorId: Types.ObjectId): Promise<void> {
+    private async _updateEditorScore(editorId: Types.ObjectId): Promise<void> {
         try {
             // Get the editor's profile
-            const editor = await this.editorRepository.findByUserId(editorId);
+            const editor = await this._editorRepository.findByUserId(editorId);
             if (!editor) {
-                this.logger.warn(`Editor with ID ${editorId} not found or not an editor`);
+                this._logger.warn(`Editor with ID ${editorId} not found or not an editor`);
                 return;
             }
 
             // Get the editor's most recent completed works
-            const recentWorks = await this.worksService.getTwoRecentWorks(editorId);
+            const recentWorks = await this._worksService.getTwoRecentWorks(editorId);
 
             // Initialize score variables
             let scoreIncrement = 10; // Base score for completing a work
@@ -682,11 +682,11 @@ export class EditorsService implements IEditorsService {
             const newScore = (editor.score || 0) + finalScoreIncrement;
 
             // Update editor profile
-            await this.editorRepository.updateScore(editor._id, newScore, currentStreak);
+            await this._editorRepository.updateScore(editor._id, newScore, currentStreak);
 
-            this.logger.log(`Updated editor ${editorId} score to ${newScore} (streak: ${currentStreak}, multiplier: ${streakMultiplier})`);
+            this._logger.log(`Updated editor ${editorId} score to ${newScore} (streak: ${currentStreak}, multiplier: ${streakMultiplier})`);
         } catch (error) {
-            this.logger.error('Error updating editor score', error);
+            this._logger.error('Error updating editor score', error);
         }
     }
 }

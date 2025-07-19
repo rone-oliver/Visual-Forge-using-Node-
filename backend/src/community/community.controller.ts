@@ -16,7 +16,7 @@ import { Role } from 'src/common/enums/role.enum';
 @UseGuards(AuthGuard, RolesGuard)
 export class CommunityController {
   constructor(
-    @Inject(ICommunityServiceToken) private readonly communityService: ICommunityService,
+    @Inject(ICommunityServiceToken) private readonly _communityService: ICommunityService,
   ) {}
 
   @Post()
@@ -24,7 +24,7 @@ export class CommunityController {
   @ApiOperation({ summary: 'Create a new community' })
   @ApiResponse({ status: 201, description: 'The community has been successfully created.' })
   create(@Body() createCommunityDto: CreateCommunityDto, @GetUser('userId') userId: string) {
-    return this.communityService.create(createCommunityDto, userId);
+    return this._communityService.create(createCommunityDto, userId);
   }
 
   @Get()
@@ -32,7 +32,7 @@ export class CommunityController {
   @ApiOperation({ summary: 'Get all communities' })
   @ApiResponse({ status: 200, description: 'Return all communities.' })
   findAll() {
-    return this.communityService.findAll();
+    return this._communityService.findAll();
   }
 
   @Get(':id')
@@ -40,7 +40,7 @@ export class CommunityController {
   @ApiOperation({ summary: 'Get a community by ID' })
   @ApiResponse({ status: 200, description: 'Return the community.' })
   findById(@Param('id') id: string) {
-    return this.communityService.findById(id);
+    return this._communityService.findById(id);
   }
 
   @Post(':id/members')
@@ -48,7 +48,7 @@ export class CommunityController {
   @ApiOperation({ summary: 'Add a member to a community' })
   @ApiResponse({ status: 200, description: 'The member has been successfully added.' })
   addMember(@Param('id') communityId: string, @Body('userId') userId: string) {
-    return this.communityService.addMember(communityId, userId);
+    return this._communityService.addMember(communityId, userId);
   }
 
   @Get(':id/messages')
@@ -56,7 +56,7 @@ export class CommunityController {
   @ApiOperation({ summary: 'Get all messages for a community' })
   @ApiResponse({ status: 200, description: 'Return all messages for the community.' })
   getMessages(@Param('id') communityId: string) {
-    return this.communityService.getMessages(communityId);
+    return this._communityService.getMessages(communityId);
   }
 
   @Post(':id/messages')
@@ -68,6 +68,6 @@ export class CommunityController {
     @GetUser('userId') userId: string, 
     @Body() createCommunityMessageDto: CreateCommunityMessageDto
   ) {
-    return this.communityService.sendMessage(communityId, userId, createCommunityMessageDto.content);
+    return this._communityService.sendMessage(communityId, userId, createCommunityMessageDto.content);
   }
 }

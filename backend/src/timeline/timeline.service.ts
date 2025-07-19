@@ -8,26 +8,26 @@ import { Types } from 'mongoose';
 
 @Injectable()
 export class TimelineService implements ITimelineService {
-    private readonly logger = new Logger(TimelineService.name);
+    private readonly _logger = new Logger(TimelineService.name);
 
     constructor(
-        @Inject(ITimelineRepositoryToken) private readonly timelineRepo: ITimelineRepository,
+        @Inject(ITimelineRepositoryToken) private readonly _timelineRepo: ITimelineRepository,
     ) { }
 
     async create(createTimelineDto: CreateTimelineDto): Promise<Timeline> {
         try {
-            return await this.timelineRepo.create(createTimelineDto);
+            return await this._timelineRepo.create(createTimelineDto);
         } catch (error) {
-            this.logger.error(`Error creating timeline: ${error.message}`, error.stack);
+            this._logger.error(`Error creating timeline: ${error.message}`, error.stack);
             throw new Error('Failed to create timeline');
         }
     }
 
     async findByQuotationId(quotationId: Types.ObjectId): Promise<Timeline[]> {
         try {
-            return await this.timelineRepo.findByQuotationId(quotationId);
+            return await this._timelineRepo.findByQuotationId(quotationId);
         } catch (error) {
-            this.logger.error(`Error fetching timeline: ${error.message}`, error.stack);
+            this._logger.error(`Error fetching timeline: ${error.message}`, error.stack);
             throw new Error('Failed to fetch timeline');
         }
     }

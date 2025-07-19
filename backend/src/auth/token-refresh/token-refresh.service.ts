@@ -5,19 +5,19 @@ import { ITokenRefreshService } from './interfaces/tokenRefresh-service.interfac
 
 @Injectable()
 export class TokenRefreshService implements ITokenRefreshService {
-    private readonly logger = new Logger(TokenRefreshService.name);
+    private readonly _logger = new Logger(TokenRefreshService.name);
 
     constructor(
-        private readonly jwtService: JwtService,
-        private readonly configService: ConfigService
+        private readonly _jwtService: JwtService,
+        private readonly _configService: ConfigService
     ) {};
 
     async refreshAccessToken(refreshToken: string): Promise<{accessToken: string}> {
         try {
-            const payload = this.jwtService.verify(refreshToken, {
-                secret: this.configService.get<string>('JWT_SECRET')
+            const payload = this._jwtService.verify(refreshToken, {
+                secret: this._configService.get<string>('JWT_SECRET')
             })
-            const accessToken = this.jwtService.sign(
+            const accessToken = this._jwtService.sign(
                 {
                     userId: payload.userId,
                     username: payload.username,
@@ -25,11 +25,11 @@ export class TokenRefreshService implements ITokenRefreshService {
                     role: payload.role
                 },
                 {
-                    secret: this.configService.get<string>('JWT_SECRET'),
-                    expiresIn: this.configService.get<string>('ACCESS_TOKEN_EXPIRATION')
+                    secret: this._configService.get<string>('JWT_SECRET'),
+                    expiresIn: this._configService.get<string>('ACCESS_TOKEN_EXPIRATION')
                 }
             )
-            this.logger.log('refresh Access Token called: ', accessToken);
+            this._logger.log('refresh Access Token called: ', accessToken);
             return {accessToken};
         } catch (error) {
             throw new HttpException('Invalid refresh token', 401);
@@ -38,8 +38,8 @@ export class TokenRefreshService implements ITokenRefreshService {
 
     async verifyRefreshToken(refreshToken: string): Promise<void> {
         try {
-            await this.jwtService.verifyAsync(refreshToken, {
-                secret: this.configService.get<string>('JWT_SECRET')
+            await this._jwtService.verifyAsync(refreshToken, {
+                secret: this._configService.get<string>('JWT_SECRET')
             });
         } catch (error) {
             throw new HttpException('Invalid refresh token', 401);

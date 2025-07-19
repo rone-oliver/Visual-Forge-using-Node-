@@ -12,8 +12,8 @@ import { IUsersService, IUsersServiceToken } from 'src/users/interfaces/users.se
 @Injectable()
 export class RelationshipService implements IRelationshipService {
   constructor(
-    @Inject(IRelationshipRepositoryToken) private readonly relationshipRepository: IRelationshipRepository,
-    @Inject(IUsersServiceToken) private readonly userService: IUsersService,
+    @Inject(IRelationshipRepositoryToken) private readonly _relationshipRepository: IRelationshipRepository,
+    @Inject(IUsersServiceToken) private readonly _userService: IUsersService,
   ) {}
 
   async createRelationship(dto: RelationshipDto): Promise<Relationship> {
@@ -24,15 +24,15 @@ export class RelationshipService implements IRelationshipService {
     }
 
     const [sourceUserExists, targetUserExists] = await Promise.all([
-      this.userService.isExistingUser(sourceUser),
-      this.userService.isExistingUser(targetUser),
+      this._userService.isExistingUser(sourceUser),
+      this._userService.isExistingUser(targetUser),
     ]);
 
     if (!sourceUserExists) throw new NotFoundException('Source user not found.');
     if (!targetUserExists) throw new NotFoundException('Target user not found.');
 
     try {
-      return await this.relationshipRepository.create(dto);
+      return await this._relationshipRepository.create(dto);
     } catch (error) {
       if (error.code === 11000) {
         throw new ConflictException(`Relationship '${type}' already exists between these users.`);
@@ -42,7 +42,7 @@ export class RelationshipService implements IRelationshipService {
   }
 
   async removeRelationship(dto: RelationshipDto): Promise<{ deletedCount: number }> {
-    const result = await this.relationshipRepository.deleteOne(dto);
+    const result = await this._relationshipRepository.deleteOne(dto);
 
     if (result.deletedCount === 0) {
       throw new NotFoundException(`Relationship '${dto.type}' not found between these users.`);
@@ -51,7 +51,7 @@ export class RelationshipService implements IRelationshipService {
   }
 
   async isFollowing(followerId: Types.ObjectId, followingId: Types.ObjectId): Promise<boolean> {
-    const count = await this.relationshipRepository.count({
+    const count = await this._relationshipRepository.count({
       sourceUser: followerId,
       targetUser: followingId,
       type: RelationshipType.FOLLOWS,
@@ -60,7 +60,7 @@ export class RelationshipService implements IRelationshipService {
   }
 
   async isBlocking(blockerId: Types.ObjectId, blockedId: Types.ObjectId): Promise<boolean> {
-    const count = await this.relationshipRepository.count({
+    const count = await this._relationshipRepository.count({
       sourceUser: blockerId,
       targetUser: blockedId,
       type: RelationshipType.BLOCKS,
@@ -69,26 +69,26 @@ export class RelationshipService implements IRelationshipService {
   }
 
   async getFollowerCount(userId: Types.ObjectId): Promise<number> {
-    return this.relationshipRepository.countFollowers(userId);
+    return this._relationshipRepository.countFollowers(userId);
   }
 
   async getFollowingCount(userId: Types.ObjectId): Promise<number> {
-    return this.relationshipRepository.countFollowing(userId);
+    return this._relationshipRepository.countFollowing(userId);
   }
 
   async getFollowing({ userId, limit, skip }: GetRelatedUsersDto): Promise<UserDocument[]> {
-    return this.relationshipRepository.findFollows(userId, limit, skip);
+    return this._relationshipRepository.findFollows(userId, limit, skip);
   }
 
   async getFollowers({ userId, limit, skip }: GetRelatedUsersDto): Promise<UserDocument[]> {
-    return this.relationshipRepository.findFollowers(userId, limit, skip);
+    return this._relationshipRepository.findFollowers(userId, limit, skip);
   }
 
   async getBlockedUsers({ userId, limit, skip }: GetRelatedUsersDto): Promise<UserDocument[]> {
-    return this.relationshipRepository.findBlockedUsers(userId, limit, skip);
+    return this._relationshipRepository.findBlockedUsers(userId, limit, skip);
   }
 
   async getBlockersOfUser({ userId, limit, skip }: GetRelatedUsersDto): Promise<UserDocument[]> {
-    return this.relationshipRepository.findBlockersOfUser(userId, limit, skip);
+    return this._relationshipRepository.findBlockersOfUser(userId, limit, skip);
   }
 }

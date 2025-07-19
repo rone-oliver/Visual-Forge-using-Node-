@@ -7,9 +7,9 @@ import { Admin } from 'src/admins/models/admin.schema';
 
 @Controller('auth/admin')
 export class AdminsAuthController {
-    private readonly logger = new Logger(AdminsAuthController.name);
+    private readonly _logger = new Logger(AdminsAuthController.name);
     constructor(
-        @Inject(IAdminsAuthServiceToken) private readonly adminsAuthService: IAdminsAuthService,
+        @Inject(IAdminsAuthServiceToken) private readonly _adminsAuthService: IAdminsAuthService,
     ){};
 
     @Public()
@@ -22,7 +22,7 @@ export class AdminsAuthController {
         if (!LoginData) {
             throw new BadRequestException('Request body is empty');
         }
-        return await this.adminsAuthService.login(
+        return await this._adminsAuthService.login(
             LoginData.username,
             LoginData.password,
             response
@@ -32,6 +32,6 @@ export class AdminsAuthController {
     @Public()
     @Post('register')
     async register(@Body() registerData: { username: string,password: string }): Promise<Admin> {
-      return this.adminsAuthService.register(registerData);
+      return this._adminsAuthService.register(registerData);
     }
 }

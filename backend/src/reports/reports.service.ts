@@ -8,31 +8,31 @@ import { UpdateReportDto } from './dtos/reports.dto';
 
 @Injectable()
 export class ReportsService implements IReportService {
-    private readonly logger = new Logger(ReportsService.name);
+    private readonly _logger = new Logger(ReportsService.name);
 
     constructor(
-        @Inject(IReportRepositoryToken) private readonly reportRepository: IReportRepository,
+        @Inject(IReportRepositoryToken) private readonly _reportRepository: IReportRepository,
     ){}
 
     async reportUser(reporterId: string, reportDto: ReportUserDto): Promise<SuccessResponseDto>{
         try {
-            await this.reportRepository.create(reporterId, reportDto);
+            await this._reportRepository.create(reporterId, reportDto);
             return { success: true, message: 'Report submitted successfully' };
         } catch (error) {
-            this.logger.error(`Error reporting user: ${error.message}`);
+            this._logger.error(`Error reporting user: ${error.message}`);
             throw error;
         }
     }
 
     async getPendingReports(): Promise<Report[]> {
-        return this.reportRepository.getPendingReports();
+        return this._reportRepository.getPendingReports();
     }
 
     async updateReport(reportId: string, updateDto: UpdateReportDto): Promise<Report | null> {
-        return this.reportRepository.updateReport(reportId, updateDto);
+        return this._reportRepository.updateReport(reportId, updateDto);
     }
 
     async countDocuments(): Promise<number> {
-        return this.reportRepository.countDocuments();
+        return this._reportRepository.countDocuments();
     }
 }

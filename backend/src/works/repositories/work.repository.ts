@@ -8,16 +8,16 @@ import { Injectable, Logger } from "@nestjs/common";
 
 @Injectable()
 export class WorkRepository implements IWorkRepository {
-    private readonly logger = new Logger(WorkRepository.name);
+    private readonly _logger = new Logger(WorkRepository.name);
     
     constructor(
-        @InjectModel(Works.name) private readonly workModel: Model<WorksDocument>,
-        @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+        @InjectModel(Works.name) private readonly _workModel: Model<WorksDocument>,
+        @InjectModel(User.name) private readonly _userModel: Model<UserDocument>,
     ) { }
 
     async findById(id: Types.ObjectId, projection?: ProjectionType<Works> | null, options?: QueryOptions): Promise<Works | null> {
         try {
-            return this.workModel.findById(id, projection, options).lean();
+            return this._workModel.findById(id, projection, options).lean();
         } catch (error) {
             throw error;
         }
@@ -25,7 +25,7 @@ export class WorkRepository implements IWorkRepository {
 
     async updateOne(query: FilterQuery<Works>, update: UpdateQuery<Works>): Promise<Works | null> {
         try {
-            return this.workModel.findOneAndUpdate(query, update, { new: true }).lean();
+            return this._workModel.findOneAndUpdate(query, update, { new: true }).lean();
         } catch (error) {
             throw error;
         }
@@ -33,14 +33,14 @@ export class WorkRepository implements IWorkRepository {
 
     async createWork(workData: CreateWorkDto) {
         try {
-            return this.workModel.create(workData);
+            return this._workModel.create(workData);
         } catch (error) {
             throw error;
         }
     }
 
     async getTwoRecentWorks(editorId: Types.ObjectId): Promise<Works[]> {
-        return this.workModel
+        return this._workModel
             .find({ editorId })
             .sort({ createdAt: -1 })
             .limit(2)
@@ -58,8 +58,8 @@ export class WorkRepository implements IWorkRepository {
             const searchTerm = params.search.trim().toLowerCase();
 
             const [matchingUsers, matchingEditors] = await Promise.all([
-                this.userModel.find({ fullname: { $regex: searchTerm, $options: 'i' } }).select('_id').lean(),
-                this.userModel.find({ fullname: { $regex: searchTerm, $options: 'i' }, isEditor: true }).select('_id').lean()
+                this._userModel.find({ fullname: { $regex: searchTerm, $options: 'i' } }).select('_id').lean(),
+                this._userModel.find({ fullname: { $regex: searchTerm, $options: 'i' }, isEditor: true }).select('_id').lean()
             ]);
 
             const userIds = matchingUsers.map(user => new Types.ObjectId(user._id));
@@ -79,7 +79,7 @@ export class WorkRepository implements IWorkRepository {
         }
 
         const [works, total]: [PopulatedWork[], number] = await Promise.all([
-            this.workModel.find(filter)
+            this._workModel.find(filter)
                 .sort({ createdAt: -1 })
                 .skip((params.page - 1) * params.limit)
                 .limit(params.limit)
@@ -87,18 +87,18 @@ export class WorkRepository implements IWorkRepository {
                     editorId: { _id: Types.ObjectId; fullname: string; username: string; email: string; profileImage?: string } | null; 
                     userId: { _id: Types.ObjectId; fullname: string; username: string; email: string; profileImage?: string } | null;
                 }>([
-                    { path: 'editorId', select: 'fullname username profileImage email _id', model: this.userModel },
-                    { path: 'userId', select: 'fullname username profileImage email _id', model: this.userModel }
+                    { path: 'editorId', select: 'fullname username profileImage email _id', model: this._userModel },
+                    { path: 'userId', select: 'fullname username profileImage email _id', model: this._userModel }
                 ])
                 .lean(),
-            this.workModel.countDocuments(filter)
+            this._workModel.countDocuments(filter)
         ]);
 
         return [works, total];
     }
 
     async getTopEditorsByCompletedWorks(limit: number): Promise<TopEditorDto[]> {
-        return this.workModel.aggregate([
+        return this._workModel.aggregate([
             {
                 $group: {
                     _id: '$editorId',

@@ -13,19 +13,19 @@ import { IHashingService, IHashingServiceToken } from 'src/common/hashing/interf
 @Injectable()
 export class UsersAuthService implements IUsersAuthService {
     constructor(
-        @Inject(IUsersServiceToken) private readonly usersService: IUsersService,
-        private jwtService: JwtService,
-        private configService: ConfigService,
-        @Inject(IEditorsServiceToken) private editorService: IEditorsService,
-        @Inject(IOtpServiceToken) private readonly otpService: IOtpService,
-        @Inject(IHashingServiceToken) private readonly hashingService: IHashingService,
-        private mailService: MailService,
+        @Inject(IUsersServiceToken) private readonly _usersService: IUsersService,
+        private _jwtService: JwtService,
+        private _configService: ConfigService,
+        @Inject(IEditorsServiceToken) private readonly _editorService: IEditorsService,
+        @Inject(IOtpServiceToken) private readonly _otpService: IOtpService,
+        @Inject(IHashingServiceToken) private readonly _hashingService: IHashingService,
+        private readonly _mailService: MailService,
     ) { }
-    private readonly logger = new Logger(UsersAuthService.name);
+    private readonly _logger = new Logger(UsersAuthService.name);
 
     // Helper
-    private async generateTokens(user: User, role: 'User' | 'Editor') {
-        this.logger.debug('User Role: ', role);
+    private async _generateTokens(user: User, role: 'User' | 'Editor') {
+        this._logger.debug('User Role: ', role);
 
         let payload: any = {
             userId: user._id,
@@ -34,7 +34,7 @@ export class UsersAuthService implements IUsersAuthService {
         };
 
         if (role === 'Editor') {
-            const editorDetails = await this.editorService.findByUserId(user._id);
+            const editorDetails = await this._editorService.findByUserId(user._id);
             if (editorDetails) {
                 payload = {
                     ...payload,
@@ -46,18 +46,18 @@ export class UsersAuthService implements IUsersAuthService {
         }
 
         const [accessToken, refreshToken] = await Promise.all([
-            this.jwtService.signAsync(
+            this._jwtService.signAsync(
                 payload,
                 {
-                    secret: this.configService.get<string>('JWT_SECRET'),
-                    expiresIn: this.configService.get<string>('ACCESS_TOKEN_EXPIRATION')
+                    secret: this._configService.get<string>('JWT_SECRET'),
+                    expiresIn: this._configService.get<string>('ACCESS_TOKEN_EXPIRATION')
                 },
             ),
-            this.jwtService.signAsync(
+            this._jwtService.signAsync(
                 payload,
                 {
-                    secret: this.configService.get<string>('JWT_SECRET'),
-                    expiresIn: this.configService.get<string>('REFRESH_TOKEN_EXPIRATION')
+                    secret: this._configService.get<string>('JWT_SECRET'),
+                    expiresIn: this._configService.get<string>('REFRESH_TOKEN_EXPIRATION')
                 },
             )
         ]);
@@ -65,7 +65,7 @@ export class UsersAuthService implements IUsersAuthService {
         return { accessToken, refreshToken };
     }
 
-    private setCookies(response: Response, refreshToken: string) {
+    private _setCookies(response: Response, refreshToken: string) {
         response.cookie('userRefreshToken', refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -74,35 +74,35 @@ export class UsersAuthService implements IUsersAuthService {
         })
     }
     setRefreshTokenCookie(response: Response, refreshToken: string) {
-        this.setCookies(response, refreshToken);
+        this._setCookies(response, refreshToken);
     }
 
     async login(username: string, password: string, response: Response):Promise<{ user: User; accessToken: string; }> {
         try {
-            this.logger.log(`Login attempt for user: ${username}`);
-            const user = await this.usersService.findOne({ username });
+            this._logger.log(`Login attempt for user: ${username}`);
+            const user = await this._usersService.findOne({ username });
             if (!user) {
                 throw new UnauthorizedException('User not found');
             }
-            const isPasswordValid = await this.hashingService.compare(password, user.password);
+            const isPasswordValid = await this._hashingService.compare(password, user.password);
             if (!isPasswordValid) {
                 throw new UnauthorizedException('Invalid password');
             }
             if (user.isBlocked) {
                 throw new UnauthorizedException('User is blocked');
             }
-            const tokens = await this.generateTokens(user, user.isEditor ? 'Editor' : 'User');
-            this.setCookies(response, tokens.refreshToken);
+            const tokens = await this._generateTokens(user, user.isEditor ? 'Editor' : 'User');
+            this._setCookies(response, tokens.refreshToken);
             return { user, accessToken: tokens.accessToken };
         } catch (error) {
-            this.logger.error(`Login failed for user ${username}: ${error.message}`);
+            this._logger.error(`Login failed for user ${username}: ${error.message}`);
             throw error;
         }
     }
 
     async register(userData: Partial<User>): Promise<any> {
         try {
-            this.logger.log('New user registration attempt');
+            this._logger.log('New user registration attempt');
 
             if(!userData.username){
                 throw new HttpException({
@@ -114,7 +114,7 @@ export class UsersAuthService implements IUsersAuthService {
                     }
                 }, HttpStatus.BAD_REQUEST);
             }
-            const existingUserByUsername = await this.usersService.findByUsername(userData.username);
+            const existingUserByUsername = await this._usersService.findByUsername(userData.username);
             if (existingUserByUsername) {
                 throw new HttpException({
                     success: false,
@@ -136,7 +136,7 @@ export class UsersAuthService implements IUsersAuthService {
                     }
                 }, HttpStatus.BAD_REQUEST);
             }
-            const existingUserByEmail = await this.usersService.findByEmail(userData.email);
+            const existingUserByEmail = await this._usersService.findByEmail(userData.email);
             if (existingUserByEmail) {
                 throw new HttpException({
                     success: false,
@@ -148,11 +148,11 @@ export class UsersAuthService implements IUsersAuthService {
                 }, HttpStatus.BAD_REQUEST);
             }
 
-            const user = await this.usersService.createUser(userData);
+            const user = await this._usersService.createUser(userData);
 
-            const otp = await this.otpService.createOtp(user.email);
-            this.mailService.sendOtpEmail(user.email, { otp });
-            this.logger.log('OTP Sent for verification');
+            const otp = await this._otpService.createOtp(user.email);
+            this._mailService.sendOtpEmail(user.email, { otp });
+            this._logger.log('OTP Sent for verification');
             return {
                 success: true,
                 data: {
@@ -165,14 +165,14 @@ export class UsersAuthService implements IUsersAuthService {
                 if (response && typeof response === 'object' && 'success' in response) {
                     throw error;
                 }
-                this.logger.error(response)
+                this._logger.error(response)
                 throw new HttpException({
                     success: false,
                     error: response
                 }, error.getStatus());
             }
 
-            this.logger.error(`Registration failed for user ${userData.username}: ${error.message}`);
+            this._logger.error(`Registration failed for user ${userData.username}: ${error.message}`);
             throw new HttpException({
                 success: false,
                 error: {
@@ -186,19 +186,19 @@ export class UsersAuthService implements IUsersAuthService {
 
     async resendOtp(email: string): Promise<boolean> {
         try {
-            const otp = await this.otpService.createOtp(email);
-            await this.mailService.sendOtpEmail(email, { otp });
+            const otp = await this._otpService.createOtp(email);
+            await this._mailService.sendOtpEmail(email, { otp });
             return true;
         } catch (error) {
-            this.logger.error(`Failed to resend OTP for email ${email}: ${error.message}`);
+            this._logger.error(`Failed to resend OTP for email ${email}: ${error.message}`);
             throw new HttpException('Failed to resend OTP', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     async verifyOtp(email: string, otp: string): Promise<any> {
-        const isValid = await this.otpService.verifyOtp(email, otp);
+        const isValid = await this._otpService.verifyOtp(email, otp);
         if (isValid) {
-            await this.usersService.updateOne(
+            await this._usersService.updateOne(
                 { email },
                 { isVerified: true }
             );
@@ -219,13 +219,13 @@ export class UsersAuthService implements IUsersAuthService {
 
     async resetPassword(email: string, newPassword: string): Promise<boolean> {
         try {
-            const user = await this.usersService.findByEmail(email);
+            const user = await this._usersService.findByEmail(email);
             if (!user) throw new Error('User not found');
-            const hashedPassword = await this.hashingService.hash(newPassword);
-            const status = await this.usersService.updatePassword(user._id, hashedPassword);
+            const hashedPassword = await this._hashingService.hash(newPassword);
+            const status = await this._usersService.updatePassword(user._id, hashedPassword);
             return status ? true : false
         } catch (error) {
-            this.logger.error(`Error resetting password: ${error.message}`);
+            this._logger.error(`Error resetting password: ${error.message}`);
             throw error;
         }
     }

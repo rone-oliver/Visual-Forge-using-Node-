@@ -10,38 +10,38 @@ import { ITimelineService, ITimelineServiceToken } from 'src/timeline/interfaces
 
 @Injectable()
 export class QuotationService implements IQuotationService {
-    private readonly logger = new Logger(QuotationService.name);
+    private readonly _logger = new Logger(QuotationService.name);
     constructor(
-        @Inject(IQuotationRepositoryToken) private readonly quotationRepository: IQuotationRepository,
-        @Inject(ITimelineServiceToken) private readonly timelineService: ITimelineService,
+        @Inject(IQuotationRepositoryToken) private readonly _quotationRepository: IQuotationRepository,
+        @Inject(ITimelineServiceToken) private readonly _timelineService: ITimelineService,
     ) { }
 
     async getTopUsersByQuotationCount(limit: number): Promise<TopUserDto[]> {
-        return this.quotationRepository.getTopUsersByQuotationCount(limit);
+        return this._quotationRepository.getTopUsersByQuotationCount(limit);
     }
 
     async getTopQuotationsByBidCount(limit: number): Promise<TopQuotationByBidsDto[]> {
         try {
-            this.logger.log(`Fetching top ${limit} quotations by bid count.`);
-            const topQuotations = await this.quotationRepository.getTopQuotationsByBidCount(limit);
-            this.logger.log(`Successfully fetched top ${limit} quotations by bid count.`);
+            this._logger.log(`Fetching top ${limit} quotations by bid count.`);
+            const topQuotations = await this._quotationRepository.getTopQuotationsByBidCount(limit);
+            this._logger.log(`Successfully fetched top ${limit} quotations by bid count.`);
             return topQuotations;
         } catch (error) {
-            this.logger.error(`Failed to fetch top quotations by bid count: ${error.message}`, error.stack);
+            this._logger.error(`Failed to fetch top quotations by bid count: ${error.message}`, error.stack);
             throw new Error('Failed to fetch top quotations by bid count.');
         }
     }
 
     async countAllQuotations(): Promise<number> {
-        return this.quotationRepository.countDocuments();
+        return this._quotationRepository.countDocuments();
     }
 
     async countQuotationsByFilter(filter: FilterQuery<Quotation>): Promise<number> {
-        return this.quotationRepository.countDocuments(filter);
+        return this._quotationRepository.countDocuments(filter);
     }
 
     async getQuotationsByStatus(): Promise<getQuotationsByStatusResponseDto> {
-        const quotationsByStatus = await this.quotationRepository.getQuotationsByStatus();
+        const quotationsByStatus = await this._quotationRepository.getQuotationsByStatus();
         const statusCounts = {
             [QuotationStatus.PUBLISHED]: 0,
             [QuotationStatus.ACCEPTED]: 0,
@@ -57,7 +57,7 @@ export class QuotationService implements IQuotationService {
 
     async getPublishedQuotations(editorId: Types.ObjectId, query: GetPublishedQuotationsQueryDto): Promise<PaginatedPublishedQuotationsResponseDto> {
         try {
-            const results = await this.quotationRepository.getPublishedQuotations(editorId, query);
+            const results = await this._quotationRepository.getPublishedQuotations(editorId, query);
             const quotations = results[0].paginatedResults.map(q => ({
                 ...q,
                 _id: q._id.toString(),
@@ -67,7 +67,7 @@ export class QuotationService implements IQuotationService {
             })) as PublishedQuotationItemDto[];
 
             const totalItems = results[0].totalCount.length > 0 ? results[0].totalCount[0].count : 0;
-            this.logger.log('Published quotations fetched successfully for editor', editorId);
+            this._logger.log('Published quotations fetched successfully for editor', editorId);
             return {
                 quotations,
                 totalItems,
@@ -75,14 +75,14 @@ export class QuotationService implements IQuotationService {
                 itemsPerPage: query.limit ?? 10,
             };
         } catch (error) {
-            this.logger.error(`Error fetching published quotations for editor ${editorId}: ${error.message}`, error.stack);
+            this._logger.error(`Error fetching published quotations for editor ${editorId}: ${error.message}`, error.stack);
             throw new Error('Failed to fetch published quotations.');
         }
     }
 
     async getAcceptedQuotations(editorId: Types.ObjectId, query: GetAcceptedQuotationsQueryDto): Promise<PaginatedAcceptedQuotationsResponseDto> {
         try {
-            const response = await this.quotationRepository.getAcceptedQuotations(editorId, query);
+            const response = await this._quotationRepository.getAcceptedQuotations(editorId, query);
             const totalItems = response.totalItemsResult.length > 0 ? response.totalItemsResult[0].totalItems : 0;
             const quotations: AcceptedQuotationItemDto[] = response.result.map(q => ({
                 _id: q._id,
@@ -119,13 +119,13 @@ export class QuotationService implements IQuotationService {
                 itemsPerPage: Number(query.limit) || 10,
             };
         } catch (error) {
-            this.logger.error('Error getting the accepted quotations', error);
+            this._logger.error('Error getting the accepted quotations', error);
             throw new Error('Error getting the accepted quotations');
         }
     }
 
     async findById(quotationId: Types.ObjectId, options?: QueryOptions): Promise<Quotation | null>{
-        return this.quotationRepository.findById(quotationId, options);
+        return this._quotationRepository.findById(quotationId, options);
     }
 
     async updateQuotationStatus(quotationId: Types.ObjectId, status: QuotationStatus, worksId: Types.ObjectId, penalty?: number): Promise<Quotation | null>{
@@ -133,9 +133,9 @@ export class QuotationService implements IQuotationService {
         if (penalty !== undefined) {
             updateData.penalty = penalty;
         }
-        const updatedQuotation = await this.quotationRepository.findByIdAndUpdate(quotationId, updateData);
+        const updatedQuotation = await this._quotationRepository.findByIdAndUpdate(quotationId, updateData);
         if (updatedQuotation && status === QuotationStatus.ACCEPTED) {
-            await this.timelineService.create({
+            await this._timelineService.create({
                 quotationId: updatedQuotation._id,
                 userId: updatedQuotation.userId,
                 editorId: updatedQuotation.editorId,
@@ -148,7 +148,7 @@ export class QuotationService implements IQuotationService {
     }
 
     async getCompletedQuotations(editorId: Types.ObjectId): Promise<CompletedWorkDto[]> {
-        const quotations = await this.quotationRepository.find(
+        const quotations = await this._quotationRepository.find(
             {
                 $or: [
                     { editorId },
@@ -160,33 +160,33 @@ export class QuotationService implements IQuotationService {
             { populate: 'worksId'}
         )
         if(!quotations || quotations.length === 0){
-            this.logger.debug('No quotations found for editor');
+            this._logger.debug('No quotations found for editor');
             return [];
         }
         return this._mapQuotationsToCompletedWorkDtos(quotations);
     }
 
     async findMany(query: FilterQuery<Quotation>): Promise<Quotation[] | null> {
-        return this.quotationRepository.findMany(query);
+        return this._quotationRepository.findMany(query);
     }
 
     async updateQuotation(query: FilterQuery<Quotation>, update: UpdateQuery<Quotation>): Promise<Quotation | null> {
-        return this.quotationRepository.findByIdAndUpdate(query._id, update)
+        return this._quotationRepository.findByIdAndUpdate(query._id, update)
     }
 
     async findOneByRazorpayOrderId(orderId: string): Promise<Quotation | null> {
-        return this.quotationRepository.findByRazorpayOrderId(orderId);
+        return this._quotationRepository.findByRazorpayOrderId(orderId);
     }
 
     async aggregate(pipeline: PipelineStage[]): Promise<any[]> {
-        return this.quotationRepository.aggregate(pipeline);
+        return this._quotationRepository.aggregate(pipeline);
     }
 
     async createQuotation(quotation: Partial<Quotation>): Promise<Quotation> {
-        const createdQuotation = await this.quotationRepository.create(quotation);
+        const createdQuotation = await this._quotationRepository.create(quotation);
 
         if(createdQuotation){
-            await this.timelineService.create({
+            await this._timelineService.create({
                 quotationId: createdQuotation._id,
                 userId: createdQuotation.userId,
                 event: TimelineEvent.QUOTATION_CREATED,
@@ -199,31 +199,31 @@ export class QuotationService implements IQuotationService {
 
     async findByIdAndUpdate(quotationId: Types.ObjectId, update: UpdateQuery<Quotation>, options?: QueryOptions): Promise<Quotation | null> {
         try {
-            return this.quotationRepository.findByIdAndUpdate(quotationId, update, options);
+            return this._quotationRepository.findByIdAndUpdate(quotationId, update, options);
         } catch (error) {
-            this.logger.error(`Error updating quotation: ${error.message}`);
+            this._logger.error(`Error updating quotation: ${error.message}`);
             throw error;
         }
     }
 
     async deleteQuotation(quotationId: Types.ObjectId): Promise<SuccessResponseDto> {
         try {
-            await this.quotationRepository.findByIdAndDelete(quotationId);
+            await this._quotationRepository.findByIdAndDelete(quotationId);
             return { success: true, message: 'Quotation deleted successfully' };
         } catch (error) {
-            this.logger.error('Error deleting quotation', error);
+            this._logger.error('Error deleting quotation', error);
             throw error;
         }
     }
 
     async getCompletedQuotationsForUser(userId: Types.ObjectId): Promise<CompletedWorkDto[]> {
-        const quotations = await this.quotationRepository.find(
+        const quotations = await this._quotationRepository.find(
             { userId: new Types.ObjectId(userId), status: QuotationStatus.COMPLETED },
             null,
             { populate: 'worksId'}
         );
         if(!quotations){
-            this.logger.debug('No quotations found for user');
+            this._logger.debug('No quotations found for user');
             return [];
         }
         return this._mapQuotationsToCompletedWorkDtos(quotations);
@@ -236,7 +236,7 @@ export class QuotationService implements IQuotationService {
 
         const completedWorksPromises = quotations.map(async (quotation) => {
             const worksData = quotation.worksId as any | null;
-            const timelineEvents = await this.timelineService.findByQuotationId(quotation._id);
+            const timelineEvents = await this._timelineService.findByQuotationId(quotation._id);
 
             const timelineDto = timelineEvents.map(event => ({
                 event: event.event,
@@ -280,6 +280,6 @@ export class QuotationService implements IQuotationService {
     }
 
     async findOne(query: FilterQuery<Quotation>): Promise<Quotation | null> {
-        return this.quotationRepository.findOne(query);
+        return this._quotationRepository.findOne(query);
     }
 }

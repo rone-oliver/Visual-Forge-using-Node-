@@ -6,7 +6,7 @@ export const ICommonServiceToken = Symbol('ICommonService');
 
 export interface ICommonService {
     logoutHandler(response: Response, userType: UserType): Promise<void>;
-    updateThemePreference(res: Response, userId: Types.ObjectId, isDark: boolean): Promise<void>;
-    getThemePreference(res: Response, userId: Types.ObjectId): Promise<void>;
+    updateThemePreference(res: Response, userId: string, isDark: boolean): Promise<void>;
+    getThemePreference(res: Response, userId: string): Promise<void>;
     handleGoogleAuth(credential: string, response: Response): Promise<{ accessToken: string; message: string; }>;
 }

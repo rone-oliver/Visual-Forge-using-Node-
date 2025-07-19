@@ -6,7 +6,7 @@ import { IHashingService } from './interfaces/hashing.service.interface';
 
 @Injectable()
 export class HashingService implements IHashingService {
-    private readonly logger = new Logger(HashingService.name);
+    private readonly _logger = new Logger(HashingService.name);
 
     hash(password: string): Promise<string> {
         const workerPath = path.resolve(__dirname, 'workers', 'hash.worker.js');
@@ -26,14 +26,14 @@ export class HashingService implements IHashingService {
             });
 
             worker.on('error', (err) => {
-                this.logger.error(`Worker error: ${err.message}`, err.stack);
+                this._logger.error(`Worker error: ${err.message}`, err.stack);
                 reject(err);
             });
 
             worker.on('exit', (code) => {
                 if (code !== 0) {
                     const errorMessage = `Worker stopped with exit code ${code}`;
-                    this.logger.error(errorMessage);
+                    this._logger.error(errorMessage);
                     reject(new Error(errorMessage));
                 }
             });

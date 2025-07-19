@@ -41,7 +41,7 @@ export class CommonService implements ICommonService {
     }
   }
 
-  async updateThemePreference(res: Response, userId: Types.ObjectId, isDark: boolean): Promise<void> {
+  async updateThemePreference(res: Response, userId: string, isDark: boolean): Promise<void> {
     if (!userId) {
       res.status(401).json({ message: 'Unauthorized or User ID not found' });
       return;
@@ -62,7 +62,7 @@ export class CommonService implements ICommonService {
     }
   }
 
-  async getThemePreference(res: Response, userId: Types.ObjectId): Promise<void> {
+  async getThemePreference(res: Response, userId: string): Promise<void> {
     if (!userId) {
       throw new UnauthorizedException('Unauthorized or User ID not found');
     }

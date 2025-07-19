@@ -8,16 +8,16 @@ import { IAdminTransactionRepository } from '../interfaces/admin-transaction.rep
 export class AdminTransactionRepository implements IAdminTransactionRepository {
   constructor(
     @InjectModel(AdminTransaction.name)
-    private readonly adminTransactionModel: Model<AdminTransaction>,
+    private readonly _adminTransactionModel: Model<AdminTransaction>,
   ) {}
 
   async create(transactionDto: Partial<AdminTransaction>): Promise<AdminTransaction> {
-    return await this.adminTransactionModel.create(transactionDto);
+    return await this._adminTransactionModel.create(transactionDto);
   }
 
   async findAll(filter: {skip?: number, limit?: number} = {}): Promise<AdminTransaction[]> {
     const { skip = 0, limit = 10 } = filter;
-    return this.adminTransactionModel
+    return this._adminTransactionModel
     .find()
     .sort({ createdAt: -1 })
     .skip(skip)
@@ -29,11 +29,11 @@ export class AdminTransactionRepository implements IAdminTransactionRepository {
   }
 
   async count(): Promise<number> {
-    return this.adminTransactionModel.countDocuments().exec();
+    return this._adminTransactionModel.countDocuments().exec();
   }
 
   async getTransactionCountByFlow(): Promise<{ credit: number; debit: number }> {
-    const result = await this.adminTransactionModel.aggregate([
+    const result = await this._adminTransactionModel.aggregate([
       {
         $group: {
           _id: '$flow',
@@ -59,7 +59,7 @@ export class AdminTransactionRepository implements IAdminTransactionRepository {
   }
 
   async getFinancialSummary(): Promise<{ totalRevenue: number; totalPlatformFee: number; totalPayouts: number; }> {
-    const result = await this.adminTransactionModel.aggregate([
+    const result = await this._adminTransactionModel.aggregate([
       {
         $facet: {
           totalRevenue: [

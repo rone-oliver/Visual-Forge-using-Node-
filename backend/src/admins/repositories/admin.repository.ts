@@ -6,8 +6,8 @@ import { BaseRepository } from "src/common/database/base.repository";
 
 export class AdminRepository extends BaseRepository<Admin, AdminDocument> implements IAdminRepository {
     constructor(
-        @InjectModel(Admin.name) private readonly adminModel: Model<AdminDocument>,
+        @InjectModel(Admin.name) private readonly _adminModel: Model<AdminDocument>,
     ) {
-        super(adminModel);
+        super(_adminModel);
     };
 }

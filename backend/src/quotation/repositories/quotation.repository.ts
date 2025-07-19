@@ -7,25 +7,25 @@ import { GetAcceptedQuotationsQueryDto, GetPublishedQuotationsQueryDto, getQuota
 
 @Injectable()
 export class QuotationRepository implements IQuotationRepository {
-    private readonly logger = new Logger(QuotationRepository.name);
+    private readonly _logger = new Logger(QuotationRepository.name);
     constructor(
-        @InjectModel(Quotation.name) private readonly quotationModel: Model<QuotationDocument>,
+        @InjectModel(Quotation.name) private readonly _quotationModel: Model<QuotationDocument>,
     ) { }
 
     async create(quotation: Partial<Quotation>): Promise<Quotation> {
-        return this.quotationModel.create(quotation);
+        return this._quotationModel.create(quotation);
     }
 
     async countDocuments(filter?: any): Promise<number> {
-        return this.quotationModel.countDocuments(filter).exec();
+        return this._quotationModel.countDocuments(filter).exec();
     }
 
     async aggregate(pipeline: PipelineStage[]): Promise<any[]> {
-        return this.quotationModel.aggregate(pipeline).exec();
+        return this._quotationModel.aggregate(pipeline).exec();
     }
 
     async getQuotationsByStatus(): Promise<getQuotationsByStatusResponseDto[]> {
-        return this.quotationModel.aggregate([
+        return this._quotationModel.aggregate([
             { $group: { _id: '$status', count: { $sum: 1 } } }
         ]);
     }
@@ -35,28 +35,28 @@ export class QuotationRepository implements IQuotationRepository {
         projection: any = null,
         options?: QueryOptions
     ): Promise<Quotation[] | null> {
-        const result = await this.quotationModel.find(query, projection, options).exec();
+        const result = await this._quotationModel.find(query, projection, options).exec();
         return result.length > 0 ? result : null;
     }
 
     async findById(quotationId: Types.ObjectId, options?: QueryOptions): Promise<Quotation | null>{
-        return this.quotationModel.findById(quotationId, null, options).exec();
+        return this._quotationModel.findById(quotationId, null, options).exec();
     }
 
     async findOne(query: FilterQuery<Quotation>): Promise<Quotation | null>{
-        return this.quotationModel.findOne(query).exec();
+        return this._quotationModel.findOne(query).exec();
     }
 
     async findByIdAndUpdate(quotationId: Types.ObjectId, update: UpdateQuery<Quotation>, options?: QueryOptions): Promise<Quotation | null>{
-        return this.quotationModel.findByIdAndUpdate(quotationId, update, { new: true, ...options }).exec();
+        return this._quotationModel.findByIdAndUpdate(quotationId, update, { new: true, ...options }).exec();
     }
 
     async findByIdAndDelete(quotationId: Types.ObjectId): Promise<void> {
-        await this.quotationModel.findByIdAndDelete(quotationId).exec();
+        await this._quotationModel.findByIdAndDelete(quotationId).exec();
     }
 
     async getCompletedQuotations(editorId: Types.ObjectId): Promise<Quotation[]> {
-        return this.quotationModel
+        return this._quotationModel
             .find({
                 $or: [
                     { editorId },
@@ -70,7 +70,7 @@ export class QuotationRepository implements IQuotationRepository {
     }
 
     async getCompletedQuotationsForUser(userId: Types.ObjectId): Promise<Quotation[] | null> {
-        return this.quotationModel
+        return this._quotationModel
             .find({
                 $or: [
                     { userId },
@@ -188,7 +188,7 @@ export class QuotationRepository implements IQuotationRepository {
             }
         });
 
-        return this.quotationModel.aggregate(pipeline).exec();
+        return this._quotationModel.aggregate(pipeline).exec();
     }
 
     async getAcceptedQuotations(editorId: Types.ObjectId, query: GetAcceptedQuotationsQueryDto) {
@@ -273,13 +273,13 @@ export class QuotationRepository implements IQuotationRepository {
             },
         ]
 
-        const result = await this.quotationModel.aggregate(dataPipeline);
-        const totalItemsResult = await this.quotationModel.aggregate(countPipeline);
+        const result = await this._quotationModel.aggregate(dataPipeline);
+        const totalItemsResult = await this._quotationModel.aggregate(countPipeline);
         return { result, totalItemsResult };
     }
 
     async findByRazorpayOrderId(orderId: string): Promise<Quotation | null> {
-        return this.quotationModel.findOne({
+        return this._quotationModel.findOne({
             $or: [
                 { advancePaymentOrderId: orderId },
                 { balancePaymentOrderId: orderId }
@@ -288,11 +288,11 @@ export class QuotationRepository implements IQuotationRepository {
     }
 
     async findMany(query: FilterQuery<Quotation>): Promise<Quotation[] | null> {
-        return this.quotationModel.find(query);
+        return this._quotationModel.find(query);
     }
 
     async getTopUsersByQuotationCount(limit: number): Promise<TopUserDto[]> {
-        return this.quotationModel.aggregate([
+        return this._quotationModel.aggregate([
             {
                 $group: {
                     _id: '$userId',
@@ -329,7 +329,7 @@ export class QuotationRepository implements IQuotationRepository {
     }
 
     async getTopQuotationsByBidCount(limit: number): Promise<TopQuotationByBidsDto[]> {
-        return this.quotationModel.aggregate([
+        return this._quotationModel.aggregate([
             {
                 $lookup: {
                     from: 'bids',

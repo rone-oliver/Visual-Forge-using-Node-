@@ -18,42 +18,42 @@ import { INotificationService, INotificationServiceToken } from './interfaces/no
 export class NotificationGateway implements OnGatewayConnection, OnGatewayDisconnect, INotificationGateway {
     @WebSocketServer()
     server: Server;
-    private userSocketMap: Map<string, string[]> = new Map();
-    private logger: Logger = new Logger(NotificationGateway.name);
+    private _userSocketMap: Map<string, string[]> = new Map();
+    private readonly _logger: Logger = new Logger(NotificationGateway.name);
 
     constructor(
         @Inject(INotificationServiceToken) private readonly notificationService: INotificationService,
     ) { }
 
     async handleConnection(client: Socket, ...args: any[]) {
-        this.logger.log(`Notification Client connected: ${client.id}`);
+        this._logger.log(`Notification Client connected: ${client.id}`);
         const userId = client.handshake.query.userId as string;
         if (userId) {
             client['userId'] = userId;
 
-            const socketIds = this.userSocketMap.get(userId) || [];
+            const socketIds = this._userSocketMap.get(userId) || [];
             socketIds.push(client.id);
-            this.userSocketMap.set(userId, socketIds);
+            this._userSocketMap.set(userId, socketIds);
 
             await this.sendUnreadNotifications(client, userId);
         } else {
-            this.logger.warn(`Notification Client ${client.id} connected without userId`);
+            this._logger.warn(`Notification Client ${client.id} connected without userId`);
             client.disconnect(true);
         }
     }
 
     handleDisconnect(client: Socket) {
-        this.logger.log(`Notification Client disconnected: ${client.id}`);
+        this._logger.log(`Notification Client disconnected: ${client.id}`);
         const userId = client['userId'];
         if (userId) {
-            const sockets = this.userSocketMap.get(userId) || [];
+            const sockets = this._userSocketMap.get(userId) || [];
             const index = sockets.indexOf(client.id);
             if (index !== -1) {
                 sockets.splice(index, 1);
                 if (sockets.length === 0) {
-                    this.userSocketMap.delete(userId);
+                    this._userSocketMap.delete(userId);
                 } else {
-                    this.userSocketMap.set(userId, sockets);
+                    this._userSocketMap.set(userId, sockets);
                 }
             }
         }
@@ -64,7 +64,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
             const unreadNotifications = await this.notificationService.getUnreadNotificationsByUserId(userId);
             client.emit('initialNotifications', unreadNotifications);
         } catch (error) {
-            this.logger.error('Error fetching unread notifications:', error);
+            this._logger.error('Error fetching unread notifications:', error);
         }
     }
 
@@ -75,7 +75,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
                 this.server.to(socketId).emit('newNotification', notification);
             });
         } else {
-            this.logger.warn(`No socket found for user ${userId}`);
+            this._logger.warn(`No socket found for user ${userId}`);
         }
     }
 
@@ -84,12 +84,12 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
         try {
             await this.notificationService.markAsRead(notificationId);
         } catch (error) {
-            this.logger.error(`Error marking notification as read: ${error.message}`);
+            this._logger.error(`Error marking notification as read: ${error.message}`);
         }
     }
 
     private getAllClientSocketIds(userId: string): string[] {
-        return this.userSocketMap.get(userId) || [];
+        return this._userSocketMap.get(userId) || [];
     }
 
     sendStatusUpdate(userId: string, update: { notificationId: string; status: 'read' | 'unread' }): void {
@@ -108,7 +108,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
                 this.server.to(socketId).emit('bulkNotificationUpdate', { status });
             });
         } else {
-            this.logger.warn(`No socket found for user ${userId} for bulk update`);
+            this._logger.warn(`No socket found for user ${userId} for bulk update`);
         }
     }
 }

@@ -17,18 +17,18 @@ import { ICommunityService, ICommunityServiceToken } from "./interfaces/communit
 @Roles(Role.EDITOR)
 export class CommunityGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @WebSocketServer() server: Server;
-    private readonly logger = new Logger(CommunityGateway.name);
+    private readonly _logger = new Logger(CommunityGateway.name);
 
     constructor(
-        @Inject(ICommunityServiceToken) private readonly communityService: ICommunityService
+        @Inject(ICommunityServiceToken) private readonly _communityService: ICommunityService
     ) { }
 
     handleConnection(client: Socket) {
-        this.logger.log(`Client connected: ${client.id}`);
+        this._logger.log(`Client connected: ${client.id}`);
     }
 
     handleDisconnect(client: Socket) {
-        this.logger.warn(`Client disconnected: ${client.id}`);
+        this._logger.warn(`Client disconnected: ${client.id}`);
     }
 
     @SubscribeMessage('joinCommunity')
@@ -39,13 +39,13 @@ export class CommunityGateway implements OnGatewayConnection, OnGatewayDisconnec
             return;
         }
 
-        const isMember = await this.communityService.isUserMember(communityId, userId);
+        const isMember = await this._communityService.isUserMember(communityId, userId);
         if (isMember) {
             client.join(communityId);
-            this.logger.log(`${client.id} joined room ${communityId}`);
+            this._logger.log(`${client.id} joined room ${communityId}`);
             client.emit('joinedCommunity', `Successfully joined community ${communityId}`);
         } else {
-            this.logger.warn(`User ${userId} attempted to join community ${communityId} without membership.`);
+            this._logger.warn(`User ${userId} attempted to join community ${communityId} without membership.`);
             client.emit('joinError', { communityId, message: 'You are not a member of this community.' });
         }
     }
@@ -58,13 +58,13 @@ export class CommunityGateway implements OnGatewayConnection, OnGatewayDisconnec
             return;
         }
 
-        const isLeaved = await this.communityService.leaveCommunity(communityId, userId);
+        const isLeaved = await this._communityService.leaveCommunity(communityId, userId);
         if (isLeaved) {
             client.leave(communityId);
-            this.logger.log(`${client.id} left room ${communityId}`);
+            this._logger.log(`${client.id} left room ${communityId}`);
             client.emit('leftCommunity', `Successfully left community ${communityId}`);
         } else {
-            this.logger.warn(`User ${userId} attempted to leave community ${communityId} without membership.`);
+            this._logger.warn(`User ${userId} attempted to leave community ${communityId} without membership.`);
             client.emit('leaveError', { communityId, message: 'You are not a member of this community.' });
         }
     }
@@ -80,9 +80,9 @@ export class CommunityGateway implements OnGatewayConnection, OnGatewayDisconnec
             return;
         }
 
-        const newMessage = await this.communityService.sendMessage(data.communityId, senderId, data.content);
+        const newMessage = await this._communityService.sendMessage(data.communityId, senderId, data.content);
 
-        const populatedMessage = await this.communityService.getMessageById(newMessage._id.toString());
+        const populatedMessage = await this._communityService.getMessageById(newMessage._id.toString());
 
         if (populatedMessage) {
             this.server.to(data.communityId).emit('newMessage', populatedMessage);

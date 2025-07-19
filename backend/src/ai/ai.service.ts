@@ -5,19 +5,19 @@ import { IAiService } from './interfaces/ai-service.interface';
 
 @Injectable()
 export class AiService implements IAiService {
-    private readonly logger = new Logger(AiService.name);
-    private genAI: GoogleGenerativeAI;
+    private readonly _logger = new Logger(AiService.name);
+    private _genAI: GoogleGenerativeAI;
 
     constructor() {
         if (!process.env.GEMINI_API_KEY) {
-            this.logger.error('GEMINI_API_KEY is not set in environment variables.');
+            this._logger.error('GEMINI_API_KEY is not set in environment variables.');
             throw new Error('GEMINI_API_KEY is not set in environment variables.');
         }
-        this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+        this._genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     }
 
     async generateSmartReplies(messages: Message[], currentUserId: string): Promise<string[]> {
-        const model = this.genAI.getGenerativeModel({
+        const model = this._genAI.getGenerativeModel({
             model: "gemini-2.0-flash",
             systemInstruction: `You are a chat reply assistant. Your task is to generate exactly three, 
             very short reply suggestions for the 'user' based on the last message from the 'model'.
@@ -38,7 +38,7 @@ export class AiService implements IAiService {
 
         // We only generate replies if the last message was from the 'model' (the other user)
         if (!lastMessage || lastMessage.role !== 'model') {
-            this.logger.log(`Skipping smart replies: Last message was from role '${lastMessage?.role || 'unknown'}', not 'model'.`);
+            this._logger.log(`Skipping smart replies: Last message was from role '${lastMessage?.role || 'unknown'}', not 'model'.`);
             return [];
         }
 
@@ -46,7 +46,7 @@ export class AiService implements IAiService {
         // Find the first user message and slice the history from that point.
         const firstUserIndex = history.findIndex(h => h.role === 'user');
         if (firstUserIndex === -1) {
-            this.logger.log('Skipping smart replies: No user message found in history.');
+            this._logger.log('Skipping smart replies: No user message found in history.');
             return [];
         }
         const validHistory = history.slice(firstUserIndex);
@@ -64,10 +64,10 @@ export class AiService implements IAiService {
             const response = result.response;
             const text = response.text();
 
-            this.logger.log('suggestions', text.split(',').map(s => s.trim()));
+            this._logger.log('suggestions', text.split(',').map(s => s.trim()));
             return text.split(',').map(s => s.trim()).filter(s => s.length > 0);
         } catch (error) {
-            this.logger.error('Error getting smart replies from Gemini:', error);
+            this._logger.error('Error getting smart replies from Gemini:', error);
             throw new Error('Failed to generate smart replies.');
         }
     }

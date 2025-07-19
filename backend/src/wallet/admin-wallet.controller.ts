@@ -10,7 +10,7 @@ import { GetLedgerQueryDto, PaginatedLedgerResponseDto } from './dto/wallet.dto'
 @UseGuards(AuthGuard,RolesGuard)
 export class AdminWalletController {
   constructor(
-    @Inject(IAdminWalletServiceToken) private readonly adminWalletService: IAdminWalletService,
+    @Inject(IAdminWalletServiceToken) private readonly _adminWalletService: IAdminWalletService,
   ) {}
 
   @Roles(Role.ADMIN)
@@ -18,6 +18,6 @@ export class AdminWalletController {
   async getLedger(
     @Query() query: GetLedgerQueryDto,
   ): Promise<PaginatedLedgerResponseDto> {
-    return this.adminWalletService.getLedger(query.page, query.limit);
+    return this._adminWalletService.getLedger(query.page, query.limit);
   }
 }

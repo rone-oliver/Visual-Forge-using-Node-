@@ -4,9 +4,9 @@ import { Document, Types } from "mongoose";
 export type VerificationCodeDocument = VerificationCode & Document;
 
 export enum VerificationType {
-    EMAIL = 'email',
-    PASSWORD_RESET = 'passwordReset',
-    PHONE = 'phone'
+  EMAIL = 'email',
+  PASSWORD_RESET = 'passwordReset',
+  PHONE = 'phone'
 }
 
 @Schema({ timestamps: true })

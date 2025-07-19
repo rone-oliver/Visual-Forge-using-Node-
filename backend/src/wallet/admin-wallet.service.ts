@@ -12,17 +12,17 @@ import { FinancialSummaryDto } from 'src/admins/dto/admin.dto';
 @Injectable()
 export class AdminWalletService implements IAdminWalletService {
   constructor(
-    @Inject(IAdminTransactionRepositoryToken) private readonly adminTransactionRepository: IAdminTransactionRepository,
-    @Inject(IWalletServiceToken) private readonly walletService: IWalletService,
-    @Inject(IPaymentServiceToken) private readonly paymentService: IPaymentService,
+    @Inject(IAdminTransactionRepositoryToken) private readonly _adminTransactionRepository: IAdminTransactionRepository,
+    @Inject(IWalletServiceToken) private readonly _walletService: IWalletService,
+    @Inject(IPaymentServiceToken) private readonly _paymentService: IPaymentService,
   ) {}
 
   async creditWelcomeBonus(userId: string): Promise<void> {
     const bonusAmount = 100; // Welcome bonus amount
 
-    await this.walletService.addMoney(userId, bonusAmount);
+    await this._walletService.addMoney(userId, bonusAmount);
 
-    await this.adminTransactionRepository.create({
+    await this._adminTransactionRepository.create({
       flow: TransactionFlow.DEBIT,
       amount: bonusAmount,
       transactionType: AdminTransactionType.WELCOME_BONUS,
@@ -36,7 +36,7 @@ export class AdminWalletService implements IAdminWalletService {
     const commission = totalAmount * commissionRate;
     const editorShare = totalAmount - commission;
 
-    await this.adminTransactionRepository.create({
+    await this._adminTransactionRepository.create({
       flow: TransactionFlow.CREDIT,
       amount: totalAmount,
       transactionType: AdminTransactionType.USER_PAYMENT,
@@ -47,9 +47,9 @@ export class AdminWalletService implements IAdminWalletService {
       paymentId,
     });
 
-    await this.walletService.creditEditorWallet(quotation.editorId.toString(), editorShare, quotation._id.toString());
+    await this._walletService.creditEditorWallet(quotation.editorId.toString(), editorShare, quotation._id.toString());
 
-    await this.adminTransactionRepository.create({
+    await this._adminTransactionRepository.create({
       flow: TransactionFlow.DEBIT,
       amount: editorShare,
       transactionType: AdminTransactionType.EDITOR_PAYOUT,
@@ -61,9 +61,9 @@ export class AdminWalletService implements IAdminWalletService {
   async getLedger(page: number, limit: number): Promise<PaginatedLedgerResponseDto> {
     const skip = (page - 1) * limit;
     const [transactions, totalItems, balance] = await Promise.all([
-      this.adminTransactionRepository.findAll({ skip, limit }),
-      this.adminTransactionRepository.count(),
-      this.paymentService.getAccountBalance()
+      this._adminTransactionRepository.findAll({ skip, limit }),
+      this._adminTransactionRepository.count(),
+      this._paymentService.getAccountBalance()
     ])
     const totalPages = Math.ceil(totalItems / limit);
     return {
@@ -77,11 +77,11 @@ export class AdminWalletService implements IAdminWalletService {
   }
 
   async getTransactionCountByFlow(): Promise<{ credit: number; debit: number }> {
-    return this.adminTransactionRepository.getTransactionCountByFlow();
+    return this._adminTransactionRepository.getTransactionCountByFlow();
   }
 
   async getFinancialSummary(): Promise<FinancialSummaryDto> {
-    const { totalRevenue, totalPlatformFee, totalPayouts } = await this.adminTransactionRepository.getFinancialSummary();
+    const { totalRevenue, totalPlatformFee, totalPayouts } = await this._adminTransactionRepository.getFinancialSummary();
     const netProfit = totalRevenue - totalPayouts;
 
     return {

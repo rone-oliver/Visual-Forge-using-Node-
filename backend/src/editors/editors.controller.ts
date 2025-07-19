@@ -31,9 +31,9 @@ import { UpdateWorkFilesDto } from 'src/works/dtos/works.dto';
 @Controller('editor')
 @UseGuards(AuthGuard, RolesGuard)
 export class EditorsController implements IEditorsController {
-  private readonly logger = new Logger(EditorsController.name);
+  private readonly _logger = new Logger(EditorsController.name);
   constructor(
-    @Inject(IEditorsServiceToken) private editorService: IEditorsService,
+    @Inject(IEditorsServiceToken) private readonly _editorService: IEditorsService,
   ) { };
 
   @Get('quotations')
@@ -65,10 +65,10 @@ export class EditorsController implements IEditorsController {
 
     if (status === QuotationStatus.ACCEPTED) {
       const acceptedQueryDto: GetAcceptedQuotationsQueryDto = { page: pageNumber, limit: limitNumber, searchTerm: queryDto.searchTerm };
-      return this.editorService.getAcceptedQuotations(editor.userId, acceptedQueryDto);
+      return this._editorService.getAcceptedQuotations(editor.userId, acceptedQueryDto);
     } else if (status === QuotationStatus.PUBLISHED) {
       const publishedQueryDto: GetPublishedQuotationsQueryDto = { page: pageNumber, limit: limitNumber, mediaType: queryDto.mediaType, searchTerm: queryDto.searchTerm };
-      return this.editorService.getPublishedQuotations(editor.userId, publishedQueryDto);
+      return this._editorService.getPublishedQuotations(editor.userId, publishedQueryDto);
     }
     throw new BadRequestException('Invalid quotation status provided.');
   }
@@ -83,7 +83,7 @@ export class EditorsController implements IEditorsController {
     @Body() workData: SubmitWorkBodyDto
   ): Promise<boolean> {
     const editor = req['user'] as { userId: Types.ObjectId, role: string };
-    return this.editorService.submitQuotationResponse(workData);
+    return this._editorService.submitQuotationResponse(workData);
   }
 
   @Post('uploads/work')
@@ -110,8 +110,8 @@ export class EditorsController implements IEditorsController {
     @UploadedFiles() files: Express.Multer.File[],
     @Body('folder') folder?: string,
   ): Promise<Omit<FileAttachmentDto,'url'>[]> {
-    this.logger.log(`Uploading ${files.length} files`);
-    return this.editorService.uploadWorkFiles(files, folder);
+    this._logger.log(`Uploading ${files.length} files`);
+    return this._editorService.uploadWorkFiles(files, folder);
   }
 
   @Patch('works/:workId/files')
@@ -132,7 +132,7 @@ export class EditorsController implements IEditorsController {
     if (!Types.ObjectId.isValid(workId)) {
       throw new BadRequestException('Invalid work ID');
     }
-    return this.editorService.updateWorkFiles(workId, files, updateWorkFilesDto);
+    return this._editorService.updateWorkFiles(workId, files, updateWorkFilesDto);
   }
 
   @Get('works')
@@ -141,7 +141,7 @@ export class EditorsController implements IEditorsController {
   @ApiResponse({ status: 200, description: 'Successfully retrieved completed works.', type: [CompletedWorkDto] })
   async getCompletedWorks(@Req() req: Request): Promise<CompletedWorkDto[]> {
     const editor = req['user'] as { userId: Types.ObjectId, role: string };
-    return this.editorService.getCompletedWorks(editor.userId);
+    return this._editorService.getCompletedWorks(editor.userId);
   }
 
   @Post('bids')
@@ -158,7 +158,7 @@ export class EditorsController implements IEditorsController {
     }
 
     // Validation for bidAmount is handled by DTO's Min(0.01) decorator
-    return this.editorService.createBid(editor.userId, bidData);
+    return this._editorService.createBid(editor.userId, bidData);
   }
 
   @Patch('bids/:bidId')
@@ -177,7 +177,7 @@ export class EditorsController implements IEditorsController {
     if (!Types.ObjectId.isValid(bidId)) {
       throw new BadRequestException('Invalid bid ID');
     }
-    return this.editorService.updateBid(new Types.ObjectId(bidId), new Types.ObjectId(editor.userId), bidData);
+    return this._editorService.updateBid(new Types.ObjectId(bidId), new Types.ObjectId(editor.userId), bidData);
   }
 
   @Delete('bids/:bidId')
@@ -192,7 +192,7 @@ export class EditorsController implements IEditorsController {
       throw new BadRequestException('Invalid bid ID');
     }
 
-    await this.editorService.deleteBid(new Types.ObjectId(bidId), new Types.ObjectId(editor.userId));
+    await this._editorService.deleteBid(new Types.ObjectId(bidId), new Types.ObjectId(editor.userId));
   }
 
   @Patch('bids/:bidId/cancel')
@@ -208,7 +208,7 @@ export class EditorsController implements IEditorsController {
       throw new BadRequestException('Invalid bid ID');
     }
     
-    return this.editorService.cancelAcceptedBid(new Types.ObjectId(bidId), new Types.ObjectId(userId));
+    return this._editorService.cancelAcceptedBid(new Types.ObjectId(bidId), new Types.ObjectId(userId));
   }
 
   @Post('tutorials')
@@ -221,7 +221,7 @@ export class EditorsController implements IEditorsController {
     @Body() addTutorialDto: AddTutorialDto,
     @GetUser('userId') editorId: string
   ): Promise<Editor> {
-    return this.editorService.addTutorial(editorId, addTutorialDto);
+    return this._editorService.addTutorial(editorId, addTutorialDto);
   }
 
   @Delete('tutorials')
@@ -231,7 +231,7 @@ export class EditorsController implements IEditorsController {
   @ApiResponse({ status: 400, description: 'Invalid input data.' })
   @Roles(Role.EDITOR)
   async removeTutorial(@GetUser('userId') editorId: string, @Body() removeTutorialDto: RemoveTutorialDto) {
-    return this.editorService.removeTutorial(editorId, removeTutorialDto);
+    return this._editorService.removeTutorial(editorId, removeTutorialDto);
   }
 
   @Get('bids')
@@ -242,7 +242,7 @@ export class EditorsController implements IEditorsController {
     @GetUser('userId') editorId: string,
     @Query() query: GetBiddedQuotationsQueryDto
   ): Promise<PaginatedBiddedQuotationsResponseDto> {
-    return this.editorService.getBiddedQuotations(editorId, query);
+    return this._editorService.getBiddedQuotations(editorId, query);
   }
 
   @Get('bids/quotation/:quotationId')
@@ -254,7 +254,7 @@ export class EditorsController implements IEditorsController {
     @Param('quotationId') quotationId: string,
     @GetUser('userId') editorId: string,
   ): Promise<EditorBidDto> {
-    return this.editorService.getEditorBidForQuotation(
+    return this._editorService.getEditorBidForQuotation(
       new Types.ObjectId(quotationId),
       new Types.ObjectId(editorId),
     );

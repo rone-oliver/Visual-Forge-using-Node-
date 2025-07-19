@@ -7,11 +7,11 @@ import { IOtpRepository } from "../interfaces/otp.repository.interface";
 @Injectable()
 export class OtpRepository implements IOtpRepository {
     constructor(
-        @InjectModel(Otp.name) private readonly otpModel: Model<OtpDocument>,
+        @InjectModel(Otp.name) private readonly _otpModel: Model<OtpDocument>,
     ) { }
 
     async upsert(filter: FilterQuery<Otp>, data: Partial<Otp>): Promise<boolean> {
-        const result = await this.otpModel.updateOne(
+        const result = await this._otpModel.updateOne(
             filter,
             { $set: data },
             { upsert: true }
@@ -20,7 +20,7 @@ export class OtpRepository implements IOtpRepository {
     }
 
     async findAndUpdate(filter: FilterQuery<Otp>, update: UpdateQuery<Otp>): Promise<boolean> {
-        const result = await this.otpModel.updateOne(filter, update);
+        const result = await this._otpModel.updateOne(filter, update);
         return result.modifiedCount > 0;
     }
 }

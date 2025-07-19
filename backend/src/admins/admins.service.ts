@@ -18,22 +18,21 @@ import { IWorkService, IWorkServiceToken } from 'src/works/interfaces/works.serv
 
 @Injectable()
 export class AdminsService implements IAdminsService {
-    private readonly logger = new Logger(AdminsService.name);
+    private readonly _logger = new Logger(AdminsService.name);
 
     constructor(
-        @Inject(IUsersServiceToken) private readonly userService: IUsersService,
-        @Inject(IEditorsServiceToken) private readonly editorService: IEditorsService,
-        @Inject(IAdminRepositoryToken) private readonly adminRepository: IAdminRepository,
-        @Inject(IReportServiceToken) private readonly reportsService: IReportService,
-        @Inject(IQuotationServiceToken) private readonly quotationService: IQuotationService,
-        @Inject(IUsersServiceToken) private readonly usersService: IUsersService,
-        @Inject(IAdminWalletServiceToken) private readonly adminWalletService: IAdminWalletService,
-        @Inject(IWorkServiceToken) private readonly worksService: IWorkService,
+        @Inject(IUsersServiceToken) private readonly _userService: IUsersService,
+        @Inject(IEditorsServiceToken) private readonly _editorService: IEditorsService,
+        @Inject(IAdminRepositoryToken) private readonly _adminRepository: IAdminRepository,
+        @Inject(IReportServiceToken) private readonly _reportsService: IReportService,
+        @Inject(IQuotationServiceToken) private readonly _quotationService: IQuotationService,
+        @Inject(IAdminWalletServiceToken) private readonly _adminWalletService: IAdminWalletService,
+        @Inject(IWorkServiceToken) private readonly _worksService: IWorkService,
     ) { };
 
     async findOne(filter: Partial<Admin>): Promise<Admin | null> {
         try {
-            return this.adminRepository.findOne(filter);
+            return this._adminRepository.findOne(filter);
         } catch (error) {
             throw new HttpException('Admin not found', HttpStatus.NOT_FOUND);
         }
@@ -41,15 +40,15 @@ export class AdminsService implements IAdminsService {
 
     async createAdmin(adminData: any): Promise<Admin> {
         adminData.password = await bcrypt.hash(adminData.password, 10);
-        return this.adminRepository.create(adminData);
+        return this._adminRepository.create(adminData);
     }
 
     async getAllUsers(
         query: GetAllUsersQueryDto,
     ): Promise<{ users: User[]; total: number }> {
         try {
-            this.logger.log('Delegating to UsersService to fetch users');
-            return await this.usersService.getAllUsersForAdmin(query);
+            this._logger.log('Delegating to UsersService to fetch users');
+            return await this._userService.getAllUsersForAdmin(query);
         } catch (error) {
             console.error('Error fetching users:', error);
             throw new HttpException('No users found', HttpStatus.NOT_FOUND);
@@ -58,7 +57,7 @@ export class AdminsService implements IAdminsService {
 
     async getEditorRequests(): Promise<FormattedEditorRequest[]> {
         try {
-            const requests = await this.editorService.getEditorRequests();
+            const requests = await this._editorService.getEditorRequests();
 
             return requests.map(request => {
                 const user = request.userId as unknown as User;
@@ -75,27 +74,27 @@ export class AdminsService implements IAdminsService {
                 };
             });
         } catch (error) {
-            this.logger.error(`Error fetching editor requests: ${error.message}`);
+            this._logger.error(`Error fetching editor requests: ${error.message}`);
             throw new HttpException('No editor requests found', HttpStatus.NOT_FOUND);
         }
     }
 
     async approveRequest(requestId: Types.ObjectId, adminId: Types.ObjectId): Promise<boolean> {
         try {
-            const success = await this.editorService.approveEditorRequest(requestId, adminId);
+            const success = await this._editorService.approveEditorRequest(requestId, adminId);
             return success ? true : false;
         } catch (error) {
-            this.logger.error(`Error approving request: ${error.message}`);
+            this._logger.error(`Error approving request: ${error.message}`);
             throw new HttpException('Failed to approve request', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     async rejectRequest(requestId: Types.ObjectId, reason: string): Promise<boolean> {
         try {
-            const success = await this.editorService.rejectEditorRequest(requestId, reason);
+            const success = await this._editorService.rejectEditorRequest(requestId, reason);
             return success ? true : false;
         } catch (error) {
-            this.logger.error(`Error rejecting request: ${error.message}`);
+            this._logger.error(`Error rejecting request: ${error.message}`);
             throw new HttpException('Failed to reject request', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -104,33 +103,33 @@ export class AdminsService implements IAdminsService {
         query: GetEditorsQueryDto,
     ): Promise<{ editors: FormattedEditor[]; total: number }> {
         try {
-            this.logger.log('Delegating to EditorsService to fetch editors');
-            return await this.editorService.getEditorsForAdmin(query);
+            this._logger.log('Delegating to EditorsService to fetch editors');
+            return await this._editorService.getEditorsForAdmin(query);
         } catch (error) {
-            this.logger.error(`Error fetching editors: ${error.message}`);
+            this._logger.error(`Error fetching editors: ${error.message}`);
             throw new HttpException('No editors found', HttpStatus.NOT_FOUND);
         }
     }
 
     async blockUser(userId: Types.ObjectId): Promise<SuccessResponseDto> {
         try {
-            await this.userService.blockUser(userId)
+            await this._userService.blockUser(userId)
             return {
                 success: true,
                 message: 'User blocked successfully'
             };
         } catch (error) {
-            this.logger.error(`Error blocking user: ${error.message}`);
+            this._logger.error(`Error blocking user: ${error.message}`);
             throw new HttpException('Failed to block user', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     async getPendingReports(): Promise<Report[]> {
-        return this.reportsService.getPendingReports();
+        return this._reportsService.getPendingReports();
     }
 
     async updateReport(reportId: string, updateDto: UpdateReportDto): Promise<Report> {
-        const report = await this.reportsService.updateReport(reportId, updateDto);
+        const report = await this._reportsService.updateReport(reportId, updateDto);
         if (!report) {
             throw new NotFoundException(`Report with ID "${reportId}" not found`);
         }
@@ -142,20 +141,20 @@ export class AdminsService implements IAdminsService {
             const [
                 totalUsers, totalEditors, totalEditorRequests, totalReports, 
                 totalQuotations, transactionCounts, financialSummary, topUsersByQuotations, 
-                topEditorsByCompletedWorks, topQuotationsByBids
+                topEditorsByCompletedWorks, topQuotationsByBids, quotationsByStatus,
             ] = await Promise.all([
-                this.usersService.countAllUsers(),
-                this.editorService.countAllEditors(),
-                this.editorService.countEditorRequests(),
-                this.reportsService.countDocuments(),
-                this.quotationService.countAllQuotations(),
-                this.adminWalletService.getTransactionCountByFlow(),
-                this.adminWalletService.getFinancialSummary(),
-                this.quotationService.getTopUsersByQuotationCount(5),
-                this.worksService.getTopEditorsByCompletedWorks(5),
-                this.quotationService.getTopQuotationsByBidCount(5),
+                this._userService.countAllUsers(),
+                this._editorService.countAllEditors(),
+                this._editorService.countEditorRequests(),
+                this._reportsService.countDocuments(),
+                this._quotationService.countAllQuotations(),
+                this._adminWalletService.getTransactionCountByFlow(),
+                this._adminWalletService.getFinancialSummary(),
+                this._quotationService.getTopUsersByQuotationCount(5),
+                this._worksService.getTopEditorsByCompletedWorks(5),
+                this._quotationService.getTopQuotationsByBidCount(5),
+                this._quotationService.getQuotationsByStatus(),
             ]);
-            const quotationsByStatus = await this.quotationService.getQuotationsByStatus();
 
             return {
                 totalUsers,
@@ -177,7 +176,7 @@ export class AdminsService implements IAdminsService {
                 topQuotationsByBids,
             };
         } catch (error) {
-            this.logger.error(`Error fetching dashboard data: ${error.message}`);
+            this._logger.error(`Error fetching dashboard data: ${error.message}`);
             throw new HttpException('Failed to fetch dashboard data', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

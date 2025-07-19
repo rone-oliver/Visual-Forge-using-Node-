@@ -5,7 +5,7 @@ import { ITokenRefreshService, ITokenRefreshServiceToken } from './interfaces/to
 @Controller('auth')
 export class TokenRefreshController {
     constructor(
-        @Inject(ITokenRefreshServiceToken) private readonly tokenRefreshService: ITokenRefreshService,
+        @Inject(ITokenRefreshServiceToken) private readonly _tokenRefreshService: ITokenRefreshService,
     ) {};
 
     @Public()
@@ -16,7 +16,7 @@ export class TokenRefreshController {
         if(!refreshToken){
             throw new HttpException('Refresh token not found', 401);
         }
-        return await this.tokenRefreshService.refreshAccessToken(refreshToken);
+        return await this._tokenRefreshService.refreshAccessToken(refreshToken);
     }
 
     @Get('check-refreshToken')
@@ -26,7 +26,7 @@ export class TokenRefreshController {
             return { valid: false };
         }
         try {
-            await this.tokenRefreshService.verifyRefreshToken(refreshToken);
+            await this._tokenRefreshService.verifyRefreshToken(refreshToken);
             return { valid: true };
         } catch {
             return { valid: false };

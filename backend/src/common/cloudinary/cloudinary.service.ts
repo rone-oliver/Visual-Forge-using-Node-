@@ -7,14 +7,14 @@ import { ICloudinaryService } from './interfaces/cloudinary-service.interface';
 
 @Injectable()
 export class CloudinaryService implements ICloudinaryService {
-    private readonly logger = new Logger(CloudinaryService.name);
+    private readonly _logger = new Logger(CloudinaryService.name);
 
-    constructor(private configService: ConfigService) {
+    constructor(private _configService: ConfigService) {
         // Initialize Cloudinary with credentials from config
         cloudinary.config({
-            cloud_name: this.configService.get<string>('CLOUDINARY_CLOUD_NAME'),
-            api_key: this.configService.get<string>('CLOUDINARY_API_KEY'),
-            api_secret: this.configService.get<string>('CLOUDINARY_API_SECRET'),
+            cloud_name: this._configService.get<string>('CLOUDINARY_CLOUD_NAME'),
+            api_key: this._configService.get<string>('CLOUDINARY_API_KEY'),
+            api_secret: this._configService.get<string>('CLOUDINARY_API_SECRET'),
             secure: true
         });
     }
@@ -24,8 +24,8 @@ export class CloudinaryService implements ICloudinaryService {
         folder = 'Visual Forge'
     ): Promise<FileUploadResultDto> {
         try {
-            const fileType = this.determineFileType(file.mimetype);
-            const resourceType = this.getResourceType(fileType);
+            const fileType = this._determineFileType(file.mimetype);
+            const resourceType = this._getResourceType(fileType);
 
             // Create a readable stream from the buffer
             const stream = new Readable();
@@ -39,11 +39,11 @@ export class CloudinaryService implements ICloudinaryService {
                         folder,
                         resource_type: resourceType,
                         // Add specific options based on file type
-                        ...this.getUploadOptions(fileType)
+                        ...this._getUploadOptions(fileType)
                     },
                     (error, result) => {
                         if (error) {
-                            this.logger.error(`Error uploading file: ${error.message}`);
+                            this._logger.error(`Error uploading file: ${error.message}`);
                             return reject(error);
                         }
 
@@ -59,7 +59,7 @@ export class CloudinaryService implements ICloudinaryService {
                                 timestamp: result.version
                             });
                         } else {
-                            this.logger.error('Cloudinary upload successful, but result is undefined.');
+                            this._logger.error('Cloudinary upload successful, but result is undefined.');
                             return reject(new Error('Cloudinary upload successful, but result is undefined.'));
                         }
                     }
@@ -69,7 +69,7 @@ export class CloudinaryService implements ICloudinaryService {
                 stream.pipe(uploadStream);
             });
         } catch (error) {
-            this.logger.error(`Error in uploadFile: ${error.message}`);
+            this._logger.error(`Error in uploadFile: ${error.message}`);
             throw error;
         }
     }
@@ -85,27 +85,24 @@ export class CloudinaryService implements ICloudinaryService {
             const uploadPromises = files.map(file => this.uploadFile(file, folder));
             return Promise.all(uploadPromises);
         } catch (error) {
-            this.logger.error(`Error in uploadFiles: ${error.message}`);
+            this._logger.error(`Error in uploadFiles: ${error.message}`);
             throw error;
         }
     }
 
     async deleteFile(publicId: string, fileType: FileType): Promise<{ result: string }> {
         try {
-            const resourceType = this.getResourceType(fileType);
+            const resourceType = this._getResourceType(fileType);
             const result = await cloudinary.uploader.destroy(publicId, { resource_type: resourceType });
-            this.logger.log(`Successfully deleted file from Cloudinary: ${publicId}`);
+            this._logger.log(`Successfully deleted file from Cloudinary: ${publicId}`);
             return result;
         } catch (error) {
-            this.logger.error(`Error deleting file ${publicId} from Cloudinary: ${error.message}`);
+            this._logger.error(`Error deleting file ${publicId} from Cloudinary: ${error.message}`);
             throw error;
         }
     }
 
-    /**
-     * Determine file type based on MIME type
-     */
-    private determineFileType(mimeType: string): FileType {
+    private _determineFileType(mimeType: string): FileType {
         if (mimeType.startsWith('image/')) {
             return FileType.IMAGE;
         } else if (mimeType.startsWith('video/')) {
@@ -117,7 +114,7 @@ export class CloudinaryService implements ICloudinaryService {
         }
     }
 
-    private getResourceType(fileType: FileType): UploadApiResponse['resource_type'] {
+    private _getResourceType(fileType: FileType): UploadApiResponse['resource_type'] {
         switch (fileType) {
             case FileType.IMAGE:
                 return 'image';
@@ -132,7 +129,7 @@ export class CloudinaryService implements ICloudinaryService {
         }
     }
 
-    private getUploadOptions(fileType: FileType): Record<string, any> {
+    private _getUploadOptions(fileType: FileType): Record<string, any> {
         const commonOptions = {
             signed: true,
             use_filename: true,

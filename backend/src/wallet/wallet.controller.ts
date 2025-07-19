@@ -10,17 +10,17 @@ import { GetUser } from 'src/auth/decorators/get-user.decorator';
 @UseGuards(AuthGuard,RolesGuard)
 export class WalletController implements IWalletController {
     constructor(
-        @Inject(IWalletServiceToken) private readonly walletService: IWalletService,
+        @Inject(IWalletServiceToken) private readonly _walletService: IWalletService,
     ){}
 
     @Get()
     async getWallet(@GetUser('userId') userId: string) {
-        return this.walletService.getWallet(userId);
+        return this._walletService.getWallet(userId);
     }
 
     @Get('transactions')
     async getTransactions(@GetUser('userId') userId: string, @Query() query: GetTransactionsDto) {
-        return this.walletService.getTransactions(
+        return this._walletService.getTransactions(
             userId,
             query.page,
             query.limit,
@@ -31,16 +31,16 @@ export class WalletController implements IWalletController {
 
     @Post('add')
     async addMoney(@GetUser('userId') userId: string, @Body() body: UpdateWalletDto) {
-        return this.walletService.addMoney(userId, body.amount);
+        return this._walletService.addMoney(userId, body.amount);
     }
 
     @Post('withdraw')
     async withdrawMoney(@GetUser('userId') userId: string, @Body() body: UpdateWalletDto) {
-        return this.walletService.withdrawMoney(userId, body.amount);
+        return this._walletService.withdrawMoney(userId, body.amount);
     }
 
     @Post('pay')
     async payFromWallet(@GetUser('userId') userId: string, @Body() body: PayFromWalletDto) {
-        return this.walletService.payFromWallet(userId, body);
+        return this._walletService.payFromWallet(userId, body);
     }
 }
