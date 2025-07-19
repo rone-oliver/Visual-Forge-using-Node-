@@ -5,9 +5,10 @@ import { AdminsModule } from 'src/admins/admins.module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtService } from '@nestjs/jwt';
 import { IAdminsAuthServiceToken } from './interfaces/adminsAuth-service.interface';
+import { HashingModule } from 'src/common/hashing/hashing.module';
 
 @Module({
-  imports: [AdminsModule, PassportModule],
+  imports: [AdminsModule, PassportModule, HashingModule,],
   providers: [
     {
       provide: IAdminsAuthServiceToken,
