@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { io, Socket } from 'socket.io-client';
 import { BehaviorSubject, Observable } from 'rxjs';
@@ -11,21 +11,23 @@ import { Community, CommunityMessage } from '../../interfaces/community.interfac
   providedIn: 'root'
 })
 export class CommunityService {
-  private socket: Socket | null = null;
-  private userId: string | null;
-  private messageSubject = new BehaviorSubject<CommunityMessage[]>([]);
-  public messages$ = this.messageSubject.asObservable();
+  private _socket: Socket | null = null;
+  private _userId: string | null;
+  private readonly _messageSubject = new BehaviorSubject<CommunityMessage[]>([]);
+  public readonly _messages$ = this._messageSubject.asObservable();
 
-  constructor(
-    private http: HttpClient,
-    private authService: AuthService
-  ) {
-    this.userId = this.getLoggedInUserId();
+  // Services
+
+  private readonly _http = inject(HttpClient);
+  private readonly _authService = inject(AuthService);
+
+  constructor() {
+    this._userId = this.getLoggedInUserId();
     this.initializeSocket();
   }
 
   private getLoggedInUserId(): string | null {
-    const token = this.authService.getAccessToken('User'); // Or 'Editor' if appropriate
+    const token = this._authService.getAccessToken('User'); // Or 'Editor' if appropriate
     if (token) {
       try {
         const payload = jwtDecode<JwtPayload>(token);
@@ -39,13 +41,13 @@ export class CommunityService {
   }
 
   private initializeSocket(): void {
-    const token = this.authService.getAccessToken('User');
-    if (!this.userId || !token) {
+    const token = this._authService.getAccessToken('User');
+    if (!this._userId || !token) {
         console.error('User not authenticated, cannot connect to community chat.');
         return;
     }
 
-    this.socket = io(`${environment.apiUrl}/community`, {
+    this._socket = io(`${environment.apiUrl}/community`, {
       transports: ['websocket'],
       auth: {
         token: `Bearer ${token}`
@@ -54,73 +56,73 @@ export class CommunityService {
       reconnection: true
     });
 
-    this.socket.on('connect', () => {
-      console.log('Community socket connected');
+    this._socket.on('connect', () => {
+      console.log('Community _socket connected');
     });
 
-    this.socket.on('disconnect', () => {
-      console.warn('Community socket disconnected');
+    this._socket.on('disconnect', () => {
+      console.warn('Community _socket disconnected');
     });
 
-    this.socket.on('connect_error', (err) => {
-      console.error('Community socket connection error:', err);
+    this._socket.on('connect_error', (err) => {
+      console.error('Community _socket connection error:', err);
     });
 
-    this.socket.on('newMessage', (message: CommunityMessage) => {
-        const currentMessages = this.messageSubject.getValue();
-        this.messageSubject.next([...currentMessages, message]);
+    this._socket.on('newMessage', (message: CommunityMessage) => {
+        const currentMessages = this._messageSubject.getValue();
+        this._messageSubject.next([...currentMessages, message]);
     });
   }
 
   joinCommunity(communityId: string): void {
-    this.socket?.emit('joinCommunity', communityId);
+    this._socket?.emit('joinCommunity', communityId);
   }
 
   leaveCommunity(communityId: string): void {
-    if (this.socket) {
-      this.socket.emit('leaveCommunity', communityId);
+    if (this._socket) {
+      this._socket.emit('leaveCommunity', communityId);
     }
   }
 
   sendMessage(communityId: string, content: string): void {
-    if (!this.socket) {
+    if (!this._socket) {
       console.error('Socket is not connected.');
       return;
     }
-    if (!this.userId) {
+    if (!this._userId) {
       console.error('Cannot send message, user ID is not available.');
       return;
     }
-    this.socket.emit('sendMessage', { communityId, content });
+    this._socket.emit('sendMessage', { communityId, content });
   }
 
   getCommunities(): Observable<Community[]> {
-    return this.http.get<Community[]>(`${environment.apiUrl}/editor/community`);
+    return this._http.get<Community[]>(`${environment.apiUrl}/editor/community`);
   }
 
   getCommunityById(id: string): Observable<Community> {
-    return this.http.get<Community>(`${environment.apiUrl}/editor/community/${id}`);
+    return this._http.get<Community>(`${environment.apiUrl}/editor/community/${id}`);
   }
 
   createCommunity(name: string, description: string): Observable<Community> {
-    return this.http.post<Community>(`${environment.apiUrl}/editor/community`, { name, description });
+    return this._http.post<Community>(`${environment.apiUrl}/editor/community`, { name, description });
   }
 
-  addMember(communityId: string, userId: string): Observable<Community> {
-    return this.http.post<Community>(`${environment.apiUrl}/editor/community/${communityId}/members`, { userId });
+  addMember(communityId: string, _userId: string): Observable<Community> {
+    return this._http.post<Community>(`${environment.apiUrl}/editor/community/${communityId}/members`, { _userId });
   }
 
   getMessages(communityId: string): Observable<CommunityMessage[]> {
-    return this.http.get<CommunityMessage[]>(`${environment.apiUrl}/editor/community/${communityId}/messages`);
+    return this._http.get<CommunityMessage[]>(`${environment.apiUrl}/editor/community/${communityId}/messages`);
   }
 
   loadMessages(communityId: string): void {
     this.getMessages(communityId).subscribe(messages => {
-        this.messageSubject.next(messages);
+        this._messageSubject.next(messages);
     });
   }
 
   disconnect(): void {
-    this.socket?.disconnect();
+    this._socket?.disconnect();
   }
 }

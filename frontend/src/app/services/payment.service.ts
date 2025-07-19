@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { catchError, map, Observable } from 'rxjs';
 import { IPaymentVerification } from '../interfaces/quotation.interface';
@@ -11,7 +11,10 @@ declare var Razorpay: any;
 })
 export class PaymentService {
 
-  constructor(private http: HttpClient) { }
+  // Services
+  private http = inject(HttpClient);
+
+  constructor() {};
 
   openRazorpayCheckout(order: any): Promise<IPaymentVerification> {
     return new Promise((resolve, reject) => {

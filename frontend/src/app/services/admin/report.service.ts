@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -13,19 +13,22 @@ interface SuccessResponse {
   providedIn: 'root'
 })
 export class ReportService {
-  private readonly adminApiUrl = `${environment.apiUrl}/admin`;
+  private readonly _adminApiUrl = `${environment.apiUrl}/admin`;
 
-  constructor(private readonly http: HttpClient) { }
+  // Services
+  private readonly _http = inject(HttpClient);
+
+  constructor() { }
 
   getPendingReports(): Observable<Report[]> {
-    return this.http.get<Report[]>(`${this.adminApiUrl}/reports/pending`);
+    return this._http.get<Report[]>(`${this._adminApiUrl}/reports/pending`);
   }
 
   updateReport(reportId: string, payload: UpdateReportPayload): Observable<Report> {
-    return this.http.patch<Report>(`${this.adminApiUrl}/reports/${reportId}`, payload);
+    return this._http.patch<Report>(`${this._adminApiUrl}/reports/${reportId}`, payload);
   }
 
   blockUser(userId: string): Observable<SuccessResponse> {
-    return this.http.patch<SuccessResponse>(`${this.adminApiUrl}/users/${userId}/block`, {});
+    return this._http.patch<SuccessResponse>(`${this._adminApiUrl}/users/${userId}/block`, {});
   }
 }

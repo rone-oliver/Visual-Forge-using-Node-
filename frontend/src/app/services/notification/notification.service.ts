@@ -1,10 +1,11 @@
-import { Injectable, OnDestroy } from '@angular/core';
+import { inject, Injectable, OnDestroy } from '@angular/core';
 import { Observable, Subject, takeUntil } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 import { AuthService, JwtPayload } from '../auth.service';
 import { jwtDecode } from 'jwt-decode';
 import { environment } from '../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
+import { LoggerService } from '../logger.service';
 
 export interface Notification {
   _id: string;
@@ -21,18 +22,21 @@ export interface Notification {
   providedIn: 'root'
 })
 export class NotificationService implements OnDestroy {
-  private socket: Socket | null = null;
-  private userId: string | null;
-  private readonly ngUnsubscribe = new Subject<void>();
-  private socketReconnected$ = new Subject<boolean>();
+  private _socket: Socket | null = null;
+  private _userId: string | null;
 
-  constructor(
-    private authService: AuthService,
-    private http: HttpClient,
-  ) {
-    this.userId = this.getLoggedInUserId();
-    if (!this.userId) {
-      console.error('NotificationService: No user ID found for socket connection.');
+  private readonly _ngUnsubscribe = new Subject<void>();
+  private readonly _socketReconnected$ = new Subject<boolean>();
+
+  // Services
+  private readonly _logger = inject(LoggerService);
+  private readonly _authService = inject(AuthService);
+  private readonly _http = inject(HttpClient);
+  
+  constructor() {
+    this._userId = this.getLoggedInUserId();
+    if (!this._userId) {
+      this._logger.error('NotificationService: No user ID found for _socket connection.');
       return;
     }
     this.initializeSocket();
@@ -40,37 +44,38 @@ export class NotificationService implements OnDestroy {
 
   ngOnDestroy(): void {
     this.disconnect();
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this._ngUnsubscribe.next();
+    this._ngUnsubscribe.complete();
   }
 
-  // --- Socket Initialization & Connection Management ---
+  // Socket Initialization & Connection Management
   getLoggedInUserId(): string | null {
-    const token = this.authService.getAccessToken('User');
+    const token = this._authService.getAccessToken('User');
     if (token) {
-      const payload = this.extractJwtPayload(token);
+      const payload = this._extractJwtPayload(token);
       return payload?.userId ?? null;
     }
     return null;
   }
-  private extractJwtPayload(token: string): JwtPayload | null {
-      try {
-        return jwtDecode<JwtPayload>(token);
-      } catch (error) {
-        console.error('JWT Decode error:', error);
-        return null;
-      }
+
+  private _extractJwtPayload(token: string): JwtPayload | null {
+    try {
+      return jwtDecode<JwtPayload>(token);
+    } catch (error) {
+      this._logger.error('JWT Decode error:', error);
+      return null;
+    }
   }
 
   private initializeSocket(): void {
-    if (!this.userId || this.socket) {
-      if (this.socket) console.warn('NotificationService: Socket already initialized.');
+    if (!this._userId || this._socket) {
+      if (this._socket) this._logger.warn('NotificationService: Socket already initialized.');
       return;
     }
 
-    this.socket = io(`${environment.apiUrl}/notifications`, {
+    this._socket = io(`${environment.apiUrl}/notifications`, {
       transports: ['websocket'],
-      query: { userId: this.userId },
+      query: { _userId: this._userId },
       autoConnect: true,
       reconnection: true,
       reconnectionAttempts: Infinity,
@@ -79,162 +84,162 @@ export class NotificationService implements OnDestroy {
       timeout: 20000,
     });
 
-    // --- Socket Event Listeners ---
-    this.socket.on('connect', () => {
-      console.log('Notification Socket connected. ID:', this.socket?.id);
-      this.socketReconnected$.next(true);
+    // Socket Event Listeners
+    this._socket.on('connect', () => {
+      this._logger.info('Notification Socket connected. ID:', this._socket?.id);
+      this._socketReconnected$.next(true);
     });
 
-    this.socket.on('disconnect', (reason: Socket.DisconnectReason) => {
-      console.warn('Notification Socket disconnected:', reason);
+    this._socket.on('disconnect', (reason: Socket.DisconnectReason) => {
+      this._logger.warn('Notification Socket disconnected:', reason);
       if (reason === 'io server disconnect') {
-        this.socket?.connect();
+        this._socket?.connect();
       }
     });
 
-    this.socket.on('reconnect_attempt', (attemptNumber: number) => {
-      console.log(`Notification Socket reconnect attempt: ${attemptNumber}`);
+    this._socket.on('reconnect_attempt', (attemptNumber: number) => {
+      this._logger.info(`Notification Socket reconnect attempt: ${attemptNumber}`);
     });
 
-    this.socket.on('reconnect_error', (err: Error) => {
-      console.error('Notification Socket reconnect error:', err.message);
+    this._socket.on('reconnect_error', (err: Error) => {
+      this._logger.error('Notification Socket reconnect error:', err.message);
     });
 
-    this.socket.on('reconnect_failed', () => {
-      console.error('Notification Socket reconnect failed. Will not try again.');
+    this._socket.on('reconnect_failed', () => {
+      this._logger.error('Notification Socket reconnect failed. Will not try again.');
     });
 
-    this.socket.on('reconnect', (attemptNumber: number) => {
-      console.log(`Notification Socket reconnected after ${attemptNumber} attempts.`);
+    this._socket.on('reconnect', (attemptNumber: number) => {
+      this._logger.info(`Notification Socket reconnected after ${attemptNumber} attempts.`);
     });
 
-    this.socket.on('error', (err: any) => {
-      console.error('Notification Socket error:', err);
+    this._socket.on('error', (err: any) => {
+      this._logger.error('Notification Socket error:', err);
     });
   }
 
   connect(): void {
-    if (!this.socket) {
-      this.initializeSocket(); // Initialize if not already
-    } else if (this.socket.disconnected) {
-      this.socket.connect(); // Reconnect if disconnected
+    if (!this._socket) {
+      this.initializeSocket();
+    } else if (this._socket.disconnected) {
+      this._socket.connect();
     }
   }
 
   disconnect(): void {
-    if (this.socket && this.socket.connected) {
-      this.socket.disconnect();
-      this.socket = null; // Clear the instance to allow re-initialization if needed
+    if (this._socket && this._socket.connected) {
+      this._socket.disconnect();
+      this._socket = null;
     }
   }
 
   reconnect(): void {
-    if (!this.socket) {
+    if (!this._socket) {
       this.initializeSocket();
-    } else if (this.socket.disconnected) {
-      this.socket.connect();
+    } else if (this._socket.disconnected) {
+      this._socket.connect();
     }
   }
 
   onSocketReconnected(): Observable<boolean> {
-    return this.socketReconnected$.asObservable().pipe(takeUntil(this.ngUnsubscribe));
+    return this._socketReconnected$.asObservable().pipe(takeUntil(this._ngUnsubscribe));
   }
 
   markNotificationAsRead(notificationId: string): void {
-    if (this.socket && this.socket.connected) {
-      this.socket.emit('markAsRead', notificationId);
+    if (this._socket && this._socket.connected) {
+      this._socket.emit('markAsRead', notificationId);
     } else {
-      console.warn('Notification socket not connected, cannot mark notification as read.');
+      this._logger.warn('Notification _socket not connected, cannot mark notification as read.');
     }
   }
 
   onInitialNotifications(): Observable<Notification[]> {
     return new Observable<Notification[]>(observer => {
-      if (!this.socket) {
-        console.warn('Notification socket not initialized for onInitialNotifications.');
+      if (!this._socket) {
+        this._logger.warn('Notification _socket not initialized for onInitialNotifications.');
         observer.next([]);
         return;
       }
       const listener = (notifications: Notification[]) => observer.next(notifications);
-      this.socket.on('initialNotifications', listener);
+      this._socket.on('initialNotifications', listener);
       return () => {
-        this.socket?.off('initialNotifications', listener);
+        this._socket?.off('initialNotifications', listener);
       };
-    }).pipe(takeUntil(this.ngUnsubscribe));
+    }).pipe(takeUntil(this._ngUnsubscribe));
   }
 
   onNewNotification(): Observable<Notification> {
     return new Observable<Notification>(observer => {
-      if (!this.socket) {
-        console.warn('Notification socket not initialized for onNewNotification.');
+      if (!this._socket) {
+        this._logger.warn('Notification _socket not initialized for onNewNotification.');
         return;
       }
       const listener = (notification: Notification) => observer.next(notification);
-      this.socket.on('newNotification', listener);
+      this._socket.on('newNotification', listener);
       return () => {
-        this.socket?.off('newNotification', listener);
+        this._socket?.off('newNotification', listener);
       };
-    }).pipe(takeUntil(this.ngUnsubscribe));
+    }).pipe(takeUntil(this._ngUnsubscribe));
   }
 
   onNotificationStatusUpdate(): Observable<{ notificationId: string; status: 'read' | 'unread' }> {
     return new Observable<{ notificationId: string; status: 'read' | 'unread' }>(observer => {
-      if (!this.socket) {
-        console.warn('Notification socket not initialized for onNotificationStatusUpdate.');
+      if (!this._socket) {
+        this._logger.warn('Notification _socket not initialized for onNotificationStatusUpdate.');
         return;
       }
       const listener = (update: { notificationId: string; status: 'read' | 'unread' }) => observer.next(update);
-      this.socket.on('notificationStatusUpdate', listener);
+      this._socket.on('notificationStatusUpdate', listener);
       return () => {
-        this.socket?.off('notificationStatusUpdate', listener);
+        this._socket?.off('notificationStatusUpdate', listener);
       };
-    }).pipe(takeUntil(this.ngUnsubscribe));
+    }).pipe(takeUntil(this._ngUnsubscribe));
   }
 
   onSocketError(): Observable<any> {
     return new Observable(observer => {
-      if (!this.socket) {
-        console.warn('Notification socket not initialized for onSocketError.');
+      if (!this._socket) {
+        this._logger.warn('Notification _socket not initialized for onSocketError.');
         return;
       }
       const listener = (err: any) => observer.next(err);
-      this.socket.on('error', listener); // Generic socket error event
+      this._socket.on('error', listener);
       return () => {
-        this.socket?.off('error', listener);
+        this._socket?.off('error', listener);
       };
-    }).pipe(takeUntil(this.ngUnsubscribe));
+    }).pipe(takeUntil(this._ngUnsubscribe));
   }
 
   // Http Methods
   getNotifications(): Observable<Notification[]> {
-    return this.http.get<Notification[]>(`${environment.apiUrl}/user/notifications`);
+    return this._http.get<Notification[]>(`${environment.apiUrl}/user/notifications`);
   }
-  
+
   getUnreadNotifications(): Observable<Notification[]> {
-    return this.http.get<Notification[]>(`${environment.apiUrl}/user/notifications/unread`);
+    return this._http.get<Notification[]>(`${environment.apiUrl}/user/notifications/unread`);
   }
-  
+
   getUnreadCount(): Observable<{ count: number }> {
-    return this.http.get<{ count: number }>(`${environment.apiUrl}/user/notifications/count`);
+    return this._http.get<{ count: number }>(`${environment.apiUrl}/user/notifications/count`);
   }
-  
+
   markAsReadHttp(notificationId: string): Observable<Notification> {
-    return this.http.post<Notification>(`${environment.apiUrl}/user/notifications/${notificationId}/read`, {});
+    return this._http.post<Notification>(`${environment.apiUrl}/user/notifications/${notificationId}/read`, {});
   }
-  
+
   markAllAsRead(): Observable<{ success: boolean }> {
-    return this.http.post<{ success: boolean }>(`${environment.apiUrl}/user/notifications/read-all`, {});
+    return this._http.post<{ success: boolean }>(`${environment.apiUrl}/user/notifications/read-all`, {});
   }
-  
+
   deleteNotification(notificationId: string): Observable<{ success: boolean }> {
-    return this.http.delete<{ success: boolean }>(`${environment.apiUrl}/user/notifications/${notificationId}`);
+    return this._http.delete<{ success: boolean }>(`${environment.apiUrl}/user/notifications/${notificationId}`);
   }
 
   fetchUnreadNotifications(): Observable<Notification[]> {
-    return this.http.get<Notification[]>(`${environment.apiUrl}/user/notifications/unread`);
+    return this._http.get<Notification[]>(`${environment.apiUrl}/user/notifications/unread`);
   }
-  
+
   fetchAllNotifications(): Observable<Notification[]> {
-    return this.http.get<Notification[]>(`${environment.apiUrl}/user/notifications`);
+    return this._http.get<Notification[]>(`${environment.apiUrl}/user/notifications`);
   }
 }

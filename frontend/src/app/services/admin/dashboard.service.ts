@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -8,11 +8,14 @@ import { DashboardResponseDto } from '../../interfaces/admin.interface';
   providedIn: 'root'
 })
 export class DashboardService {
-  private readonly baseUrl = `${environment.apiUrl}/admin`;
+  private readonly _baseUrl = `${environment.apiUrl}/admin`;
 
-  constructor(private http: HttpClient) { }
+  // Services
+  private readonly _http = inject(HttpClient);
+
+  constructor() { }
 
   getDashboardData(): Observable<DashboardResponseDto> {
-    return this.http.get<DashboardResponseDto>(`${this.baseUrl}/dashboard`);
+    return this._http.get<DashboardResponseDto>(`${this._baseUrl}/dashboard`);
   }
 }

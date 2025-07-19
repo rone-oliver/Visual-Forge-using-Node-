@@ -1,20 +1,23 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { catchError, Observable } from 'rxjs';
-import { FileAttachmentResponse, GetEditorQuotationsParams, IQuotation, OutputType, PaginatedEditorQuotationsResponse, QuotationStatus } from '../../interfaces/quotation.interface';
+import { FileAttachmentResponse, GetEditorQuotationsParams, OutputType, PaginatedEditorQuotationsResponse, QuotationStatus } from '../../interfaces/quotation.interface';
 import { CompletedWork } from '../../interfaces/completed-work.interface';
 import { Editor } from '../../interfaces/editor.interface';
-import { IBid, BidStatus, GetBiddedQuotationsQuery, PaginatedBiddedQuotationsResponse, EditorBid } from '../../interfaces/bid.interface';
+import { IBid, GetBiddedQuotationsQuery, PaginatedBiddedQuotationsResponse, EditorBid } from '../../interfaces/bid.interface';
 
 @Injectable({
   providedIn: 'root'
 })
 export class EditorService {
-  private readonly apiUrl = environment.apiUrl;
-  private readonly editorApiUrl = `${this.apiUrl}/editor`;
+  private readonly _apiUrl = environment.apiUrl;
+  private readonly _editorApiUrl = `${this._apiUrl}/editor`;
 
-  constructor(private http: HttpClient) { };
+  // Services
+  private readonly _http = inject(HttpClient);
+  
+  constructor() { };
 
   getPublishedQuotations(params: GetEditorQuotationsParams): Observable<PaginatedEditorQuotationsResponse>{
     let httpParams = new HttpParams();
@@ -31,12 +34,12 @@ export class EditorService {
       httpParams = httpParams.set('searchTerm', params.searchTerm);
     }
     httpParams = httpParams.set('status',QuotationStatus.PUBLISHED);
-    return this.http.get<PaginatedEditorQuotationsResponse>(`${this.editorApiUrl}/quotations`, { params: httpParams });
+    return this._http.get<PaginatedEditorQuotationsResponse>(`${this._editorApiUrl}/quotations`, { params: httpParams });
   }
 
   getEditorBidForQuotation(quotationId: string): Observable<EditorBid> {
-    return this.http.get<EditorBid>(
-      `${this.editorApiUrl}/bids/quotation/${quotationId}`
+    return this._http.get<EditorBid>(
+      `${this._editorApiUrl}/bids/quotation/${quotationId}`
     );
   }
 
@@ -53,11 +56,11 @@ export class EditorService {
     if(params.searchTerm){
       httpParams = httpParams.set('searchTerm', params.searchTerm.trim());
     }
-    return this.http.get<PaginatedEditorQuotationsResponse>(`${this.editorApiUrl}/quotations`, { params: httpParams });
+    return this._http.get<PaginatedEditorQuotationsResponse>(`${this._editorApiUrl}/quotations`, { params: httpParams });
   }
 
   submitQuotationResponse(workData: any): Observable<boolean>{
-    return this.http.post<boolean>(`${this.editorApiUrl}/quotations/response`, workData);
+    return this._http.post<boolean>(`${this._editorApiUrl}/quotations/response`, workData);
   }
 
   uploadWorkFiles(files: File[]): Observable<FileAttachmentResponse[]>{
@@ -66,13 +69,13 @@ export class EditorService {
       formData.append('files', file);
     });
     formData.append('folder','Visual Forge/Work Files');
-    return this.http.post<FileAttachmentResponse[]>(`${this.editorApiUrl}/uploads/work`, formData,{ reportProgress: true}).pipe(
+    return this._http.post<FileAttachmentResponse[]>(`${this._editorApiUrl}/uploads/work`, formData,{ reportProgress: true}).pipe(
       catchError(error => { throw error})
     );
   }
 
   getCompletedWorks(): Observable<CompletedWork[]> {
-    return this.http.get<CompletedWork[]>(`${this.editorApiUrl}/works`).pipe(
+    return this._http.get<CompletedWork[]>(`${this._editorApiUrl}/works`).pipe(
       catchError(error => { throw error })
     );
   }
@@ -92,12 +95,12 @@ export class EditorService {
       });
     }
 
-    return this.http.patch(`${this.editorApiUrl}/works/${workId}/files`, formData);
+    return this._http.patch(`${this._editorApiUrl}/works/${workId}/files`, formData);
   }
 
   // Bids Services
   createBid(quotationId: string, bidAmount: number, notes?: string): Observable<IBid> {
-    return this.http.post<IBid>(`${this.editorApiUrl}/bids`, {
+    return this._http.post<IBid>(`${this._editorApiUrl}/bids`, {
       quotationId,
       bidAmount,
       notes
@@ -107,14 +110,14 @@ export class EditorService {
   updateBid(
     bidId: string, amount: number, notes?: string,
   ): Observable<IBid> {
-    return this.http.patch<IBid>(`${this.editorApiUrl}/bids/${bidId}`, {
+    return this._http.patch<IBid>(`${this._editorApiUrl}/bids/${bidId}`, {
       bidAmount: amount,
       notes
     });
   }
 
   deleteBid(bidId: string): Observable<void> {
-    return this.http.delete<void>(`${this.editorApiUrl}/bids/${bidId}`);
+    return this._http.delete<void>(`${this._editorApiUrl}/bids/${bidId}`);
   }
 
   getBiddedQuotations(params: GetBiddedQuotationsQuery): Observable<PaginatedBiddedQuotationsResponse> {
@@ -130,18 +133,18 @@ export class EditorService {
       httpParams = httpParams.set('hideNonBiddable', params.hideNonBiddable);
     }
 
-    return this.http.get<PaginatedBiddedQuotationsResponse>(`${this.editorApiUrl}/bids`, { params: httpParams });
+    return this._http.get<PaginatedBiddedQuotationsResponse>(`${this._editorApiUrl}/bids`, { params: httpParams });
   }
 
   addTutorial(tutorialUrl: string): Observable<Editor> {
-    return this.http.post<Editor>(`${this.editorApiUrl}/tutorials`, { tutorialUrl });
+    return this._http.post<Editor>(`${this._editorApiUrl}/tutorials`, { tutorialUrl });
   }
 
   removeTutorial(tutorialUrl: string): Observable<Editor> {
-    return this.http.delete<Editor>(`${this.editorApiUrl}/tutorials`, { body: { tutorialUrl } });
+    return this._http.delete<Editor>(`${this._editorApiUrl}/tutorials`, { body: { tutorialUrl } });
   }
 
   cancelAcceptedBid(bidId: string): Observable<{ success: boolean }> {
-    return this.http.patch<{ success: boolean }>(`${this.editorApiUrl}/bids/${bidId}/cancel`, {});
+    return this._http.patch<{ success: boolean }>(`${this._editorApiUrl}/bids/${bidId}/cancel`, {});
   }
 }

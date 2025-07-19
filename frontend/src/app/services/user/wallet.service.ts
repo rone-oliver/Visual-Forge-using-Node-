@@ -12,8 +12,8 @@ export interface Wallet {
 }
 
 export enum PaymentType {
-    ADVANCE = 'advance',
-    BALANCE = 'balance'
+  ADVANCE = 'advance',
+  BALANCE = 'balance'
 }
 
 export interface PayFromWalletDto {
@@ -26,14 +26,14 @@ export interface PayFromWalletDto {
   providedIn: 'root'
 })
 export class WalletService {
-  private http = inject(HttpClient);
-  private walletApiUrl = `${environment.apiUrl}/user/wallet`;
+  private readonly _http = inject(HttpClient);
+  private readonly _walletApiUrl = `${environment.apiUrl}/user/wallet`;
 
   getWallet(): Observable<Wallet> {
-    return this.http.get<Wallet>(this.walletApiUrl);
+    return this._http.get<Wallet>(this._walletApiUrl);
   }
 
   payWithWallet(payload: PayFromWalletDto): Observable<any> {
-    return this.http.post(`${this.walletApiUrl}/pay`, payload);
+    return this._http.post(`${this._walletApiUrl}/pay`, payload);
   }
 }

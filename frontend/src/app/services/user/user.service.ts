@@ -1,5 +1,5 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { EditorPublicProfile, User } from '../../interfaces/user.interface';
 import { catchError, map, Observable, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -9,37 +9,40 @@ import { IBid } from '../../interfaces/bid.interface';
 import { PaginatedTransactionResponse } from '../../interfaces/transaction.interface';
 import { GetPublicEditorsDto, PaginatedPublicEditors } from '../../interfaces/user.interface';
 import { IPaginatedResponse, IWallet, IWalletTransaction } from '../../interfaces/wallet.interface';
+import { LoggerService } from '../logger.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-  private apiUrl = environment.apiUrl;
-  private userApiUrl = this.apiUrl + '/user';
+  private readonly _apiUrl = environment.apiUrl;
+  private readonly _userApiUrl = this._apiUrl + '/user';
 
-  constructor(
-    private http: HttpClient,
-  ) { };
+  // Services
+  private readonly _http = inject(HttpClient);
+  private readonly _logger = inject(LoggerService);
+
+  constructor() { };
 
   getUserProfile() {
-    return this.http.get<User>(`${this.userApiUrl}/profile`).pipe(
+    return this._http.get<User>(`${this._userApiUrl}/profile`).pipe(
       map((response: any) => {
-        console.log(`user profile response: `, response);
+        this._logger.info(`user profile response: `, response);
         return response;
       }),
       catchError((error) => {
-        console.error('Error fetching user profile:', error);
+        this._logger.error('Error fetching user profile:', error);
         throw error;
       })
     );
   }
 
   requestForEditor() {
-    return this.http.post<boolean>(`${this.userApiUrl}/editor-requests`, {});
+    return this._http.post<boolean>(`${this._userApiUrl}/editor-requests`, {});
   }
 
   getEditorRequestStatus(): Observable<string | null> {
-    return this.http.get<{ status: string }>(`${this.userApiUrl}/editor-requests`).pipe(
+    return this._http.get<{ status: string }>(`${this._userApiUrl}/editor-requests`).pipe(
       map(response => response.status),
       catchError(() => of(null))
     );
@@ -61,10 +64,10 @@ export class UserService {
         httpParams = httpParams.set('searchTerm', params.searchTerm);
       }
     }
-    return this.http.get<PaginatedQuotationsResponse>(`${this.userApiUrl}/quotations`, { params: httpParams }).pipe(
+    return this._http.get<PaginatedQuotationsResponse>(`${this._userApiUrl}/quotations`, { params: httpParams }).pipe(
       map((response) => response),
       catchError((error) => {
-        console.error('Error fetching quotations with params:', error)
+        this._logger.error('Error fetching quotations with params:', error)
         throw error
       })
     )
@@ -75,20 +78,20 @@ export class UserService {
       .set('page', page.toString())
       .set('limit', limit.toString());
 
-    return this.http.get<PaginatedTransactionResponse>(`${this.userApiUrl}/transactions`, { params }).pipe(
+    return this._http.get<PaginatedTransactionResponse>(`${this._userApiUrl}/transactions`, { params }).pipe(
       map(response => response),
       catchError(error => {
-        console.error('Error fetching transaction history:', error);
+        this._logger.error('Error fetching transaction history:', error);
         throw error;
       })
     );
   }
 
   getEditorPublicProfile(editorId: string): Observable<EditorPublicProfile> {
-    return this.http.get<EditorPublicProfile>(`${this.userApiUrl}/profile/editors/${editorId}`).pipe(
+    return this._http.get<EditorPublicProfile>(`${this._userApiUrl}/profile/editors/${editorId}`).pipe(
       map(response => response),
       catchError(error => {
-        console.error(`Error fetching editor profile for ID ${editorId}:`, error);
+        this._logger.error(`Error fetching editor profile for ID ${editorId}:`, error);
         throw error;
       })
     );
@@ -101,49 +104,49 @@ export class UserService {
         httpParams = httpParams.set(key, String(value));
       }
     });
-    return this.http.get<PaginatedPublicEditors>(`${this.userApiUrl}/editors`, { params: httpParams }).pipe(
+    return this._http.get<PaginatedPublicEditors>(`${this._userApiUrl}/editors`, { params: httpParams }).pipe(
       map(response => response),
       catchError(error => { throw error })
     );
   }
 
   getQuotationById(id: string): Observable<any> {
-    return this.http.get<any>(`${this.userApiUrl}/quotations/${id}`).pipe(
+    return this._http.get<any>(`${this._userApiUrl}/quotations/${id}`).pipe(
       map((response) => response),
       catchError((error) => { throw error })
     )
   }
 
   createQuotation(quotation: any): Observable<boolean> {
-    return this.http.post<boolean>(`${this.userApiUrl}/quotations`, quotation).pipe(
+    return this._http.post<boolean>(`${this._userApiUrl}/quotations`, quotation).pipe(
       map(response => response),
       catchError(err => { throw err })
     )
   }
 
   updateQuotation(id: string, quotation: any): Observable<boolean> {
-    return this.http.patch<boolean>(`${this.userApiUrl}/quotations/${id}`, quotation).pipe(
+    return this._http.patch<boolean>(`${this._userApiUrl}/quotations/${id}`, quotation).pipe(
       map(response => response),
       catchError(err => { throw err })
     )
   }
 
   deleteQuotation(id: string): Observable<boolean> {
-    return this.http.delete<boolean>(`${this.userApiUrl}/quotations/${id}`).pipe(
+    return this._http.delete<boolean>(`${this._userApiUrl}/quotations/${id}`).pipe(
       map(response => response),
       catchError(err => { throw err })
     )
   }
 
   updateProfileImage(url: string): Observable<{success:boolean}> {
-    return this.http.patch<{success: boolean}>(`${this.apiUrl}/user/profile/image`, { profileImageUrl: url }).pipe(
+    return this._http.patch<{success: boolean}>(`${this._userApiUrl}/profile/image`, { profileImageUrl: url }).pipe(
       map(response => response),
       catchError(error => { throw error })
     )
   }
 
   updateProfile(data: any): Observable<boolean> {
-    return this.http.patch<boolean>(`${this.apiUrl}/user/profile`, data).pipe(
+    return this._http.patch<boolean>(`${this._userApiUrl}/profile`, data).pipe(
       map(response => response),
       catchError(error => { throw error })
     )
@@ -155,57 +158,57 @@ export class UserService {
       formData.append('files', file);
     });
     formData.append('folder', 'Visual Forge/Quotation Attachments');
-    return this.http.post<FileAttachmentResponse[]>(`${this.apiUrl}/user/quotations/upload`, formData, { reportProgress: true }).pipe(
+    return this._http.post<FileAttachmentResponse[]>(`${this._userApiUrl}/quotations/upload`, formData, { reportProgress: true }).pipe(
       catchError(error => { throw error })
     )
   }
 
   resetPassword(data: { currentPassword: string, newPassword: string }): Observable<any> {
-    return this.http.patch<any>(`${this.apiUrl}/user/reset-password`, data).pipe(
+    return this._http.patch<any>(`${this._userApiUrl}/reset-password`, data).pipe(
       map(response => response),
       catchError(error => { throw error })
     )
   }
 
   getCompletedWorks(): Observable<CompletedWork[]> {
-    return this.http.get<CompletedWork[]>(`${this.apiUrl}/user/quotations/completed`).pipe(
+    return this._http.get<CompletedWork[]>(`${this._userApiUrl}/quotations/completed`).pipe(
       map((response) => response),
       catchError((error) => { throw error })
     );
   }
 
   rateWork(workId: string, rating: number, feedback: string): Observable<boolean> {
-    console.log('worksId', workId);
-    return this.http.put<boolean>(`${this.userApiUrl}/quotations/${workId}/rating`, { rating, feedback }).pipe(
+    this._logger.debug('worksId', workId);
+    return this._http.put<boolean>(`${this._userApiUrl}/quotations/${workId}/rating`, { rating, feedback }).pipe(
       map(response => response),
       catchError(error => { throw error })
     );
   }
 
   submitWorkFeedback(workId: string, feedback: string): Observable<any> {
-    return this.http.post(`${this.userApiUrl}/works/${workId}/feedback`, { feedback });
+    return this._http.post(`${this._userApiUrl}/works/${workId}/feedback`, { feedback });
   }
 
   markWorkAsSatisfied(workId: string): Observable<{ success: boolean }> {
-    return this.http.patch<{ success: boolean }>(`${this.userApiUrl}/works/${workId}/satisfied`, {});
+    return this._http.patch<{ success: boolean }>(`${this._userApiUrl}/works/${workId}/satisfied`, {});
   }
 
   rateEditor(editorId: string, rating: number, feedback: string): Observable<boolean> {
-    return this.http.post<boolean>(`${this.userApiUrl}/editor/rating`, { editorId, rating, feedback }).pipe(
+    return this._http.post<boolean>(`${this._userApiUrl}/editor/rating`, { editorId, rating, feedback }).pipe(
       map(response => response),
       catchError(error => { throw error })
     )
   }
 
   getCurrentEditorRating(editorId: string): Observable<{ rating: number, feedback: string }> {
-    return this.http.get<{ rating: number, feedback: string }>(`${this.userApiUrl}/editor/rating`, { params: { editorId } }).pipe(
+    return this._http.get<{ rating: number, feedback: string }>(`${this._userApiUrl}/editor/rating`, { params: { editorId } }).pipe(
       map(response => response),
       catchError(error => { throw error })
     )
   }
 
   updateWorkPublicStatus(workId: string, isPublic: boolean): Observable<boolean> {
-    return this.http.patch<boolean>(`${this.apiUrl}/user/quotations/${workId}/public`, { isPublic }).pipe(
+    return this._http.patch<boolean>(`${this._userApiUrl}/quotations/${workId}/public`, { isPublic }).pipe(
       map(response => response),
       catchError(error => { throw error })
     );
@@ -226,7 +229,7 @@ export class UserService {
     if (search && search.trim()) {
       params = params.set('search', search.trim());
     }
-    return this.http.get<{ works: Works[], total: number }>(`${this.apiUrl}/user/works/public`, {
+    return this._http.get<{ works: Works[], total: number }>(`${this._userApiUrl}/works/public`, {
       params
     }).pipe(
       map(response => response),
@@ -235,12 +238,12 @@ export class UserService {
   }
 
   getUsers(): Observable<User[]> {
-    return this.http.get<User[]>(`${this.userApiUrl}/users`);
+    return this._http.get<User[]>(`${this._userApiUrl}/users`);
   }
 
   updateQuotationPayment(isAdvance: boolean, quotationId: string, amount: number, paymentDetails: IPaymentVerification): Observable<boolean> {
-    console.log('paymentDetails:', paymentDetails);
-    return this.http.patch<boolean>(`${this.userApiUrl}/quotations/${quotationId}/payment`, {
+    this._logger.debug('paymentDetails:', paymentDetails);
+    return this._http.patch<boolean>(`${this._userApiUrl}/quotations/${quotationId}/payment`, {
       isAdvancePaid: !isAdvance,
       orderId: paymentDetails.order_id, 
       paymentId: paymentDetails.id,       
@@ -259,23 +262,23 @@ export class UserService {
   }
 
   getBidsByQuotation(quotationId: string): Observable<IBid[]> {
-    return this.http.get<IBid[]>(`${this.userApiUrl}/quotations/${quotationId}/bids`);
+    return this._http.get<IBid[]>(`${this._userApiUrl}/quotations/${quotationId}/bids`);
   }
 
   acceptBid(bidId: string): Observable<IBid> {
-    return this.http.post<IBid>(`${this.userApiUrl}/bids/${bidId}/accept`, {});
+    return this._http.post<IBid>(`${this._userApiUrl}/bids/${bidId}/accept`, {});
   }
 
   getAcceptedBid(quotationId: string, editorId: string): Observable<IBid> {
-    return this.http.get<IBid>(`${this.userApiUrl}/bids/${quotationId}/accepted`, { params: { editorId } });
+    return this._http.get<IBid>(`${this._userApiUrl}/bids/${quotationId}/accepted`, { params: { editorId } });
   }
 
   cancelAcceptedBid(bidId: string): Observable<{ success: boolean }> {
-    return this.http.patch<{ success: boolean }>(`${this.userApiUrl}/bids/${bidId}/cancel`, {});
+    return this._http.patch<{ success: boolean }>(`${this._userApiUrl}/bids/${bidId}/cancel`, {});
   }
 
   getWalletDetails(): Observable<IWallet> {
-    return this.http.get<IWallet>(`${this.userApiUrl}/wallet`);
+    return this._http.get<IWallet>(`${this._userApiUrl}/wallet`);
   }
 
   getWalletTransactions(params: { page?: number; limit?: number; startDate?: string; endDate?: string }): Observable<IPaginatedResponse<IWalletTransaction>> {
@@ -285,15 +288,15 @@ export class UserService {
         httpParams = httpParams.set(key, String(value));
       }
     });
-    return this.http.get<IPaginatedResponse<IWalletTransaction>>(`${this.userApiUrl}/wallet/transactions`, { params: httpParams });
+    return this._http.get<IPaginatedResponse<IWalletTransaction>>(`${this._userApiUrl}/wallet/transactions`, { params: httpParams });
   }
 
   addMoneyToWallet(amount: number): Observable<IWallet> {
-    return this.http.post<IWallet>(`${this.userApiUrl}/wallet/add`, { amount });
+    return this._http.post<IWallet>(`${this._userApiUrl}/wallet/add`, { amount });
   }
 
   withdrawMoneyFromWallet(amount: number): Observable<IWallet> {
-    return this.http.post<IWallet>(`${this.userApiUrl}/wallet/withdraw`, { amount });
+    return this._http.post<IWallet>(`${this._userApiUrl}/wallet/withdraw`, { amount });
   }
 
   reportUser(reportData: {
@@ -302,14 +305,14 @@ export class UserService {
     reason: string;
     additionalContext?: string;
   }): Observable<any> {
-    return this.http.post(`${this.userApiUrl}/reports`, reportData);
+    return this._http.post(`${this._userApiUrl}/reports`, reportData);
   }
 
   followUser(userId: string): Observable<{ success: boolean }> {
-    return this.http.post<{ success: boolean }>(`${this.userApiUrl}/follow/${userId}`, {});
+    return this._http.post<{ success: boolean }>(`${this._userApiUrl}/follow/${userId}`, {});
   }
 
   unfollowUser(userId: string): Observable<{ success: boolean }> {
-    return this.http.delete<{ success: boolean }>(`${this.userApiUrl}/follow/${userId}`, {});
+    return this._http.delete<{ success: boolean }>(`${this._userApiUrl}/follow/${userId}`, {});
   }
 }

@@ -1,104 +1,104 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, catchError, delay, firstValueFrom, of } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
+import { BehaviorSubject, delay, firstValueFrom } from 'rxjs';
 import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
+import { LoggerService } from './logger.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ThemeService {
-  private isDarkTheme = new BehaviorSubject<boolean>(false);
-  private isAdminTheme = new BehaviorSubject<boolean>(false);
+  private _isDarkTheme = new BehaviorSubject<boolean>(false);
+  private _isAdminTheme = new BehaviorSubject<boolean>(false);
 
-  isUserDarkTheme$ = this.isDarkTheme.asObservable();
-  isAdminDarkTheme$ = this.isAdminTheme.asObservable();
+  isUserDarkTheme$ = this._isDarkTheme.asObservable();
+  isAdminDarkTheme$ = this._isAdminTheme.asObservable();
 
-  private backendUrl = environment.apiUrl;
+  private _backendUrl = environment.apiUrl;
 
-  constructor(
-    private http: HttpClient,
-    private authService: AuthService
-  ) {
-    this.authService.userIsAuthenticated$.subscribe(isAuthenticated => {
+  // Services
+  private readonly _http = inject(HttpClient);
+  private readonly _authService = inject(AuthService);
+  private readonly _logger = inject(LoggerService);
+
+  constructor() {
+    this._authService.userIsAuthenticated$.subscribe(isAuthenticated => {
       if (!isAuthenticated) {
-        this.loadDefaultTheme('User');
+        this._loadDefaultTheme('User');
       } else {
-        this.loadSavedTheme('User');
+        this._loadSavedTheme('User');
       }
     });
 
-    this.authService.adminIsAuthenticated$.pipe(delay(100)).subscribe(isAuthenticated => {
+    this._authService.adminIsAuthenticated$.pipe(delay(100)).subscribe(isAuthenticated => {
       if (!isAuthenticated) {
-        this.loadDefaultTheme('Admin');
+        this._loadDefaultTheme('Admin');
       } else {
-        console.log('called the constructor');
-        this.loadSavedTheme('Admin');
+        this._loadSavedTheme('Admin');
       }
     });
   }
 
-  private loadDefaultTheme(role: 'User' | 'Admin'): void {
+  private _loadDefaultTheme(role: 'User' | 'Admin'): void {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     this.setTheme(prefersDark, role);
   }
 
-  private async loadSavedTheme(role: 'User' | 'Admin'): Promise<void> {
+  private async _loadSavedTheme(role: 'User' | 'Admin'): Promise<void> {
     try {
-      console.log('load saved theme called');
+      this._logger.info('Load saved theme called');
       const response = await firstValueFrom(
-        this.http.get<{ isDark: boolean }>(`${this.backendUrl}/auth/theme-preference?userType=${role}`, {
+        this._http.get<{ isDark: boolean }>(`${this._backendUrl}/auth/theme-preference?userType=${role}`, {
           withCredentials: true, observe:'response' as const
         })
       );
       if (response.status === 404) {
-        console.log('Theme preference not found, loading default theme');
-        this.loadDefaultTheme(role);
+        this._logger.warn('Theme preference not found, loading default theme');
+        this._loadDefaultTheme(role);
       } else if(response.body) {
         this.setTheme(response.body.isDark, role);
-        // localStorage.setItem(`${role.toLowerCase()}-theme`, response.body.isDark ? 'dark' : 'light');
       }
     } catch (error) {
-      console.error('Failed to load theme preference:', error);
-      this.loadDefaultTheme(role);
+      this._logger.error('Failed to load theme preference:', error);
+      this._loadDefaultTheme(role);
     }
   }
 
   public setTheme(isDark: boolean, role: 'User' | 'Admin'): void {
     if (role === 'User') {
-      this.isDarkTheme.next(isDark);
+      this._isDarkTheme.next(isDark);
       document.documentElement.classList.toggle('dark', isDark);
     } else {
-      this.isAdminTheme.next(isDark);
+      this._isAdminTheme.next(isDark);
       document.documentElement.classList.toggle('admin-dark', isDark);
     }
   }
 
   toggleTheme(): void {
-    const isDark = !this.isDarkTheme.value;
+    const isDark = !this._isDarkTheme.value;
     this.setTheme(isDark, 'User');
-    this.saveThemePreference(isDark, 'User');
+    this._saveThemePreference(isDark, 'User');
   }
 
   toggleAdminTheme(): void {
-    const isDark = !this.isAdminTheme.value;
+    const isDark = !this._isAdminTheme.value;
     this.setTheme(isDark, 'Admin');
-    this.saveThemePreference(isDark, 'Admin');
+    this._saveThemePreference(isDark, 'Admin');
   }
 
-  private async saveThemePreference(isDark:boolean,role: 'User' | 'Admin'):Promise<void>{
+  private async _saveThemePreference(isDark:boolean,role: 'User' | 'Admin'):Promise<void>{
     try {
       await firstValueFrom(
-        this.http.put(`${this.backendUrl}/auth/theme-preference`, {
+        this._http.put(`${this._backendUrl}/auth/theme-preference`, {
           userType:role,
           isDark
         }, {
           withCredentials: true
         })
       );
-      // localStorage.setItem(`${role.toLowerCase()}-theme`, isDark ? 'dark' : 'light');
     } catch (error) {
-      console.error('Failed to save theme preference: ',error);
+      this._logger.error('Failed to save theme preference: ',error);
     }
   }
 }

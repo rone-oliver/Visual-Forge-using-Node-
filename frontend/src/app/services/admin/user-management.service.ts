@@ -1,7 +1,8 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { LoggerService } from '../logger.service';
 
 export interface User {
   _id: string;
@@ -26,28 +27,32 @@ export interface UserResponse {
   providedIn: 'root'
 })
 export class UserManagementService {
-  private apiUrl = `${environment.apiUrl}/admin/users`;
+  private readonly _apiUrl = `${environment.apiUrl}/admin/users`;
 
-  constructor(private http: HttpClient) { }
+  // Services
+  private readonly _http = inject(HttpClient);
+  private readonly _logger = inject(LoggerService);
+
+  constructor() { }
 
   getAllUsers(params?: {[key:string]: any}):Observable<UserResponse>{
     let httpParams = new HttpParams();
     if(params){
-      console.debug('params:',params);
+      this._logger.debug('params:',params);
       Object.keys(params).forEach(key => {
         if (params[key] !== undefined && params[key] !== null && params[key] !== '') {
           httpParams = httpParams.set(key, params[key]);
         }
       });
     }
-    return this.http.get<UserResponse>(this.apiUrl,{ params: httpParams});
+    return this._http.get<UserResponse>(this._apiUrl,{ params: httpParams});
   }
 
   getUser(username: string):Observable<User>{
-    return this.http.get<User>(`${this.apiUrl}/${username}`);
+    return this._http.get<User>(`${this._apiUrl}/${username}`);
   }
 
   blockUser(userId: string): Observable<boolean> {
-    return this.http.patch<boolean>(`${this.apiUrl}/${userId}/block`,{});
+    return this._http.patch<boolean>(`${this._apiUrl}/${userId}/block`,{});
   }
 }

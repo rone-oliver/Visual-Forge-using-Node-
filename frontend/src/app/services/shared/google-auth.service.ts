@@ -1,33 +1,36 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { catchError, tap, throwError } from 'rxjs';
 import { AuthService, LoginResponse } from '../auth.service';
 import { TokenService } from '../token.service';
+import { LoggerService } from '../logger.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class GoogleAuthService {
 
-  constructor(
-    private http: HttpClient,
-    private authService: AuthService,
-    private tokenService: TokenService,
-  ) { }
+  // Services
+  private readonly _http = inject(HttpClient);
+  private readonly _authService = inject(AuthService);
+  private readonly _tokenService = inject(TokenService);
 
-  private apiUrl = environment.apiUrl;
+  private readonly _apiUrl = environment.apiUrl;
+  private readonly _logger = inject(LoggerService);
+
+  constructor() { };
 
   verifyGoogleToken(credential: string) {
-    console.log(`verifying google token for`)
-    return this.http.post<LoginResponse>(`${this.apiUrl}/auth/google`, { credential }, { withCredentials: true })
+    this._logger.info(`Verifying google token for`)
+    return this._http.post<LoginResponse>(`${this._apiUrl}/auth/google`, { credential }, { withCredentials: true })
       .pipe(
         tap(response => {
-          console.log('Google token verified successfully, response:', response);
-          this.authService.setAccessToken(response.accessToken, 'User');
+          this._logger.info('Google token verified successfully, response:', response);
+          this._authService.setAccessToken(response.accessToken, 'User');
         }),
         catchError(error => {
-          this.tokenService.clearToken('User');
+          this._tokenService.clearToken('User');
           return throwError(() => error);
         })
       );

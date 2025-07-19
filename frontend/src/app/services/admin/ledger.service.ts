@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -8,9 +8,12 @@ import { PaginatedLedgerResponse } from '../../interfaces/admin-ledger.interface
   providedIn: 'root'
 })
 export class LedgerService {
-  private apiUrl = `${environment.apiUrl}/admin/wallet`;
+  private readonly _apiUrl = `${environment.apiUrl}/admin/wallet`;
 
-  constructor(private http: HttpClient) { }
+  // Services
+  private readonly _http = inject(HttpClient);
+
+  constructor() { }
 
   getLedger(page?: number, limit?: number): Observable<PaginatedLedgerResponse> {
     let params = new HttpParams()
@@ -20,6 +23,6 @@ export class LedgerService {
     if(limit){
       params=params.set('limit', limit)
     }
-    return this.http.get<PaginatedLedgerResponse>(`${this.apiUrl}/ledger`, { params });
+    return this._http.get<PaginatedLedgerResponse>(`${this._apiUrl}/ledger`, { params });
   }
 }
