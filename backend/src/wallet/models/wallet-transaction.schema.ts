@@ -42,7 +42,7 @@ export class WalletTransaction {
   description: string;
 
   @Prop({ type: MongooseSchema.Types.Mixed })
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export const WalletTransactionSchema =

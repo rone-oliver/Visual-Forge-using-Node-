@@ -11,7 +11,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { Types } from 'mongoose';
+import { FilterQuery, Types } from 'mongoose';
 import { GetAllUsersQueryDto } from 'src/admins/dto/admin.dto';
 import {
   IBidService,
@@ -1350,14 +1350,12 @@ export class UsersService implements IUsersService {
       isEditor,
       gender,
       behaviourRating,
-      // sortBy = 'fullname',
-      // ...filters
     } = query;
 
-    const filter: any = {};
-    if (query.isEditor !== undefined) filter.isEditor = query.isEditor;
-    if (query.gender) filter.gender = query.gender;
-    if (query.behaviourRating) filter.behaviourRating = query.behaviourRating;
+    const filter: FilterQuery<User> = {};
+    if (isEditor !== undefined) filter.isEditor = isEditor;
+    if (gender) filter.gender = gender;
+    if (behaviourRating) filter.behaviourRating = behaviourRating;
     if (search) {
       filter.$or = [
         { fullname: { $regex: search, $options: 'i' } },

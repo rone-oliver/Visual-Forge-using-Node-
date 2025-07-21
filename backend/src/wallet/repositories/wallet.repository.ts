@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { FilterQuery, Model, Types } from 'mongoose';
 
 import { IWalletRepository } from '../interfaces/wallet-repository.interface';
 import {
@@ -45,7 +45,7 @@ export class WalletRepository implements IWalletRepository {
   }
 
   async findTransactions(
-    query: any,
+    query: FilterQuery<WalletTransactionDocument>,
     page: number,
     limit: number,
   ): Promise<WalletTransaction[]> {
@@ -74,7 +74,9 @@ export class WalletRepository implements IWalletRepository {
     return transaction;
   }
 
-  async countTransactions(query: any): Promise<number> {
+  async countTransactions(
+    query: FilterQuery<WalletTransactionDocument>,
+  ): Promise<number> {
     return this._walletTransactionModel.countDocuments(query);
   }
 }

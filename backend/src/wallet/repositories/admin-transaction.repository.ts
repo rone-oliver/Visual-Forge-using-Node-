@@ -9,6 +9,17 @@ import {
   TransactionFlow,
 } from '../models/admin-transaction.schema';
 
+interface TransactionCountResult {
+  _id: TransactionFlow;
+  count: number;
+}
+
+interface FinancialSummaryResult {
+  totalRevenue: { total: number }[];
+  totalPlatformFee: { total: number }[];
+  totalPayouts: { total: number }[];
+}
+
 @Injectable()
 export class AdminTransactionRepository implements IAdminTransactionRepository {
   constructor(
@@ -45,14 +56,15 @@ export class AdminTransactionRepository implements IAdminTransactionRepository {
     credit: number;
     debit: number;
   }> {
-    const result = await this._adminTransactionModel.aggregate([
-      {
-        $group: {
-          _id: '$flow',
-          count: { $sum: 1 },
+    const result =
+      await this._adminTransactionModel.aggregate<TransactionCountResult>([
+        {
+          $group: {
+            _id: '$flow',
+            count: { $sum: 1 },
+          },
         },
-      },
-    ]);
+      ]);
 
     const counts = {
       credit: 0,
@@ -75,28 +87,32 @@ export class AdminTransactionRepository implements IAdminTransactionRepository {
     totalPlatformFee: number;
     totalPayouts: number;
   }> {
-    const result = await this._adminTransactionModel.aggregate([
-      {
-        $facet: {
-          totalRevenue: [
-            { $match: { flow: TransactionFlow.CREDIT } },
-            { $group: { _id: null, total: { $sum: '$amount' } } },
-          ],
-          totalPlatformFee: [
-            { $match: { transactionType: AdminTransactionType.USER_PAYMENT } },
-            { $group: { _id: null, total: { $sum: '$commission' } } },
-          ],
-          totalPayouts: [
-            { $match: { flow: TransactionFlow.DEBIT } },
-            { $group: { _id: null, total: { $sum: '$amount' } } },
-          ],
+    const result =
+      await this._adminTransactionModel.aggregate<FinancialSummaryResult>([
+        {
+          $facet: {
+            totalRevenue: [
+              { $match: { flow: TransactionFlow.CREDIT } },
+              { $group: { _id: null, total: { $sum: '$amount' } } },
+            ],
+            totalPlatformFee: [
+              {
+                $match: { transactionType: AdminTransactionType.USER_PAYMENT },
+              },
+              { $group: { _id: null, total: { $sum: '$commission' } } },
+            ],
+            totalPayouts: [
+              { $match: { flow: TransactionFlow.DEBIT } },
+              { $group: { _id: null, total: { $sum: '$amount' } } },
+            ],
+          },
         },
-      },
-    ]);
+      ]);
 
-    const totalRevenue = result[0]?.totalRevenue[0]?.total || 0;
-    const totalPlatformFee = result[0]?.totalPlatformFee[0]?.total || 0;
-    const totalPayouts = result[0]?.totalPayouts[0]?.total || 0;
+    const summary = result[0];
+    const totalRevenue = summary?.totalRevenue[0]?.total || 0;
+    const totalPlatformFee = summary?.totalPlatformFee[0]?.total || 0;
+    const totalPayouts = summary?.totalPayouts[0]?.total || 0;
 
     return { totalRevenue, totalPlatformFee, totalPayouts };
   }

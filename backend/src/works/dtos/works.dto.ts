@@ -20,7 +20,7 @@ import {
 } from 'class-validator';
 import { Types } from 'mongoose';
 import { FileType } from 'src/quotation/models/quotation.schema';
-import { FileUploadResultDto, UserBasicInfoDto } from 'src/users/dto/users.dto';
+import { FileUploadResultDto } from 'src/users/dto/users.dto';
 
 import { Works } from '../models/works.schema';
 
@@ -97,7 +97,7 @@ export class UpdateWorkFilesDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  @Transform(({ value }) => {
+  @Transform(({ value }: { value: string | string[] }): string[] => {
     if (typeof value === 'string') {
       return [value];
     }

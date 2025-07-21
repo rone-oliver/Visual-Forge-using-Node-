@@ -6,7 +6,10 @@ export const IAdminTransactionRepositoryToken = Symbol(
 
 export interface IAdminTransactionRepository {
   create(transactionDto: Partial<AdminTransaction>): Promise<AdminTransaction>;
-  findAll(filter?: any): Promise<AdminTransaction[]>;
+  findAll(filter?: {
+    skip?: number;
+    limit?: number;
+  }): Promise<AdminTransaction[]>;
   count(): Promise<number>;
   getTransactionCountByFlow(): Promise<{ credit: number; debit: number }>;
   getFinancialSummary(): Promise<{

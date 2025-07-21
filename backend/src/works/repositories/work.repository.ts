@@ -33,32 +33,20 @@ export class WorkRepository implements IWorkRepository {
     projection?: ProjectionType<Works> | null,
     options?: QueryOptions,
   ): Promise<Works | null> {
-    try {
-      return this._workModel.findById(id, projection, options).lean();
-    } catch (error) {
-      throw error;
-    }
+    return this._workModel.findById(id, projection, options).lean();
   }
 
   async updateOne(
     query: FilterQuery<Works>,
     update: UpdateQuery<Works>,
   ): Promise<Works | null> {
-    try {
-      return this._workModel
-        .findOneAndUpdate(query, update, { new: true })
-        .lean();
-    } catch (error) {
-      throw error;
-    }
+    return this._workModel
+      .findOneAndUpdate(query, update, { new: true })
+      .lean();
   }
 
   async createWork(workData: CreateWorkDto) {
-    try {
-      return this._workModel.create(workData);
-    } catch (error) {
-      throw error;
-    }
+    return this._workModel.create(workData);
   }
 
   async getTwoRecentWorks(editorId: Types.ObjectId): Promise<Works[]> {
@@ -72,7 +60,7 @@ export class WorkRepository implements IWorkRepository {
   async getPublicWorks(
     params: GetPublicWorksQueryDto,
   ): Promise<[PopulatedWork[], number]> {
-    const filter: any = { isPublic: true };
+    const filter: FilterQuery<WorksDocument> = { isPublic: true };
 
     if (params.rating !== undefined && params.rating !== null) {
       filter.rating = params.rating;

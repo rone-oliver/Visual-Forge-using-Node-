@@ -9,13 +9,11 @@ import {
   IsMongoId,
   IsEnum,
   IsPositive,
-  IsString,
 } from 'class-validator';
 import { PaymentType } from 'src/common/transaction/models/transaction.schema';
 
 import { AdminTransaction } from '../models/admin-transaction.schema';
 import { WalletTransaction } from '../models/wallet-transaction.schema';
-import { WalletTransactionType } from '../models/wallet-transaction.schema';
 
 // For GET /wallet/transactions
 export class GetTransactionsDto {

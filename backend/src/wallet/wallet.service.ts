@@ -5,7 +5,7 @@ import {
   NotFoundException,
   forwardRef,
 } from '@nestjs/common';
-import { Types } from 'mongoose';
+import { FilterQuery, Types, UpdateQuery } from 'mongoose';
 import {
   ITransactionService,
   ITransactionServiceToken,
@@ -33,7 +33,10 @@ import {
 import { IWalletRepositoryToken } from './interfaces/wallet-repository.interface';
 import { IWalletRepository } from './interfaces/wallet-repository.interface';
 import { IWalletService } from './interfaces/wallet-service.interface';
-import { WalletTransactionType } from './models/wallet-transaction.schema';
+import {
+  WalletTransactionDocument,
+  WalletTransactionType,
+} from './models/wallet-transaction.schema';
 
 @Injectable()
 export class WalletService implements IWalletService {
@@ -64,7 +67,9 @@ export class WalletService implements IWalletService {
     endDate?: string,
   ): Promise<PaginatedWalletTransactionsResponseDto> {
     const wallet = await this.getWallet(userId);
-    const query: any = { wallet: wallet._id };
+    const query: FilterQuery<WalletTransactionDocument> = {
+      wallet: wallet._id,
+    };
     if (startDate && endDate) {
       query.createdAt = { $gte: new Date(startDate), $lte: new Date(endDate) };
     }
@@ -266,7 +271,7 @@ export class WalletService implements IWalletService {
       currency: 'INR',
     });
 
-    const update: any = { isPaymentInProgress: false };
+    const update: UpdateQuery<Quotation> = { isPaymentInProgress: false };
     if (paymentType === PaymentType.ADVANCE) {
       update.isAdvancePaid = true;
     } else {

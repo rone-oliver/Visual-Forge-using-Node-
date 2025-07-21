@@ -1,5 +1,8 @@
+import { FilterQuery } from 'mongoose';
+
 import {
   WalletTransaction,
+  WalletTransactionDocument,
   WalletTransactionType,
 } from '../models/wallet-transaction.schema';
 import { Wallet } from '../models/wallet.schema';
@@ -11,7 +14,7 @@ export interface IWalletRepository {
   createWallet(userId: string): Promise<Wallet>;
   updateWalletBalance(userId: string, amount: number): Promise<Wallet>;
   findTransactions(
-    userId: string,
+    query: FilterQuery<WalletTransactionDocument>,
     page: number,
     limit: number,
     startDate?: string,
@@ -24,5 +27,7 @@ export interface IWalletRepository {
     type: WalletTransactionType,
     description: string,
   ): Promise<WalletTransaction>;
-  countTransactions(query: any): Promise<number>;
+  countTransactions(
+    query: FilterQuery<WalletTransactionDocument>,
+  ): Promise<number>;
 }
