@@ -75,7 +75,7 @@ export class NotificationService implements OnDestroy {
 
     this._socket = io(`${environment.apiUrl}/notifications`, {
       transports: ['websocket'],
-      query: { _userId: this._userId },
+      query: { userId: this._userId },
       autoConnect: true,
       reconnection: true,
       reconnectionAttempts: Infinity,
