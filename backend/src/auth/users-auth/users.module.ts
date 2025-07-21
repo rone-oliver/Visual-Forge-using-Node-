@@ -9,15 +9,13 @@ import { EditorsModule } from 'src/editors/editors.module';
 import { MailModule } from 'src/mail/mail.module';
 import { UsersModule } from 'src/users/users.module';
 
+import { IOtpRepositoryToken } from './interfaces/otp.repository.interface';
+import { IOtpServiceToken } from './interfaces/otp.service.interface';
+import { IUsersAuthServiceToken } from './interfaces/usersAuth-service.interface';
 import { OtpService } from './otp/otp.service';
+import { OtpRepository } from './repositories/otp.repository';
 import { UsersAuthController } from './users-auth.controller';
 import { UsersAuthService } from './users-auth.service';
-
-import { IUsersAuthServiceToken } from './interfaces/usersAuth-service.interface';
-import { IOtpServiceToken } from './interfaces/otp.service.interface';
-import { IOtpRepositoryToken } from './interfaces/otp.repository.interface';
-import { OtpRepository } from './repositories/otp.repository';
-
 
 @Module({
   imports: [

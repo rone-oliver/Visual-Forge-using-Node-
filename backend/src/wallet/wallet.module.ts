@@ -6,23 +6,22 @@ import { QuotationModule } from 'src/quotation/quotation.module';
 import { UsersModule } from 'src/users/users.module';
 
 import { AdminWalletController } from './admin-wallet.controller';
+import { AdminWalletService } from './admin-wallet.service';
+import { IAdminTransactionRepositoryToken } from './interfaces/admin-transaction.repository.interface';
+import { IAdminWalletServiceToken } from './interfaces/admin-wallet.service.interface';
 import { IWalletRepositoryToken } from './interfaces/wallet-repository.interface';
 import { IWalletServiceToken } from './interfaces/wallet-service.interface';
-import { WalletTransaction, WalletTransactionSchema } from './models/wallet-transaction.schema';
-import { Wallet, WalletSchema } from './models/wallet.schema';
-import { AdminTransactionRepository } from './repositories/admin-transaction.repository';
-import { WalletRepository } from './repositories/wallet.repository';
-
-
 import {
   AdminTransaction,
   AdminTransactionSchema,
 } from './models/admin-transaction.schema';
-import { AdminWalletService } from './admin-wallet.service';
-import { IAdminTransactionRepositoryToken } from './interfaces/admin-transaction.repository.interface';
-import { IAdminWalletServiceToken } from './interfaces/admin-wallet.service.interface';
-
-
+import {
+  WalletTransaction,
+  WalletTransactionSchema,
+} from './models/wallet-transaction.schema';
+import { Wallet, WalletSchema } from './models/wallet.schema';
+import { AdminTransactionRepository } from './repositories/admin-transaction.repository';
+import { WalletRepository } from './repositories/wallet.repository';
 import { WalletController } from './wallet.controller';
 import { WalletService } from './wallet.service';
 

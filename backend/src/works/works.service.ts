@@ -28,6 +28,7 @@ import {
   TopEditorDto,
   UpdateWorkFilesDto,
   UpdateWorkPublicStatusDto,
+  PopulatedWork,
 } from './dtos/works.dto';
 import {
   IWorkRepository,
@@ -51,7 +52,10 @@ export class WorksService implements IWorkService {
     private readonly _quotationService: IQuotationService,
   ) {}
 
-  async createWork(workData: CreateWorkDto, quotationId: string) {
+  async createWork(
+    workData: CreateWorkDto,
+    quotationId: string,
+  ): Promise<Works> {
     try {
       const work = await this._workRepository.createWork(workData);
       await this._timelineService.create({
@@ -225,36 +229,43 @@ export class WorksService implements IWorkService {
     try {
       const [works, total] = await this._workRepository.getPublicWorks(params);
 
-      const publicWorksDto: PublicWorkItemDto[] = works.map((work) => {
-        const editorInfo = work.editorId as any;
-        const userInfo = work.userId as any;
+      const publicWorksDto: PublicWorkItemDto[] = works.map(
+        (work: PopulatedWork) => {
+          const editorInfo = work.editorId;
+          const userInfo = work.userId;
 
-        return {
-          _id: work._id.toString(),
-          comments: work.comments,
-          isPublic: !!work.isPublic,
-          finalFiles:
-            (work.finalFiles as unknown as FileUploadResultDto[]) || [],
-          rating: work.rating,
-          feedback: work.feedback,
-          createdAt: work.createdAt,
-          updatedAt: work.updatedAt,
-          editor: {
-            _id: editorInfo._id.toString(),
-            fullname: editorInfo.fullname,
-            username: editorInfo.username,
-            email: editorInfo.email,
-            profileImage: editorInfo.profileImage,
-          },
-          user: {
-            _id: userInfo._id.toString(),
-            fullname: userInfo.fullname,
-            username: userInfo.username,
-            email: userInfo.email,
-            profileImage: userInfo.profileImage,
-          },
-        };
-      });
+          if (!editorInfo || !userInfo) {
+            this._logger.error('Editor or User not found');
+            throw new Error('Editor or User not found');
+          }
+
+          return {
+            _id: work._id.toString(),
+            comments: work.comments,
+            isPublic: !!work.isPublic,
+            finalFiles:
+              (work.finalFiles as unknown as FileUploadResultDto[]) || [],
+            rating: work.rating,
+            feedback: work.feedback,
+            createdAt: work.createdAt,
+            updatedAt: work.updatedAt,
+            editor: {
+              _id: editorInfo._id,
+              fullname: editorInfo.fullname,
+              username: editorInfo.username,
+              email: editorInfo.email,
+              profileImage: editorInfo.profileImage,
+            },
+            user: {
+              _id: userInfo._id,
+              fullname: userInfo.fullname,
+              username: userInfo.username,
+              email: userInfo.email,
+              profileImage: userInfo.profileImage,
+            },
+          };
+        },
+      );
 
       return { works: publicWorksDto, total };
     } catch (error) {

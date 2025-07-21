@@ -17,7 +17,10 @@ import {
   IQuotationServiceToken,
 } from 'src/quotation/interfaces/quotation.service.interface';
 import { UpdateReportDto } from 'src/reports/dtos/reports.dto';
-import { IReportService, IReportServiceToken } from 'src/reports/interfaces/reports.service.interface';
+import {
+  IReportService,
+  IReportServiceToken,
+} from 'src/reports/interfaces/reports.service.interface';
 import { Report } from 'src/reports/models/report.schema';
 import { SuccessResponseDto } from 'src/users/dto/users.dto';
 import {
@@ -25,7 +28,10 @@ import {
   IUsersServiceToken,
 } from 'src/users/interfaces/users.service.interface';
 import { User } from 'src/users/models/user.schema';
-import { IAdminWalletService, IAdminWalletServiceToken } from 'src/wallet/interfaces/admin-wallet.service.interface';
+import {
+  IAdminWalletService,
+  IAdminWalletServiceToken,
+} from 'src/wallet/interfaces/admin-wallet.service.interface';
 import {
   IWorkService,
   IWorkServiceToken,

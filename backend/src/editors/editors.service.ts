@@ -10,26 +10,20 @@ import {
   ConflictException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { EventTypes } from 'src/common/constants/events.constants';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { FilterQuery, Types, UpdateQuery } from 'mongoose';
-import {
-  ICloudinaryService,
-  ICloudinaryServiceToken,
-} from 'src/common/cloudinary/interfaces/cloudinary-service.interface';
-import { IEditorRequestsRepository, IEditorRequestsRepositoryToken } from './interfaces/editorRequests.repository.interface';
 import { FormattedEditor, GetEditorsQueryDto } from 'src/admins/dto/admin.dto';
 import { CreateBidDto } from 'src/common/bids/dto/create-bid.dto';
-import {
-  IEditorRepository,
-  IEditorRepositoryToken,
-} from './interfaces/editor.repository.interface';
 import {
   IBidService,
   IBidServiceToken,
 } from 'src/common/bids/interfaces/bid.interfaces';
 import { BidStatus } from 'src/common/bids/models/bids.schema';
-import { FileType } from 'src/common/cloudinary/dtos/cloudinary.dto';
+import {
+  ICloudinaryService,
+  ICloudinaryServiceToken,
+} from 'src/common/cloudinary/interfaces/cloudinary-service.interface';
+import { EventTypes } from 'src/common/constants/events.constants';
 import {
   IRelationshipService,
   IRelationshipServiceToken,
@@ -51,7 +45,10 @@ import {
 } from 'src/quotation/interfaces/quotation.service.interface';
 import { QuotationStatus } from 'src/quotation/models/quotation.schema';
 import { SuccessResponseDto } from 'src/users/dto/users.dto';
-import { IUsersService, IUsersServiceToken } from 'src/users/interfaces/users.service.interface';
+import {
+  IUsersService,
+  IUsersServiceToken,
+} from 'src/users/interfaces/users.service.interface';
 import { UpdateWorkFilesDto } from 'src/works/dtos/works.dto';
 import {
   IWorkService,
@@ -72,6 +69,14 @@ import {
   PaginatedBiddedQuotationsResponseDto,
   EditorBidDto,
 } from './dto/editors.dto';
+import {
+  IEditorRepository,
+  IEditorRepositoryToken,
+} from './interfaces/editor.repository.interface';
+import {
+  IEditorRequestsRepository,
+  IEditorRequestsRepositoryToken,
+} from './interfaces/editorRequests.repository.interface';
 import { IEditorsService } from './interfaces/editors.service.interface';
 import { Editor } from './models/editor.schema';
 

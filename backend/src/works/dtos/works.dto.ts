@@ -148,20 +148,16 @@ export class PublicWorkItemDto {
   _id: string;
 
   @ApiProperty({
-    type: () => UserBasicInfoDto,
     description: 'Editor who created the work',
   })
   @ValidateNested()
-  @Type(() => UserBasicInfoDto)
-  editor: UserBasicInfoDto;
+  editor: PopulatedUser;
 
   @ApiProperty({
-    type: () => UserBasicInfoDto,
     description: 'Client for whom the work was done',
   })
   @ValidateNested()
-  @Type(() => UserBasicInfoDto)
-  user: UserBasicInfoDto;
+  user: PopulatedUser;
 
   @ApiProperty({
     type: [FileUploadResultDto],
@@ -234,16 +230,17 @@ export class TopEditorDto {
   completedWorksCount: number;
 }
 
-export type PopulatedUser = {
+export interface PopulatedUser {
   _id: Types.ObjectId;
   fullname: string;
   username: string;
   email: string;
   profileImage?: string;
-};
+}
 
-export type PopulatedWork = Omit<Works, 'editorId' | 'userId' | '_id'> & {
+export interface PopulatedWork
+  extends Omit<Works, 'editorId' | 'userId' | '_id'> {
   _id: Types.ObjectId;
   editorId: PopulatedUser | null;
   userId: PopulatedUser | null;
-};
+}

@@ -10,30 +10,56 @@ import {
   forwardRef,
   ForbiddenException,
 } from '@nestjs/common';
-import { IRelationshipService, IRelationshipServiceToken } from 'src/common/relationship/interfaces/service.interface';
-import { RelationshipType } from 'src/common/enums/relationships.enum';
-import { EventTypes } from 'src/common/constants/events.constants';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Types } from 'mongoose';
 import { GetAllUsersQueryDto } from 'src/admins/dto/admin.dto';
-import { FileUploadResultDto as FileUploadResultDtoCloudinary } from 'src/common/cloudinary/dtos/cloudinary.dto';
-
-import { IBidService, IBidServiceToken } from 'src/common/bids/interfaces/bid.interfaces';
+import {
+  IBidService,
+  IBidServiceToken,
+} from 'src/common/bids/interfaces/bid.interfaces';
 import { Bid } from 'src/common/bids/models/bids.schema';
+import { FileUploadResultDto as FileUploadResultDtoCloudinary } from 'src/common/cloudinary/dtos/cloudinary.dto';
 import {
   ICloudinaryService,
   ICloudinaryServiceToken,
 } from 'src/common/cloudinary/interfaces/cloudinary-service.interface';
-import { IQuotationService, IQuotationServiceToken } from 'src/quotation/interfaces/quotation.service.interface';
-import { IEditorsService, IEditorsServiceToken } from 'src/editors/interfaces/editors.service.interface';
-import { IReportService, IReportServiceToken } from 'src/reports/interfaces/reports.service.interface';
-import { ITransactionService, ITransactionServiceToken } from 'src/common/transaction/interfaces/transaction.service.interface';
-import { GetTransactionsQueryDto, IFindOptions } from 'src/common/transaction/dtos/transaction.dto';
-import { IHashingService, IHashingServiceToken } from 'src/common/hashing/interfaces/hashing.service.interface';
-import { PaymentStatus, PaymentType } from 'src/common/transaction/models/transaction.schema';
+import { EventTypes } from 'src/common/constants/events.constants';
+import { RelationshipType } from 'src/common/enums/relationships.enum';
+import {
+  IHashingService,
+  IHashingServiceToken,
+} from 'src/common/hashing/interfaces/hashing.service.interface';
+import {
+  IRelationshipService,
+  IRelationshipServiceToken,
+} from 'src/common/relationship/interfaces/service.interface';
+import {
+  GetTransactionsQueryDto,
+  IFindOptions,
+} from 'src/common/transaction/dtos/transaction.dto';
+import {
+  ITransactionService,
+  ITransactionServiceToken,
+} from 'src/common/transaction/interfaces/transaction.service.interface';
+import {
+  PaymentStatus,
+  PaymentType,
+} from 'src/common/transaction/models/transaction.schema';
 import { getYouTubeEmbedUrl } from 'src/common/utils/youtube-url.util';
+import {
+  IEditorsService,
+  IEditorsServiceToken,
+} from 'src/editors/interfaces/editors.service.interface';
 import { CompletedWorkDto } from 'src/quotation/dtos/quotation.dto';
+import {
+  IQuotationService,
+  IQuotationServiceToken,
+} from 'src/quotation/interfaces/quotation.service.interface';
 import { Quotation } from 'src/quotation/models/quotation.schema';
+import {
+  IReportService,
+  IReportServiceToken,
+} from 'src/reports/interfaces/reports.service.interface';
 import {
   ITimelineService,
   ITimelineServiceToken,
