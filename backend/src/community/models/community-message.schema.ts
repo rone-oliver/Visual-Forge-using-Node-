@@ -1,7 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { Community } from './community.schema';
 import { User } from 'src/users/models/user.schema';
+
+import { Community } from './community.schema';
 
 export type CommunityMessageDocument = CommunityMessage & Document;
 
@@ -19,4 +20,5 @@ export class CommunityMessage {
   content: string;
 }
 
-export const CommunityMessageSchema = SchemaFactory.createForClass(CommunityMessage);
+export const CommunityMessageSchema =
+  SchemaFactory.createForClass(CommunityMessage);

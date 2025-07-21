@@ -1,20 +1,44 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsBoolean, IsDateString, IsEnum, IsMongoId, IsNotEmpty, IsNumber, IsOptional, IsString, IsUrl, Min, ValidateNested } from 'class-validator';
-import { Types } from 'mongoose';
 import { Transform, Type } from 'class-transformer';
-import { OutputType, QuotationStatus } from 'src/quotation/models/quotation.schema';
+import {
+  IsArray,
+  IsBoolean,
+  IsDateString,
+  IsEnum,
+  IsMongoId,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUrl,
+  Min,
+  ValidateNested,
+} from 'class-validator';
+import { Types } from 'mongoose';
 import { BidStatus } from 'src/common/bids/models/bids.schema';
 import { FileAttachmentDto } from 'src/quotation/dtos/quotation.dto';
+import {
+  OutputType,
+  QuotationStatus,
+} from 'src/quotation/models/quotation.schema';
 
 // Base DTO for pagination
 export class PaginationQueryDto {
-  @ApiPropertyOptional({ description: 'Page number for pagination', default: 1, type: Number })
+  @ApiPropertyOptional({
+    description: 'Page number for pagination',
+    default: 1,
+    type: Number,
+  })
   @IsOptional()
   @Type(() => Number)
   @Min(1)
   page?: number = 1;
 
-  @ApiPropertyOptional({ description: 'Number of items per page', default: 10, type: Number })
+  @ApiPropertyOptional({
+    description: 'Number of items per page',
+    default: 10,
+    type: Number,
+  })
   @IsOptional()
   @Type(() => Number)
   @Min(1)
@@ -41,18 +65,25 @@ export class FileUploadResultDto extends FileAttachmentDto {
 }
 
 export class SubmitWorkBodyDto {
-  @ApiProperty({ description: 'ID of the quotation for which work is being submitted' })
+  @ApiProperty({
+    description: 'ID of the quotation for which work is being submitted',
+  })
   @IsMongoId()
   @IsNotEmpty()
   quotationId: string; // Will be converted to Types.ObjectId in service
 
-  @ApiProperty({ type: [FileUploadResultDto], description: 'Array of final work files' })
+  @ApiProperty({
+    type: [FileUploadResultDto],
+    description: 'Array of final work files',
+  })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => FileUploadResultDto)
   finalFiles: FileUploadResultDto[];
 
-  @ApiPropertyOptional({ description: 'Comments from the editor about the work' })
+  @ApiPropertyOptional({
+    description: 'Comments from the editor about the work',
+  })
   @IsOptional()
   @IsString()
   comments?: string;
@@ -115,23 +146,26 @@ class EditorSocialLinksDto {
 }
 
 export class EditorDetailsDto {
-  @ApiPropertyOptional({ type: [String], description: 'Categories the editor specializes in' })
+  @ApiPropertyOptional({
+    type: [String],
+    description: 'Categories the editor specializes in',
+  })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
   category?: string[];
 
-  @ApiPropertyOptional({ description: 'Editor\'s score' })
+  @ApiPropertyOptional({ description: "Editor's score" })
   @IsOptional()
   @IsNumber()
   score?: number;
 
-  @ApiPropertyOptional({ description: 'Editor\'s tips and tricks' })
+  @ApiPropertyOptional({ description: "Editor's tips and tricks" })
   @IsOptional()
   @IsString()
   tipsAndTricks?: string;
 
-  @ApiPropertyOptional({ description: 'Editor\'s shared tutorials' })
+  @ApiPropertyOptional({ description: "Editor's shared tutorials" })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
@@ -147,7 +181,10 @@ export class EditorDetailsDto {
   @IsNumber()
   averageRating?: number;
 
-  @ApiPropertyOptional({ type: EditorSocialLinksDto, description: 'Social media links of the editor' })
+  @ApiPropertyOptional({
+    type: EditorSocialLinksDto,
+    description: 'Social media links of the editor',
+  })
   @IsOptional()
   @ValidateNested()
   @Type(() => EditorSocialLinksDto)
@@ -159,7 +196,9 @@ export class EditorDetailsDto {
   @IsNumber()
   followingCount: number;
 
-  @ApiPropertyOptional({ description: 'Date when the editor profile was created' })
+  @ApiPropertyOptional({
+    description: 'Date when the editor profile was created',
+  })
   @IsOptional()
   @IsDateString()
   createdAt?: Date;
@@ -194,7 +233,10 @@ export class UserForEditorDetailsDto {
 }
 
 export class EditorDetailsResponseDto extends UserForEditorDetailsDto {
-  @ApiPropertyOptional({ type: EditorDetailsDto, description: 'Detailed information about the editor' })
+  @ApiPropertyOptional({
+    type: EditorDetailsDto,
+    description: 'Detailed information about the editor',
+  })
   @IsOptional()
   @ValidateNested()
   @Type(() => EditorDetailsDto)
@@ -246,7 +288,9 @@ export class BidResponseDto {
 // New DTOs for Published Quotations
 
 export class EditorBidDetailsDto {
-  @ApiPropertyOptional({ description: 'ID of the bid made by the editor on this quotation' })
+  @ApiPropertyOptional({
+    description: 'ID of the bid made by the editor on this quotation',
+  })
   @IsMongoId()
   @IsOptional()
   bidId?: string;
@@ -289,7 +333,7 @@ export class RemoveTutorialDto {
   tutorialUrl: string;
 }
 
-export interface Rating{
+export interface Rating {
   rating: number;
   feedback?: string;
   userId: Types.ObjectId;
@@ -301,7 +345,10 @@ export class GetBiddedQuotationsQueryDto extends PaginationQueryDto {
   @IsEnum(BidStatus)
   status?: BidStatus;
 
-  @ApiPropertyOptional({ description: 'Set to true to hide non-biddable quotations', type: Boolean })
+  @ApiPropertyOptional({
+    description: 'Set to true to hide non-biddable quotations',
+    type: Boolean,
+  })
   @IsOptional()
   @IsBoolean()
   @Transform(({ value }) => value === 'true' || value === true)
@@ -318,7 +365,10 @@ export class EditorBidDto {
   @ApiPropertyOptional({ description: 'Optional notes included with the bid' })
   bidNotes?: string;
 
-  @ApiProperty({ enum: BidStatus, description: 'The current status of the bid' })
+  @ApiProperty({
+    enum: BidStatus,
+    description: 'The current status of the bid',
+  })
   bidStatus: BidStatus;
 
   @ApiProperty({ description: 'The date the bid was created' })
@@ -332,7 +382,10 @@ export class BiddedQuotationDto {
   @ApiProperty({ description: 'Title of the quotation' })
   title: string;
 
-  @ApiProperty({ enum: QuotationStatus, description: 'Current status of the quotation' })
+  @ApiProperty({
+    enum: QuotationStatus,
+    description: 'Current status of the quotation',
+  })
   quotationStatus: QuotationStatus;
 
   @ApiProperty({ description: 'Deadline for the quotation work' })
@@ -341,19 +394,29 @@ export class BiddedQuotationDto {
   @ApiProperty({ description: 'The amount the editor bidded' })
   bidAmount: number;
 
-  @ApiProperty({ enum: BidStatus, description: 'The status of the editor\'s bid' })
+  @ApiProperty({
+    enum: BidStatus,
+    description: "The status of the editor's bid",
+  })
   bidStatus: BidStatus;
 
   @ApiProperty({ description: 'The date the bid was placed' })
   bidCreatedAt: Date;
 
-  @ApiProperty({ description: 'Indicates if the work for this quotation was assigned to the current editor' })
+  @ApiProperty({
+    description:
+      'Indicates if the work for this quotation was assigned to the current editor',
+  })
   isWorkAssignedToMe: boolean;
 
-  @ApiProperty({ description: 'Indicates if the quotation is still open for bidding' })
+  @ApiProperty({
+    description: 'Indicates if the quotation is still open for bidding',
+  })
   isQuotationBiddable: boolean;
 
-  @ApiPropertyOptional({ description: 'The final amount if the bid was accepted' })
+  @ApiPropertyOptional({
+    description: 'The final amount if the bid was accepted',
+  })
   finalAmount?: number;
 
   @ApiPropertyOptional({ description: 'The ID of the editor who won the bid' })

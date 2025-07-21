@@ -1,7 +1,8 @@
 import { Types } from 'mongoose';
-import { Relationship } from '../models/relationships.schema';
 import { UserDocument } from 'src/users/models/user.schema';
+
 import { GetRelatedUsersDto, RelationshipDto } from '../dto/relationship.dto';
+import { Relationship } from '../models/relationships.schema';
 
 export const IRelationshipServiceToken = Symbol('IRelationshipService');
 
@@ -10,9 +11,15 @@ export interface IRelationshipService {
 
   removeRelationship(dto: RelationshipDto): Promise<{ deletedCount: number }>;
 
-  isFollowing(followerId: Types.ObjectId, followingId: Types.ObjectId): Promise<boolean>;
+  isFollowing(
+    followerId: Types.ObjectId,
+    followingId: Types.ObjectId,
+  ): Promise<boolean>;
 
-  isBlocking(blockerId: Types.ObjectId, blockedId: Types.ObjectId): Promise<boolean>;
+  isBlocking(
+    blockerId: Types.ObjectId,
+    blockedId: Types.ObjectId,
+  ): Promise<boolean>;
 
   getFollowerCount(userId: Types.ObjectId): Promise<number>;
 

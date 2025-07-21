@@ -4,7 +4,9 @@ import { Notification } from '../models/notification.schema';
 export const INotificationServiceToken = Symbol('INotificationService');
 
 export interface INotificationService {
-  createNotification(params: CreateNotificationDto): Promise<Notification | null>;
+  createNotification(
+    params: CreateNotificationDto,
+  ): Promise<Notification | null>;
   getNotificationsByUserId(userId: string): Promise<Notification[]>;
   getUnreadNotificationsByUserId(userId: string): Promise<Notification[]>;
   markAsRead(notificationId: string): Promise<Notification>;

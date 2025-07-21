@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { TokenRefreshController } from './token-refresh.controller';
 
 describe('TokenRefreshController', () => {

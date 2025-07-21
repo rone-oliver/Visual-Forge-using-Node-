@@ -23,7 +23,11 @@ export class MailService {
     await this._transporter.sendMail(mailOptions);
   }
 
-  private _createThemedEmail(title: string, preheader: string, contentHtml: string): string {
+  private _createThemedEmail(
+    title: string,
+    preheader: string,
+    contentHtml: string,
+  ): string {
     return `
       <!DOCTYPE html>
       <html lang="en">
@@ -95,11 +99,23 @@ export class MailService {
         If you did not request this code, you can safely ignore this email.
       </p>
     `;
-    const html = this._createThemedEmail('Email Verification', `Your verification code is ${data.otp}`, content);
-    await this._sendMail({ from: this.configService.get<string>('EMAIL'), to, subject, html });
+    const html = this._createThemedEmail(
+      'Email Verification',
+      `Your verification code is ${data.otp}`,
+      content,
+    );
+    await this._sendMail({
+      from: this.configService.get<string>('EMAIL'),
+      to,
+      subject,
+      html,
+    });
   }
 
-  async sendWarningEmail(to: string, data: { quotationTitle: string }): Promise<void> {
+  async sendWarningEmail(
+    to: string,
+    data: { quotationTitle: string },
+  ): Promise<void> {
     const subject = 'Account Warning - Visual Forge';
     const content = `
       <h2 class="title" style="font-size: 20px; font-weight: 600; color: var(--text-light); margin: 0 0 16px 0;">You've Received a Warning</h2>
@@ -111,13 +127,29 @@ export class MailService {
       </p>
       <a href="#" class="button" style="display: inline-block; padding: 12px 24px; background-color: var(--accent-light); color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 500;">View My Quotations</a>
     `;
-    const html = this._createThemedEmail('Account Warning', 'You have received a warning for inactivity.', content);
-    await this._sendMail({ from: this.configService.get<string>('EMAIL'), to, subject, html });
+    const html = this._createThemedEmail(
+      'Account Warning',
+      'You have received a warning for inactivity.',
+      content,
+    );
+    await this._sendMail({
+      from: this.configService.get<string>('EMAIL'),
+      to,
+      subject,
+      html,
+    });
   }
 
-  async sendSuspensionEmail(to: string, data: { suspendedUntil: Date }): Promise<void> {
+  async sendSuspensionEmail(
+    to: string,
+    data: { suspendedUntil: Date },
+  ): Promise<void> {
     const subject = 'Account Suspension Notice - Visual Forge';
-    const formattedDate = data.suspendedUntil.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const formattedDate = data.suspendedUntil.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
     const content = `
       <h2 class="title" style="font-size: 20px; font-weight: 600; color: var(--text-light); margin: 0 0 16px 0;">Your Account Has Been Suspended</h2>
       <p class="body-text" style="font-size: 16px; line-height: 1.6; color: var(--text-light); margin: 0 0 16px 0;">
@@ -131,7 +163,16 @@ export class MailService {
       </p>
       <a href="#" class="button" style="display: inline-block; padding: 12px 24px; background-color: var(--accent-light); color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 500;">Access My Account</a>
     `;
-    const html = this._createThemedEmail('Account Suspension', `Your account is suspended until ${formattedDate}.`, content);
-    await this._sendMail({ from: this.configService.get<string>('EMAIL'), to, subject, html });
+    const html = this._createThemedEmail(
+      'Account Suspension',
+      `Your account is suspended until ${formattedDate}.`,
+      content,
+    );
+    await this._sendMail({
+      from: this.configService.get<string>('EMAIL'),
+      to,
+      subject,
+      html,
+    });
   }
 }

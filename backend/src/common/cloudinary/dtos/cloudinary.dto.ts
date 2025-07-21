@@ -1,20 +1,20 @@
 export interface FileUploadResultDto {
-    url?: string;
-    fileType: FileType;
-    fileName: string;
-    size: number;
-    mimeType: string;
-    uploadedAt: Date;
-    uniqueId: string;
-    timestamp: number;
-    format: string;
+  url?: string;
+  fileType: FileType;
+  fileName: string;
+  size: number;
+  mimeType: string;
+  uploadedAt: Date;
+  uniqueId: string;
+  timestamp: number;
+  format: string;
 }
 
 export enum FileType {
-    IMAGE = 'image',
-    VIDEO = 'video',
-    AUDIO = 'audio',
-    DOCUMENT = 'document'
+  IMAGE = 'image',
+  VIDEO = 'video',
+  AUDIO = 'audio',
+  DOCUMENT = 'document',
 }
 
 // export interface UploadApiResponse {

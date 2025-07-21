@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
-import { TransactionService } from './transaction.service';
-import { ITransactionServiceToken } from './interfaces/transaction.service.interface';
-import { TransactionRepository } from './repositories/transaction.repository';
-import { ITransactionRepositoryToken } from './interfaces/transaction.repository.interface';
 import { MongooseModule } from '@nestjs/mongoose';
+
+import { ITransactionRepositoryToken } from './interfaces/transaction.repository.interface';
+import { ITransactionServiceToken } from './interfaces/transaction.service.interface';
 import { Transaction, TransactionSchema } from './models/transaction.schema';
+import { TransactionRepository } from './repositories/transaction.repository';
+import { TransactionService } from './transaction.service';
 
 @Module({
   providers: [
@@ -15,13 +16,13 @@ import { Transaction, TransactionSchema } from './models/transaction.schema';
     {
       provide: ITransactionRepositoryToken,
       useClass: TransactionRepository,
-    }
+    },
   ],
   imports: [
     MongooseModule.forFeature([
       { name: Transaction.name, schema: TransactionSchema },
-    ])
+    ]),
   ],
-  exports: [ITransactionServiceToken, ITransactionRepositoryToken]
+  exports: [ITransactionServiceToken, ITransactionRepositoryToken],
 })
 export class TransactionModule {}

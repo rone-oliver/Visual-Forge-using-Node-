@@ -1,4 +1,4 @@
 export enum RelationshipType {
-    FOLLOWS = 'FOLLOWS',
-    BLOCKS = 'BLOCKS',
+  FOLLOWS = 'FOLLOWS',
+  BLOCKS = 'BLOCKS',
 }

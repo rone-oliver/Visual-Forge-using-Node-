@@ -1,16 +1,24 @@
 import { FilterQuery, Types } from 'mongoose';
-import { Relationship, RelationshipDocument } from '../models/relationships.schema';
-import { RelationshipDto } from '../dto/relationship.dto';
 import { UserDocument } from 'src/users/models/user.schema';
+
+import { RelationshipDto } from '../dto/relationship.dto';
+import {
+  Relationship,
+  RelationshipDocument,
+} from '../models/relationships.schema';
 
 export const IRelationshipRepositoryToken = Symbol('IRelationshipRepository');
 
 export interface IRelationshipRepository {
   create(relationshipDto: RelationshipDto): Promise<Relationship>;
 
-  findOne(filter: FilterQuery<RelationshipDocument>): Promise<Relationship | null>;
+  findOne(
+    filter: FilterQuery<RelationshipDocument>,
+  ): Promise<Relationship | null>;
 
-  deleteOne(filter: FilterQuery<RelationshipDocument>): Promise<{ deletedCount: number }>;
+  deleteOne(
+    filter: FilterQuery<RelationshipDocument>,
+  ): Promise<{ deletedCount: number }>;
 
   count(filter: FilterQuery<RelationshipDocument>): Promise<number>;
 
@@ -18,11 +26,27 @@ export interface IRelationshipRepository {
 
   countFollowing(userId: Types.ObjectId): Promise<number>;
 
-  findFollows(userId: Types.ObjectId, limit: number, skip: number): Promise<UserDocument[]>;
+  findFollows(
+    userId: Types.ObjectId,
+    limit: number,
+    skip: number,
+  ): Promise<UserDocument[]>;
 
-  findFollowers(userId: Types.ObjectId, limit: number, skip: number): Promise<UserDocument[]>;
+  findFollowers(
+    userId: Types.ObjectId,
+    limit: number,
+    skip: number,
+  ): Promise<UserDocument[]>;
 
-  findBlockedUsers(userId: Types.ObjectId, limit: number, skip: number): Promise<UserDocument[]>;
+  findBlockedUsers(
+    userId: Types.ObjectId,
+    limit: number,
+    skip: number,
+  ): Promise<UserDocument[]>;
 
-  findBlockersOfUser(userId: Types.ObjectId, limit: number, skip: number): Promise<UserDocument[]>;
+  findBlockersOfUser(
+    userId: Types.ObjectId,
+    limit: number,
+    skip: number,
+  ): Promise<UserDocument[]>;
 }

@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+
 import { HashingService } from './hashing.service';
 import { IHashingServiceToken } from './interfaces/hashing.service.interface';
 
@@ -7,7 +8,7 @@ import { IHashingServiceToken } from './interfaces/hashing.service.interface';
     {
       provide: IHashingServiceToken,
       useClass: HashingService,
-    }
+    },
   ],
   exports: [IHashingServiceToken],
 })

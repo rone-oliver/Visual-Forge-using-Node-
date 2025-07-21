@@ -1,42 +1,42 @@
 import { Logger, Module } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
-import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { UsersModule } from './users/users.module';
-import { DatabaseModule } from './common/database/database.module';
+import { APP_GUARD } from '@nestjs/core';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { MongooseModule } from '@nestjs/mongoose';
+
 import { AdminsModule } from './admins/admins.module';
-import { EditorsModule } from './editors/editors.module';
-import { UsersAuthModule } from './auth/users-auth/users.module';
-import { AdminsAuthModule } from './auth/admins-auth/admins.module';
-import { UsersAuthController } from './auth/users-auth/users-auth.controller';
-import { CloudinaryService } from './common/cloudinary/cloudinary.service';
 import { PaymentModule } from './common/payment/payment.module';
 import { ChatModule } from './chat/chat.module';
 import { NotificationModule } from './notification/notification.module';
 import { BidsModule } from './common/bids/bids.module';
 import { AiModule } from './ai/ai.module';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { AdminsAuthModule } from './auth/admins-auth/admins.module';
 import { WalletModule } from './wallet/wallet.module';
-import { CommunityModule } from './community/community.module';
-import { EventEmitterModule } from '@nestjs/event-emitter';
-import { RelationshipModule } from './common/relationship/relationship.module';
 import { AuthModule } from './auth/auth.module';
 import { AuthGuard } from './auth/guards/auth.guard';
-import { CoreModule } from './common/config/core.module';
+import { UsersAuthController } from './auth/users-auth/users-auth.controller';
+import { UsersAuthModule } from './auth/users-auth/users.module';
 import { CloudinaryModule } from './common/cloudinary/cloudinary.module';
-import { QuotationModule } from './quotation/quotation.module';
-import { WorksModule } from './works/works.module';
-import { JobsModule } from './jobs/jobs.module';
-import { ReportsModule } from './reports/reports.module';
+import { CoreModule } from './common/config/core.module';
+import { DatabaseModule } from './common/database/database.module';
 import { TransactionModule } from './common/transaction/transaction.module';
 import { MailModule } from './mail/mail.module';
 import { HashingModule } from './common/hashing/hashing.module';
+import { RelationshipModule } from './common/relationship/relationship.module';
+import { CommunityModule } from './community/community.module';
+import { EditorsModule } from './editors/editors.module';
+import { JobsModule } from './jobs/jobs.module';
+import { QuotationModule } from './quotation/quotation.module';
+import { ReportsModule } from './reports/reports.module';
 import { TimelineModule } from './timeline/timeline.module';
+import { UsersModule } from './users/users.module';
+import { WorksModule } from './works/works.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({isGlobal: true,envFilePath:'.env',}),
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
     EventEmitterModule.forRoot(),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
@@ -45,7 +45,9 @@ import { TimelineModule } from './timeline/timeline.module';
         try {
           logger.log('Connecting to MongoDB...');
           return {
-            uri: configService.get<string>('MONGODB_URI') || 'mongodb://127.0.0.1:27017/visualForge',
+            uri:
+              configService.get<string>('MONGODB_URI') ||
+              'mongodb://127.0.0.1:27017/visualForge',
             connectionFactory: (connection) => {
               connection.on('connected', () => {
                 logger.log('✅ Successfully connected to MongoDB');
@@ -67,12 +69,30 @@ import { TimelineModule } from './timeline/timeline.module';
       inject: [ConfigService],
     }),
     // MongooseModule.forRoot(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/visualForge'),
-    AuthModule, UsersModule, DatabaseModule, AdminsModule,
-    EditorsModule, UsersAuthModule, AdminsAuthModule, CoreModule,
-    PaymentModule, ChatModule, NotificationModule, BidsModule,
-    AiModule, WalletModule, CommunityModule, RelationshipModule,
-    CloudinaryModule, QuotationModule, WorksModule, JobsModule,
-    ReportsModule, TransactionModule, MailModule, HashingModule,
+    AuthModule,
+    UsersModule,
+    DatabaseModule,
+    AdminsModule,
+    EditorsModule,
+    UsersAuthModule,
+    AdminsAuthModule,
+    CoreModule,
+    PaymentModule,
+    ChatModule,
+    NotificationModule,
+    BidsModule,
+    AiModule,
+    WalletModule,
+    CommunityModule,
+    RelationshipModule,
+    CloudinaryModule,
+    QuotationModule,
+    WorksModule,
+    JobsModule,
+    ReportsModule,
+    TransactionModule,
+    MailModule,
+    HashingModule,
     TimelineModule,
   ],
   controllers: [AppController, UsersAuthController],

@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+
 import { AiService } from './ai.service';
 import { IAiServiceToken } from './interfaces/ai-service.interface';
 
@@ -6,8 +7,8 @@ import { IAiServiceToken } from './interfaces/ai-service.interface';
   providers: [
     {
       provide: IAiServiceToken,
-      useClass: AiService
-    }
+      useClass: AiService,
+    },
   ],
   exports: [IAiServiceToken],
 })

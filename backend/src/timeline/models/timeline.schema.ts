@@ -18,7 +18,12 @@ export type TimelineDocument = Timeline & Document;
 
 @Schema({ timestamps: true })
 export class Timeline {
-  @Prop({ type: Types.ObjectId, ref: Quotation.name, required: true, index: true })
+  @Prop({
+    type: Types.ObjectId,
+    ref: Quotation.name,
+    required: true,
+    index: true,
+  })
   quotationId: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId, ref: User.name, required: true })

@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { BidsService } from './bids.service';
 
 describe('BidsService', () => {

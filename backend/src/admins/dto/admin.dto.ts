@@ -1,8 +1,14 @@
-import { Types } from "mongoose";
-import { Categories, EditorRequestStatus } from "src/editors/models/editorRequest.schema";
-import { TopQuotationByBidsDto, TopUserDto } from "src/quotation/dtos/quotation.dto";
-import { TopEditorDto } from "src/works/dtos/works.dto";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
+import { Types } from 'mongoose';
+import {
+  Categories,
+  EditorRequestStatus,
+} from 'src/editors/models/editorRequest.schema';
+import {
+  TopQuotationByBidsDto,
+  TopUserDto,
+} from 'src/quotation/dtos/quotation.dto';
+import { TopEditorDto } from 'src/works/dtos/works.dto';
 
 export interface GetAllUsersQueryDto {
   isEditor?: boolean;
@@ -24,45 +30,45 @@ export interface GetEditorsQueryDto {
 }
 
 export interface FormattedEditorRequest {
-    _id: Types.ObjectId;
-    userId: Types.ObjectId;
-    fullname: string;
-    email: string;
-    categories: Categories;
-    createdAt: Date;
-    status: EditorRequestStatus;
-    reason?: string;
+  _id: Types.ObjectId;
+  userId: Types.ObjectId;
+  fullname: string;
+  email: string;
+  categories: Categories;
+  createdAt: Date;
+  status: EditorRequestStatus;
+  reason?: string;
 }
 
 export interface FormattedEditor {
-    _id: Types.ObjectId;
-    userId: Types.ObjectId;
-    fullname: string;
-    username: string;
-    email: string;
-    profileImage?: string;
-    category: string[];
-    score: number;
-    ratingsCount: number;
-    averageRating: number;
-    createdAt: Date;
-    isVerified: boolean;
-    isBlocked: boolean;
-    socialLinks?: any;
+  _id: Types.ObjectId;
+  userId: Types.ObjectId;
+  fullname: string;
+  username: string;
+  email: string;
+  profileImage?: string;
+  category: string[];
+  score: number;
+  ratingsCount: number;
+  averageRating: number;
+  createdAt: Date;
+  isVerified: boolean;
+  isBlocked: boolean;
+  socialLinks?: any;
 }
 
 export class FinancialSummaryDto {
-    @ApiProperty()
-    totalRevenue: number;
+  @ApiProperty()
+  totalRevenue: number;
 
-    @ApiProperty()
-    totalPayouts: number;
+  @ApiProperty()
+  totalPayouts: number;
 
-    @ApiProperty()
-    netProfit: number;
+  @ApiProperty()
+  netProfit: number;
 
-    @ApiProperty()
-    totalPlatformFee: number;
+  @ApiProperty()
+  totalPlatformFee: number;
 }
 
 export interface DashboardResponseDto {

@@ -1,35 +1,68 @@
-import { Injectable, BadRequestException, Inject, NotFoundException, forwardRef } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  Inject,
+  NotFoundException,
+  forwardRef,
+} from '@nestjs/common';
+import { Types } from 'mongoose';
+import {
+  ITransactionService,
+  ITransactionServiceToken,
+} from 'src/common/transaction/interfaces/transaction.service.interface';
+import {
+  PaymentMethod,
+  PaymentStatus,
+  PaymentType,
+} from 'src/common/transaction/models/transaction.schema';
+import {
+  IQuotationService,
+  IQuotationServiceToken,
+} from 'src/quotation/interfaces/quotation.service.interface';
+import { Quotation } from 'src/quotation/models/quotation.schema';
+import { TransactionResponseDto } from 'src/users/dto/users.dto';
+
+import {
+  PaginatedWalletTransactionsResponseDto,
+  PayFromWalletDto,
+} from './dto/wallet.dto';
+import {
+  IAdminWalletService,
+  IAdminWalletServiceToken,
+} from './interfaces/admin-wallet.service.interface';
+import { IWalletRepositoryToken } from './interfaces/wallet-repository.interface';
 import { IWalletRepository } from './interfaces/wallet-repository.interface';
 import { IWalletService } from './interfaces/wallet-service.interface';
 import { WalletTransactionType } from './models/wallet-transaction.schema';
-import { IWalletRepositoryToken } from './interfaces/wallet-repository.interface';
-import { PaginatedWalletTransactionsResponseDto, PayFromWalletDto } from './dto/wallet.dto';
-import { IQuotationService, IQuotationServiceToken } from 'src/quotation/interfaces/quotation.service.interface';
-import { Types } from 'mongoose';
-import { ITransactionService, ITransactionServiceToken } from 'src/common/transaction/interfaces/transaction.service.interface';
-import { PaymentMethod, PaymentStatus, PaymentType } from 'src/common/transaction/models/transaction.schema';
-import { TransactionResponseDto } from 'src/users/dto/users.dto';
-import { Quotation } from 'src/quotation/models/quotation.schema';
-import { IAdminWalletService, IAdminWalletServiceToken } from './interfaces/admin-wallet.service.interface';
 
 @Injectable()
 export class WalletService implements IWalletService {
   constructor(
-    @Inject(IWalletRepositoryToken) private readonly _walletRepo: IWalletRepository,
-    @Inject(IQuotationServiceToken) private readonly _quotationService: IQuotationService,
-    @Inject(ITransactionServiceToken) private readonly _transactionService: ITransactionService,
-    @Inject(forwardRef(()=>IAdminWalletServiceToken)) private readonly _adminWalletService: IAdminWalletService,
+    @Inject(IWalletRepositoryToken)
+    private readonly _walletRepo: IWalletRepository,
+    @Inject(IQuotationServiceToken)
+    private readonly _quotationService: IQuotationService,
+    @Inject(ITransactionServiceToken)
+    private readonly _transactionService: ITransactionService,
+    @Inject(forwardRef(() => IAdminWalletServiceToken))
+    private readonly _adminWalletService: IAdminWalletService,
   ) {}
 
   async getWallet(userId: string) {
     let wallet = await this._walletRepo.findWalletByUserId(userId);
     if (!wallet) {
-        wallet = await this._walletRepo.createWallet(userId);
+      wallet = await this._walletRepo.createWallet(userId);
     }
     return wallet;
   }
 
-  async getTransactions(userId: string, page = 1, limit = 10, startDate?: string, endDate?: string): Promise<PaginatedWalletTransactionsResponseDto> {
+  async getTransactions(
+    userId: string,
+    page = 1,
+    limit = 10,
+    startDate?: string,
+    endDate?: string,
+  ): Promise<PaginatedWalletTransactionsResponseDto> {
     const wallet = await this.getWallet(userId);
     const query: any = { wallet: wallet._id };
     if (startDate && endDate) {
@@ -55,25 +88,34 @@ export class WalletService implements IWalletService {
     }
 
     const wallet = await this.getWallet(userId);
-    const updatedWallet = await this._walletRepo.updateWalletBalance(userId, amount);
+    const updatedWallet = await this._walletRepo.updateWalletBalance(
+      userId,
+      amount,
+    );
 
     await this._walletRepo.createTransaction(
       userId,
       wallet._id.toString(),
       amount,
       WalletTransactionType.CREDIT,
-      'Funds added to wallet'
+      'Funds added to wallet',
     );
 
     return updatedWallet;
   }
 
-  async creditEditorWallet(editorUserId: string, amount: number, quotationId: string) {
+  async creditEditorWallet(
+    editorUserId: string,
+    amount: number,
+    quotationId: string,
+  ) {
     if (amount <= 0) {
       throw new BadRequestException('Amount must be positive.');
     }
 
-    const quotation = await this._quotationService.findById(new Types.ObjectId(quotationId));
+    const quotation = await this._quotationService.findById(
+      new Types.ObjectId(quotationId),
+    );
     if (!quotation) {
       throw new NotFoundException(`Quotation with ID ${quotationId} not found`);
     }
@@ -83,25 +125,31 @@ export class WalletService implements IWalletService {
 
     if (finalAmountForEditor > 0) {
       const editorWallet = await this.getWallet(editorUserId);
-      await this._walletRepo.updateWalletBalance(editorUserId, finalAmountForEditor);
+      await this._walletRepo.updateWalletBalance(
+        editorUserId,
+        finalAmountForEditor,
+      );
       await this._walletRepo.createTransaction(
         editorUserId,
         editorWallet._id.toString(),
         finalAmountForEditor,
         WalletTransactionType.CREDIT_FROM_WORK,
-        `Payment from work #${quotationId}`
+        `Payment from work #${quotationId}`,
       );
     }
 
     if (penalty > 0) {
       const userWallet = await this.getWallet(quotation.userId.toString());
-      await this._walletRepo.updateWalletBalance(quotation.userId.toString(), penalty);
+      await this._walletRepo.updateWalletBalance(
+        quotation.userId.toString(),
+        penalty,
+      );
       await this._walletRepo.createTransaction(
         quotation.userId.toString(),
         userWallet._id.toString(),
         penalty,
         WalletTransactionType.COMPENSATION,
-        `Compensation for delayed work #${quotationId}`
+        `Compensation for delayed work #${quotationId}`,
       );
     }
 
@@ -110,29 +158,36 @@ export class WalletService implements IWalletService {
 
   async withdrawMoney(userId: string, amount: number) {
     if (amount <= 0) {
-        throw new BadRequestException('Amount must be positive.');
+      throw new BadRequestException('Amount must be positive.');
     }
 
     const wallet = await this.getWallet(userId);
 
     if (wallet.balance < amount) {
-        throw new BadRequestException('Insufficient funds.');
+      throw new BadRequestException('Insufficient funds.');
     }
 
-    const updatedWallet = await this._walletRepo.updateWalletBalance(userId, -amount);
+    const updatedWallet = await this._walletRepo.updateWalletBalance(
+      userId,
+      -amount,
+    );
 
     await this._walletRepo.createTransaction(
-        userId,
-        wallet._id.toString(),
-        amount,
-        WalletTransactionType.DEBIT,
-        'Funds withdrawn from wallet'
+      userId,
+      wallet._id.toString(),
+      amount,
+      WalletTransactionType.DEBIT,
+      'Funds withdrawn from wallet',
     );
 
     return updatedWallet;
   }
 
-  async refundUserForExpiredQuotation(userId: string, quotationId: string, amount: number): Promise<boolean> {
+  async refundUserForExpiredQuotation(
+    userId: string,
+    quotationId: string,
+    amount: number,
+  ): Promise<boolean> {
     if (amount <= 0) {
       throw new BadRequestException('Refund amount must be positive.');
     }
@@ -151,7 +206,10 @@ export class WalletService implements IWalletService {
     return true;
   }
 
-  async payFromWallet(userId: string, payFromWalletDto: PayFromWalletDto): Promise<TransactionResponseDto> {
+  async payFromWallet(
+    userId: string,
+    payFromWalletDto: PayFromWalletDto,
+  ): Promise<TransactionResponseDto> {
     const { quotationId, amount, paymentType } = payFromWalletDto;
 
     const wallet = await this.getWallet(userId);
@@ -159,22 +217,33 @@ export class WalletService implements IWalletService {
       throw new BadRequestException('Insufficient funds.');
     }
 
-    const quotation = await this._quotationService.findById(new Types.ObjectId(quotationId));
+    const quotation = await this._quotationService.findById(
+      new Types.ObjectId(quotationId),
+    );
     if (!quotation) {
       throw new NotFoundException(`Quotation with ID ${quotationId} not found`);
     }
 
     if (quotation.isPaymentInProgress) {
-      throw new BadRequestException('A payment for this quotation is already in progress.');
+      throw new BadRequestException(
+        'A payment for this quotation is already in progress.',
+      );
     }
     if (paymentType === PaymentType.ADVANCE && quotation.isAdvancePaid) {
-      throw new BadRequestException('Advance payment has already been made for this quotation.');
+      throw new BadRequestException(
+        'Advance payment has already been made for this quotation.',
+      );
     }
     if (paymentType === PaymentType.BALANCE && quotation.isFullyPaid) {
-      throw new BadRequestException('This quotation has already been fully paid.');
+      throw new BadRequestException(
+        'This quotation has already been fully paid.',
+      );
     }
 
-    await this._quotationService.updateQuotation({ _id: quotation._id }, { $set: { isPaymentInProgress: true } });
+    await this._quotationService.updateQuotation(
+      { _id: quotation._id },
+      { $set: { isPaymentInProgress: true } },
+    );
 
     await this._walletRepo.updateWalletBalance(userId, -amount);
 
@@ -183,7 +252,7 @@ export class WalletService implements IWalletService {
       wallet._id.toString(),
       amount,
       WalletTransactionType.DEBIT,
-      `Payment for quotation #${quotationId}`
+      `Payment for quotation #${quotationId}`,
     );
 
     const transaction = await this._transactionService.createTransaction({
@@ -203,13 +272,16 @@ export class WalletService implements IWalletService {
     } else {
       update.isFullyPaid = true;
     }
-    const updatedQuotation = await this._quotationService.updateQuotation(
+    const updatedQuotation = (await this._quotationService.updateQuotation(
       { _id: new Types.ObjectId(quotationId) },
-      { $set: update }
-    ) as Quotation;
+      { $set: update },
+    )) as Quotation;
 
     if (updatedQuotation.isFullyPaid) {
-      await this._adminWalletService.recordUserPayment(updatedQuotation, transaction._id.toString());
+      await this._adminWalletService.recordUserPayment(
+        updatedQuotation,
+        transaction._id.toString(),
+      );
     }
 
     return transaction;

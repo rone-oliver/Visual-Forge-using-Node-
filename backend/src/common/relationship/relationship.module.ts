@@ -1,11 +1,15 @@
 import { forwardRef, Module } from '@nestjs/common';
-import { RelationshipService } from './relationship.service';
-import { IRelationshipRepositoryToken } from './interfaces/repository.interface';
-import { RelationshipRepository } from './repositories/relationship.repository';
-import { IRelationshipServiceToken } from './interfaces/service.interface';
-import { UsersModule } from 'src/users/users.module';
-import { Relationship, RelationshipSchema } from './models/relationships.schema';
 import { MongooseModule } from '@nestjs/mongoose';
+import { UsersModule } from 'src/users/users.module';
+
+import { IRelationshipRepositoryToken } from './interfaces/repository.interface';
+import { IRelationshipServiceToken } from './interfaces/service.interface';
+import {
+  Relationship,
+  RelationshipSchema,
+} from './models/relationships.schema';
+import { RelationshipService } from './relationship.service';
+import { RelationshipRepository } from './repositories/relationship.repository';
 
 @Module({
   imports: [
@@ -22,8 +26,8 @@ import { MongooseModule } from '@nestjs/mongoose';
     {
       provide: IRelationshipServiceToken,
       useClass: RelationshipService,
-    }
+    },
   ],
-  exports: [IRelationshipServiceToken]
+  exports: [IRelationshipServiceToken],
 })
 export class RelationshipModule {}

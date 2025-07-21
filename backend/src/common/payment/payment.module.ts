@@ -1,7 +1,8 @@
-import { Module } from '@nestjs/common';
-import { PaymentService } from './payment.service';
 import { HttpModule } from '@nestjs/axios';
+import { Module } from '@nestjs/common';
+
 import { IPaymentServiceToken } from './interfaces/payment-service.interface';
+import { PaymentService } from './payment.service';
 
 @Module({
   imports: [HttpModule],
@@ -9,8 +10,8 @@ import { IPaymentServiceToken } from './interfaces/payment-service.interface';
     {
       provide: IPaymentServiceToken,
       useClass: PaymentService,
-    }
+    },
   ],
-  exports: [IPaymentServiceToken]
+  exports: [IPaymentServiceToken],
 })
 export class PaymentModule {}

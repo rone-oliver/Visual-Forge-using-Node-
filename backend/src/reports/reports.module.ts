@@ -1,27 +1,26 @@
 import { Module } from '@nestjs/common';
-import { ReportsService } from './reports.service';
-import { IReportRepositoryToken } from './interfaces/reports.repository.interface';
-import { ReportRepository } from './repositories/reports.repository';
-import { IReportServiceToken } from './interfaces/reports.service.interface';
 import { MongooseModule } from '@nestjs/mongoose';
+
+import { IReportRepositoryToken } from './interfaces/reports.repository.interface';
+import { IReportServiceToken } from './interfaces/reports.service.interface';
 import { Report, ReportSchema } from './models/report.schema';
+import { ReportsService } from './reports.service';
+import { ReportRepository } from './repositories/reports.repository';
 
 @Module({
   providers: [
     {
       provide: IReportRepositoryToken,
-      useClass: ReportRepository
+      useClass: ReportRepository,
     },
     {
       provide: IReportServiceToken,
-      useClass: ReportsService
-    }
+      useClass: ReportsService,
+    },
   ],
   imports: [
-    MongooseModule.forFeature([
-      { name: Report.name, schema: ReportSchema },
-    ])
+    MongooseModule.forFeature([{ name: Report.name, schema: ReportSchema }]),
   ],
-  exports: [IReportServiceToken,IReportRepositoryToken]
+  exports: [IReportServiceToken, IReportRepositoryToken],
 })
 export class ReportsModule {}

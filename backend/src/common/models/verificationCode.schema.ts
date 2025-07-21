@@ -1,12 +1,12 @@
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document, Types } from "mongoose";
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document, Types } from 'mongoose';
 
 export type VerificationCodeDocument = VerificationCode & Document;
 
 export enum VerificationType {
   EMAIL = 'email',
   PASSWORD_RESET = 'passwordReset',
-  PHONE = 'phone'
+  PHONE = 'phone',
 }
 
 @Schema({ timestamps: true })
@@ -32,4 +32,5 @@ export class VerificationCode {
   type: VerificationType;
 }
 
-export const VerificationCodeSchema = SchemaFactory.createForClass(VerificationCode);
+export const VerificationCodeSchema =
+  SchemaFactory.createForClass(VerificationCode);

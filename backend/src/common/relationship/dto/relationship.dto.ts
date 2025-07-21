@@ -1,5 +1,5 @@
-import { IsEnum, IsMongoId, IsNumber, IsOptional, Min } from 'class-validator';
 import { Type } from 'class-transformer';
+import { IsEnum, IsMongoId, IsNumber, IsOptional, Min } from 'class-validator';
 import { Types } from 'mongoose';
 import { RelationshipType } from 'src/common/enums/relationships.enum';
 

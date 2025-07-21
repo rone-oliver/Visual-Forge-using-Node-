@@ -1,20 +1,21 @@
 import { Module } from '@nestjs/common';
-import { AdminsAuthService } from './admins-auth.service';
-import { AdminsAuthController } from './admins-auth.controller';
-import { AdminsModule } from 'src/admins/admins.module';
-import { PassportModule } from '@nestjs/passport';
 import { JwtService } from '@nestjs/jwt';
-import { IAdminsAuthServiceToken } from './interfaces/adminsAuth-service.interface';
+import { PassportModule } from '@nestjs/passport';
+import { AdminsModule } from 'src/admins/admins.module';
 import { HashingModule } from 'src/common/hashing/hashing.module';
 
+import { AdminsAuthController } from './admins-auth.controller';
+import { AdminsAuthService } from './admins-auth.service';
+import { IAdminsAuthServiceToken } from './interfaces/adminsAuth-service.interface';
+
 @Module({
-  imports: [AdminsModule, PassportModule, HashingModule,],
+  imports: [AdminsModule, PassportModule, HashingModule],
   providers: [
     {
       provide: IAdminsAuthServiceToken,
-      useClass: AdminsAuthService
+      useClass: AdminsAuthService,
     },
-    JwtService
+    JwtService,
   ],
   controllers: [AdminsAuthController],
 })

@@ -1,20 +1,36 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
-import { AdminTransactionType, TransactionFlow } from './models/admin-transaction.schema';
-import { Quotation } from 'src/quotation/models/quotation.schema';
-import { IAdminTransactionRepository, IAdminTransactionRepositoryToken } from './interfaces/admin-transaction.repository.interface';
-import { IAdminWalletService } from './interfaces/admin-wallet.service.interface';
-import { IWalletService, IWalletServiceToken } from './interfaces/wallet-service.interface';
 import { Types } from 'mongoose';
-import { PaginatedLedgerResponseDto } from './dto/wallet.dto';
-import { IPaymentService, IPaymentServiceToken } from 'src/common/payment/interfaces/payment-service.interface';
 import { FinancialSummaryDto } from 'src/admins/dto/admin.dto';
+import {
+  IPaymentService,
+  IPaymentServiceToken,
+} from 'src/common/payment/interfaces/payment-service.interface';
+import { Quotation } from 'src/quotation/models/quotation.schema';
+
+import { PaginatedLedgerResponseDto } from './dto/wallet.dto';
+import {
+  IAdminTransactionRepository,
+  IAdminTransactionRepositoryToken,
+} from './interfaces/admin-transaction.repository.interface';
+import { IAdminWalletService } from './interfaces/admin-wallet.service.interface';
+import {
+  IWalletService,
+  IWalletServiceToken,
+} from './interfaces/wallet-service.interface';
+import {
+  AdminTransactionType,
+  TransactionFlow,
+} from './models/admin-transaction.schema';
 
 @Injectable()
 export class AdminWalletService implements IAdminWalletService {
   constructor(
-    @Inject(IAdminTransactionRepositoryToken) private readonly _adminTransactionRepository: IAdminTransactionRepository,
-    @Inject(IWalletServiceToken) private readonly _walletService: IWalletService,
-    @Inject(IPaymentServiceToken) private readonly _paymentService: IPaymentService,
+    @Inject(IAdminTransactionRepositoryToken)
+    private readonly _adminTransactionRepository: IAdminTransactionRepository,
+    @Inject(IWalletServiceToken)
+    private readonly _walletService: IWalletService,
+    @Inject(IPaymentServiceToken)
+    private readonly _paymentService: IPaymentService,
   ) {}
 
   async creditWelcomeBonus(userId: string): Promise<void> {
@@ -30,7 +46,10 @@ export class AdminWalletService implements IAdminWalletService {
     });
   }
 
-  async recordUserPayment(quotation: Quotation, paymentId: string): Promise<void> {
+  async recordUserPayment(
+    quotation: Quotation,
+    paymentId: string,
+  ): Promise<void> {
     const totalAmount = quotation.estimatedBudget;
     const commissionRate = 0.1; // 10% commission
     const commission = totalAmount * commissionRate;
@@ -47,7 +66,11 @@ export class AdminWalletService implements IAdminWalletService {
       paymentId,
     });
 
-    await this._walletService.creditEditorWallet(quotation.editorId.toString(), editorShare, quotation._id.toString());
+    await this._walletService.creditEditorWallet(
+      quotation.editorId.toString(),
+      editorShare,
+      quotation._id.toString(),
+    );
 
     await this._adminTransactionRepository.create({
       flow: TransactionFlow.DEBIT,
@@ -58,13 +81,16 @@ export class AdminWalletService implements IAdminWalletService {
     });
   }
 
-  async getLedger(page: number, limit: number): Promise<PaginatedLedgerResponseDto> {
+  async getLedger(
+    page: number,
+    limit: number,
+  ): Promise<PaginatedLedgerResponseDto> {
     const skip = (page - 1) * limit;
     const [transactions, totalItems, balance] = await Promise.all([
       this._adminTransactionRepository.findAll({ skip, limit }),
       this._adminTransactionRepository.count(),
-      this._paymentService.getAccountBalance()
-    ])
+      this._paymentService.getAccountBalance(),
+    ]);
     const totalPages = Math.ceil(totalItems / limit);
     return {
       transactions,
@@ -72,16 +98,20 @@ export class AdminWalletService implements IAdminWalletService {
       totalPages,
       currentPage: page,
       itemsPerPage: limit,
-      totalBalance: balance
+      totalBalance: balance,
     };
   }
 
-  async getTransactionCountByFlow(): Promise<{ credit: number; debit: number }> {
+  async getTransactionCountByFlow(): Promise<{
+    credit: number;
+    debit: number;
+  }> {
     return this._adminTransactionRepository.getTransactionCountByFlow();
   }
 
   async getFinancialSummary(): Promise<FinancialSummaryDto> {
-    const { totalRevenue, totalPlatformFee, totalPayouts } = await this._adminTransactionRepository.getFinancialSummary();
+    const { totalRevenue, totalPlatformFee, totalPayouts } =
+      await this._adminTransactionRepository.getFinancialSummary();
     const netProfit = totalRevenue - totalPayouts;
 
     return {

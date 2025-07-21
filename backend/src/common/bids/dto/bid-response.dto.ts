@@ -12,7 +12,10 @@ class EditorDto {
   @ApiProperty({ description: 'Email of the editor' })
   email: string;
 
-  @ApiProperty({ description: 'URL to the editor\'s profile image', required: false })
+  @ApiProperty({
+    description: "URL to the editor's profile image",
+    required: false,
+  })
   profileImage?: string;
 }
 
@@ -35,13 +38,19 @@ export class BidResponseDto {
   @ApiProperty({ description: 'Due date for the bid', type: Date })
   dueDate: Date;
 
-  @ApiProperty({ description: 'Additional notes from the editor', required: false })
+  @ApiProperty({
+    description: 'Additional notes from the editor',
+    required: false,
+  })
   notes?: string;
 
   @ApiProperty({ description: 'Date when the bid was created', type: Date })
   createdAt: Date;
 
-  @ApiProperty({ description: 'Date when the bid was last updated', type: Date })
+  @ApiProperty({
+    description: 'Date when the bid was last updated',
+    type: Date,
+  })
   updatedAt: Date;
 
   @ApiProperty({ type: EditorDto, description: 'Populated editor information' })

@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import { User } from 'src/users/models/user.schema';
+
 import { Wallet } from './wallet.schema';
 
 export enum WalletTransactionType {
@@ -16,10 +17,19 @@ export type WalletTransactionDocument = WalletTransaction & Document;
 
 @Schema({ timestamps: true, collection: 'WalletTransactions' })
 export class WalletTransaction {
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: User.name, required: true, index: true })
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: User.name,
+    required: true,
+    index: true,
+  })
   user: User;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: Wallet.name, required: true })
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: Wallet.name,
+    required: true,
+  })
   wallet: Wallet;
 
   @Prop({ required: true, enum: WalletTransactionType })
@@ -35,4 +45,5 @@ export class WalletTransaction {
   metadata?: Record<string, any>;
 }
 
-export const WalletTransactionSchema = SchemaFactory.createForClass(WalletTransaction);
+export const WalletTransactionSchema =
+  SchemaFactory.createForClass(WalletTransaction);

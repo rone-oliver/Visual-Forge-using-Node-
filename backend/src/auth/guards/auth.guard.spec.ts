@@ -1,7 +1,8 @@
 // backend/src/auth/guards/auth.guard.spec.ts
-import { Test, TestingModule } from '@nestjs/testing';
-import { AuthGuard } from './auth.guard';
 import { Reflector } from '@nestjs/core';
+import { Test, TestingModule } from '@nestjs/testing';
+
+import { AuthGuard } from './auth.guard';
 
 describe('AuthGuard', () => {
   let guard: AuthGuard;

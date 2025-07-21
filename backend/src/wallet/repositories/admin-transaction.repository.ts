@@ -1,8 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { AdminTransaction, AdminTransactionType, TransactionFlow } from '../models/admin-transaction.schema';
+
 import { IAdminTransactionRepository } from '../interfaces/admin-transaction.repository.interface';
+import {
+  AdminTransaction,
+  AdminTransactionType,
+  TransactionFlow,
+} from '../models/admin-transaction.schema';
 
 @Injectable()
 export class AdminTransactionRepository implements IAdminTransactionRepository {
@@ -11,28 +16,35 @@ export class AdminTransactionRepository implements IAdminTransactionRepository {
     private readonly _adminTransactionModel: Model<AdminTransaction>,
   ) {}
 
-  async create(transactionDto: Partial<AdminTransaction>): Promise<AdminTransaction> {
+  async create(
+    transactionDto: Partial<AdminTransaction>,
+  ): Promise<AdminTransaction> {
     return await this._adminTransactionModel.create(transactionDto);
   }
 
-  async findAll(filter: {skip?: number, limit?: number} = {}): Promise<AdminTransaction[]> {
+  async findAll(
+    filter: { skip?: number; limit?: number } = {},
+  ): Promise<AdminTransaction[]> {
     const { skip = 0, limit = 10 } = filter;
     return this._adminTransactionModel
-    .find()
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit)
-    .populate('user', 'fullname email')
-    .populate('editor', 'fullname email')
-    .populate('quotation', 'title')
-    .exec();
+      .find()
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate('user', 'fullname email')
+      .populate('editor', 'fullname email')
+      .populate('quotation', 'title')
+      .exec();
   }
 
   async count(): Promise<number> {
     return this._adminTransactionModel.countDocuments().exec();
   }
 
-  async getTransactionCountByFlow(): Promise<{ credit: number; debit: number }> {
+  async getTransactionCountByFlow(): Promise<{
+    credit: number;
+    debit: number;
+  }> {
     const result = await this._adminTransactionModel.aggregate([
       {
         $group: {
@@ -58,24 +70,28 @@ export class AdminTransactionRepository implements IAdminTransactionRepository {
     return counts;
   }
 
-  async getFinancialSummary(): Promise<{ totalRevenue: number; totalPlatformFee: number; totalPayouts: number; }> {
+  async getFinancialSummary(): Promise<{
+    totalRevenue: number;
+    totalPlatformFee: number;
+    totalPayouts: number;
+  }> {
     const result = await this._adminTransactionModel.aggregate([
       {
         $facet: {
           totalRevenue: [
             { $match: { flow: TransactionFlow.CREDIT } },
-            { $group: { _id: null, total: { $sum: '$amount' } } }
+            { $group: { _id: null, total: { $sum: '$amount' } } },
           ],
           totalPlatformFee: [
             { $match: { transactionType: AdminTransactionType.USER_PAYMENT } },
-            { $group: { _id: null, total: { $sum: '$commission' } } }
+            { $group: { _id: null, total: { $sum: '$commission' } } },
           ],
           totalPayouts: [
             { $match: { flow: TransactionFlow.DEBIT } },
-            { $group: { _id: null, total: { $sum: '$amount' } } }
-          ]
-        }
-      }
+            { $group: { _id: null, total: { $sum: '$amount' } } },
+          ],
+        },
+      },
     ]);
 
     const totalRevenue = result[0]?.totalRevenue[0]?.total || 0;

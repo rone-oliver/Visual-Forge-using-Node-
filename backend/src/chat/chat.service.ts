@@ -1,28 +1,45 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { Message, MessageStatus } from './models/chat-message.schema';
 import { Types } from 'mongoose';
-import { IUsersService, IUsersServiceToken } from 'src/users/interfaces/users.service.interface';
-import { IChatRepository, IChatRepositoryToken } from './interfaces/chat-repository.interface';
+import {
+  IUsersService,
+  IUsersServiceToken,
+} from 'src/users/interfaces/users.service.interface';
+
+import {
+  IChatRepository,
+  IChatRepositoryToken,
+} from './interfaces/chat-repository.interface';
 import { IChatService } from './interfaces/chat-service.interface';
+import { Message, MessageStatus } from './models/chat-message.schema';
 
 @Injectable()
 export class ChatService implements IChatService {
   private readonly _logger = new Logger(ChatService.name);
-  
+
   constructor(
-    @Inject(IChatRepositoryToken) private readonly _chatRepository: IChatRepository,
+    @Inject(IChatRepositoryToken)
+    private readonly _chatRepository: IChatRepository,
     @Inject(IUsersServiceToken) private readonly _userService: IUsersService,
-  ) { }
+  ) {}
 
   async getChatList(currentUserId: Types.ObjectId) {
     return this._chatRepository.getChatList(currentUserId);
   }
 
-  async getMessagesBetweenUsers(currentUserId: Types.ObjectId, recipientId: Types.ObjectId) {
-    return this._chatRepository.findMessagesBetweenUsers(currentUserId, recipientId);
+  async getMessagesBetweenUsers(
+    currentUserId: Types.ObjectId,
+    recipientId: Types.ObjectId,
+  ) {
+    return this._chatRepository.findMessagesBetweenUsers(
+      currentUserId,
+      recipientId,
+    );
   }
 
-  async updateMessageStatus(messageId: string, status: MessageStatus): Promise<Message | null> {
+  async updateMessageStatus(
+    messageId: string,
+    status: MessageStatus,
+  ): Promise<Message | null> {
     return this._chatRepository.updateMessageStatus(messageId, status);
   }
 
@@ -33,7 +50,7 @@ export class ChatService implements IChatService {
         return {
           username: 'Unknown User',
           profileImage: null,
-          isOnline: false
+          isOnline: false,
         };
       }
       return user;
@@ -42,12 +59,12 @@ export class ChatService implements IChatService {
       return {
         username: 'Unknown User',
         profileImage: null,
-        isOnline: false
+        isOnline: false,
       };
     }
   }
 
-  async createNewChat(senderId: Types.ObjectId, recipientId: Types.ObjectId){
+  async createNewChat(senderId: Types.ObjectId, recipientId: Types.ObjectId) {
     try {
       return this._chatRepository.create(senderId, recipientId, 'Hi');
     } catch (error) {
@@ -56,7 +73,11 @@ export class ChatService implements IChatService {
     }
   }
 
-  async createMessage(senderId: Types.ObjectId, recipientId: Types.ObjectId, content: string): Promise<Message> {
+  async createMessage(
+    senderId: Types.ObjectId,
+    recipientId: Types.ObjectId,
+    content: string,
+  ): Promise<Message> {
     try {
       return this._chatRepository.create(senderId, recipientId, content);
     } catch (error) {

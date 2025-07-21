@@ -1,19 +1,28 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Community, CommunityDocument } from '../models/community.schema';
-import { CommunityMessage, CommunityMessageDocument } from '../models/community-message.schema';
-import { ICommunityRepository } from '../interfaces/community.repository.interface';
+
 import { CreateCommunityDto } from '../dto/community.dto';
+import { ICommunityRepository } from '../interfaces/community.repository.interface';
+import {
+  CommunityMessage,
+  CommunityMessageDocument,
+} from '../models/community-message.schema';
+import { Community, CommunityDocument } from '../models/community.schema';
 
 @Injectable()
 export class CommunityRepository implements ICommunityRepository {
   constructor(
-    @InjectModel(Community.name) private readonly _communityModel: Model<CommunityDocument>,
-    @InjectModel(CommunityMessage.name) private readonly _communityMessageModel: Model<CommunityMessageDocument>,
+    @InjectModel(Community.name)
+    private readonly _communityModel: Model<CommunityDocument>,
+    @InjectModel(CommunityMessage.name)
+    private readonly _communityMessageModel: Model<CommunityMessageDocument>,
   ) {}
 
-  async create(createCommunityDto: CreateCommunityDto, creatorId: string): Promise<Community> {
+  async create(
+    createCommunityDto: CreateCommunityDto,
+    creatorId: string,
+  ): Promise<Community> {
     const newCommunity = new this._communityModel({
       ...createCommunityDto,
       creator: new Types.ObjectId(creatorId),
@@ -50,7 +59,10 @@ export class CommunityRepository implements ICommunityRepository {
           description: 1,
           createdAt: 1,
           updatedAt: 1,
-          creator: { _id: '$creatorInfo._id', fullname: '$creatorInfo.fullname' },
+          creator: {
+            _id: '$creatorInfo._id',
+            fullname: '$creatorInfo.fullname',
+          },
           members: {
             $map: {
               input: '$memberInfo',
@@ -96,7 +108,10 @@ export class CommunityRepository implements ICommunityRepository {
           description: 1,
           createdAt: 1,
           updatedAt: 1,
-          creator: { _id: '$creatorInfo._id', fullname: '$creatorInfo.fullname' },
+          creator: {
+            _id: '$creatorInfo._id',
+            fullname: '$creatorInfo.fullname',
+          },
           members: {
             $map: {
               input: '$memberInfo',
@@ -130,12 +145,18 @@ export class CommunityRepository implements ICommunityRepository {
       { new: true },
     );
     if (!community) {
-      throw new NotFoundException(`Community with ID "${communityId}" not found`);
+      throw new NotFoundException(
+        `Community with ID "${communityId}" not found`,
+      );
     }
     return community;
   }
 
-  async addMessage(communityId: string, senderId: string, content: string): Promise<CommunityMessage> {
+  async addMessage(
+    communityId: string,
+    senderId: string,
+    content: string,
+  ): Promise<CommunityMessage> {
     return await this._communityMessageModel.create({
       community: new Types.ObjectId(communityId),
       sender: new Types.ObjectId(senderId),
@@ -143,58 +164,73 @@ export class CommunityRepository implements ICommunityRepository {
     });
   }
 
-  async getMessages(communityId: string, limit: number = 50): Promise<CommunityMessage[]> {
-    const messages = await this._communityMessageModel.aggregate([
-      {
-        $match: {
-          community: new Types.ObjectId(communityId),
+  async getMessages(
+    communityId: string,
+    limit: number = 50,
+  ): Promise<CommunityMessage[]> {
+    const messages = await this._communityMessageModel
+      .aggregate([
+        {
+          $match: {
+            community: new Types.ObjectId(communityId),
+          },
         },
-      },
-      {
-        $sort: {
-          createdAt: -1,
+        {
+          $sort: {
+            createdAt: -1,
+          },
         },
-      },
-      {
-        $limit: limit,
-      },
-      {
-        $sort: {
-          createdAt: 1,
+        {
+          $limit: limit,
         },
-      },
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'sender',
-          foreignField: '_id',
-          as: 'sender',
+        {
+          $sort: {
+            createdAt: 1,
+          },
         },
-      },
-      {
-        $unwind: '$sender',
-      },
-      {
-        $project: {
-          _id: 1,
-          community: 1,
-          content: 1,
-          createdAt: 1,
-          updatedAt: 1,
-          'sender._id': '$sender._id',
-          'sender.fullname': '$sender.fullname',
-          'sender.profileImage': '$sender.profileImage',
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'sender',
+            foreignField: '_id',
+            as: 'sender',
+          },
         },
-      },
-    ]).exec();
+        {
+          $unwind: '$sender',
+        },
+        {
+          $project: {
+            _id: 1,
+            community: 1,
+            content: 1,
+            createdAt: 1,
+            updatedAt: 1,
+            'sender._id': '$sender._id',
+            'sender.fullname': '$sender.fullname',
+            'sender.profileImage': '$sender.profileImage',
+          },
+        },
+      ])
+      .exec();
     return messages;
   }
 
   async getMessageById(messageId: string): Promise<CommunityMessage | null> {
-    return this._communityMessageModel.findById(messageId).populate('sender', 'fullname email').exec();
+    return this._communityMessageModel
+      .findById(messageId)
+      .populate('sender', 'fullname email')
+      .exec();
   }
 
-  async leaveCommunity(communityId: string, userId: string): Promise<Community | null> {
-    return this._communityModel.findByIdAndUpdate(communityId, { $pull: { members: new Types.ObjectId(userId)}}).exec();
+  async leaveCommunity(
+    communityId: string,
+    userId: string,
+  ): Promise<Community | null> {
+    return this._communityModel
+      .findByIdAndUpdate(communityId, {
+        $pull: { members: new Types.ObjectId(userId) },
+      })
+      .exec();
   }
 }

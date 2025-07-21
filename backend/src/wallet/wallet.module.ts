@@ -1,32 +1,42 @@
 import { forwardRef, Module } from '@nestjs/common';
-import { WalletController } from './wallet.controller';
-import { WalletService } from './wallet.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Wallet, WalletSchema } from './models/wallet.schema';
-import { WalletTransaction, WalletTransactionSchema } from './models/wallet-transaction.schema';
-import { IWalletServiceToken } from './interfaces/wallet-service.interface';
-import { IWalletRepositoryToken } from './interfaces/wallet-repository.interface';
-import { WalletRepository } from './repositories/wallet.repository';
+import { PaymentModule } from 'src/common/payment/payment.module';
+import { TransactionModule } from 'src/common/transaction/transaction.module';
+import { QuotationModule } from 'src/quotation/quotation.module';
 import { UsersModule } from 'src/users/users.module';
-import { AdminTransaction, AdminTransactionSchema } from './models/admin-transaction.schema';
+
 import { AdminWalletController } from './admin-wallet.controller';
-import { AdminWalletService } from './admin-wallet.service';
+import { IWalletRepositoryToken } from './interfaces/wallet-repository.interface';
+import { IWalletServiceToken } from './interfaces/wallet-service.interface';
+import { WalletTransaction, WalletTransactionSchema } from './models/wallet-transaction.schema';
+import { Wallet, WalletSchema } from './models/wallet.schema';
 import { AdminTransactionRepository } from './repositories/admin-transaction.repository';
+import { WalletRepository } from './repositories/wallet.repository';
+
+
+import {
+  AdminTransaction,
+  AdminTransactionSchema,
+} from './models/admin-transaction.schema';
+import { AdminWalletService } from './admin-wallet.service';
 import { IAdminTransactionRepositoryToken } from './interfaces/admin-transaction.repository.interface';
 import { IAdminWalletServiceToken } from './interfaces/admin-wallet.service.interface';
-import { PaymentModule } from 'src/common/payment/payment.module';
-import { QuotationModule } from 'src/quotation/quotation.module';
-import { TransactionModule } from 'src/common/transaction/transaction.module';
+
+
+import { WalletController } from './wallet.controller';
+import { WalletService } from './wallet.service';
 
 @Module({
-  imports:[
+  imports: [
     MongooseModule.forFeature([
       { name: Wallet.name, schema: WalletSchema },
       { name: WalletTransaction.name, schema: WalletTransactionSchema },
-      { name: AdminTransaction.name, schema: AdminTransactionSchema }
+      { name: AdminTransaction.name, schema: AdminTransactionSchema },
     ]),
     forwardRef(() => UsersModule),
-    PaymentModule, QuotationModule, TransactionModule,
+    PaymentModule,
+    QuotationModule,
+    TransactionModule,
   ],
   controllers: [WalletController, AdminWalletController],
   providers: [
@@ -36,7 +46,7 @@ import { TransactionModule } from 'src/common/transaction/transaction.module';
     },
     {
       provide: IWalletRepositoryToken,
-      useClass: WalletRepository
+      useClass: WalletRepository,
     },
     {
       provide: IAdminWalletServiceToken,
@@ -44,9 +54,9 @@ import { TransactionModule } from 'src/common/transaction/transaction.module';
     },
     {
       provide: IAdminTransactionRepositoryToken,
-      useClass: AdminTransactionRepository
+      useClass: AdminTransactionRepository,
     },
   ],
-  exports: [IWalletServiceToken, IAdminWalletServiceToken]
+  exports: [IWalletServiceToken, IAdminWalletServiceToken],
 })
 export class WalletModule {}

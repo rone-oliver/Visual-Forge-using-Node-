@@ -1,14 +1,15 @@
 import { Module } from '@nestjs/common';
-import { WorksService } from './works.service';
-import { IWorkServiceToken } from './interfaces/works.service.interface';
-import { IWorkRepositoryToken } from './interfaces/works.repository.interface';
-import { WorkRepository } from './repositories/work.repository';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Works, workSchema } from 'src/works/models/works.schema';
-import { User, userSchema } from 'src/users/models/user.schema';
 import { CloudinaryModule } from 'src/common/cloudinary/cloudinary.module';
-import { TimelineModule } from 'src/timeline/timeline.module';
 import { QuotationModule } from 'src/quotation/quotation.module';
+import { TimelineModule } from 'src/timeline/timeline.module';
+import { User, userSchema } from 'src/users/models/user.schema';
+import { Works, workSchema } from 'src/works/models/works.schema';
+
+import { IWorkRepositoryToken } from './interfaces/works.repository.interface';
+import { IWorkServiceToken } from './interfaces/works.service.interface';
+import { WorkRepository } from './repositories/work.repository';
+import { WorksService } from './works.service';
 
 @Module({
   providers: [
@@ -18,7 +19,7 @@ import { QuotationModule } from 'src/quotation/quotation.module';
     },
     {
       provide: IWorkRepositoryToken,
-      useClass: WorkRepository
+      useClass: WorkRepository,
     },
   ],
   imports: [
@@ -26,8 +27,10 @@ import { QuotationModule } from 'src/quotation/quotation.module';
       { name: Works.name, schema: workSchema },
       { name: User.name, schema: userSchema },
     ]),
-    CloudinaryModule, TimelineModule, QuotationModule,
+    CloudinaryModule,
+    TimelineModule,
+    QuotationModule,
   ],
-  exports: [IWorkServiceToken, IWorkRepositoryToken]
+  exports: [IWorkServiceToken, IWorkRepositoryToken],
 })
 export class WorksModule {}

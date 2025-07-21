@@ -1,12 +1,29 @@
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { Type } from "class-transformer";
-import { IsArray, IsBoolean, IsDate, IsDateString, IsEmail, IsEnum, IsMongoId, IsNotEmpty, IsNumber, IsOptional, IsString, Min, ValidateNested } from "class-validator";
-import { Types } from "mongoose";
-import { EditorBidDetailsDto } from "src/editors/dto/editors.dto";
-import { OutputType, QuotationStatus } from "src/quotation/models/quotation.schema";
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import {
+  IsArray,
+  IsBoolean,
+  IsDate,
+  IsDateString,
+  IsEmail,
+  IsEnum,
+  IsMongoId,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+  ValidateNested,
+} from 'class-validator';
+import { Types } from 'mongoose';
+import { EditorBidDetailsDto } from 'src/editors/dto/editors.dto';
+import {
+  OutputType,
+  QuotationStatus,
+} from 'src/quotation/models/quotation.schema';
 import { FileType as CommonFileType } from 'src/quotation/models/quotation.schema';
-import { TimelineResponseDto } from "src/timeline/dtos/timeline.dto";
-import { UserBasicInfoDto } from "src/users/dto/users.dto";
+import { TimelineResponseDto } from 'src/timeline/dtos/timeline.dto';
+import { UserBasicInfoDto } from 'src/users/dto/users.dto';
 
 export class TopUserDto {
   @ApiProperty()
@@ -55,7 +72,7 @@ export enum FileType {
   IMAGE = 'image',
   VIDEO = 'video',
   AUDIO = 'audio',
-  DOCUMENT = 'document'
+  DOCUMENT = 'document',
 }
 
 export interface FileAttachment {
@@ -73,7 +90,11 @@ export class FileAttachmentDto {
   @IsOptional()
   url?: string;
 
-  @ApiProperty({ description: 'Type of the file', enum: CommonFileType, enumName: 'CommonFileType' })
+  @ApiProperty({
+    description: 'Type of the file',
+    enum: CommonFileType,
+    enumName: 'CommonFileType',
+  })
   @IsEnum(CommonFileType)
   @IsNotEmpty()
   fileType: CommonFileType;
@@ -93,7 +114,9 @@ export class FileAttachmentDto {
   @IsString()
   mimeType?: string;
 
-  @ApiPropertyOptional({ description: 'Timestamp of when the file was uploaded' })
+  @ApiPropertyOptional({
+    description: 'Timestamp of when the file was uploaded',
+  })
   @IsOptional()
   @IsDate()
   @Type(() => Date)
@@ -175,13 +198,21 @@ export class AcceptedQuotationItemDto {
 }
 
 export class PaginationQueryDto {
-  @ApiPropertyOptional({ description: 'Page number for pagination', default: 1, type: Number })
+  @ApiPropertyOptional({
+    description: 'Page number for pagination',
+    default: 1,
+    type: Number,
+  })
   @IsOptional()
   @Type(() => Number)
   @Min(1)
   page?: number = 1;
 
-  @ApiPropertyOptional({ description: 'Number of items per page', default: 10, type: Number })
+  @ApiPropertyOptional({
+    description: 'Number of items per page',
+    default: 10,
+    type: Number,
+  })
   @IsOptional()
   @Type(() => Number)
   @Min(1)
@@ -193,7 +224,7 @@ export class PaginationQueryDto {
   searchTerm?: string;
 }
 
-export class GetAcceptedQuotationsQueryDto extends PaginationQueryDto { }
+export class GetAcceptedQuotationsQueryDto extends PaginationQueryDto {}
 
 export class PaginatedAcceptedQuotationsResponseDto {
   @ApiProperty({ type: [AcceptedQuotationItemDto] })
@@ -216,7 +247,11 @@ export class PaginatedAcceptedQuotationsResponseDto {
 }
 
 export class GetPublishedQuotationsQueryDto extends PaginationQueryDto {
-  @ApiPropertyOptional({ description: 'Filter by media type', enum: OutputType, enumName: 'OutputType' })
+  @ApiPropertyOptional({
+    description: 'Filter by media type',
+    enum: OutputType,
+    enumName: 'OutputType',
+  })
   @IsOptional()
   @IsEnum(OutputType)
   mediaType?: OutputType | string;
@@ -227,14 +262,24 @@ export class PublishedQuotationItemDto {
   @ApiProperty() @IsMongoId() userId: string;
   @ApiProperty() @IsString() title: string;
   @ApiProperty() @IsString() description: string;
-  @ApiProperty({ enum: QuotationStatus }) @IsEnum(QuotationStatus) status: QuotationStatus;
+  @ApiProperty({ enum: QuotationStatus })
+  @IsEnum(QuotationStatus)
+  status: QuotationStatus;
   @ApiProperty({ enum: OutputType }) @IsEnum(OutputType) outputType: OutputType;
   @ApiPropertyOptional() @IsString() mediaType?: string;
   @ApiPropertyOptional() @IsNumber() budget?: number;
   @ApiPropertyOptional() @IsDateString() deadline?: string;
-  @ApiPropertyOptional({ type: () => [String] }) @IsArray() @IsOptional() files?: string[]; // Assuming file URLs or IDs
-  @ApiPropertyOptional({ type: () => [String] }) @IsArray() @IsOptional() sampleFiles?: string[];
-  @ApiPropertyOptional({ description: 'Details of the bid made by the current editor, if any' })
+  @ApiPropertyOptional({ type: () => [String] })
+  @IsArray()
+  @IsOptional()
+  files?: string[]; // Assuming file URLs or IDs
+  @ApiPropertyOptional({ type: () => [String] })
+  @IsArray()
+  @IsOptional()
+  sampleFiles?: string[];
+  @ApiPropertyOptional({
+    description: 'Details of the bid made by the current editor, if any',
+  })
   @ValidateNested()
   @Type(() => EditorBidDetailsDto)
   @IsOptional()

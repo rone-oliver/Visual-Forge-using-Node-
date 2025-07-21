@@ -1,6 +1,7 @@
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document, Types } from "mongoose";
-import { Rating } from "../dto/editors.dto";
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document, Types } from 'mongoose';
+
+import { Rating } from '../dto/editors.dto';
 
 export type EditorDocument = Editor & Document;
 
@@ -8,9 +9,9 @@ export type EditorDocument = Editor & Document;
 export class Editor {
   _id: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, unique: true, required:true, ref:'User' })
+  @Prop({ type: Types.ObjectId, unique: true, required: true, ref: 'User' })
   userId: Types.ObjectId;
-  
+
   @Prop({ type: [String] })
   category?: string[];
 
@@ -20,28 +21,30 @@ export class Editor {
   @Prop({ type: Number, default: 0 })
   streak?: number;
 
-  @Prop({ type: Number, default: 0})
+  @Prop({ type: Number, default: 0 })
   avgTime?: number;
 
   @Prop({
-    type: [{
-      rating: { type: Number, min:1, max:5, required: true },
-      feedback: { type: String },
-      userId: { type: Types.ObjectId, ref: 'User', required: true }
-    }],
+    type: [
+      {
+        rating: { type: Number, min: 1, max: 5, required: true },
+        feedback: { type: String },
+        userId: { type: Types.ObjectId, ref: 'User', required: true },
+      },
+    ],
     _id: false,
-    default: []
+    default: [],
   })
   ratings?: Rating[];
 
-  @Prop({type: Object, default: {}})
+  @Prop({ type: Object, default: {} })
   socialLinks?: {
-    linkedIn?:string,
-    pinterest?:string,
-    instagram?:string,
-    facebook?:string,
-    website?:string
-  }
+    linkedIn?: string;
+    pinterest?: string;
+    instagram?: string;
+    facebook?: string;
+    website?: string;
+  };
 
   @Prop({ type: [String], default: [] })
   sharedTutorials?: string[];

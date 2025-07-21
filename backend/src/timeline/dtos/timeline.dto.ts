@@ -1,13 +1,22 @@
-import { IsDate, IsEnum, IsMongoId, IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
-import { TimelineEvent } from '../models/timeline.schema';
-import { Types } from 'mongoose';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
+import {
+  IsDate,
+  IsEnum,
+  IsMongoId,
+  IsNotEmpty,
+  IsObject,
+  IsOptional,
+  IsString,
+} from 'class-validator';
+import { Types } from 'mongoose';
+
+import { TimelineEvent } from '../models/timeline.schema';
 
 export class CreateTimelineDto {
   @IsMongoId()
   @IsNotEmpty()
-  @Transform(({value})=>{
+  @Transform(({ value }) => {
     if (typeof value === 'string' && Types.ObjectId.isValid(value)) {
       return new Types.ObjectId(value);
     }
@@ -17,7 +26,7 @@ export class CreateTimelineDto {
 
   @IsMongoId()
   @IsNotEmpty()
-  @Transform(({value})=>{
+  @Transform(({ value }) => {
     if (typeof value === 'string' && Types.ObjectId.isValid(value)) {
       return new Types.ObjectId(value);
     }

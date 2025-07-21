@@ -49,4 +49,5 @@ export class AdminTransaction extends Document {
   razorpayTransferId?: string;
 }
 
-export const AdminTransactionSchema = SchemaFactory.createForClass(AdminTransaction);
+export const AdminTransactionSchema =
+  SchemaFactory.createForClass(AdminTransaction);

@@ -1,76 +1,80 @@
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Types } from "mongoose";
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Types } from 'mongoose';
 
 export enum PaymentType {
-    ADVANCE = 'advance',
-    BALANCE = 'balance'
+  ADVANCE = 'advance',
+  BALANCE = 'balance',
 }
 
 export enum PaymentStatus {
-    PENDING = 'pending',
-    COMPLETED = 'completed',
-    FAILED = 'failed',
-    REFUNDED = 'refunded'
+  PENDING = 'pending',
+  COMPLETED = 'completed',
+  FAILED = 'failed',
+  REFUNDED = 'refunded',
 }
 export enum PaymentMethod {
-    RAZORPAY = 'razorpay',
-    PAYPAL = 'paypal',
-    STRIPE = 'stripe',
-    WALLET = 'wallet',
+  RAZORPAY = 'razorpay',
+  PAYPAL = 'paypal',
+  STRIPE = 'stripe',
+  WALLET = 'wallet',
 }
 export type TransactionDocument = Transaction & Document;
 
 @Schema({ timestamps: true, collection: 'Transactions' })
 export class Transaction {
-    _id: Types.ObjectId;
-    
-    @Prop({ required: true, type: Types.ObjectId, ref: 'Quotation' })
-    quotationId: Types.ObjectId;
+  _id: Types.ObjectId;
 
-    @Prop({ required: true, type: Types.ObjectId, ref: 'User' })
-    userId: Types.ObjectId;
+  @Prop({ required: true, type: Types.ObjectId, ref: 'Quotation' })
+  quotationId: Types.ObjectId;
 
-    @Prop({ type: String, required: false })
-    paymentId?: string;
+  @Prop({ required: true, type: Types.ObjectId, ref: 'User' })
+  userId: Types.ObjectId;
 
-    @Prop({ type: String, required: false })
-    orderId?: string;
+  @Prop({ type: String, required: false })
+  paymentId?: string;
 
-    @Prop({ type: String, required: false })
-    razorpayPaymentMethod?: string;
+  @Prop({ type: String, required: false })
+  orderId?: string;
 
-    @Prop({ required: true })
-    currency: string;
+  @Prop({ type: String, required: false })
+  razorpayPaymentMethod?: string;
 
-    @Prop()
-    bank: string;
+  @Prop({ required: true })
+  currency: string;
 
-    @Prop()
-    wallet: string;
+  @Prop()
+  bank: string;
 
-    @Prop()
-    fee: number;
+  @Prop()
+  wallet: string;
 
-    @Prop()
-    tax: number;
+  @Prop()
+  fee: number;
 
-    @Prop({ required: true, type: Number })
-    amount: number;
+  @Prop()
+  tax: number;
 
-    @Prop({ required: true, enum: PaymentType })
-    paymentType: PaymentType;
+  @Prop({ required: true, type: Number })
+  amount: number;
 
-    @Prop({ required: true, enum: PaymentMethod, default: PaymentMethod.RAZORPAY })
-    paymentMethod: PaymentMethod;
+  @Prop({ required: true, enum: PaymentType })
+  paymentType: PaymentType;
 
-    @Prop({ required: true, enum: PaymentStatus, default: PaymentStatus.PENDING })
-    status: PaymentStatus;
+  @Prop({
+    required: true,
+    enum: PaymentMethod,
+    default: PaymentMethod.RAZORPAY,
+  })
+  paymentMethod: PaymentMethod;
 
-    @Prop({ type: Date, default: Date.now })
-    paymentDate: Date;
+  @Prop({ required: true, enum: PaymentStatus, default: PaymentStatus.PENDING })
+  status: PaymentStatus;
 
-    createdAt: Date;
-    updatedAt: Date;
+  @Prop({ type: Date, default: Date.now })
+  paymentDate: Date;
+
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export const TransactionSchema = SchemaFactory.createForClass(Transaction);

@@ -1,9 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types, FilterQuery } from 'mongoose';
-import { Bid, BidDocument, BidStatus } from '../models/bids.schema';
-import { IBidRepository } from '../interfaces/bid.interfaces';
 import { BiddedQuotationDto } from 'src/editors/dto/editors.dto';
+
+import { IBidRepository } from '../interfaces/bid.interfaces';
+import { Bid, BidDocument, BidStatus } from '../models/bids.schema';
 
 interface PopulatedEditor {
   _id: Types.ObjectId;
@@ -22,7 +23,10 @@ export class BidRepository implements IBidRepository {
     return this._bidModel.findOne(filters).exec();
   }
 
-  async findById(id: string | Types.ObjectId, options?: any): Promise<Bid | null> {
+  async findById(
+    id: string | Types.ObjectId,
+    options?: any,
+  ): Promise<Bid | null> {
     return this._bidModel.findById(id, null, options).exec();
   }
 
@@ -33,7 +37,9 @@ export class BidRepository implements IBidRepository {
   async findAllByQuotation(quotationId: Types.ObjectId): Promise<any[]> {
     return this._bidModel
       .find({ quotationId })
-      .populate<{ editorId: PopulatedEditor }>('editorId', 'fullname email profileImage')
+      .populate<{
+        editorId: PopulatedEditor;
+      }>('editorId', 'fullname email profileImage')
       .sort({ bidAmount: 1 })
       .lean()
       .exec();
@@ -47,16 +53,24 @@ export class BidRepository implements IBidRepository {
       .exec();
   }
 
-  async save(bid: Partial<Bid> & { _id: Types.ObjectId }, options?: any): Promise<Bid> {
-    return this._bidModel.findByIdAndUpdate(
-        bid._id,
-        bid,
-        { new: true, ...options }
-    ).lean().exec();
+  async save(
+    bid: Partial<Bid> & { _id: Types.ObjectId },
+    options?: any,
+  ): Promise<Bid> {
+    return this._bidModel
+      .findByIdAndUpdate(bid._id, bid, { new: true, ...options })
+      .lean()
+      .exec();
   }
 
-  async getAcceptedBid(quotationId: Types.ObjectId, editorId: Types.ObjectId): Promise<Bid> {
-    const bid = await this._bidModel.findOne({ quotationId, editorId, status: BidStatus.ACCEPTED }).lean().exec();
+  async getAcceptedBid(
+    quotationId: Types.ObjectId,
+    editorId: Types.ObjectId,
+  ): Promise<Bid> {
+    const bid = await this._bidModel
+      .findOne({ quotationId, editorId, status: BidStatus.ACCEPTED })
+      .lean()
+      .exec();
     if (!bid) {
       throw new NotFoundException('Bid not found');
     }
@@ -71,7 +85,9 @@ export class BidRepository implements IBidRepository {
     await this._bidModel.findByIdAndDelete(bidId);
   }
 
-  async getBiddedQuotationsForEditor(pipeline: any): Promise<BiddedQuotationDto[]> {
+  async getBiddedQuotationsForEditor(
+    pipeline: any,
+  ): Promise<BiddedQuotationDto[]> {
     return this._bidModel.aggregate(pipeline);
   }
 

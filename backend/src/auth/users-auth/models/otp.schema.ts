@@ -5,19 +5,19 @@ export type OtpDocument = Otp & Document;
 
 @Schema({ timestamps: true })
 export class Otp {
-    @Prop({ required: true })
-    email:string;
+  @Prop({ required: true })
+  email: string;
 
-    @Prop({ required: true })
-    otp: string;
+  @Prop({ required: true })
+  otp: string;
 
-    @Prop({ required: true })
-    expiresAt: Date;
+  @Prop({ required: true })
+  expiresAt: Date;
 
-    @Prop({ default: false })
-    isVerified: boolean;
+  @Prop({ default: false })
+  isVerified: boolean;
 }
 
 export const OtpSchema = SchemaFactory.createForClass(Otp);
 
-OtpSchema.index({expiresAt: 1},{expireAfterSeconds:0})
+OtpSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });

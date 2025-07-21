@@ -1,16 +1,24 @@
 import { Controller, Get, Inject, Query, UseGuards } from '@nestjs/common';
-import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
-import { Role } from 'src/common/enums/role.enum';
+import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { RolesGuard } from 'src/auth/guards/role.guard';
-import { IAdminWalletService, IAdminWalletServiceToken } from './interfaces/admin-wallet.service.interface';
-import { GetLedgerQueryDto, PaginatedLedgerResponseDto } from './dto/wallet.dto';
+import { Role } from 'src/common/enums/role.enum';
+
+import {
+  GetLedgerQueryDto,
+  PaginatedLedgerResponseDto,
+} from './dto/wallet.dto';
+import {
+  IAdminWalletService,
+  IAdminWalletServiceToken,
+} from './interfaces/admin-wallet.service.interface';
 
 @Controller('admin/wallet')
-@UseGuards(AuthGuard,RolesGuard)
+@UseGuards(AuthGuard, RolesGuard)
 export class AdminWalletController {
   constructor(
-    @Inject(IAdminWalletServiceToken) private readonly _adminWalletService: IAdminWalletService,
+    @Inject(IAdminWalletServiceToken)
+    private readonly _adminWalletService: IAdminWalletService,
   ) {}
 
   @Roles(Role.ADMIN)

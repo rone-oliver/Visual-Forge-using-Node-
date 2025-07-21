@@ -1,6 +1,12 @@
-import { MiddlewareConsumer, Module, NestModule, RequestMethod, Global } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+  Global,
+} from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
 import { JwtMiddleware } from 'src/auth/middleware/jwt.middleware';
 
 @Global()
@@ -15,8 +21,9 @@ import { JwtMiddleware } from 'src/auth/middleware/jwt.middleware';
         }
         return {
           secret: secret,
-          signOptions: { 
-            expiresIn: configService.get<string>('ACCESS_TOKEN_EXPIRATION') || '15m'
+          signOptions: {
+            expiresIn:
+              configService.get<string>('ACCESS_TOKEN_EXPIRATION') || '15m',
           },
         };
       },
@@ -28,7 +35,7 @@ import { JwtMiddleware } from 'src/auth/middleware/jwt.middleware';
   exports: [JwtModule],
 })
 export class CoreModule implements NestModule {
-  constructor(private configService: ConfigService){};
+  constructor(private configService: ConfigService) {}
 
   configure(consumer: MiddlewareConsumer) {
     consumer
