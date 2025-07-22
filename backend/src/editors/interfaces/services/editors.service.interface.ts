@@ -1,5 +1,7 @@
 import { FilterQuery, Types, UpdateQuery } from 'mongoose';
 import { FormattedEditor, GetEditorsQueryDto } from 'src/admins/dto/admin.dto';
+import { Editor } from 'src/editors/models/editor.schema';
+import { EditorRequest } from 'src/editors/models/editorRequest.schema';
 import {
   CompletedWorkDto,
   FileAttachmentDto,
@@ -8,9 +10,7 @@ import {
   PaginatedAcceptedQuotationsResponseDto,
   PaginatedPublishedQuotationsResponseDto,
 } from 'src/quotation/dtos/quotation.dto';
-import {
-  SuccessResponseDto,
-} from 'src/users/dto/users.dto';
+import { SuccessResponseDto } from 'src/users/dto/users.dto';
 import { UpdateWorkFilesDto } from 'src/works/dtos/works.dto';
 
 import {
@@ -25,8 +25,6 @@ import {
   PaginatedBiddedQuotationsResponseDto,
   EditorBidDto,
 } from '../../dto/editors.dto';
-import { Editor } from 'src/editors/models/editor.schema';
-import { EditorRequest } from 'src/editors/models/editorRequest.schema';
 
 export const IEditorsServiceToken = Symbol('IEditorsServiceToken');
 
@@ -46,7 +44,9 @@ export interface IEditorsService {
     folder?: string,
   ): Promise<Omit<FileAttachmentDto, 'url'>[]>;
 
-  submitQuotationResponse(workData: SubmitWorkBodyDto): Promise<SuccessResponseDto>;
+  submitQuotationResponse(
+    workData: SubmitWorkBodyDto,
+  ): Promise<SuccessResponseDto>;
 
   updateWorkFiles(
     workId: string,

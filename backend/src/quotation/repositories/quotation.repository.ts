@@ -68,7 +68,9 @@ export class QuotationRepository implements IQuotationRepository {
     quotationId: Types.ObjectId,
     options?: QueryOptions,
   ): Promise<Quotation | null> {
-    return this._quotationModel.findById(quotationId, null, { ...options, new: true }).exec();
+    return this._quotationModel
+      .findById(quotationId, null, { ...options, new: true })
+      .exec();
   }
 
   async findOne(query: FilterQuery<Quotation>): Promise<Quotation | null> {

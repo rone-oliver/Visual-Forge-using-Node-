@@ -15,6 +15,7 @@ import {
 } from 'src/common/bids/interfaces/bid.interfaces';
 import { BidStatus } from 'src/common/bids/models/bids.schema';
 import { SuccessResponseDto } from 'src/users/dto/users.dto';
+
 import {
   BidResponseDto,
   CreateEditorBidBodyDto,

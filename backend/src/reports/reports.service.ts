@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Logger } from '@nestjs/common';
+import { Types } from 'mongoose';
 import { ReportUserDto, SuccessResponseDto } from 'src/users/dto/users.dto';
 
 import { UpdateReportDto } from './dtos/reports.dto';
@@ -9,7 +10,6 @@ import {
 } from './interfaces/reports.repository.interface';
 import { IReportService } from './interfaces/reports.service.interface';
 import { Report } from './models/report.schema';
-import { Types } from 'mongoose';
 
 @Injectable()
 export class ReportsService implements IReportService {
@@ -29,7 +29,7 @@ export class ReportsService implements IReportService {
         ...reportDto,
         reporterId: new Types.ObjectId(reporterId),
         reportedUserId: new Types.ObjectId(reportDto.reportedUserId),
-      }
+      };
       await this._reportRepository.create(report);
       return { success: true, message: 'Report submitted successfully' };
     } catch (error) {
@@ -46,7 +46,10 @@ export class ReportsService implements IReportService {
     reportId: string,
     updateDto: UpdateReportDto,
   ): Promise<Report | null> {
-    return this._reportRepository.findOneAndUpdate({ _id: new Types.ObjectId(reportId) }, updateDto);
+    return this._reportRepository.findOneAndUpdate(
+      { _id: new Types.ObjectId(reportId) },
+      updateDto,
+    );
   }
 
   async countDocuments(): Promise<number> {

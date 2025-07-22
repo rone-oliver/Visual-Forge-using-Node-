@@ -12,19 +12,19 @@ import { UsersModule } from 'src/users/users.module';
 import { WorksModule } from 'src/works/works.module';
 
 import { EditorsController } from './editors.controller';
-import { EditorsService } from './services/editors.service';
 import { IEditorRepositoryToken } from './interfaces/editor.repository.interface';
 import { IEditorRequestsRepositoryToken } from './interfaces/editorRequests.repository.interface';
+import { IEditorBidServiceToken } from './interfaces/services/editor-bid.service.interface';
+import { IEditorRequestsServiceToken } from './interfaces/services/editor-requests.service.interface';
+import { IEditorWorkServiceToken } from './interfaces/services/editor-work.service.interface';
 import { IEditorsServiceToken } from './interfaces/services/editors.service.interface';
 import { Editor, editorSchema } from './models/editor.schema';
 import { EditorRepository } from './repositories/editor.repository';
 import { EditorRequestsRepository } from './repositories/editorRequest.repository';
-import { IEditorRequestsServiceToken } from './interfaces/services/editor-requests.service.interface';
-import { EditorRequestsService } from './services/editor-requests.service';
-import { IEditorBidServiceToken } from './interfaces/services/editor-bid.service.interface';
 import { EditorBidService } from './services/editor-bid.service';
-import { IEditorWorkServiceToken } from './interfaces/services/editor-work.service.interface';
+import { EditorRequestsService } from './services/editor-requests.service';
 import { EditorWorkService } from './services/editor-work.service';
+import { EditorsService } from './services/editors.service';
 
 @Module({
   providers: [

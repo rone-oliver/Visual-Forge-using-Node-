@@ -56,9 +56,7 @@ export class BaseRepository<T, D extends Document>
     filter: FilterQuery<T>,
     update: UpdateQuery<D>,
   ): Promise<D | null> {
-    return this.model
-      .findOneAndUpdate(filter, update, { new: true })
-      .exec();
+    return this.model.findOneAndUpdate(filter, update, { new: true }).exec();
   }
 
   async updateMany(

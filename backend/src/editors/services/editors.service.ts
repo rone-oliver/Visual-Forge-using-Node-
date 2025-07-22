@@ -58,11 +58,20 @@ import {
   IEditorRepository,
   IEditorRepositoryToken,
 } from '../interfaces/editor.repository.interface';
+import {
+  IEditorBidService,
+  IEditorBidServiceToken,
+} from '../interfaces/services/editor-bid.service.interface';
+import {
+  IEditorRequestsService,
+  IEditorRequestsServiceToken,
+} from '../interfaces/services/editor-requests.service.interface';
+import {
+  IEditorWorkService,
+  IEditorWorkServiceToken,
+} from '../interfaces/services/editor-work.service.interface';
 import { IEditorsService } from '../interfaces/services/editors.service.interface';
 import { Editor } from '../models/editor.schema';
-import { IEditorRequestsService, IEditorRequestsServiceToken } from '../interfaces/services/editor-requests.service.interface';
-import { IEditorBidService, IEditorBidServiceToken } from '../interfaces/services/editor-bid.service.interface';
-import { IEditorWorkService, IEditorWorkServiceToken } from '../interfaces/services/editor-work.service.interface';
 
 @Injectable()
 export class EditorsService implements IEditorsService {
@@ -294,7 +303,7 @@ export class EditorsService implements IEditorsService {
     return this._editorWorkService.updateWorkFiles(
       workId,
       files,
-      updateWorkFilesDto
+      updateWorkFilesDto,
     );
   }
   async getEditor(editorId: string): Promise<EditorDetailsResponseDto | null> {

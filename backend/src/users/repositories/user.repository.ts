@@ -4,8 +4,6 @@ import {
   FilterQuery,
   Model,
   ProjectionType,
-  Types,
-  UpdateQuery,
 } from 'mongoose';
 import { BaseRepository } from 'src/common/database/base.repository';
 
@@ -24,8 +22,8 @@ export class UserRepository
   }
 
   async exists(filter: FilterQuery<User>): Promise<boolean> {
-      const result = await this._userModel.exists(filter).exec();
-      return !!result;
+    const result = await this._userModel.exists(filter).exec();
+    return !!result;
   }
 
   async countDocuments(filter?: FilterQuery<User>): Promise<number> {
