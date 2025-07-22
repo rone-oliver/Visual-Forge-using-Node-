@@ -9,6 +9,7 @@ import {
 } from './interfaces/reports.repository.interface';
 import { IReportService } from './interfaces/reports.service.interface';
 import { Report } from './models/report.schema';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class ReportsService implements IReportService {
@@ -24,7 +25,12 @@ export class ReportsService implements IReportService {
     reportDto: ReportUserDto,
   ): Promise<SuccessResponseDto> {
     try {
-      await this._reportRepository.create(reporterId, reportDto);
+      const report = {
+        ...reportDto,
+        reporterId: new Types.ObjectId(reporterId),
+        reportedUserId: new Types.ObjectId(reportDto.reportedUserId),
+      }
+      await this._reportRepository.create(report);
       return { success: true, message: 'Report submitted successfully' };
     } catch (error) {
       this._logger.error(`Error reporting user: ${error.message}`);
@@ -40,7 +46,7 @@ export class ReportsService implements IReportService {
     reportId: string,
     updateDto: UpdateReportDto,
   ): Promise<Report | null> {
-    return this._reportRepository.updateReport(reportId, updateDto);
+    return this._reportRepository.findOneAndUpdate({ _id: new Types.ObjectId(reportId) }, updateDto);
   }
 
   async countDocuments(): Promise<number> {

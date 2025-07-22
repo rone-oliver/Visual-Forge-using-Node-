@@ -28,9 +28,9 @@ export interface IBaseRepository<T, D extends Document> {
   ): Promise<D | null>;
   findOneAndUpdate(
     filter: FilterQuery<T>,
-    update: UpdateQuery<T>,
+    update: UpdateQuery<D>,
   ): Promise<D | null>;
-  updateMany(filter: FilterQuery<T>, update: UpdateQuery<T>): Promise<any>;
+  updateMany(filter: FilterQuery<T>, update: UpdateQuery<D>): Promise<any>;
   findByIdAndDelete(id: string | Types.ObjectId): Promise<D | null>;
   exists(filter: FilterQuery<T>): Promise<boolean>;
 }

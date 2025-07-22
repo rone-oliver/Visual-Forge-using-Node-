@@ -54,18 +54,18 @@ export class BaseRepository<T, D extends Document>
 
   async findOneAndUpdate(
     filter: FilterQuery<T>,
-    update: UpdateQuery<T>,
+    update: UpdateQuery<D>,
   ): Promise<D | null> {
     return this.model
-      .findOneAndUpdate(filter, update as any, { new: true })
+      .findOneAndUpdate(filter, update, { new: true })
       .exec();
   }
 
   async updateMany(
     filter: FilterQuery<T>,
-    update: UpdateQuery<T>,
+    update: UpdateQuery<D>,
   ): Promise<any> {
-    return this.model.updateMany(filter, update as any);
+    return this.model.updateMany(filter, update);
   }
 
   async findByIdAndDelete(id: string | Types.ObjectId): Promise<D | null> {

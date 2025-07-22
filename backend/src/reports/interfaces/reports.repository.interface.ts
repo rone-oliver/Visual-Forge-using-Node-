@@ -1,16 +1,9 @@
-import { ReportUserDto } from 'src/users/dto/users.dto';
-
-import { UpdateReportDto } from '../dtos/reports.dto';
-import { Report } from '../models/report.schema';
+import { Report, ReportDocument } from '../models/report.schema';
+import { IBaseRepository } from 'src/common/interfaces/base-repository.interface';
 
 export const IReportRepositoryToken = Symbol('IReportRepository');
 
-export interface IReportRepository {
-  create(reporterId: string, reportDto: ReportUserDto): Promise<Report>;
+export interface IReportRepository extends IBaseRepository<Report, ReportDocument> {
   countDocuments(): Promise<number>;
   getPendingReports(): Promise<Report[]>;
-  updateReport(
-    reportId: string,
-    updateDto: UpdateReportDto,
-  ): Promise<Report | null>;
 }

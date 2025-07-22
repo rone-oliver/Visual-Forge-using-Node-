@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Document, Types } from 'mongoose';
 import { User } from 'src/users/models/user.schema';
 
 export enum ReportContext {
@@ -20,10 +20,10 @@ export class Report {
   _id: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId, ref: User.name, required: true })
-  reporterId: User;
+  reporterId: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId, ref: User.name, required: true })
-  reportedUserId: User;
+  reportedUserId: Types.ObjectId;
 
   @Prop({ type: String, enum: ReportContext })
   context: ReportContext;

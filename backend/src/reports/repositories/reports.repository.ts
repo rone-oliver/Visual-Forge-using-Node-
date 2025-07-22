@@ -1,25 +1,18 @@
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
-import { ReportUserDto } from 'src/users/dto/users.dto';
-
-import { UpdateReportDto } from '../dtos/reports.dto';
+import { Model } from 'mongoose';
+import { BaseRepository } from 'src/common/database/base.repository';
 import { IReportRepository } from '../interfaces/reports.repository.interface';
 import { Report, ReportDocument, ReportStatus } from '../models/report.schema';
 
-export class ReportRepository implements IReportRepository {
+export class ReportRepository
+  extends BaseRepository<Report, ReportDocument>
+  implements IReportRepository
+{
   constructor(
     @InjectModel(Report.name)
     private readonly _reportModel: Model<ReportDocument>,
-  ) {}
-
-  create(reporterId: string, reportDto: ReportUserDto): Promise<Report> {
-    return this._reportModel.create({
-      reporterId: new Types.ObjectId(reporterId),
-      reportedUserId: new Types.ObjectId(reportDto.reportedUserId),
-      context: reportDto.context.trim(),
-      reason: reportDto.reason.trim(),
-      additionalContext: reportDto.additionalContext?.trim(),
-    });
+  ) {
+    super(_reportModel);
   }
 
   async countDocuments(): Promise<number> {
@@ -32,15 +25,6 @@ export class ReportRepository implements IReportRepository {
       .populate('reporterId', 'username email')
       .populate('reportedUserId', 'username email isBlocked')
       .sort({ createdAt: -1 })
-      .exec();
-  }
-
-  async updateReport(
-    reportId: string,
-    updateDto: UpdateReportDto,
-  ): Promise<Report | null> {
-    return this._reportModel
-      .findByIdAndUpdate(reportId, updateDto, { new: true })
       .exec();
   }
 }
