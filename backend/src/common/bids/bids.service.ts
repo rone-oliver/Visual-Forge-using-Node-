@@ -158,9 +158,9 @@ export class BidsService implements IBidService {
 
       let advanceAmountCalc: number | undefined;
       let balanceAmountCalc: number | undefined;
-      if (quotation.estimatedBudget) {
+      if (bid.bidAmount) {
         const { advanceAmount, balanceAmount } = this.calculateQuotationAmounts(
-          quotation.estimatedBudget,
+          bid.bidAmount,
         );
         advanceAmountCalc = advanceAmount;
         balanceAmountCalc = balanceAmount;

@@ -8,7 +8,7 @@
 
   <!-- Quotation Summary -->
   <div class="quotation-summary">
-    <div class="budget-badge">${{ data.quotation.estimatedBudget }}</div>
+    <div class="budget-badge">{{ data.quotation.estimatedBudget | currency:'INR'}}</div>
     <p class="quotation-description">{{ data.quotation.description }}</p>
     <div class="quotation-metadata">
       <div class="metadata-item">
@@ -86,7 +86,7 @@
             </div>
           </div>
           <div class="bid-content">
-            <div class="bid-amount">${{ bid.bidAmount }}</div>
+            <div class="bid-amount">{{ bid.bidAmount | currency:'INR' }}</div>
             @if (bid.notes) {
               <p class="bid-notes">{{ bid.notes }}</p>
             }

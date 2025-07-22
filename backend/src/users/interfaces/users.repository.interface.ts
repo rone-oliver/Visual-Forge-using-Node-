@@ -6,13 +6,6 @@ import { User, UserDocument } from '../models/user.schema';
 export const IUserRepositoryToken = Symbol('IUserRepository');
 
 export interface IUserRepository extends IBaseRepository<User, UserDocument> {
-  // create(user: Partial<User>): Promise<User>;
-  // find(filter: FilterQuery<User>): Promise<User[]>;
-  // findOne(filter: FilterQuery<User>): Promise<User | null>;
-  // findById(id: Types.ObjectId, projection?: ProjectionType<User>): Promise<User | null>;
-  // findOneAndUpdate(filter: FilterQuery<User>, update: UpdateQuery<User>): Promise<User | null>;
-  // exists(filter: FilterQuery<User>): Promise<boolean>;
-
   countDocuments(filter?: FilterQuery<User>): Promise<number>;
   getUsersForAdmin(
     filter: FilterQuery<User>,

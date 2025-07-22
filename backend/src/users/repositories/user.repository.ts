@@ -23,30 +23,10 @@ export class UserRepository
     super(_userModel);
   }
 
-  // async create(user: Partial<User>): Promise<User> {
-  //     return this._userModel.create(user);
-  // }
-
-  // async find(filter: FilterQuery<User>): Promise<User[]> {
-  //     return this._userModel.find(filter).exec();
-  // }
-
-  // async findOne(filter: FilterQuery<User>): Promise<User | null> {
-  //     return this._userModel.findOne(filter).exec();
-  // }
-
-  // async findById(id: Types.ObjectId, projection?: ProjectionType<User>): Promise<User | null> {
-  //     return this._userModel.findById(id, projection).exec();
-  // }
-
-  // async findOneAndUpdate(filter: FilterQuery<User>, update: UpdateQuery<User>): Promise<User | null> {
-  //     return this._userModel.findOneAndUpdate(filter, update, { new: true }).exec();
-  // }
-
-  // async exists(filter: FilterQuery<User>): Promise<boolean> {
-  //     const result = await this._userModel.exists(filter).exec();
-  //     return !!result;
-  // }
+  async exists(filter: FilterQuery<User>): Promise<boolean> {
+      const result = await this._userModel.exists(filter).exec();
+      return !!result;
+  }
 
   async countDocuments(filter?: FilterQuery<User>): Promise<number> {
     return this._userModel.countDocuments(filter).exec();

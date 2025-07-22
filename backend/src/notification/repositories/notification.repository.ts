@@ -72,6 +72,7 @@ export class NotificationRepository implements INotificationRepository {
       .updateMany(
         { userId: new Types.ObjectId(filter.userId), unread: filter.unread },
         data,
+        { new: true },
       )
       .exec();
   }

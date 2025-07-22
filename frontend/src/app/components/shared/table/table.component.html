@@ -131,7 +131,7 @@
     </button>
     <div class="page-numbers">
       <ng-container *ngFor="let i of [].constructor(totalPages); let j = index">
-        <button class="pagination-btn" [ngClass]="{'active': currentPage() === j + 1}" (click)="goToPage(j + 1)">
+        <button class="pagination-btn" [class]="{'active': currentPage() === j + 1}" (click)="goToPage(j + 1)">
           {{ j + 1 }}
         </button>
       </ng-container>

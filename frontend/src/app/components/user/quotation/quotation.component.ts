@@ -95,7 +95,6 @@ export class QuotationComponent implements OnInit, OnDestroy {
         this.currentPage = response.currentPage;
         this.itemsPerPage = response.itemsPerPage;
         this.loading = false;
-        // this.loadAllBidCounts();
       },
       error: (err) => {
         console.error('error getting quotations', err);

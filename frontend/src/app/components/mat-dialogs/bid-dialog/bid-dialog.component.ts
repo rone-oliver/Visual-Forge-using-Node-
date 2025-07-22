@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, CurrencyPipe } from '@angular/common';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -22,7 +22,8 @@ import { MediaProtectionDirective } from '../../../directives/media-protection.d
     MatProgressSpinnerModule,
     MatSnackBarModule,
     LocalDatePipe,
-    MediaProtectionDirective
+    MediaProtectionDirective,
+    CurrencyPipe,
   ],
   templateUrl: './bid-dialog.component.html',
   styleUrls: ['./bid-dialog.component.scss']

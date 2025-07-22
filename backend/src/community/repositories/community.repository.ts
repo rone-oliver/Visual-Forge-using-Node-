@@ -228,9 +228,11 @@ export class CommunityRepository implements ICommunityRepository {
     userId: string,
   ): Promise<Community | null> {
     return this._communityModel
-      .findByIdAndUpdate(communityId, {
-        $pull: { members: new Types.ObjectId(userId) },
-      })
+      .findByIdAndUpdate(
+        communityId,
+        { $pull: { members: new Types.ObjectId(userId) } },
+        { new: true },
+      )
       .exec();
   }
 }
