@@ -59,8 +59,8 @@ export class EditorService {
     return this._http.get<PaginatedEditorQuotationsResponse>(`${this._editorApiUrl}/quotations`, { params: httpParams });
   }
 
-  submitQuotationResponse(workData: any): Observable<boolean>{
-    return this._http.post<boolean>(`${this._editorApiUrl}/quotations/response`, workData);
+  submitQuotationResponse(workData: any): Observable<{success: boolean, message: string}>{
+    return this._http.post<{success: boolean, message: string}>(`${this._editorApiUrl}/quotations/response`, workData);
   }
 
   uploadWorkFiles(files: File[]): Observable<FileAttachmentResponse[]>{

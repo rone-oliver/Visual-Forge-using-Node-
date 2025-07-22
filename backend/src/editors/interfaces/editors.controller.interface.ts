@@ -10,7 +10,6 @@ import { QuotationStatus } from 'src/quotation/models/quotation.schema';
 import { SuccessResponseDto } from 'src/users/dto/users.dto';
 
 import {
-  FileUploadResultDto,
   SubmitWorkBodyDto,
   CreateEditorBidBodyDto,
   UpdateEditorBidBodyDto,
@@ -41,7 +40,7 @@ export interface IEditorsController {
   submitQuotationResponse(
     req: Request,
     workData: SubmitWorkBodyDto,
-  ): Promise<boolean>;
+  ): Promise<SuccessResponseDto>;
 
   getCompletedWorks(req: Request): Promise<CompletedWorkDto[]>;
 

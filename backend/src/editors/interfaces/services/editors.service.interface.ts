@@ -46,7 +46,7 @@ export interface IEditorsService {
     folder?: string,
   ): Promise<Omit<FileAttachmentDto, 'url'>[]>;
 
-  submitQuotationResponse(workData: SubmitWorkBodyDto): Promise<boolean>;
+  submitQuotationResponse(workData: SubmitWorkBodyDto): Promise<SuccessResponseDto>;
 
   updateWorkFiles(
     workId: string,

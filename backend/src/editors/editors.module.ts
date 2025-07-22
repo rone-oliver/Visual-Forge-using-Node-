@@ -23,6 +23,8 @@ import { IEditorRequestsServiceToken } from './interfaces/services/editor-reques
 import { EditorRequestsService } from './services/editor-requests.service';
 import { IEditorBidServiceToken } from './interfaces/services/editor-bid.service.interface';
 import { EditorBidService } from './services/editor-bid.service';
+import { IEditorWorkServiceToken } from './interfaces/services/editor-work.service.interface';
+import { EditorWorkService } from './services/editor-work.service';
 
 @Module({
   providers: [
@@ -37,6 +39,10 @@ import { EditorBidService } from './services/editor-bid.service';
     {
       provide: IEditorBidServiceToken,
       useClass: EditorBidService,
+    },
+    {
+      provide: IEditorWorkServiceToken,
+      useClass: EditorWorkService,
     },
     {
       provide: IEditorRequestsRepositoryToken,

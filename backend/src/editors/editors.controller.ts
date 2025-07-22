@@ -170,12 +170,12 @@ export class EditorsController implements IEditorsController {
   @ApiResponse({
     status: 201,
     description: 'Work submitted successfully.',
-    type: Boolean,
+    type: SuccessResponseDto,
   })
   async submitQuotationResponse(
     @Req() req: Request,
     @Body() workData: SubmitWorkBodyDto,
-  ): Promise<boolean> {
+  ): Promise<SuccessResponseDto> {
     const editor = req['user'] as { userId: Types.ObjectId; role: string };
     return this._editorService.submitQuotationResponse(workData);
   }

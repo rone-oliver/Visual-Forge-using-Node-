@@ -1,26 +1,22 @@
 import {
-  BadRequestException,
   HttpException,
   HttpStatus,
   Inject,
   Injectable,
   Logger,
 } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { FilterQuery, Types, UpdateQuery } from 'mongoose';
 import { FormattedEditor, GetEditorsQueryDto } from 'src/admins/dto/admin.dto';
 import {
   ICloudinaryService,
   ICloudinaryServiceToken,
 } from 'src/common/cloudinary/interfaces/cloudinary-service.interface';
-import { EventTypes } from 'src/common/constants/events.constants';
 import {
   IRelationshipService,
   IRelationshipServiceToken,
 } from 'src/common/relationship/interfaces/service.interface';
 import { calculateAverageRating } from 'src/common/utils/calculation.util';
 import { EditorRequest } from 'src/editors/models/editorRequest.schema';
-import { NotificationType } from 'src/notification/models/notification.schema';
 import {
   CompletedWorkDto,
   FileAttachmentDto,
@@ -33,7 +29,6 @@ import {
   IQuotationService,
   IQuotationServiceToken,
 } from 'src/quotation/interfaces/quotation.service.interface';
-import { QuotationStatus } from 'src/quotation/models/quotation.schema';
 import { SuccessResponseDto } from 'src/users/dto/users.dto';
 import {
   IUsersService,
@@ -67,6 +62,7 @@ import { IEditorsService } from '../interfaces/services/editors.service.interfac
 import { Editor } from '../models/editor.schema';
 import { IEditorRequestsService, IEditorRequestsServiceToken } from '../interfaces/services/editor-requests.service.interface';
 import { IEditorBidService, IEditorBidServiceToken } from '../interfaces/services/editor-bid.service.interface';
+import { IEditorWorkService, IEditorWorkServiceToken } from '../interfaces/services/editor-work.service.interface';
 
 @Injectable()
 export class EditorsService implements IEditorsService {
@@ -86,7 +82,8 @@ export class EditorsService implements IEditorsService {
     private readonly _editorRequestService: IEditorRequestsService,
     @Inject(IEditorBidServiceToken)
     private readonly _editorBidService: IEditorBidService,
-    private _eventEmitter: EventEmitter2,
+    @Inject(IEditorWorkServiceToken)
+    private readonly _editorWorkService: IEditorWorkService,
   ) {}
 
   // Editor Requests
@@ -271,98 +268,35 @@ export class EditorsService implements IEditorsService {
     return this._quotationService.getAcceptedQuotations(editorId, params);
   }
 
+  // Editor Works
   async uploadWorkFiles(
     files: Express.Multer.File[],
     folder?: string,
   ): Promise<Omit<FileAttachmentDto, 'url'>[]> {
-    if (!files || files.length === 0) {
-      throw new BadRequestException('No files uploaded.');
-    }
-    const uploadResults = await this._cloudinaryService.uploadFiles(
-      files,
-      folder,
-    );
-    return uploadResults.map((result) => ({
-      // url: result.url,
-      fileType: result.fileType, // Assuming FileType enum matches
-      fileName: result.fileName,
-      size: result.size,
-      mimeType: result.mimeType,
-      uploadedAt: result.uploadedAt,
-      uniqueId: result.uniqueId,
-      timestamp: result.timestamp,
-      format: result.format,
-    }));
+    return this._editorWorkService.uploadWorkFiles(files, folder);
   }
 
   async submitQuotationResponse(workData: SubmitWorkBodyDto) {
-    try {
-      const { quotationId, finalFiles, comments } = workData;
-      const quotation = await this._quotationService.findById(
-        new Types.ObjectId(quotationId),
-      );
-      if (!quotation) {
-        this._logger.warn(`Quotation with ID ${quotationId} not found`);
-        return false;
-      }
-
-      const submissionDate = new Date();
-      const penalty = this._calculatePenalty(
-        quotation.dueDate,
-        submissionDate,
-        quotation.estimatedBudget,
-      );
-
-      const work = await this._worksService.createWork(
-        {
-          editorId: new Types.ObjectId(quotation.editorId),
-          userId: new Types.ObjectId(quotation.userId),
-          finalFiles: finalFiles.map((file) => {
-            const processedUniqueId = file.uniqueId
-              ? String(file.uniqueId).replace(/ /g, '%20')
-              : '';
-
-            return {
-              ...file,
-              uniqueId: `${processedUniqueId}.${file.format}`,
-              timestamp: file.timestamp,
-              uploadedAt: file.uploadedAt ?? new Date(),
-            };
-          }),
-          comments: comments ?? '',
-        },
-        workData.quotationId,
-      );
-      await this._quotationService.updateQuotationStatus(
-        quotation._id,
-        QuotationStatus.COMPLETED,
-        work._id,
-        penalty,
-      );
-
-      this._eventEmitter.emit(EventTypes.QUOTATION_COMPLETED, {
-        userId: quotation.userId,
-        type: NotificationType.WORK,
-        message: `Your work "${quotation.title}" has been completed`,
-        data: { title: quotation.title },
-        quotationId: quotation._id,
-        worksId: work._id,
-      });
-
-      await this._updateEditorScore(quotation.editorId);
-      return true;
-    } catch (error) {
-      this._logger.error('Error submitting the quotation response', error);
-      throw new Error('Error submitting the quotation response');
-    }
+    return this._editorWorkService.submitQuotationResponse(workData);
   }
 
   async getCompletedWorks(
     editorId: Types.ObjectId,
   ): Promise<CompletedWorkDto[]> {
-    return this._quotationService.getCompletedQuotations(editorId);
+    return this._editorWorkService.getCompletedWorks(editorId);
   }
 
+  async updateWorkFiles(
+    workId: string,
+    files: Express.Multer.File[],
+    updateWorkFilesDto: UpdateWorkFilesDto,
+  ): Promise<SuccessResponseDto> {
+    return this._editorWorkService.updateWorkFiles(
+      workId,
+      files,
+      updateWorkFilesDto
+    );
+  }
   async getEditor(editorId: string): Promise<EditorDetailsResponseDto | null> {
     try {
       const user = await this._userService.getUserById(
@@ -452,6 +386,13 @@ export class EditorsService implements IEditorsService {
     return this._editorBidService.deleteBid(bidId, editorId);
   }
 
+  async getBiddedQuotations(
+    editorId: Types.ObjectId,
+    query: GetBiddedQuotationsQueryDto,
+  ): Promise<PaginatedBiddedQuotationsResponseDto> {
+    return this._editorBidService.getBiddedQuotations(editorId, query);
+  }
+
   async getEditorBidForQuotation(
     quotationId: Types.ObjectId,
     editorId: Types.ObjectId,
@@ -505,139 +446,7 @@ export class EditorsService implements IEditorsService {
     return this._editorRepository.getPublicEditors(pipeline);
   }
 
-  async getBiddedQuotations(
-    editorId: Types.ObjectId,
-    query: GetBiddedQuotationsQueryDto,
-  ): Promise<PaginatedBiddedQuotationsResponseDto> {
-    return this._editorBidService.getBiddedQuotations(editorId, query);
-  }
-
   async findMany(filter: FilterQuery<Editor>): Promise<Editor[] | null> {
     return this._editorRepository.findMany(filter);
-  }
-
-  async updateWorkFiles(
-    workId: string,
-    files: Express.Multer.File[],
-    updateWorkFilesDto: UpdateWorkFilesDto,
-  ): Promise<SuccessResponseDto> {
-    try {
-      return await this._worksService.updateWorkFiles(
-        workId,
-        files,
-        updateWorkFilesDto,
-      );
-    } catch (error) {
-      this._logger.error(
-        `Failed to update work files for work ${workId}`,
-        error,
-      );
-      throw error;
-    }
-  }
-
-  private _calculatePenalty(
-    dueDate: Date,
-    submissionDate: Date,
-    amount: number,
-  ): number {
-    if (!dueDate) return 0;
-
-    const delayInMs = submissionDate.getTime() - dueDate.getTime();
-    const delayInHours = Math.ceil(delayInMs / (1000 * 60 * 60));
-
-    if (delayInHours <= 2) {
-      return 0; // Grace period
-    }
-
-    const effectiveDelayHours = Math.min(delayInHours, 24); // Cap at 24 hours
-
-    let totalPenalty = 0;
-
-    // Tier 1: 2-4 hours (0.5% per hour)
-    if (effectiveDelayHours > 2) {
-      const hoursInTier = Math.min(effectiveDelayHours, 4) - 2;
-      totalPenalty += hoursInTier * 0.005 * amount;
-    }
-
-    // Tier 2: 4-8 hours (1% per hour)
-    if (effectiveDelayHours > 4) {
-      const hoursInTier = Math.min(effectiveDelayHours, 8) - 4;
-      totalPenalty += hoursInTier * 0.01 * amount;
-    }
-
-    // Tier 3: 8-24 hours (1.5% per hour)
-    if (effectiveDelayHours > 8) {
-      const hoursInTier = effectiveDelayHours - 8;
-      totalPenalty += hoursInTier * 0.015 * amount;
-    }
-
-    return parseFloat(totalPenalty.toFixed(2));
-  }
-
-  private async _updateEditorScore(editorId: Types.ObjectId): Promise<void> {
-    try {
-      // Get the editor's profile
-      const editor = await this._editorRepository.findByUserId(editorId);
-      if (!editor) {
-        this._logger.warn(
-          `Editor with ID ${editorId} not found or not an editor`,
-        );
-        return;
-      }
-
-      // Get the editor's most recent completed works
-      const recentWorks = await this._worksService.getTwoRecentWorks(editorId);
-
-      // Initialize score variables
-      const scoreIncrement = 10; // Base score for completing a work
-      let currentStreak = editor.streak || 0;
-      let streakMultiplier = 1;
-
-      // If this is not their first work
-      if (recentWorks.length > 1) {
-        const latestWork = recentWorks[0];
-        const previousWork = recentWorks[1];
-
-        // Calculate time difference in days
-        const latestDate = new Date(latestWork.createdAt);
-        const previousDate = new Date(previousWork.createdAt);
-        const daysDifference = Math.floor(
-          (latestDate.getTime() - previousDate.getTime()) /
-            (1000 * 60 * 60 * 24),
-        );
-
-        // If completed within a week, increase streak
-        if (daysDifference < 7) {
-          currentStreak++;
-          // Increase multiplier based on streak length
-          streakMultiplier = Math.min(3, 1 + currentStreak * 0.1); // Cap at 3x
-        } else {
-          // Streak broken
-          currentStreak = 1;
-          streakMultiplier = 1;
-        }
-      } else {
-        // First work
-        currentStreak = 1;
-      }
-
-      // Calculate final score
-      const finalScoreIncrement = Math.round(scoreIncrement * streakMultiplier);
-      const newScore = (editor.score || 0) + finalScoreIncrement;
-
-      // Update editor profile
-      await this._editorRepository.updateScore(
-        editor._id,
-        newScore,
-        currentStreak,
-      );
-
-      this._logger.log(
-        `Updated editor ${editorId} score to ${newScore} (streak: ${currentStreak}, multiplier: ${streakMultiplier})`,
-      );
-    } catch (error) {
-      this._logger.error('Error updating editor score', error);
-    }
   }
 }
