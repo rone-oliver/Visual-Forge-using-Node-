@@ -58,23 +58,29 @@ export interface IEditorsService {
 
   getEditor(editorId: string): Promise<EditorDetailsResponseDto | null>;
 
+  // Editor Bids
   createBid(
     editorId: Types.ObjectId,
     bidDto: CreateEditorBidBodyDto,
   ): Promise<BidResponseDto>;
-
   updateBid(
     bidId: Types.ObjectId,
     editorId: Types.ObjectId,
     bidDto: UpdateEditorBidBodyDto,
   ): Promise<BidResponseDto>;
-
   cancelAcceptedBid(
     bidId: Types.ObjectId,
     userId: Types.ObjectId,
   ): Promise<SuccessResponseDto>;
-
   deleteBid(bidId: Types.ObjectId, editorId: Types.ObjectId): Promise<void>;
+  getBiddedQuotations(
+    editorId: Types.ObjectId,
+    query: GetBiddedQuotationsQueryDto,
+  ): Promise<PaginatedBiddedQuotationsResponseDto>;
+  getEditorBidForQuotation(
+    quotationId: Types.ObjectId,
+    editorId: Types.ObjectId,
+  ): Promise<EditorBidDto>;
 
   addTutorial(
     editorId: string,
@@ -99,15 +105,6 @@ export interface IEditorsService {
   getEditorRating(userId: Types.ObjectId): Promise<Editor | null>;
   getEditorUserCombined(userId: Types.ObjectId): Promise<Editor | null>;
   getPublicEditors(pipeline: any[]): Promise<any[]>;
-
-  getBiddedQuotations(
-    editorId: string,
-    query: GetBiddedQuotationsQueryDto,
-  ): Promise<PaginatedBiddedQuotationsResponseDto>;
-  getEditorBidForQuotation(
-    quotationId: Types.ObjectId,
-    editorId: Types.ObjectId,
-  ): Promise<EditorBidDto>;
 
   // Editor Requests
   getEditorRequests(): Promise<EditorRequest[]>;

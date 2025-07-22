@@ -387,7 +387,7 @@ export class EditorsController implements IEditorsController {
     @GetUser('userId') editorId: string,
     @Query() query: GetBiddedQuotationsQueryDto,
   ): Promise<PaginatedBiddedQuotationsResponseDto> {
-    return this._editorService.getBiddedQuotations(editorId, query);
+    return this._editorService.getBiddedQuotations(new Types.ObjectId(editorId), query);
   }
 
   @Get('bids/quotation/:quotationId')

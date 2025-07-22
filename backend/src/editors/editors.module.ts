@@ -21,6 +21,8 @@ import { EditorRepository } from './repositories/editor.repository';
 import { EditorRequestsRepository } from './repositories/editorRequest.repository';
 import { IEditorRequestsServiceToken } from './interfaces/services/editor-requests.service.interface';
 import { EditorRequestsService } from './services/editor-requests.service';
+import { IEditorBidServiceToken } from './interfaces/services/editor-bid.service.interface';
+import { EditorBidService } from './services/editor-bid.service';
 
 @Module({
   providers: [
@@ -31,6 +33,10 @@ import { EditorRequestsService } from './services/editor-requests.service';
     {
       provide: IEditorRequestsServiceToken,
       useClass: EditorRequestsService,
+    },
+    {
+      provide: IEditorBidServiceToken,
+      useClass: EditorBidService,
     },
     {
       provide: IEditorRequestsRepositoryToken,
