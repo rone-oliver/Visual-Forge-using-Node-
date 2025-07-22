@@ -68,17 +68,14 @@ import {
   GetBiddedQuotationsQueryDto,
   PaginatedBiddedQuotationsResponseDto,
   EditorBidDto,
-} from './dto/editors.dto';
+} from '../dto/editors.dto';
 import {
   IEditorRepository,
   IEditorRepositoryToken,
-} from './interfaces/editor.repository.interface';
-import {
-  IEditorRequestsRepository,
-  IEditorRequestsRepositoryToken,
-} from './interfaces/editorRequests.repository.interface';
-import { IEditorsService } from './interfaces/editors.service.interface';
-import { Editor } from './models/editor.schema';
+} from '../interfaces/editor.repository.interface';
+import { IEditorsService } from '../interfaces/services/editors.service.interface';
+import { Editor } from '../models/editor.schema';
+import { IEditorRequestsService, IEditorRequestsServiceToken } from '../interfaces/services/editor-requests.service.interface';
 
 @Injectable()
 export class EditorsService implements IEditorsService {
@@ -94,65 +91,55 @@ export class EditorsService implements IEditorsService {
     private readonly _relationshipService: IRelationshipService,
     @Inject(ICloudinaryServiceToken)
     private readonly _cloudinaryService: ICloudinaryService,
-    @Inject(IEditorRequestsRepositoryToken)
-    private readonly _editorRequestsRepository: IEditorRequestsRepository,
+    @Inject(IEditorRequestsServiceToken)
+    private readonly _editorRequestService: IEditorRequestsService,
     @Inject(IBidServiceToken) private readonly _bidsService: IBidService,
     private _eventEmitter: EventEmitter2,
   ) {}
 
+  // Editor Requests
   async getEditorRequests(): Promise<EditorRequest[]> {
-    return this._editorRequestsRepository.getEditorRequests();
+    return this._editorRequestService.getEditorRequests();
   }
 
   async approveEditorRequest(
     requestId: Types.ObjectId,
     adminId: Types.ObjectId,
   ): Promise<boolean> {
-    try {
-      const request = await this._editorRequestsRepository.approveEditorRequest(
-        requestId,
-        adminId,
-      );
-      if (request && request.userId) {
-        await this._userService.makeUserEditor(request.userId);
-        await this._editorRepository.create({
-          userId: new Types.ObjectId(request.userId),
-          category: [request.categories],
-        });
-        return true;
-      }
-      return false;
-    } catch (error) {
-      this._logger.error(`Error approving request: ${error.message}`);
-      throw new HttpException(
-        'Failed to approve request',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+    return this._editorRequestService.approveEditorRequest(requestId, adminId);
   }
 
   async rejectEditorRequest(
     requestId: Types.ObjectId,
     reason: string,
   ): Promise<boolean> {
-    try {
-      const request = await this._editorRequestsRepository.rejectEditorRequest(
-        requestId,
-        reason,
-      );
-      return request !== null;
-    } catch (error) {
-      this._logger.error(`Error rejecting request: ${error.message}`);
-      throw new HttpException(
-        'Failed to reject request',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+    return this._editorRequestService.rejectEditorRequest(requestId, reason);
   }
 
   async countEditorRequests(): Promise<number> {
-    return this._editorRequestsRepository.countEditorRequests();
+    return this._editorRequestService.countEditorRequests();
   }
+
+  async checkEditorRequest(userId: Types.ObjectId): Promise<boolean> {
+    return this._editorRequestService.checkEditorRequest(userId);
+  }
+
+  async deleteEditorRequest(
+    userId: Types.ObjectId,
+  ): Promise<EditorRequest | null> {
+    return this._editorRequestService.deleteEditorRequest(userId);
+  }
+
+  async createEditorRequest(userId: Types.ObjectId): Promise<EditorRequest> {
+    return this._editorRequestService.createEditorRequest(userId);
+  }
+
+  async findEditorRequest(
+    userId: Types.ObjectId,
+  ): Promise<EditorRequest | null> {
+    return this._editorRequestService.findEditorRequest(userId);
+  }
+
 
   async getEditorsForAdmin(
     query: GetEditorsQueryDto,
@@ -315,16 +302,6 @@ export class EditorsService implements IEditorsService {
       timestamp: result.timestamp,
       format: result.format,
     }));
-  }
-
-  async checkEditorRequest(userId: Types.ObjectId): Promise<boolean> {
-    return this._editorRequestsRepository.checkEditorRequest(userId);
-  }
-
-  async deleteEditorRequest(
-    userId: Types.ObjectId,
-  ): Promise<EditorRequest | null> {
-    return this._editorRequestsRepository.deleteRequest(userId);
   }
 
   async submitQuotationResponse(workData: SubmitWorkBodyDto) {
@@ -614,16 +591,6 @@ export class EditorsService implements IEditorsService {
       editorId,
       removeTutorialDto.tutorialUrl,
     );
-  }
-
-  async createEditorRequests(userId: Types.ObjectId): Promise<EditorRequest> {
-    return this._editorRequestsRepository.create(userId);
-  }
-
-  async findEditorRequest(
-    userId: Types.ObjectId,
-  ): Promise<EditorRequest | null> {
-    return this._editorRequestsRepository.findOne(userId);
   }
 
   async findByUserId(userId: Types.ObjectId): Promise<Editor | null> {

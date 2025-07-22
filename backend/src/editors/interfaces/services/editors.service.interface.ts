@@ -10,7 +10,6 @@ import {
 } from 'src/quotation/dtos/quotation.dto';
 import {
   SuccessResponseDto,
-  UserRatingForEditorDto,
 } from 'src/users/dto/users.dto';
 import { UpdateWorkFilesDto } from 'src/works/dtos/works.dto';
 
@@ -19,16 +18,15 @@ import {
   CreateEditorBidBodyDto,
   UpdateEditorBidBodyDto,
   EditorDetailsResponseDto,
-  FileUploadResultDto,
   BidResponseDto,
   AddTutorialDto,
   RemoveTutorialDto,
   GetBiddedQuotationsQueryDto,
   PaginatedBiddedQuotationsResponseDto,
   EditorBidDto,
-} from '../dto/editors.dto';
-import { Editor } from '../models/editor.schema';
-import { EditorRequest } from '../models/editorRequest.schema';
+} from '../../dto/editors.dto';
+import { Editor } from 'src/editors/models/editor.schema';
+import { EditorRequest } from 'src/editors/models/editorRequest.schema';
 
 export const IEditorsServiceToken = Symbol('IEditorsServiceToken');
 
@@ -87,20 +85,6 @@ export interface IEditorsService {
     removeTutorialDto: RemoveTutorialDto,
   ): Promise<Editor>;
 
-  // Editor requests
-  getEditorRequests(): Promise<EditorRequest[]>;
-  approveEditorRequest(
-    requestId: Types.ObjectId,
-    adminId: Types.ObjectId,
-  ): Promise<boolean>;
-  rejectEditorRequest(
-    requestId: Types.ObjectId,
-    reason: string,
-  ): Promise<boolean>;
-  countEditorRequests(): Promise<number>;
-  createEditorRequests(userId: Types.ObjectId): Promise<EditorRequest>;
-  findEditorRequest(userId: Types.ObjectId): Promise<EditorRequest | null>;
-
   getEditorsForAdmin(
     query: GetEditorsQueryDto,
   ): Promise<{ editors: FormattedEditor[]; total: number }>;
@@ -116,8 +100,6 @@ export interface IEditorsService {
   getEditorUserCombined(userId: Types.ObjectId): Promise<Editor | null>;
   getPublicEditors(pipeline: any[]): Promise<any[]>;
 
-  checkEditorRequest(userId: Types.ObjectId): Promise<boolean>;
-  deleteEditorRequest(userId: Types.ObjectId): Promise<EditorRequest | null>;
   getBiddedQuotations(
     editorId: string,
     query: GetBiddedQuotationsQueryDto,
@@ -126,4 +108,20 @@ export interface IEditorsService {
     quotationId: Types.ObjectId,
     editorId: Types.ObjectId,
   ): Promise<EditorBidDto>;
+
+  // Editor Requests
+  getEditorRequests(): Promise<EditorRequest[]>;
+  approveEditorRequest(
+    requestId: Types.ObjectId,
+    adminId: Types.ObjectId,
+  ): Promise<boolean>;
+  rejectEditorRequest(
+    requestId: Types.ObjectId,
+    reason: string,
+  ): Promise<boolean>;
+  countEditorRequests(): Promise<number>;
+  checkEditorRequest(userId: Types.ObjectId): Promise<boolean>;
+  deleteEditorRequest(userId: Types.ObjectId): Promise<EditorRequest | null>;
+  createEditorRequest(userId: Types.ObjectId): Promise<EditorRequest>;
+  findEditorRequest(userId: Types.ObjectId): Promise<EditorRequest | null>;
 }

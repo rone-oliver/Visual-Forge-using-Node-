@@ -16,7 +16,7 @@ import {
 import {
   IEditorsService,
   IEditorsServiceToken,
-} from 'src/editors/interfaces/editors.service.interface';
+} from 'src/editors/interfaces/services/editors.service.interface';
 import { MailService } from 'src/mail/mail.service';
 import {
   IUsersService,

@@ -11,7 +11,7 @@ import { Types } from 'mongoose';
 import {
   IEditorsService,
   IEditorsServiceToken,
-} from 'src/editors/interfaces/editors.service.interface';
+} from 'src/editors/interfaces/services/editors.service.interface';
 import {
   IQuotationService,
   IQuotationServiceToken,

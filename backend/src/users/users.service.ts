@@ -49,7 +49,7 @@ import { getYouTubeEmbedUrl } from 'src/common/utils/youtube-url.util';
 import {
   IEditorsService,
   IEditorsServiceToken,
-} from 'src/editors/interfaces/editors.service.interface';
+} from 'src/editors/interfaces/services/editors.service.interface';
 import { CompletedWorkDto } from 'src/quotation/dtos/quotation.dto';
 import {
   IQuotationService,
@@ -348,7 +348,7 @@ export class UsersService implements IUsersService {
           this._logger.log(`User ${userId} already has an editor request`);
           await this._editorService.deleteEditorRequest(userId);
         }
-        await this._editorService.createEditorRequests(userId);
+        await this._editorService.createEditorRequest(userId);
         this._logger.log(`Editor request created for user ${userId}`);
         return { success: true };
       }

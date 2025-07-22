@@ -12,19 +12,25 @@ import { UsersModule } from 'src/users/users.module';
 import { WorksModule } from 'src/works/works.module';
 
 import { EditorsController } from './editors.controller';
-import { EditorsService } from './editors.service';
+import { EditorsService } from './services/editors.service';
 import { IEditorRepositoryToken } from './interfaces/editor.repository.interface';
 import { IEditorRequestsRepositoryToken } from './interfaces/editorRequests.repository.interface';
-import { IEditorsServiceToken } from './interfaces/editors.service.interface';
+import { IEditorsServiceToken } from './interfaces/services/editors.service.interface';
 import { Editor, editorSchema } from './models/editor.schema';
 import { EditorRepository } from './repositories/editor.repository';
 import { EditorRequestsRepository } from './repositories/editorRequest.repository';
+import { IEditorRequestsServiceToken } from './interfaces/services/editor-requests.service.interface';
+import { EditorRequestsService } from './services/editor-requests.service';
 
 @Module({
   providers: [
     {
       provide: IEditorsServiceToken,
       useClass: EditorsService,
+    },
+    {
+      provide: IEditorRequestsServiceToken,
+      useClass: EditorRequestsService,
     },
     {
       provide: IEditorRequestsRepositoryToken,

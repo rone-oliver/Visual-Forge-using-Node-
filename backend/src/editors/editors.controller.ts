@@ -61,7 +61,7 @@ import { IEditorsController } from './interfaces/editors.controller.interface';
 import {
   IEditorsService,
   IEditorsServiceToken,
-} from './interfaces/editors.service.interface';
+} from './interfaces/services/editors.service.interface';
 import { Editor } from './models/editor.schema';
 
 @ApiTags('editor')
