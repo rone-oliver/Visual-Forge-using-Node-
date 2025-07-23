@@ -256,6 +256,11 @@ export class UsersController implements IUsersController {
     );
   }
 
+  @Get('profile/image/sign')
+  async getCloudinarySignature(){
+    return this._userService.getUploadSignature();
+  }
+
   @Patch('profile/image')
   @Roles('User', 'Editor')
   async updateProfileImage(

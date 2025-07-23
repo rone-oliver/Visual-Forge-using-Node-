@@ -1,6 +1,6 @@
 import { Readable } from 'stream';
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
 
@@ -117,6 +117,30 @@ export class CloudinaryService implements ICloudinaryService {
       );
       throw error;
     }
+  }
+
+  generateUploadSignature() {
+    const timestamp = Math.round(new Date().getTime() / 1000);
+    const uploadPreset = this._configService.get<string>(
+      'CLOUDINARY_AVATAR_UPLOAD_PRESET',
+    );
+    const apiSecret = this._configService.get<string>('CLOUDINARY_API_SECRET');
+
+    if (!uploadPreset || !apiSecret) {
+      throw new InternalServerErrorException(
+        'Cloudinary upload preset or API secret is not configured.',
+      );
+    }
+
+    const signature = cloudinary.utils.api_sign_request(
+      {
+        timestamp: timestamp,
+        upload_preset: uploadPreset,
+      },
+      apiSecret,
+    );
+
+    return { timestamp, signature, uploadPreset };
   }
 
   private _determineFileType(mimeType: string): FileType {

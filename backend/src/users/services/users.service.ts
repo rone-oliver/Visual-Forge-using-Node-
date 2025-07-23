@@ -197,6 +197,10 @@ export class UsersService implements IUsersService {
     return this._userProfileService.getUserInfoForChatList(userId);
   }
 
+  getUploadSignature(): { timestamp: number, signature: string, uploadPreset: string } {
+    return this._cloudinaryService.generateUploadSignature();
+  }
+
   async updateProfileImage(
     userId: Types.ObjectId,
     profileImageUrl: string,

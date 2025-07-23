@@ -12,4 +12,5 @@ export interface ICloudinaryService {
     folder?: string,
   ): Promise<FileUploadResultDto[]>;
   deleteFile(publicId: string, fileType: FileType): Promise<{ result: string }>;
+  generateUploadSignature(): { timestamp: number, signature: string, uploadPreset: string };
 }

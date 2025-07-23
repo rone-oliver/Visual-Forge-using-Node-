@@ -1,28 +1,35 @@
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { HttpClient } from '@angular/common/http';
-import { map, Observable } from 'rxjs';
+import { map, Observable, switchMap } from 'rxjs';
+import { UserService } from './user/user.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CloudinaryService {
   private readonly _cloudinaryUrl = `https://api.cloudinary.com/v1_1/${environment.cloudinary.cloudName}/image/upload`;
-  private readonly _uploadPreset = environment.cloudinary.uploadPreset;
 
   // Services
   private readonly _http = inject(HttpClient);
+  private readonly _userService = inject(UserService);
 
-  constructor() { }
+  constructor() {}
 
-  uploadProfileImage(file: File, username: string): Observable<string> {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', this._uploadPreset);
-    // formData.append('public_id', `user_${username}`);
+  uploadProfileImage(file: File): Observable<string> {
+    return this._userService.getUploadSignature().pipe(
+      switchMap((signature) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('api_key', environment.cloudinary.CLOUDINARY_API_KEY);
+        formData.append('signature', signature.signature);
+        formData.append('timestamp', signature.timestamp.toString());
+        formData.append('upload_preset', signature.uploadPreset)
 
-    return this._http.post<any>(this._cloudinaryUrl, formData).pipe(
-      map(response => response.secure_url)
-    )
+        return this._http
+          .post<any>(this._cloudinaryUrl, formData)
+          .pipe(map((response) => response.secure_url));
+      }),
+    );
   }
 }

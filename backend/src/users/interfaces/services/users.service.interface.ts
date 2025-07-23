@@ -92,6 +92,7 @@ export interface IUsersService {
 
   getCompletedWorks(userId: Types.ObjectId): Promise<CompletedWorkDto[]>;
 
+  getUploadSignature(): { timestamp: number; signature: string, uploadPreset: string };
   updateProfileImage(
     userId: Types.ObjectId,
     profileImageUrl: string,

@@ -11,6 +11,12 @@ import { GetPublicEditorsDto, PaginatedPublicEditors } from '../../interfaces/us
 import { IPaginatedResponse, IWallet, IWalletTransaction } from '../../interfaces/wallet.interface';
 import { LoggerService } from '../logger.service';
 
+export interface CloudinarySignature {
+  signature: string;
+  timestamp: number;
+  uploadPreset: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -314,5 +320,11 @@ export class UserService {
 
   unfollowUser(userId: string): Observable<{ success: boolean }> {
     return this._http.delete<{ success: boolean }>(`${this._userApiUrl}/follow/${userId}`, {});
+  }
+
+  getUploadSignature(): Observable<CloudinarySignature> {
+    return this._http.get<CloudinarySignature>(
+      `${this._userApiUrl}/profile/image/sign`,
+    );
   }
 }
