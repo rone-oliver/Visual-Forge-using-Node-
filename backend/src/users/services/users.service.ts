@@ -37,9 +37,7 @@ import {
   ITransactionService,
   ITransactionServiceToken,
 } from 'src/common/transaction/interfaces/transaction.service.interface';
-import {
-  PaymentType,
-} from 'src/common/transaction/models/transaction.schema';
+import { PaymentType } from 'src/common/transaction/models/transaction.schema';
 import { CompletedWorkDto } from 'src/quotation/dtos/quotation.dto';
 import {
   IQuotationService,
@@ -89,17 +87,26 @@ import {
   ReportUserDto,
 } from '../dto/users.dto';
 import {
-  IUserRepository,
-  IUserRepositoryToken,
-} from '../interfaces/users.repository.interface';
+  IUserEditorService,
+  IUserEditorServiceToken,
+} from '../interfaces/services/user-editor.service.interface';
+import {
+  IUserProfileService,
+  IUserProfileServiceToken,
+} from '../interfaces/services/user-profile.service.interface';
+import {
+  IUserQuotationService,
+  IUserQuotationServiceToken,
+} from '../interfaces/services/user-quotation.service.interface';
 import {
   IUsersService,
   UserInfoForChatListDto,
 } from '../interfaces/services/users.service.interface';
+import {
+  IUserRepository,
+  IUserRepositoryToken,
+} from '../interfaces/users.repository.interface';
 import { User } from '../models/user.schema';
-import { IUserQuotationService, IUserQuotationServiceToken } from '../interfaces/services/user-quotation.service.interface';
-import { IUserProfileService, IUserProfileServiceToken } from '../interfaces/services/user-profile.service.interface';
-import { IUserEditorService, IUserEditorServiceToken } from '../interfaces/services/user-editor.service.interface';
 
 @Injectable()
 export class UsersService implements IUsersService {
@@ -160,7 +167,10 @@ export class UsersService implements IUsersService {
     return this._userProfileService.updateUserGoogleId(userId, googleId);
   }
 
-  async updateOne(filter: Partial<User>, update: Partial<User>): Promise<User | null> {
+  async updateOne(
+    filter: Partial<User>,
+    update: Partial<User>,
+  ): Promise<User | null> {
     return this._userProfileService.updateOne(filter, update);
   }
 
@@ -229,7 +239,10 @@ export class UsersService implements IUsersService {
     editorId: string,
     currentUserId?: string,
   ): Promise<EditorPublicProfileResponseDto> {
-    return this._userEditorService.getPublicEditorProfile(editorId, currentUserId);
+    return this._userEditorService.getPublicEditorProfile(
+      editorId,
+      currentUserId,
+    );
   }
 
   async getCurrentEditorRating(
@@ -299,7 +312,10 @@ export class UsersService implements IUsersService {
     userId: Types.ObjectId,
     createQuotationDto: CreateQuotationDto,
   ): Promise<QuotationResponseDto> {
-    return this._userQuotationService.createQuotation(userId, createQuotationDto);
+    return this._userQuotationService.createQuotation(
+      userId,
+      createQuotationDto,
+    );
   }
 
   async getQuotation(
@@ -313,7 +329,11 @@ export class UsersService implements IUsersService {
     userId: Types.ObjectId,
     updateQuotationDto: UpdateQuotationDto,
   ): Promise<QuotationResponseDto | null> {
-    return this._userQuotationService.updateQuotation(quotationId, userId, updateQuotationDto);
+    return this._userQuotationService.updateQuotation(
+      quotationId,
+      userId,
+      updateQuotationDto,
+    );
   }
 
   async deleteQuotation(
@@ -509,7 +529,11 @@ export class UsersService implements IUsersService {
       paymentType: PaymentType;
     },
   ): Promise<TransactionResponseDto> {
-    return this._userQuotationService.payForWork(userId, quotationId, paymentDetails);
+    return this._userQuotationService.payForWork(
+      userId,
+      quotationId,
+      paymentDetails,
+    );
   }
 
   async getQuotationTransactions(quotationId: Types.ObjectId) {

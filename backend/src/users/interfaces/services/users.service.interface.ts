@@ -5,6 +5,7 @@ import { FileUploadResultDto as FileUploadResultDtoCloudinary } from 'src/common
 import { GetTransactionsQueryDto } from 'src/common/transaction/dtos/transaction.dto';
 import { PaymentType } from 'src/common/transaction/models/transaction.schema';
 import { CompletedWorkDto } from 'src/quotation/dtos/quotation.dto';
+import { User } from 'src/users/models/user.schema';
 import {
   GetPublicWorksQueryDto,
   PaginatedPublicWorksResponseDto,
@@ -35,7 +36,6 @@ import {
   PaginatedPublicEditorsDto,
   ReportUserDto,
 } from '../../dto/users.dto';
-import { User } from 'src/users/models/user.schema';
 
 export const IUsersServiceToken = Symbol('IUsersService');
 

@@ -1,10 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import {
-  FilterQuery,
-  Model,
-  ProjectionType,
-} from 'mongoose';
+import { FilterQuery, Model, ProjectionType } from 'mongoose';
 import { BaseRepository } from 'src/common/database/base.repository';
 
 import { IUserRepository } from '../interfaces/users.repository.interface';

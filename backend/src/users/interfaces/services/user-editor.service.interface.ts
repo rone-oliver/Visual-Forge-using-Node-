@@ -1,11 +1,21 @@
-import { Types } from "mongoose";
-import { EditorPublicProfileResponseDto, EditorRequestStatusResponseDto, GetPublicEditorsDto, PaginatedPublicEditorsDto, RateEditorDto, SuccessResponseDto, UserRatingForEditorDto } from "src/users/dto/users.dto";
+import { Types } from 'mongoose';
+import {
+  EditorPublicProfileResponseDto,
+  EditorRequestStatusResponseDto,
+  GetPublicEditorsDto,
+  PaginatedPublicEditorsDto,
+  RateEditorDto,
+  SuccessResponseDto,
+  UserRatingForEditorDto,
+} from 'src/users/dto/users.dto';
 
 export const IUserEditorServiceToken = Symbol('IUserEditorService');
 
 export interface IUserEditorService {
   requestForEditor(userId: Types.ObjectId): Promise<SuccessResponseDto>;
-  getEditorRequestStatus(userId: Types.ObjectId): Promise<EditorRequestStatusResponseDto>;
+  getEditorRequestStatus(
+    userId: Types.ObjectId,
+  ): Promise<EditorRequestStatusResponseDto>;
   rateEditor(
     userId: Types.ObjectId,
     rateEditorDto: RateEditorDto,

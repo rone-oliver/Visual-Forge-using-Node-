@@ -1,7 +1,12 @@
 import { Types } from 'mongoose';
 import { Bid } from 'src/common/bids/models/bids.schema';
 import { PaymentType } from 'src/common/transaction/models/transaction.schema';
-import { BidResponseDto, SuccessResponseDto, TransactionResponseDto } from 'src/users/dto/users.dto';
+import {
+  BidResponseDto,
+  SuccessResponseDto,
+  TransactionResponseDto,
+} from 'src/users/dto/users.dto';
+
 import {
   CreateQuotationDto,
   GetQuotationsParamsDto,
@@ -38,7 +43,7 @@ export interface IUserQuotationService {
 
   getBidsByQuotation(
     quotationId: Types.ObjectId,
-    userId: Types.ObjectId
+    userId: Types.ObjectId,
   ): Promise<BidResponseDto[]>;
 
   acceptBid(

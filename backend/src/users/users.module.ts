@@ -13,18 +13,18 @@ import { TimelineModule } from 'src/timeline/timeline.module';
 import { WalletModule } from 'src/wallet/wallet.module';
 import { WorksModule } from 'src/works/works.module';
 
-import { IUserRepositoryToken } from './interfaces/users.repository.interface';
+import { IUserEditorServiceToken } from './interfaces/services/user-editor.service.interface';
+import { IUserProfileServiceToken } from './interfaces/services/user-profile.service.interface';
+import { IUserQuotationServiceToken } from './interfaces/services/user-quotation.service.interface';
 import { IUsersServiceToken } from './interfaces/services/users.service.interface';
+import { IUserRepositoryToken } from './interfaces/users.repository.interface';
 import { User, userSchema } from './models/user.schema';
 import { UserRepository } from './repositories/user.repository';
-import { UsersController } from './users.controller';
-import { UsersService } from './services/users.service';
-import { IUserQuotationServiceToken } from './interfaces/services/user-quotation.service.interface';
-import { UserQuotationService } from './services/user-quotation.service';
-import { IUserProfileServiceToken } from './interfaces/services/user-profile.service.interface';
-import { UserProfileService } from './services/user-profile.service';
-import { IUserEditorServiceToken } from './interfaces/services/user-editor.service.interface';
 import { UserEditorService } from './services/user-editor.service';
+import { UserProfileService } from './services/user-profile.service';
+import { UserQuotationService } from './services/user-quotation.service';
+import { UsersService } from './services/users.service';
+import { UsersController } from './users.controller';
 
 @Module({
   controllers: [UsersController],

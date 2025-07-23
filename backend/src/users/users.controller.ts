@@ -77,11 +77,11 @@ import {
   ReportUserDto,
   SubmitFeedbackDto,
 } from './dto/users.dto';
-import { IUsersController } from './interfaces/users.controller.interface';
 import {
   IUsersService,
   IUsersServiceToken,
 } from './interfaces/services/users.service.interface';
+import { IUsersController } from './interfaces/users.controller.interface';
 
 export interface GetQuotationsParams {
   page?: number;
