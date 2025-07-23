@@ -19,7 +19,7 @@ import {
 import {
   IUsersService,
   IUsersServiceToken,
-} from 'src/users/interfaces/users.service.interface';
+} from 'src/users/interfaces/services/users.service.interface';
 import { Language, User } from 'src/users/models/user.schema';
 
 import { UserType } from './dtos/common.dto';

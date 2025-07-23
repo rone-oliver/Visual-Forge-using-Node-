@@ -33,7 +33,7 @@ import { SuccessResponseDto } from 'src/users/dto/users.dto';
 import {
   IUsersService,
   IUsersServiceToken,
-} from 'src/users/interfaces/users.service.interface';
+} from 'src/users/interfaces/services/users.service.interface';
 import { UpdateWorkFilesDto } from 'src/works/dtos/works.dto';
 import {
   IWorkService,
@@ -81,12 +81,9 @@ export class EditorsService implements IEditorsService {
     private readonly _editorRepository: IEditorRepository,
     @Inject(IQuotationServiceToken)
     private readonly _quotationService: IQuotationService,
-    @Inject(IWorkServiceToken) private readonly _worksService: IWorkService,
     @Inject(IUsersServiceToken) private readonly _userService: IUsersService,
     @Inject(IRelationshipServiceToken)
     private readonly _relationshipService: IRelationshipService,
-    @Inject(ICloudinaryServiceToken)
-    private readonly _cloudinaryService: ICloudinaryService,
     @Inject(IEditorRequestsServiceToken)
     private readonly _editorRequestService: IEditorRequestsService,
     @Inject(IEditorBidServiceToken)

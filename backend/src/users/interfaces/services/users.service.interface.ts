@@ -34,8 +34,8 @@ import {
   GetPublicEditorsDto,
   PaginatedPublicEditorsDto,
   ReportUserDto,
-} from '../dto/users.dto';
-import { User } from '../models/user.schema';
+} from '../../dto/users.dto';
+import { User } from 'src/users/models/user.schema';
 
 export const IUsersServiceToken = Symbol('IUsersService');
 
@@ -151,7 +151,7 @@ export interface IUsersService {
   ): Promise<UserInfoForChatListDto | null>;
 
   // Payment and Transaction related methods
-  createTransaction(
+  payForWork(
     userId: Types.ObjectId,
     quotationId: Types.ObjectId,
     paymentDetails: {

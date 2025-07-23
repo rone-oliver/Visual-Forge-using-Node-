@@ -26,7 +26,7 @@ import { SuccessResponseDto } from 'src/users/dto/users.dto';
 import {
   IUsersService,
   IUsersServiceToken,
-} from 'src/users/interfaces/users.service.interface';
+} from 'src/users/interfaces/services/users.service.interface';
 import { User } from 'src/users/models/user.schema';
 import {
   IAdminWalletService,

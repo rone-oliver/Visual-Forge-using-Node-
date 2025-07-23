@@ -21,7 +21,7 @@ import { MailService } from 'src/mail/mail.service';
 import {
   IUsersService,
   IUsersServiceToken,
-} from 'src/users/interfaces/users.service.interface';
+} from 'src/users/interfaces/services/users.service.interface';
 import { User } from 'src/users/models/user.schema';
 
 import {

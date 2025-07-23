@@ -15,7 +15,7 @@ import { Socket } from 'socket.io';
 import {
   IUsersService,
   IUsersServiceToken,
-} from 'src/users/interfaces/users.service.interface';
+} from 'src/users/interfaces/services/users.service.interface';
 
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 

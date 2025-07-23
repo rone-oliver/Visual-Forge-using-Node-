@@ -9,7 +9,7 @@ import { Types } from 'mongoose';
 import {
   IUsersService,
   IUsersServiceToken,
-} from 'src/users/interfaces/users.service.interface';
+} from 'src/users/interfaces/services/users.service.interface';
 
 import {
   IEditorRepository,

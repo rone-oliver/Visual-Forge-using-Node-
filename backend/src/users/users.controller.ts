@@ -81,7 +81,7 @@ import { IUsersController } from './interfaces/users.controller.interface';
 import {
   IUsersService,
   IUsersServiceToken,
-} from './interfaces/users.service.interface';
+} from './interfaces/services/users.service.interface';
 
 export interface GetQuotationsParams {
   page?: number;
@@ -569,7 +569,7 @@ export class UsersController implements IUsersController {
     };
     console.log('paymentDetails: ', paymentDetails);
 
-    const success = await this._userService.createTransaction(
+    const success = await this._userService.payForWork(
       user.userId,
       new Types.ObjectId(quotationId),
       paymentDetails,

@@ -86,7 +86,6 @@ import {
   UpdateQuotationDto,
   GetQuotationsParamsDto,
   PaginatedQuotationsResponseDto,
-  QuotationWithBidCountDto,
   UserBaseResponseDto,
   UserProfileResponseDto,
   UserBasicInfoDto,
@@ -104,16 +103,17 @@ import {
   GetPublicEditorsDto,
   PaginatedPublicEditorsDto,
   ReportUserDto,
-} from './dto/users.dto';
+} from '../dto/users.dto';
 import {
   IUserRepository,
   IUserRepositoryToken,
-} from './interfaces/users.repository.interface';
+} from '../interfaces/users.repository.interface';
 import {
   IUsersService,
   UserInfoForChatListDto,
-} from './interfaces/users.service.interface';
-import { User } from './models/user.schema';
+} from '../interfaces/services/users.service.interface';
+import { User } from '../models/user.schema';
+import { IUserQuotationService, IUserQuotationServiceToken } from '../interfaces/services/user-quotation.service.interface';
 
 @Injectable()
 export class UsersService implements IUsersService {
@@ -141,7 +141,8 @@ export class UsersService implements IUsersService {
     private readonly _hashingService: IHashingService,
     @Inject(ITimelineServiceToken)
     private readonly _timelineService: ITimelineService,
-    private _eventEmitter: EventEmitter2,
+    @Inject(IUserQuotationServiceToken)
+    private readonly _userQuotationService: IUserQuotationService,
   ) {}
 
   async findOne(filter: Partial<User>): Promise<User | null> {
@@ -433,115 +434,7 @@ export class UsersService implements IUsersService {
     userId: Types.ObjectId,
     params: GetQuotationsParamsDto,
   ): Promise<PaginatedQuotationsResponseDto> {
-    try {
-      const page = params.page || 1;
-      const limit = params.limit || 10;
-      const skip = (page - 1) * limit;
-      const matchQuery: any = { userId: new Types.ObjectId(userId) };
-
-      if (params.status && params.status !== 'All') {
-        matchQuery.status = params.status;
-      }
-      if (params.searchTerm) {
-        const searchRegex = { $regex: params.searchTerm, $options: 'i' };
-        matchQuery.$or = [{ title: searchRegex }, { description: searchRegex }];
-      }
-
-      const totalItems =
-        await this._quotationService.countQuotationsByFilter(matchQuery);
-      const totalPages = Math.ceil(totalItems / limit);
-
-      const aggregationPipeline: any[] = [
-        { $match: matchQuery },
-        { $sort: { createdAt: -1 } },
-        {
-          $lookup: {
-            from: 'bids',
-            localField: '_id',
-            foreignField: 'quotationId',
-            as: 'bidsInfo',
-          },
-        },
-        {
-          $lookup: {
-            from: 'editors',
-            let: { editorIdFromQuotation: '$editorId' },
-            pipeline: [
-              {
-                $match: {
-                  $expr: { $eq: ['$userId', '$$editorIdFromQuotation'] },
-                },
-              },
-              {
-                $project: {
-                  userId: 1,
-                  _id: 0,
-                },
-              },
-            ],
-            as: 'editorInfo',
-          },
-        },
-        { $unwind: { path: '$editorInfo', preserveNullAndEmptyArrays: true } },
-        {
-          $lookup: {
-            from: 'users',
-            let: { userIdFromEditor: '$editorInfo.userId' },
-            pipeline: [
-              {
-                $match: {
-                  $expr: { $eq: ['$_id', '$$userIdFromEditor'] },
-                },
-              },
-              {
-                $project: {
-                  fullname: 1,
-                  _id: 0,
-                },
-              },
-            ],
-            as: 'userInfo',
-          },
-        },
-        { $unwind: { path: '$userInfo', preserveNullAndEmptyArrays: true } },
-        {
-          $addFields: {
-            bidCount: { $size: '$bidsInfo' },
-            editor: {
-              $cond: {
-                if: { $ifNull: ['$userInfo.fullname', false] },
-                then: '$userInfo.fullname',
-                else: null,
-              },
-            },
-          },
-        },
-        {
-          $project: {
-            bidsInfo: 0,
-            editorInfo: 0,
-            userInfo: 0,
-          },
-        },
-        { $skip: skip },
-        { $limit: limit },
-      ];
-
-      const quotations =
-        await this._quotationService.aggregate(aggregationPipeline);
-      this._logger.log(`quotations from getQuotations for user: `, quotations);
-
-      return {
-        quotations: quotations as QuotationWithBidCountDto[],
-        totalItems,
-        totalPages,
-        currentPage: page,
-        itemsPerPage: limit,
-      };
-    } catch (error) {
-      this._logger.error(`Error fetching quotations: ${error}`);
-      throw error;
-    }
+    return this._userQuotationService.getQuotations(userId, params);
   }
 
   private _calculateQuotationAmounts(estimatedBudget: number): {
@@ -558,64 +451,13 @@ export class UsersService implements IUsersService {
     userId: Types.ObjectId,
     createQuotationDto: CreateQuotationDto,
   ): Promise<QuotationResponseDto> {
-    try {
-      this._logger.log(createQuotationDto);
-      let calculatedAdvanceAmount: number | undefined;
-      let calculatedBalanceAmount: number | undefined;
-
-      if (!createQuotationDto.dueDate) throw new Error('Due date is required');
-      if (createQuotationDto.estimatedBudget) {
-        const { advanceAmount, balanceAmount } =
-          this._calculateQuotationAmounts(createQuotationDto.estimatedBudget);
-        calculatedAdvanceAmount = advanceAmount;
-        calculatedBalanceAmount = balanceAmount;
-      }
-      const quotationDataForDb = {
-        ...createQuotationDto,
-        userId: new Types.ObjectId(userId),
-        advanceAmount: calculatedAdvanceAmount,
-        balanceAmount: calculatedBalanceAmount,
-        attachedFiles: createQuotationDto.attachedFiles?.map((file) => {
-          const processedUniqueId = file.uniqueId
-            ? String(file.uniqueId).replace(/ /g, '%20')
-            : '';
-
-          return {
-            ...file,
-            uniqueId: `${processedUniqueId}.${file.format}`,
-            timestamp: file.timestamp,
-            uploadedAt: new Date(),
-          };
-        }),
-      };
-      const savedQuotation =
-        await this._quotationService.createQuotation(quotationDataForDb);
-
-      this._eventEmitter.emit(EventTypes.QUOTATION_CREATED, {
-        quotationId: savedQuotation._id.toString(),
-        userId: userId.toString(),
-        title: savedQuotation.title,
-        amount: savedQuotation.estimatedBudget,
-      });
-      return savedQuotation as unknown as QuotationResponseDto;
-    } catch (error) {
-      this._logger.error(`Error creating quotation: ${error.message}`);
-      throw error;
-    }
+    return this._userQuotationService.createQuotation(userId, createQuotationDto);
   }
 
   async getQuotation(
     quotationId: Types.ObjectId,
   ): Promise<QuotationResponseDto | null> {
-    try {
-      const quotation = (await this._quotationService.findById(
-        quotationId,
-      )) as unknown as QuotationResponseDto;
-      return quotation;
-    } catch (error) {
-      this._logger.error(`Error fetching quotation: ${error.message}`);
-      throw error;
-    }
+    return this._userQuotationService.getQuotation(quotationId);
   }
 
   async updateQuotation(
@@ -623,94 +465,13 @@ export class UsersService implements IUsersService {
     userId: Types.ObjectId,
     updateQuotationDto: UpdateQuotationDto,
   ): Promise<QuotationResponseDto | null> {
-    try {
-      const { filesToDelete, ...updateData } = updateQuotationDto;
-
-      const quotation = await this._quotationService.findById(quotationId);
-      if (!quotation) {
-        throw new NotFoundException('Quotation not found');
-      }
-
-      if (quotation.userId.toString() !== userId.toString()) {
-        throw new ForbiddenException(
-          'You are not authorized to update this quotation.',
-        );
-      }
-
-      if (filesToDelete && filesToDelete.length > 0) {
-        const idsToDelete = filesToDelete;
-        const filesMarkedForDelete = quotation.attachedFiles.filter((file) =>
-          idsToDelete.includes(file.uniqueId),
-        );
-
-        const deletePromises = filesMarkedForDelete.map((file) =>
-          this._cloudinaryService.deleteFile(file.uniqueId, file.fileType),
-        );
-
-        try {
-          await Promise.all(deletePromises); // If ANY promise in deletePromises rejects, this line will throw an error
-          this._logger.log('Files deleted successfully');
-          // This line only runs if ALL deletions succeed
-          quotation.attachedFiles = quotation.attachedFiles.filter(
-            (file) => !idsToDelete.includes(file.uniqueId),
-          );
-        } catch (error) {
-          // If Promise.all rejects, the error will be caught here.
-          this._logger.error(
-            `One or more files failed to delete from Cloudinary. Original error: ${error.message}`,
-          );
-          // You might want to re-throw the error or handle it gracefully here
-          throw error; // Propagate the error up if this method shouldn't continue
-        }
-      }
-      const currentFiles = [...quotation.attachedFiles];
-
-      if (updateData.attachedFiles && updateData.attachedFiles.length > 0) {
-        this._logger.debug('attached files count: ', updateData.attachedFiles);
-        currentFiles.push(...updateData.attachedFiles);
-      }
-
-      let advanceAmountCalc: number | undefined;
-      let balanceAmountCalc: number | undefined;
-      if (quotation.estimatedBudget) {
-        const { advanceAmount, balanceAmount } =
-          this._calculateQuotationAmounts(quotation.estimatedBudget);
-        advanceAmountCalc = advanceAmount;
-        balanceAmountCalc = balanceAmount;
-      }
-      const quotationDataForDb = {
-        ...updateData,
-        advanceAmount: advanceAmountCalc,
-        balanceAmount: balanceAmountCalc,
-        attachedFiles: currentFiles,
-      };
-
-      const updatedQuotation = (await this._quotationService.findByIdAndUpdate(
-        quotationId,
-        quotationDataForDb,
-      )) as unknown as QuotationResponseDto;
-      if (!updatedQuotation) {
-        throw new InternalServerErrorException('Failed to update quotation.');
-      }
-      this._logger.debug('Quotation updated successfully', updatedQuotation);
-
-      return updatedQuotation;
-    } catch (error) {
-      this._logger.error(`Error updating quotation: ${error.message}`);
-      throw error;
-    }
+    return this._userQuotationService.updateQuotation(quotationId, userId, updateQuotationDto);
   }
 
   async deleteQuotation(
     quotationId: Types.ObjectId,
   ): Promise<SuccessResponseDto> {
-    try {
-      await this._quotationService.deleteQuotation(quotationId);
-      return { success: true };
-    } catch (error) {
-      this._logger.error(`Error deleting quotation: ${error.message}`);
-      throw error;
-    }
+    return this._userQuotationService.deleteQuotation(quotationId);
   }
 
   async updateProfileImage(
@@ -1008,7 +769,7 @@ export class UsersService implements IUsersService {
     }
   }
 
-  async createTransaction(
+  async payForWork(
     userId: Types.ObjectId,
     quotationId: Types.ObjectId,
     paymentDetails: {
@@ -1025,51 +786,7 @@ export class UsersService implements IUsersService {
       paymentType: PaymentType;
     },
   ): Promise<TransactionResponseDto> {
-    try {
-      const transaction = await this._transactionService.createTransaction({
-        userId: new Types.ObjectId(userId),
-        quotationId: new Types.ObjectId(quotationId),
-        paymentId: paymentDetails.paymentId,
-        orderId: paymentDetails.orderId,
-        razorpayPaymentMethod: paymentDetails.razorpayPaymentMethod,
-        currency: paymentDetails.currency,
-        bank: paymentDetails.bank,
-        wallet: paymentDetails.wallet,
-        fee: paymentDetails.fee,
-        tax: paymentDetails.tax,
-        amount: paymentDetails.amount,
-        paymentType: paymentDetails.paymentType,
-        paymentDate: paymentDetails.paymentDate,
-        status: PaymentStatus.COMPLETED,
-      });
-
-      if (paymentDetails.paymentType === PaymentType.ADVANCE) {
-        await this._quotationService.updateQuotation(
-          { _id: quotationId },
-          { $set: { isAdvancePaid: true } },
-        );
-      } else {
-        await this._quotationService.updateQuotation(
-          { _id: quotationId },
-          { $set: { isFullyPaid: true } },
-        );
-      }
-      const quotation = (await this._quotationService.updateQuotation(
-        { _id: quotationId },
-        { isPaymentInProgress: false },
-      )) as Quotation;
-      if (quotation.isFullyPaid) {
-        await this._adminWalletService.recordUserPayment(
-          quotation,
-          paymentDetails.paymentId,
-        );
-      }
-
-      return transaction;
-    } catch (error) {
-      this._logger.error(`Error updating quotation payment: ${error.message}`);
-      throw error;
-    }
+    return this._userQuotationService.payForWork(userId, quotationId, paymentDetails);
   }
 
   async getQuotationTransactions(quotationId: Types.ObjectId) {
@@ -1082,41 +799,14 @@ export class UsersService implements IUsersService {
     quotationId: Types.ObjectId,
     userId: Types.ObjectId,
   ): Promise<BidResponseDto[]> {
-    const quotation = await this._quotationService.findOne({
-      _id: new Types.ObjectId(quotationId),
-      userId: new Types.ObjectId(userId),
-    });
-    if (!quotation) {
-      throw new NotFoundException(
-        'Quotation not found or does not belong to you',
-      );
-    }
-
-    const bids = await this._bidsService.findAllByQuotation(quotation._id);
-    return bids;
+    return this._userQuotationService.getBidsByQuotation(quotationId, userId);
   }
 
   async acceptBid(
     bidId: Types.ObjectId,
     userId: Types.ObjectId,
   ): Promise<BidResponseDto> {
-    const bid = await this._bidsService.acceptBid(bidId, userId);
-
-    const quotation = await this._quotationService.findById(bid.quotationId);
-
-    if (!quotation) {
-      throw new NotFoundException('Quotation not found');
-    }
-
-    await this._timelineService.create({
-      quotationId: new Types.ObjectId(quotation._id),
-      event: TimelineEvent.EDITOR_ASSIGNED,
-      userId: new Types.ObjectId(userId),
-      editorId: new Types.ObjectId(quotation.editorId),
-      message: 'Bid Accepted by the user',
-    });
-
-    return bid;
+    return this._userQuotationService.acceptBid(bidId, userId);
   }
 
   async getAcceptedBid(

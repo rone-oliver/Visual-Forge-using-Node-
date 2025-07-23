@@ -16,7 +16,7 @@ import { QuotationStatus } from 'src/quotation/models/quotation.schema';
 import {
   IUsersService,
   IUsersServiceToken,
-} from 'src/users/interfaces/users.service.interface';
+} from 'src/users/interfaces/services/users.service.interface';
 import {
   IWalletService,
   IWalletServiceToken,

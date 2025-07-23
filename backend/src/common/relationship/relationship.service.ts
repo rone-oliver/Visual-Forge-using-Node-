@@ -4,13 +4,12 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Types } from 'mongoose';
 import {
   IUsersService,
   IUsersServiceToken,
-} from 'src/users/interfaces/users.service.interface';
-import { User, UserDocument } from 'src/users/models/user.schema';
+} from 'src/users/interfaces/services/users.service.interface';
+import { UserDocument } from 'src/users/models/user.schema';
 
 import { RelationshipType } from '../enums/relationships.enum';
 

@@ -14,11 +14,13 @@ import { WalletModule } from 'src/wallet/wallet.module';
 import { WorksModule } from 'src/works/works.module';
 
 import { IUserRepositoryToken } from './interfaces/users.repository.interface';
-import { IUsersServiceToken } from './interfaces/users.service.interface';
+import { IUsersServiceToken } from './interfaces/services/users.service.interface';
 import { User, userSchema } from './models/user.schema';
 import { UserRepository } from './repositories/user.repository';
 import { UsersController } from './users.controller';
-import { UsersService } from './users.service';
+import { UsersService } from './services/users.service';
+import { IUserQuotationServiceToken } from './interfaces/services/user-quotation.service.interface';
+import { UserQuotationService } from './services/user-quotation.service';
 
 @Module({
   controllers: [UsersController],
@@ -26,6 +28,10 @@ import { UsersService } from './users.service';
     {
       provide: IUsersServiceToken,
       useClass: UsersService,
+    },
+    {
+      provide: IUserQuotationServiceToken,
+      useClass: UserQuotationService,
     },
     {
       provide: IUserRepositoryToken,
