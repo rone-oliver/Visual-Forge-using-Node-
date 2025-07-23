@@ -21,6 +21,8 @@ import { UsersController } from './users.controller';
 import { UsersService } from './services/users.service';
 import { IUserQuotationServiceToken } from './interfaces/services/user-quotation.service.interface';
 import { UserQuotationService } from './services/user-quotation.service';
+import { IUserProfileServiceToken } from './interfaces/services/user-profile.service.interface';
+import { UserProfileService } from './services/user-profile.service';
 
 @Module({
   controllers: [UsersController],
@@ -32,6 +34,10 @@ import { UserQuotationService } from './services/user-quotation.service';
     {
       provide: IUserQuotationServiceToken,
       useClass: UserQuotationService,
+    },
+    {
+      provide: IUserProfileServiceToken,
+      useClass: UserProfileService,
     },
     {
       provide: IUserRepositoryToken,

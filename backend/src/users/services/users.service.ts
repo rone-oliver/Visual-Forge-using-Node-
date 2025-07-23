@@ -114,6 +114,7 @@ import {
 } from '../interfaces/services/users.service.interface';
 import { User } from '../models/user.schema';
 import { IUserQuotationService, IUserQuotationServiceToken } from '../interfaces/services/user-quotation.service.interface';
+import { IUserProfileService, IUserProfileServiceToken } from '../interfaces/services/user-profile.service.interface';
 
 @Injectable()
 export class UsersService implements IUsersService {
@@ -123,7 +124,8 @@ export class UsersService implements IUsersService {
     private readonly _editorService: IEditorsService,
     @Inject(IQuotationServiceToken)
     private readonly _quotationService: IQuotationService,
-    @Inject(IWorkServiceToken) private readonly _workService: IWorkService,
+    @Inject(IWorkServiceToken)
+    private readonly _workService: IWorkService,
     @Inject(ITransactionServiceToken)
     private readonly _transactionService: ITransactionService,
     @Inject(IReportServiceToken)
@@ -136,206 +138,84 @@ export class UsersService implements IUsersService {
     private readonly _cloudinaryService: ICloudinaryService,
     @Inject(IUserRepositoryToken)
     private readonly _userRepository: IUserRepository,
-    @Inject(IBidServiceToken) private readonly _bidsService: IBidService,
+    @Inject(IBidServiceToken)
+    private readonly _bidsService: IBidService,
     @Inject(IHashingServiceToken)
     private readonly _hashingService: IHashingService,
     @Inject(ITimelineServiceToken)
     private readonly _timelineService: ITimelineService,
     @Inject(IUserQuotationServiceToken)
     private readonly _userQuotationService: IUserQuotationService,
+    @Inject(IUserProfileServiceToken)
+    private readonly _userProfileService: IUserProfileService,
   ) {}
 
   async findOne(filter: Partial<User>): Promise<User | null> {
-    try {
-      return this._userRepository.findOne(filter);
-    } catch (error) {
-      this._logger.error(`Error finding user: ${error.message}`);
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    }
+    return this._userProfileService.findOne(filter);
   }
 
   async findByUsername(username: string) {
-    return await this._userRepository.findOne({ username });
+    return this._userProfileService.findByUsername(username);
   }
 
   async findByEmail(email: string) {
-    return await this._userRepository.findOne({ email });
+    return this._userProfileService.findByEmail(email);
   }
 
   async createUser(user: Partial<User>): Promise<User> {
-    try {
-      if (user.password) {
-        user.password = await this._hashingService.hash(user.password);
-      }
-      this._logger.log(`Creating new user: ${user.email}`);
-      const newUser = await this._userRepository.create(user);
-      await this._adminWalletService.creditWelcomeBonus(newUser._id.toString());
-      return newUser;
-    } catch (error) {
-      this._logger.error(`Error creating user: ${error.message}`);
-      throw error;
-    }
-  }
-
-  private async _generateUniqueUsername(): Promise<string> {
-    let isUnique = false;
-    let username = '';
-
-    while (!isUnique) {
-      const randomString = Math.random().toString(36).substring(2, 6);
-      username = `user_${randomString}`;
-
-      const existingUser = await this._userRepository.findOne({ username });
-      if (!existingUser) {
-        isUnique = true;
-      }
-    }
-    return username;
+    return this._userProfileService.createUser(user);
   }
 
   async createGoogleUser(user: Partial<User>): Promise<User> {
-    try {
-      if (!user.username) {
-        user.username = await this._generateUniqueUsername();
-      }
-      user.isVerified = true;
-      return this.createUser(user);
-    } catch (error) {
-      this._logger.error(`Failed to create Google user: ${error.message}`);
-      throw error;
-    }
+    return this._userProfileService.createGoogleUser(user);
   }
 
   async updateUserGoogleId(
     userId: Types.ObjectId,
     googleId: string,
   ): Promise<User | null> {
-    try {
-      return await this._userRepository.findOneAndUpdate(
-        { _id: userId },
-        { $set: { googleId } },
-      );
-    } catch (error) {
-      this._logger.error(`Error updating user: ${error.message}`);
-      throw error;
-    }
+    return this._userProfileService.updateUserGoogleId(userId, googleId);
   }
 
-  async updateOne(filter: Partial<User>, update: Partial<User>) {
-    try {
-      await this._userRepository.findOneAndUpdate(filter, update);
-      this._logger.log('User data updated successfully');
-    } catch (error) {
-      this._logger.error(`Error updating User: ${error.message}`);
-      throw error;
-    }
+  async updateOne(filter: Partial<User>, update: Partial<User>): Promise<User | null> {
+    return this._userProfileService.updateOne(filter, update);
   }
 
   async updatePassword(
     userId: Types.ObjectId,
     password: string,
   ): Promise<boolean> {
-    try {
-      this._logger.log(userId, password);
-      await this._userRepository.findOneAndUpdate(
-        { _id: userId },
-        { $set: { password } },
-      );
-      this._logger.log('Password updated successfully');
-      return true;
-    } catch (error) {
-      this._logger.error(`Error updating password: ${error.message}`);
-      throw error;
-    }
+    return this._userProfileService.updatePassword(userId, password);
   }
 
   async getUserDetails(
     userId: Types.ObjectId,
   ): Promise<UserProfileResponseDto | null> {
-    try {
-      this._logger.log(`Fetching user details for ID: ${userId}`);
-      const user = await this._userRepository.findById(userId);
-      if (user && user.isEditor) {
-        this._logger.log('Fetching the editor details');
-        console.log('user id: ', user._id);
-        const editorDetails = await this._editorService.findByUserId(user._id);
-        if (editorDetails) {
-          this._logger.log('Editor details: ', editorDetails);
-
-          const [followersCount, followingCount] = await Promise.all([
-            this._relationshipService
-              .getFollowers({ userId: user._id, limit: 0, skip: 0 })
-              .then((f) => f.length),
-            this._relationshipService
-              .getFollowing({ userId: user._id, limit: 0, skip: 0 })
-              .then((f) => f.length),
-          ]);
-
-          return {
-            ...user.toObject(),
-            editorDetails: {
-              category: editorDetails.category || [],
-              score: editorDetails.score || 0,
-              tipsAndTricks: editorDetails.tipsAndTricks || '',
-              sharedTutorials: editorDetails.sharedTutorials || [],
-              ratingsCount: editorDetails.ratings?.length || 0,
-              averageRating: this._calculateAverageRating(
-                editorDetails.ratings,
-              ),
-              socialLinks: editorDetails.socialLinks || {},
-              warningCount: editorDetails.warningCount || 0,
-              createdAt: editorDetails.createdAt,
-              followersCount,
-              followingCount,
-            },
-          };
-        } else console.log('no editor details');
-      }
-      return user;
-    } catch (error) {
-      this._logger.error(`Error fetching user details: ${error.message}`);
-      throw error;
-    }
+    return this._userProfileService.getUserDetails(userId);
   }
 
   async getUsers(currentUserId: Types.ObjectId): Promise<UserBasicInfoDto[]> {
-    try {
-      const { items } = await this._userRepository.find({
-        _id: { $ne: currentUserId },
-      });
-      return items;
-    } catch (error) {
-      this._logger.error(`Error fetching users: ${error.message}`);
-      throw error;
-    }
+    return this._userProfileService.getUsers(currentUserId);
   }
 
   async getUserInfoForChatList(
     userId: Types.ObjectId,
   ): Promise<UserInfoForChatListDto> {
-    try {
-      const userInfo = await this._userRepository.findById(userId, {
-        username: 1,
-        profileImage: 1,
-        isOnline: 1,
-      });
-      if (!userInfo) {
-        throw new NotFoundException('No user info found for your chats');
-      }
-      return userInfo;
-    } catch (error) {
-      this._logger.error(
-        `Error fetching user info for chat list: ${error.message}`,
-      );
-      throw error;
-    }
+    return this._userProfileService.getUserInfoForChatList(userId);
   }
 
-  private _calculateAverageRating(ratings: any[] | undefined): number {
-    if (!ratings || ratings.length === 0) return 0;
+  async updateProfileImage(
+    userId: Types.ObjectId,
+    profileImageUrl: string,
+  ): Promise<UserBaseResponseDto | null> {
+    return this._userProfileService.updateProfileImage(userId, profileImageUrl);
+  }
 
-    const sum = ratings.reduce((acc, curr) => acc + curr.rating, 0);
-    return parseFloat((sum / ratings.length).toFixed(1));
+  async updateProfile(
+    userId: Types.ObjectId,
+    updateProfileDto: UpdateProfileDto,
+  ): Promise<UserProfileResponseDto | null> {
+    return this._userProfileService.updateProfile(userId, updateProfileDto);
   }
 
   async requestForEditor(userId: Types.ObjectId): Promise<SuccessResponseDto> {
@@ -474,21 +354,6 @@ export class UsersService implements IUsersService {
     return this._userQuotationService.deleteQuotation(quotationId);
   }
 
-  async updateProfileImage(
-    userId: Types.ObjectId,
-    profileImageUrl: string,
-  ): Promise<UserBaseResponseDto | null> {
-    try {
-      return await this._userRepository.findOneAndUpdate(
-        { _id: userId },
-        { profileImage: profileImageUrl },
-      );
-    } catch (error) {
-      this._logger.error(`Error updating profile image: ${error.message}`);
-      throw error;
-    }
-  }
-
   async uploadFiles(
     files: Express.Multer.File[],
     folder?: string,
@@ -501,21 +366,6 @@ export class UsersService implements IUsersService {
       return Promise.all(uploadPromises);
     } catch (error) {
       this._logger.error(`Error in uploadFiles: ${error.message}`);
-      throw error;
-    }
-  }
-
-  async updateProfile(
-    userId: Types.ObjectId,
-    updateProfileDto: UpdateProfileDto,
-  ): Promise<UserProfileResponseDto | null> {
-    try {
-      return await this._userRepository.findOneAndUpdate(
-        { _id: userId },
-        { $set: updateProfileDto },
-      );
-    } catch (error) {
-      this._logger.error(`Error updating profile: ${error.message}`);
       throw error;
     }
   }
@@ -756,17 +606,7 @@ export class UsersService implements IUsersService {
   }
 
   async getUser(userId: Types.ObjectId): Promise<UserBasicInfoDto | null> {
-    try {
-      const user = await this._userRepository.findById(userId);
-      if (!user) {
-        this._logger.log('User not found');
-        throw new Error('User not found');
-      }
-      return user;
-    } catch (error) {
-      this._logger.error(`Error getting user: ${error.message}`);
-      throw error;
-    }
+    return this._userProfileService.getUser(userId);
   }
 
   async payForWork(
@@ -1012,7 +852,7 @@ export class UsersService implements IUsersService {
   }
 
   async getUserById(userId: Types.ObjectId): Promise<User | null> {
-    return this._userRepository.findById(userId);
+    return this._userProfileService.findOne({ _id: userId });
   }
 
   async blockUser(userId: Types.ObjectId): Promise<User | null> {
@@ -1076,6 +916,13 @@ export class UsersService implements IUsersService {
   }
 
   async isExistingUser(userId: Types.ObjectId): Promise<boolean> {
-    return this._userRepository.exists({ _id: userId });
+    return this._userProfileService.isExistingUser(userId);
+  }
+
+  private _calculateAverageRating(ratings: any[] | undefined): number {
+    if (!ratings || ratings.length === 0) return 0;
+
+    const sum = ratings.reduce((acc, curr) => acc + curr.rating, 0);
+    return parseFloat((sum / ratings.length).toFixed(1));
   }
 }

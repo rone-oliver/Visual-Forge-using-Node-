@@ -187,7 +187,7 @@ export interface IUsersService {
   findOne(filter: Partial<User>): Promise<User | null>;
   findByUsername(username: string): Promise<User | null>;
   createUser(user: Partial<User>): Promise<User>;
-  updateOne(filter: Partial<User>, update: Partial<User>): Promise<void>;
+  updateOne(filter: Partial<User>, update: Partial<User>): Promise<User | null>;
   updatePassword(userId: Types.ObjectId, password: string): Promise<boolean>; // Covered by ResetPasswordDto
 
   reportUser(
