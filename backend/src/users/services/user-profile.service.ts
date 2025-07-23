@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Inject, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { User } from "../models/user.schema";
-import { FileUploadResultDto, UpdateProfileDto, UserBaseResponseDto, UserBasicInfoDto, UserProfileResponseDto } from "../dto/users.dto";
+import { UpdateProfileDto, UserBaseResponseDto, UserBasicInfoDto, UserProfileResponseDto } from "../dto/users.dto";
 import { Types } from "mongoose";
 import { UserInfoForChatListDto } from "../interfaces/services/users.service.interface";
 import { ICloudinaryService, ICloudinaryServiceToken } from "src/common/cloudinary/interfaces/cloudinary-service.interface";

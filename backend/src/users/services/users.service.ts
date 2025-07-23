@@ -1,16 +1,13 @@
 import {
   Injectable,
   Logger,
-  HttpException,
-  HttpStatus,
   NotFoundException,
   InternalServerErrorException,
   BadRequestException,
   Inject,
-  forwardRef,
   ForbiddenException,
+  forwardRef,
 } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { FilterQuery, Types } from 'mongoose';
 import { GetAllUsersQueryDto } from 'src/admins/dto/admin.dto';
 import {
@@ -23,7 +20,6 @@ import {
   ICloudinaryService,
   ICloudinaryServiceToken,
 } from 'src/common/cloudinary/interfaces/cloudinary-service.interface';
-import { EventTypes } from 'src/common/constants/events.constants';
 import { RelationshipType } from 'src/common/enums/relationships.enum';
 import {
   IHashingService,
@@ -42,20 +38,13 @@ import {
   ITransactionServiceToken,
 } from 'src/common/transaction/interfaces/transaction.service.interface';
 import {
-  PaymentStatus,
   PaymentType,
 } from 'src/common/transaction/models/transaction.schema';
-import { getYouTubeEmbedUrl } from 'src/common/utils/youtube-url.util';
-import {
-  IEditorsService,
-  IEditorsServiceToken,
-} from 'src/editors/interfaces/services/editors.service.interface';
 import { CompletedWorkDto } from 'src/quotation/dtos/quotation.dto';
 import {
   IQuotationService,
   IQuotationServiceToken,
 } from 'src/quotation/interfaces/quotation.service.interface';
-import { Quotation } from 'src/quotation/models/quotation.schema';
 import {
   IReportService,
   IReportServiceToken,
@@ -66,13 +55,8 @@ import {
 } from 'src/timeline/interfaces/timeline.service.interface';
 import { TimelineEvent } from 'src/timeline/models/timeline.schema';
 import {
-  IAdminWalletService,
-  IAdminWalletServiceToken,
-} from 'src/wallet/interfaces/admin-wallet.service.interface';
-import {
   GetPublicWorksQueryDto,
   PaginatedPublicWorksResponseDto,
-  PublicWorkItemDto,
   RateWorkDto,
   UpdateWorkPublicStatusDto,
 } from 'src/works/dtos/works.dto';
@@ -115,13 +99,12 @@ import {
 import { User } from '../models/user.schema';
 import { IUserQuotationService, IUserQuotationServiceToken } from '../interfaces/services/user-quotation.service.interface';
 import { IUserProfileService, IUserProfileServiceToken } from '../interfaces/services/user-profile.service.interface';
+import { IUserEditorService, IUserEditorServiceToken } from '../interfaces/services/user-editor.service.interface';
 
 @Injectable()
 export class UsersService implements IUsersService {
   private readonly _logger = new Logger(UsersService.name);
   constructor(
-    @Inject(forwardRef(() => IEditorsServiceToken))
-    private readonly _editorService: IEditorsService,
     @Inject(IQuotationServiceToken)
     private readonly _quotationService: IQuotationService,
     @Inject(IWorkServiceToken)
@@ -130,9 +113,7 @@ export class UsersService implements IUsersService {
     private readonly _transactionService: ITransactionService,
     @Inject(IReportServiceToken)
     private readonly _reportService: IReportService,
-    @Inject(IAdminWalletServiceToken)
-    private readonly _adminWalletService: IAdminWalletService,
-    @Inject(IRelationshipServiceToken)
+    @Inject(forwardRef(() => IRelationshipServiceToken))
     private readonly _relationshipService: IRelationshipService,
     @Inject(ICloudinaryServiceToken)
     private readonly _cloudinaryService: ICloudinaryService,
@@ -148,6 +129,8 @@ export class UsersService implements IUsersService {
     private readonly _userQuotationService: IUserQuotationService,
     @Inject(IUserProfileServiceToken)
     private readonly _userProfileService: IUserProfileService,
+    @Inject(IUserEditorServiceToken)
+    private readonly _userEditorService: IUserEditorService,
   ) {}
 
   async findOne(filter: Partial<User>): Promise<User | null> {
@@ -218,47 +201,42 @@ export class UsersService implements IUsersService {
     return this._userProfileService.updateProfile(userId, updateProfileDto);
   }
 
+  // User Editor Service methods
   async requestForEditor(userId: Types.ObjectId): Promise<SuccessResponseDto> {
-    try {
-      const user = await this._userRepository.findById(userId, { isEditor: 1 });
-      if (user && !user.isEditor) {
-        this._logger.log(
-          `User ${userId} is not an editor. Proceeding with request.`,
-        );
-        if (await this._editorService.checkEditorRequest(userId)) {
-          this._logger.log(`User ${userId} already has an editor request`);
-          await this._editorService.deleteEditorRequest(userId);
-        }
-        await this._editorService.createEditorRequest(userId);
-        this._logger.log(`Editor request created for user ${userId}`);
-        return { success: true };
-      }
-      this._logger.log(`User ${userId} is already an editor or not found`);
-      return { success: false };
-    } catch (error) {
-      this._logger.error(`Error requesting editor role: ${error.message}`);
-      return { success: false };
-    }
+    return this._userEditorService.requestForEditor(userId);
   }
 
   async getEditorRequestStatus(
     userId: Types.ObjectId,
   ): Promise<EditorRequestStatusResponseDto> {
-    try {
-      const request = await this._editorService.findEditorRequest(userId);
-      if (request) {
-        this._logger.log(
-          `Editor request status for user ${userId}: ${request.status}`,
-        );
-        return { status: request.status };
-      }
-      return { status: null };
-    } catch (error) {
-      this._logger.error(
-        `Error fetching editor request status: ${error.message}`,
-      );
-      throw error;
-    }
+    return this._userEditorService.getEditorRequestStatus(userId);
+  }
+
+  async rateEditor(
+    userId: Types.ObjectId,
+    rateEditorDto: RateEditorDto,
+  ): Promise<SuccessResponseDto> {
+    return this._userEditorService.rateEditor(userId, rateEditorDto);
+  }
+
+  async getPublicEditors(
+    params: GetPublicEditorsDto,
+  ): Promise<PaginatedPublicEditorsDto> {
+    return this._userEditorService.getPublicEditors(params);
+  }
+
+  async getEditorPublicProfile(
+    editorId: string,
+    currentUserId?: string,
+  ): Promise<EditorPublicProfileResponseDto> {
+    return this._userEditorService.getPublicEditorProfile(editorId, currentUserId);
+  }
+
+  async getCurrentEditorRating(
+    userId: Types.ObjectId,
+    editorId: string,
+  ): Promise<UserRatingForEditorDto | null> {
+    return this._userEditorService.getCurrentEditorRating(userId, editorId);
   }
 
   async getTransactionHistory(
@@ -315,16 +293,6 @@ export class UsersService implements IUsersService {
     params: GetQuotationsParamsDto,
   ): Promise<PaginatedQuotationsResponseDto> {
     return this._userQuotationService.getQuotations(userId, params);
-  }
-
-  private _calculateQuotationAmounts(estimatedBudget: number): {
-    advanceAmount: number;
-    balanceAmount: number;
-  } {
-    const advancePercentage = 0.4;
-    const advanceAmount = Math.round(estimatedBudget * advancePercentage);
-    const balanceAmount = estimatedBudget - advanceAmount;
-    return { advanceAmount, balanceAmount };
   }
 
   async createQuotation(
@@ -413,91 +381,6 @@ export class UsersService implements IUsersService {
       return this._workService.rateWork(workId, rateWorkDto);
     } catch (error) {
       this._logger.error(`Error rating work: ${error.message}`);
-      throw error;
-    }
-  }
-
-  async rateEditor(
-    userId: Types.ObjectId,
-    rateEditorDto: RateEditorDto,
-  ): Promise<SuccessResponseDto> {
-    try {
-      this._logger.log(
-        'rating editor dto from service:',
-        rateEditorDto.editorId,
-        rateEditorDto.rating,
-        rateEditorDto.feedback,
-        userId,
-      );
-      const editorObjectId = new Types.ObjectId(rateEditorDto.editorId);
-
-      await this._editorService.updateEditor(editorObjectId, {
-        $pull: { ratings: { userId: userId } },
-      });
-
-      const result = await this._editorService.updateEditor(editorObjectId, {
-        $push: {
-          ratings: {
-            rating: rateEditorDto.rating,
-            feedback: rateEditorDto.feedback,
-            userId,
-          },
-        },
-      });
-
-      if (result) {
-        this._logger.log('rating editor success');
-        return { success: true };
-      } else {
-        this._logger.error(
-          'rating editor failed: Editor not found or not updated',
-        );
-        throw new NotFoundException(
-          'Editor not found or rating could not be updated.',
-        );
-      }
-    } catch (error) {
-      this._logger.error('rating editor failed', error);
-      throw new InternalServerErrorException('Failed to rate editor');
-    }
-  }
-
-  async getCurrentEditorRating(
-    userId: Types.ObjectId,
-    editorId: string,
-  ): Promise<UserRatingForEditorDto | null> {
-    try {
-      const editor = await this._editorService.getEditorRating(
-        new Types.ObjectId(editorId),
-      );
-      if (editor?.ratings && editor.ratings.length > 0) {
-        this._logger.log(
-          `Editor ratings for user ${editorId}: ${editor.ratings}`,
-        );
-        const specificRating = editor.ratings.find((rating) =>
-          rating.userId.equals(userId),
-        );
-        if (specificRating) {
-          this._logger.log(
-            `Current rating of user ${userId} on editor ${editorId}: ${specificRating.rating}`,
-          );
-          return {
-            rating: specificRating.rating,
-            feedback: specificRating.feedback,
-            userId: specificRating.userId.toString(), // Convert ObjectId to string
-          };
-        }
-        this._logger.log(
-          `No specific rating found for user ${userId} on editor ${editorId}`,
-        );
-        return null;
-      }
-      this._logger.log(`No ratings found for editor ${editorId}`);
-      return null;
-    } catch (error) {
-      this._logger.error(
-        `Error getting current editor rating: ${error.message}`,
-      );
       throw error;
     }
   }
@@ -665,146 +548,6 @@ export class UsersService implements IUsersService {
     return { success: true, message: 'Bid cancelled successfully' };
   }
 
-  async getEditorPublicProfile(
-    editorId: string,
-    currentUserId?: string,
-  ): Promise<EditorPublicProfileResponseDto> {
-    if (!Types.ObjectId.isValid(editorId)) {
-      this._logger.log(`Invalid editor ID format: ${editorId}`);
-      throw new BadRequestException('Invalid editor ID format.');
-    }
-
-    const editorObjectId = new Types.ObjectId(editorId);
-
-    const editor =
-      await this._editorService.getEditorUserCombined(editorObjectId);
-
-    if (!editor || !editor.userId) {
-      this._logger.log(`Editor with user ID ${editorId} not found.`);
-      throw new NotFoundException(`Editor with user ID ${editorId} not found.`);
-    }
-
-    const user = editor.userId as unknown as User;
-
-    const [followersCount, followingCount, isFollowing] = await Promise.all([
-      this._relationshipService
-        .getFollowers({ userId: editorObjectId, limit: 0, skip: 0 })
-        .then((f) => f.length),
-      this._relationshipService
-        .getFollowing({ userId: editorObjectId, limit: 0, skip: 0 })
-        .then((f) => f.length),
-      currentUserId && Types.ObjectId.isValid(currentUserId)
-        ? this._relationshipService.isFollowing(
-            new Types.ObjectId(currentUserId),
-            editorObjectId,
-          )
-        : Promise.resolve(false),
-    ]);
-
-    const averageRating = this._calculateAverageRating(editor.ratings);
-
-    const sharedTutorials = (editor.sharedTutorials || [])
-      .map(getYouTubeEmbedUrl)
-      .filter((url) => url !== '');
-
-    return {
-      _id: user._id,
-      username: user.username,
-      fullname: user.fullname,
-      profileImage: user.profileImage || '',
-      score: editor.score || 0,
-      averageRating,
-      categories: editor.category || [],
-      about: user.about || '',
-      sharedTutorials,
-      tipsAndTricks: editor.tipsAndTricks || '',
-      socialLinks: editor.socialLinks || {},
-      followersCount,
-      followingCount,
-      isFollowing,
-    };
-  }
-
-  async getPublicEditors(
-    params: GetPublicEditorsDto,
-  ): Promise<PaginatedPublicEditorsDto> {
-    let { search, category, rating, page = 1, limit = 10 } = params;
-    limit = parseInt(limit.toString());
-    page = parseInt(page.toString());
-    rating = rating ? parseInt(rating.toString()) : undefined;
-
-    const skip = (page - 1) * limit;
-
-    const matchStage: any = { 'user.isVerified': true };
-
-    if (search) {
-      matchStage['$or'] = [
-        { 'user.fullname': { $regex: search, $options: 'i' } },
-        { 'user.username': { $regex: search, $options: 'i' } },
-      ];
-    }
-
-    if (category) {
-      matchStage.category = { $regex: category, $options: 'i' };
-    }
-
-    const pipeline: any[] = [
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'userId',
-          foreignField: '_id',
-          as: 'user',
-        },
-      },
-      { $unwind: '$user' },
-      { $match: matchStage },
-      {
-        $addFields: {
-          averageRating: { $ifNull: [{ $avg: '$ratings.rating' }, 0] },
-        },
-      },
-    ];
-
-    if (rating) {
-      pipeline.push({ $match: { averageRating: { $gte: rating } } });
-    }
-
-    pipeline.push({
-      $facet: {
-        data: [
-          { $skip: skip },
-          { $limit: limit },
-          {
-            $project: {
-              _id: '$user._id',
-              fullname: '$user.fullname',
-              username: '$user.username',
-              profileImage: '$user.profileImage',
-              category: '$category',
-              score: '$score',
-              averageRating: '$averageRating',
-              isVerified: '$user.isVerified',
-            },
-          },
-        ],
-        total: [{ $count: 'count' }],
-      },
-    });
-
-    const result = await this._editorService.getPublicEditors(pipeline);
-
-    const data = result[0]?.data || [];
-    const total = result[0]?.total.length > 0 ? result[0].total[0].count : 0;
-
-    return {
-      data,
-      total,
-      page,
-      limit,
-    };
-  }
-
   async reportUser(
     reportDto: ReportUserDto,
     reporterId: string,
@@ -917,12 +660,5 @@ export class UsersService implements IUsersService {
 
   async isExistingUser(userId: Types.ObjectId): Promise<boolean> {
     return this._userProfileService.isExistingUser(userId);
-  }
-
-  private _calculateAverageRating(ratings: any[] | undefined): number {
-    if (!ratings || ratings.length === 0) return 0;
-
-    const sum = ratings.reduce((acc, curr) => acc + curr.rating, 0);
-    return parseFloat((sum / ratings.length).toFixed(1));
   }
 }

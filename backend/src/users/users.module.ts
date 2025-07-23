@@ -23,6 +23,8 @@ import { IUserQuotationServiceToken } from './interfaces/services/user-quotation
 import { UserQuotationService } from './services/user-quotation.service';
 import { IUserProfileServiceToken } from './interfaces/services/user-profile.service.interface';
 import { UserProfileService } from './services/user-profile.service';
+import { IUserEditorServiceToken } from './interfaces/services/user-editor.service.interface';
+import { UserEditorService } from './services/user-editor.service';
 
 @Module({
   controllers: [UsersController],
@@ -38,6 +40,10 @@ import { UserProfileService } from './services/user-profile.service';
     {
       provide: IUserProfileServiceToken,
       useClass: UserProfileService,
+    },
+    {
+      provide: IUserEditorServiceToken,
+      useClass: UserEditorService,
     },
     {
       provide: IUserRepositoryToken,
