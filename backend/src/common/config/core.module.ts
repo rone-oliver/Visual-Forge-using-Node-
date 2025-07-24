@@ -53,6 +53,6 @@ export class CoreModule implements NestModule {
         { path: 'auth/refresh', method: RequestMethod.GET },
         { path: 'auth/google', method: RequestMethod.POST },
       )
-      .forRoutes({ path: '*', method: RequestMethod.ALL }); // Apply to all routes
+      .forRoutes({ path: '*', method: RequestMethod.ALL });
   }
 }

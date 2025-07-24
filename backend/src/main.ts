@@ -21,7 +21,10 @@ async function bootstrap() {
     }),
   );
   app.enableCors({
-    origin: process.env.CORS_ORIGIN,
+    origin: [
+      process.env.DEVELOPMENT_CORS_ORIGIN,
+      process.env.PRODUCTION_CORS_ORIGIN,
+    ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
     allowedHeaders: 'Content-Type, Accept, Authorization',
@@ -35,9 +38,8 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
 
-  // This line sets up the Swagger UI endpoint:
   SwaggerModule.setup('api-docs', app, document);
 
-  await app.listen(process.env.BACKEND_PORT ?? 3000);
+  await app.listen(process.env.BACKEND_PORT ?? 5000);
 }
 bootstrap();

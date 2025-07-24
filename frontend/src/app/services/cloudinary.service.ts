@@ -8,7 +8,7 @@ import { UserService } from './user/user.service';
   providedIn: 'root',
 })
 export class CloudinaryService {
-  private readonly _cloudinaryUrl = `https://api.cloudinary.com/v1_1/${environment.cloudinary.cloudName}/image/upload`;
+  private readonly _cloudinaryUrl = `https://api.cloudinary.com/v1_1/${environment.CLOUDINARY.CLOUD_NAME}/image/upload`;
 
   // Services
   private readonly _http = inject(HttpClient);
@@ -21,7 +21,7 @@ export class CloudinaryService {
       switchMap((signature) => {
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('api_key', environment.cloudinary.CLOUDINARY_API_KEY);
+        formData.append('api_key', environment.CLOUDINARY.API_KEY);
         formData.append('signature', signature.signature);
         formData.append('timestamp', signature.timestamp.toString());
         formData.append('upload_preset', signature.uploadPreset)
