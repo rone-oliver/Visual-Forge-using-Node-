@@ -33,6 +33,7 @@ import { TimelineModule } from './timeline/timeline.module';
 import { UsersModule } from './users/users.module';
 import { WalletModule } from './wallet/wallet.module';
 import { WorksModule } from './works/works.module';
+import { RedisModule } from './common/redis/redis.module';
 
 @Module({
   imports: [
@@ -94,6 +95,7 @@ import { WorksModule } from './works/works.module';
     MailModule,
     HashingModule,
     TimelineModule,
+    RedisModule,
   ],
   controllers: [AppController, UsersAuthController],
   providers: [
