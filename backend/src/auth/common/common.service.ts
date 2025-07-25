@@ -25,6 +25,9 @@ import { Language, User } from 'src/users/models/user.schema';
 import { UserType } from './dtos/common.dto';
 import { ICommonService } from './interfaces/common-service.interface';
 import { RedisService } from 'src/common/redis/redis.service';
+import { IEditorsService, IEditorsServiceToken } from 'src/editors/interfaces/services/editors.service.interface';
+import { JwtPayload } from 'src/common/interfaces/jwt-payload.interface';
+import { Role } from 'src/common/enums/role.enum';
 
 @Injectable()
 export class CommonService implements ICommonService {
@@ -35,7 +38,10 @@ export class CommonService implements ICommonService {
     @InjectModel(Preference.name)
     private _preferenceModel: Model<PreferenceDocument>,
     private _configService: ConfigService,
-    @Inject(IUsersServiceToken) private readonly _userService: IUsersService,
+    @Inject(IUsersServiceToken)
+    private readonly _userService: IUsersService,
+    @Inject(IEditorsServiceToken)
+    private readonly _editorService: IEditorsService,
     private _jwtService: JwtService,
     private readonly _redisService: RedisService,
   ) {
@@ -172,20 +178,15 @@ export class CommonService implements ICommonService {
         user = await this._userService.updateUserGoogleId(user._id, googleId);
       }
       if (user) {
-        const tokens = await this._generateTokens(
+        const { accessToken, refreshToken } = await this.generateTokens(
           user,
-          user.isEditor ? 'Editor' : 'User',
+          user.isEditor ? Role.EDITOR : Role.USER,
         );
 
-        res.cookie('userRefreshToken', tokens.refreshToken, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'strict',
-          maxAge: 7 * 24 * 60 * 60 * 1000,
-        });
+        this.setRefreshTokenCookie(res, refreshToken, Role.USER);
 
         return {
-          accessToken: tokens.accessToken,
+          accessToken,
           message: 'Google sign-in successful',
         };
       } else {
@@ -197,35 +198,75 @@ export class CommonService implements ICommonService {
   }
 
   // Helper function to generate JWT tokens
-  private async _generateTokens(user: User, role: 'User' | 'Editor') {
+  async generateTokens(
+    user: User,
+    role: Role
+  ) {
+    this._logger.debug('User Role: ', role);
+
+    const payload: JwtPayload = {
+      userId: user._id.toHexString(),
+      email: user.email,
+      role,
+    };
+
+    if (role === Role.EDITOR) {
+      const editorDetails = await this._editorService.findByUserId(user._id);
+      if (editorDetails) {
+        payload.isSuspended = editorDetails.isSuspended;
+        payload.suspendedUntil = editorDetails.suspendedUntil;
+        payload.warningCount = editorDetails.warningCount;
+      }
+    }
+
     const [accessToken, refreshToken] = await Promise.all([
-      this._jwtService.signAsync(
-        {
-          userId: user._id,
-          // username: user.username,
-          email: user.email,
-          role,
-        },
-        {
-          secret: this._configService.get<string>('JWT_SECRET'),
-          expiresIn: this._configService.get<string>('ACCESS_TOKEN_EXPIRATION'),
-        },
-      ),
-      this._jwtService.signAsync(
-        {
-          userId: user._id,
-          // username: user.username,
-          email: user.email,
-          role,
-        },
-        {
-          secret: this._configService.get<string>('JWT_SECRET'),
-          expiresIn: this._configService.get<string>('REFRESH_TOKEN_EXPIRATION'),
-        },
-      ),
+      this._jwtService.signAsync(payload, {
+        secret: this._configService.get<string>('JWT_SECRET'),
+        expiresIn: this._configService.get<string>('ACCESS_TOKEN_EXPIRATION'),
+      }),
+      this._jwtService.signAsync(payload, {
+        secret: this._configService.get<string>('JWT_SECRET'),
+        expiresIn: this._configService.get<string>('REFRESH_TOKEN_EXPIRATION'),
+      }),
     ]);
 
     return { accessToken, refreshToken };
+  }
+
+  setRefreshTokenCookie(
+    response: Response,
+    refreshToken: string,
+    userType: Omit<Role, Role.EDITOR>,
+  ) {
+    const cookieName = `${userType.toLowerCase()}RefreshToken`;
+    const maxAge = this._parseTimeToMs(
+      this._configService.getOrThrow<string>('REFRESH_TOKEN_EXPIRATION'),
+    );
+
+    response.cookie(cookieName, refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge,
+    });
+  }
+
+  private _parseTimeToMs(timeString: string): number {
+    const unit = timeString.charAt(timeString.length - 1);
+    const value = parseInt(timeString.slice(0, -1));
+
+    switch (unit) {
+      case 's':
+        return value * 1000;
+      case 'm':
+        return value * 60 * 1000;
+      case 'h':
+        return value * 60 * 60 * 1000;
+      case 'd':
+        return value * 24 * 60 * 60 * 1000;
+      default:
+        return value;
+    }
   }
 
   private _convertToLanguageEnum(
@@ -249,7 +290,7 @@ export class CommonService implements ICommonService {
 
   private async _blacklistToken(token: string): Promise<void> {
     try {
-      const decoded: any = this._jwtService.decode(token);
+      const decoded: JwtPayload = this._jwtService.decode(token);
       if (decoded && decoded.exp) {
         const ttl = decoded.exp - Math.floor(Date.now() / 1000);
         if (ttl > 0) {

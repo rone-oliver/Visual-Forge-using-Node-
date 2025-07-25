@@ -5,7 +5,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { PassportModule } from '@nestjs/passport';
 import { Otp, OtpSchema } from 'src/auth/users-auth/models/otp.schema';
 import { HashingModule } from 'src/common/hashing/hashing.module';
-import { EditorsModule } from 'src/editors/editors.module';
 import { MailModule } from 'src/mail/mail.module';
 import { UsersModule } from 'src/users/users.module';
 
@@ -16,6 +15,7 @@ import { OtpService } from './otp/otp.service';
 import { OtpRepository } from './repositories/otp.repository';
 import { UsersAuthController } from './users-auth.controller';
 import { UsersAuthService } from './users-auth.service';
+import { AuthModule } from '../auth.module';
 
 @Module({
   imports: [
@@ -24,9 +24,9 @@ import { UsersAuthService } from './users-auth.service';
     UsersModule,
     PassportModule,
     ConfigModule,
-    EditorsModule,
     MailModule,
     HashingModule,
+    AuthModule,
   ],
   controllers: [UsersAuthController],
   providers: [

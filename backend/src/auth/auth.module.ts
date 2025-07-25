@@ -14,6 +14,7 @@ import { RolesGuard } from './guards/role.guard';
 import { ITokenRefreshServiceToken } from './token-refresh/interfaces/tokenRefresh-service.interface';
 import { TokenRefreshController } from './token-refresh/token-refresh.controller';
 import { TokenRefreshService } from './token-refresh/token-refresh.service';
+import { EditorsModule } from 'src/editors/editors.module';
 
 @Module({
   controllers: [AuthController, TokenRefreshController],
@@ -34,7 +35,7 @@ import { TokenRefreshService } from './token-refresh/token-refresh.service';
     MongooseModule.forFeature([
       { name: Preference.name, schema: PreferenceSchema },
     ]),
-    UsersModule,
+    UsersModule, EditorsModule,
   ],
 })
 export class AuthModule {}

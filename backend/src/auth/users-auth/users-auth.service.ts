@@ -6,17 +6,11 @@ import {
   HttpException,
   Inject,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 import {
   IHashingService,
   IHashingServiceToken,
 } from 'src/common/hashing/interfaces/hashing.service.interface';
-import {
-  IEditorsService,
-  IEditorsServiceToken,
-} from 'src/editors/interfaces/services/editors.service.interface';
 import { MailService } from 'src/mail/mail.service';
 import {
   IUsersService,
@@ -29,6 +23,8 @@ import {
   IOtpServiceToken,
 } from './interfaces/otp.service.interface';
 import { IUsersAuthService } from './interfaces/usersAuth-service.interface';
+import { ICommonService, ICommonServiceToken } from '../common/interfaces/common-service.interface';
+import { Role } from 'src/common/enums/role.enum';
 
 @Injectable()
 export class UsersAuthService implements IUsersAuthService {
@@ -36,19 +32,13 @@ export class UsersAuthService implements IUsersAuthService {
 
   constructor(
     @Inject(IUsersServiceToken) private readonly _usersService: IUsersService,
-    private _jwtService: JwtService,
-    private _configService: ConfigService,
-    @Inject(IEditorsServiceToken)
-    private readonly _editorService: IEditorsService,
     @Inject(IOtpServiceToken) private readonly _otpService: IOtpService,
     @Inject(IHashingServiceToken)
     private readonly _hashingService: IHashingService,
+    @Inject(ICommonServiceToken)
+    private readonly _commonService: ICommonService,
     private readonly _mailService: MailService,
   ) {}
-
-  setRefreshTokenCookie(response: Response, refreshToken: string) {
-    this._setCookies(response, refreshToken);
-  }
 
   async login(
     username: string,
@@ -71,12 +61,12 @@ export class UsersAuthService implements IUsersAuthService {
       if (user.isBlocked) {
         throw new UnauthorizedException('User is blocked');
       }
-      const tokens = await this._generateTokens(
+      const { accessToken, refreshToken } = await this._commonService.generateTokens(
         user,
-        user.isEditor ? 'Editor' : 'User',
+        user.isEditor ? Role.EDITOR : Role.USER,
       );
-      this._setCookies(response, tokens.refreshToken);
-      return { user, accessToken: tokens.accessToken };
+      this._commonService.setRefreshTokenCookie(response, refreshToken, Role.USER);
+      return { user, accessToken };
     } catch (error) {
       this._logger.error(`Login failed for user ${username}: ${error.message}`);
       throw error;
@@ -240,50 +230,5 @@ export class UsersAuthService implements IUsersAuthService {
       this._logger.error(`Error resetting password: ${error.message}`);
       throw error;
     }
-  }
-
-  // Helper
-  private async _generateTokens(user: User, role: 'User' | 'Editor') {
-    this._logger.debug('User Role: ', role);
-
-    let payload: any = {
-      userId: user._id,
-      email: user.email,
-      role,
-    };
-
-    if (role === 'Editor') {
-      const editorDetails = await this._editorService.findByUserId(user._id);
-      if (editorDetails) {
-        payload = {
-          ...payload,
-          isSuspended: editorDetails.isSuspended,
-          suspendedUntil: editorDetails.suspendedUntil,
-          warningCount: editorDetails.warningCount,
-        };
-      }
-    }
-
-    const [accessToken, refreshToken] = await Promise.all([
-      this._jwtService.signAsync(payload, {
-        secret: this._configService.get<string>('JWT_SECRET'),
-        expiresIn: this._configService.get<string>('ACCESS_TOKEN_EXPIRATION'),
-      }),
-      this._jwtService.signAsync(payload, {
-        secret: this._configService.get<string>('JWT_SECRET'),
-        expiresIn: this._configService.get<string>('REFRESH_TOKEN_EXPIRATION'),
-      }),
-    ]);
-
-    return { accessToken, refreshToken };
-  }
-
-  private _setCookies(response: Response, refreshToken: string) {
-    response.cookie('userRefreshToken', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
   }
 }

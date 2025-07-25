@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
 import { Response } from 'express';
 import {
   IAdminsService,
@@ -71,9 +70,6 @@ export class AdminsAuthService implements IAdminsAuthService {
       sameSite: 'strict',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-  }
-  setRefreshTokenCookie(response: Response, refreshToken: string) {
-    this._setCookies(response, refreshToken);
   }
 
   async checkPassword(
