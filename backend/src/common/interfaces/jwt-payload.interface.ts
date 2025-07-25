@@ -1,7 +1,10 @@
+import { Role } from "../enums/role.enum";
+
 export interface JwtPayload {
     userId: string;
-    email: string;
-    role: 'User' | 'Editor' | 'Admin';
+    email?: string;
+    username?: string;
+    role: Role;
 
     // Editor-specific fields
     isSuspended?: boolean;

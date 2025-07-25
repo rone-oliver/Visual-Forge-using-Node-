@@ -28,6 +28,7 @@ import { RedisService } from 'src/common/redis/redis.service';
 import { IEditorsService, IEditorsServiceToken } from 'src/editors/interfaces/services/editors.service.interface';
 import { JwtPayload } from 'src/common/interfaces/jwt-payload.interface';
 import { Role } from 'src/common/enums/role.enum';
+import { Admin } from 'src/admins/models/admin.schema';
 
 @Injectable()
 export class CommonService implements ICommonService {
@@ -199,16 +200,22 @@ export class CommonService implements ICommonService {
 
   // Helper function to generate JWT tokens
   async generateTokens(
-    user: User,
+    user: User | Admin,
     role: Role
-  ) {
-    this._logger.debug('User Role: ', role);
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+    this._logger.debug('Generating tokens for role: ', role);
 
     const payload: JwtPayload = {
       userId: user._id.toHexString(),
-      email: user.email,
       role,
     };
+
+    if ('email' in user) {
+      payload.email = user.email;
+    }
+    if ('username' in user) {
+      payload.username = user.username;
+    }
 
     if (role === Role.EDITOR) {
       const editorDetails = await this._editorService.findByUserId(user._id);

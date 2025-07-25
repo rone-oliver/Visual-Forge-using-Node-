@@ -7,9 +7,15 @@ import { HashingModule } from 'src/common/hashing/hashing.module';
 import { AdminsAuthController } from './admins-auth.controller';
 import { AdminsAuthService } from './admins-auth.service';
 import { IAdminsAuthServiceToken } from './interfaces/adminsAuth-service.interface';
+import { AuthModule } from '../auth.module';
 
 @Module({
-  imports: [AdminsModule, PassportModule, HashingModule],
+  imports: [
+    AdminsModule,
+    PassportModule,
+    HashingModule,
+    AuthModule,
+  ],
   providers: [
     {
       provide: IAdminsAuthServiceToken,

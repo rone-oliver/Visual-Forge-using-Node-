@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 
 import { UserType } from '../dtos/common.dto';
 import { User } from 'src/users/models/user.schema';
+import { Admin } from 'src/admins/models/admin.schema';
 import { Role } from 'src/common/enums/role.enum';
 
 export const ICommonServiceToken = Symbol('ICommonService');
@@ -18,7 +19,7 @@ export interface ICommonService {
     credential: string,
     response: Response,
   ): Promise<{ accessToken: string; message: string }>;
-  generateTokens(user: User, role: Role): Promise<{ accessToken: string; refreshToken: string }>;
+  generateTokens(user: User | Admin, role: Role): Promise<{ accessToken: string; refreshToken: string }>;
   setRefreshTokenCookie(
     response: Response,
     refreshToken: string,

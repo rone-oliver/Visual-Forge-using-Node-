@@ -4,8 +4,6 @@ import {
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 import {
   IAdminsService,
@@ -19,64 +17,26 @@ import {
 
 import { AdminLoginResponseDto } from './dtos/admins-auth.dto';
 import { IAdminsAuthService } from './interfaces/adminsAuth-service.interface';
+import { ICommonService, ICommonServiceToken } from '../common/interfaces/common-service.interface';
+import { Role } from 'src/common/enums/role.enum';
 
 @Injectable()
 export class AdminsAuthService implements IAdminsAuthService {
+  private readonly _logger = new Logger(AdminsAuthService.name);
+
   constructor(
     @Inject(IAdminsServiceToken)
     private readonly _adminsService: IAdminsService,
     @Inject(IHashingServiceToken)
     private readonly _hashingService: IHashingService,
-    private _jwtService: JwtService,
-    private _configService: ConfigService,
+    @Inject(ICommonServiceToken)
+    private readonly _commonService: ICommonService,
   ) {}
-  private readonly _logger = new Logger(AdminsAuthService.name);
-  // Helper
-  private async generateTokens(admin: Admin) {
-    const [accessToken, refreshToken] = await Promise.all([
-      this._jwtService.signAsync(
-        {
-          userId: admin._id,
-          username: admin.username,
-          role: 'Admin',
-        },
-        {
-          secret: this._configService.get<string>('JWT_SECRET'),
-          expiresIn: this._configService.get<string>('ACCESS_TOKEN_EXPIRATION'),
-        },
-      ),
-      this._jwtService.signAsync(
-        {
-          userId: admin._id,
-          username: admin.username,
-          role: 'Admin',
-        },
-        {
-          secret: this._configService.get<string>('JWT_SECRET'),
-          expiresIn: this._configService.get<string>(
-            'REFRESH_TOKEN_EXPIRATION',
-          ),
-        },
-      ),
-    ]);
-
-    return { accessToken, refreshToken };
-  }
-
-  private _setCookies(response: Response, refreshToken: string) {
-    response.cookie('adminRefreshToken', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-  }
 
   async checkPassword(
     password: string,
     hashPassword: string,
   ): Promise<boolean> {
-    // return await bcrypt.compare(password, hashPassword);
     return await this._hashingService.compare(password, hashPassword);
   }
 
@@ -96,10 +56,20 @@ export class AdminsAuthService implements IAdminsAuthService {
       );
       if (!isPasswordValid) {
         throw new UnauthorizedException('Invalid password');
-      }
-      const tokens = await this.generateTokens(admin);
-      this._setCookies(response, tokens.refreshToken);
-      return { admin, accessToken: tokens.accessToken };
+      };
+
+      const { accessToken, refreshToken } = await this._commonService.generateTokens(
+        admin,
+        Role.ADMIN
+      );
+
+      this._commonService.setRefreshTokenCookie(
+        response,
+        refreshToken,
+        Role.ADMIN
+      );
+
+      return { admin, accessToken };
     } catch (error) {
       this._logger.error(
         `Login failed for admin ${username}: ${error.message}`,
@@ -107,6 +77,7 @@ export class AdminsAuthService implements IAdminsAuthService {
       throw error;
     }
   }
+
   async register(registerData: {
     username: string;
     password: string;
