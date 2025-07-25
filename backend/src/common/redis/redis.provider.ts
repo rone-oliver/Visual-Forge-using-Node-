@@ -6,6 +6,7 @@ export const REDIS_CLIENT_TOKEN = Symbol('REDIS_CLIENT');
 
 export const redisProvider = {
   provide: REDIS_CLIENT_TOKEN,
+  inject: [ConfigService],
   useFactory: async (configService: ConfigService) => {
     const logger = new Logger('Redis');
     const client = createClient({

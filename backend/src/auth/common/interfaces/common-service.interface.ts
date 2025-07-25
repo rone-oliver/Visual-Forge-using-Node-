@@ -1,11 +1,11 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 
 import { UserType } from '../dtos/common.dto';
 
 export const ICommonServiceToken = Symbol('ICommonService');
 
 export interface ICommonService {
-  logoutHandler(response: Response, userType: UserType): Promise<void>;
+  logoutHandler(req: Request, response: Response, userType: UserType): Promise<void>;
   updateThemePreference(
     res: Response,
     userId: string,

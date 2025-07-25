@@ -32,6 +32,8 @@ import { IUsersAuthService } from './interfaces/usersAuth-service.interface';
 
 @Injectable()
 export class UsersAuthService implements IUsersAuthService {
+  private readonly _logger = new Logger(UsersAuthService.name);
+
   constructor(
     @Inject(IUsersServiceToken) private readonly _usersService: IUsersService,
     private _jwtService: JwtService,
@@ -43,52 +45,7 @@ export class UsersAuthService implements IUsersAuthService {
     private readonly _hashingService: IHashingService,
     private readonly _mailService: MailService,
   ) {}
-  private readonly _logger = new Logger(UsersAuthService.name);
 
-  // Helper
-  private async _generateTokens(user: User, role: 'User' | 'Editor') {
-    this._logger.debug('User Role: ', role);
-
-    let payload: any = {
-      userId: user._id,
-      email: user.email,
-      role,
-    };
-
-    if (role === 'Editor') {
-      const editorDetails = await this._editorService.findByUserId(user._id);
-      if (editorDetails) {
-        payload = {
-          ...payload,
-          isSuspended: editorDetails.isSuspended,
-          suspendedUntil: editorDetails.suspendedUntil,
-          warningCount: editorDetails.warningCount,
-        };
-      }
-    }
-
-    const [accessToken, refreshToken] = await Promise.all([
-      this._jwtService.signAsync(payload, {
-        secret: this._configService.get<string>('JWT_SECRET'),
-        expiresIn: this._configService.get<string>('ACCESS_TOKEN_EXPIRATION'),
-      }),
-      this._jwtService.signAsync(payload, {
-        secret: this._configService.get<string>('JWT_SECRET'),
-        expiresIn: this._configService.get<string>('REFRESH_TOKEN_EXPIRATION'),
-      }),
-    ]);
-
-    return { accessToken, refreshToken };
-  }
-
-  private _setCookies(response: Response, refreshToken: string) {
-    response.cookie('userRefreshToken', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-  }
   setRefreshTokenCookie(response: Response, refreshToken: string) {
     this._setCookies(response, refreshToken);
   }
@@ -283,5 +240,50 @@ export class UsersAuthService implements IUsersAuthService {
       this._logger.error(`Error resetting password: ${error.message}`);
       throw error;
     }
+  }
+
+  // Helper
+  private async _generateTokens(user: User, role: 'User' | 'Editor') {
+    this._logger.debug('User Role: ', role);
+
+    let payload: any = {
+      userId: user._id,
+      email: user.email,
+      role,
+    };
+
+    if (role === 'Editor') {
+      const editorDetails = await this._editorService.findByUserId(user._id);
+      if (editorDetails) {
+        payload = {
+          ...payload,
+          isSuspended: editorDetails.isSuspended,
+          suspendedUntil: editorDetails.suspendedUntil,
+          warningCount: editorDetails.warningCount,
+        };
+      }
+    }
+
+    const [accessToken, refreshToken] = await Promise.all([
+      this._jwtService.signAsync(payload, {
+        secret: this._configService.get<string>('JWT_SECRET'),
+        expiresIn: this._configService.get<string>('ACCESS_TOKEN_EXPIRATION'),
+      }),
+      this._jwtService.signAsync(payload, {
+        secret: this._configService.get<string>('JWT_SECRET'),
+        expiresIn: this._configService.get<string>('REFRESH_TOKEN_EXPIRATION'),
+      }),
+    ]);
+
+    return { accessToken, refreshToken };
+  }
+
+  private _setCookies(response: Response, refreshToken: string) {
+    response.cookie('userRefreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
   }
 }

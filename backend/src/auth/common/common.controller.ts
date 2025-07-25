@@ -50,7 +50,7 @@ export class AuthController {
         'Missing or invalid "role" query parameter.',
       );
     }
-    await this._commonService.logoutHandler(res, userType);
+    await this._commonService.logoutHandler(req, res, userType);
   }
 
   @Put('theme-preference')

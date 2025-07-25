@@ -9,7 +9,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { OAuth2Client } from 'google-auth-library';
 import { Model, Types } from 'mongoose';
 import {
@@ -24,36 +24,49 @@ import { Language, User } from 'src/users/models/user.schema';
 
 import { UserType } from './dtos/common.dto';
 import { ICommonService } from './interfaces/common-service.interface';
+import { RedisService } from 'src/common/redis/redis.service';
 
 @Injectable()
 export class CommonService implements ICommonService {
-  private googleClient: OAuth2Client;
-  private readonly logger = new Logger(CommonService.name);
+  private readonly _logger = new Logger(CommonService.name);
+  private _googleClient: OAuth2Client;
 
   constructor(
     @InjectModel(Preference.name)
-    private preferenceModel: Model<PreferenceDocument>,
-    private configService: ConfigService,
-    @Inject(IUsersServiceToken) private readonly userService: IUsersService,
-    private jwtService: JwtService,
+    private _preferenceModel: Model<PreferenceDocument>,
+    private _configService: ConfigService,
+    @Inject(IUsersServiceToken) private readonly _userService: IUsersService,
+    private _jwtService: JwtService,
+    private readonly _redisService: RedisService,
   ) {
-    this.googleClient = new OAuth2Client(
-      this.configService.get<string>('GOOGLE_CLIENT_ID'),
+    this._googleClient = new OAuth2Client(
+      this._configService.get<string>('GOOGLE_CLIENT_ID'),
     );
   }
-  async logoutHandler(response: Response, userType: UserType) {
+  async logoutHandler(req: Request, response: Response, userType: UserType) {
     const tokenName = userType.toLowerCase();
     const cookieName = `${tokenName}RefreshToken`;
+
+    const accessToken = req.headers.authorization?.split(' ')[1];
+    const refreshToken = req.cookies[cookieName];
+
     try {
+      if (accessToken) {
+        await this._blacklistToken(accessToken);
+      }
+      if (refreshToken) {
+        await this._blacklistToken(refreshToken);
+      }
+
       response.clearCookie(cookieName, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
       });
-      this.logger.log(`Logout service called, cleared cookie: ${cookieName}`);
+      this._logger.log(`Logout service called, cleared cookie: ${cookieName}`);
       response.status(200).json({ message: 'Successfully logged out' });
     } catch (error) {
-      this.logger.error('Logout error:', error);
+      this._logger.error('Logout error:', error);
       response.status(500).json({ message: 'Logout failed' });
     }
   }
@@ -69,18 +82,18 @@ export class CommonService implements ICommonService {
     }
 
     const theme = isDark ? 'dark' : 'light';
-    const existingPreference = await this.preferenceModel.findOne({
+    const existingPreference = await this._preferenceModel.findOne({
       userId: new Types.ObjectId(userId),
     });
 
     if (existingPreference) {
-      await this.preferenceModel.updateOne(
+      await this._preferenceModel.updateOne(
         { _id: existingPreference._id },
         { $set: { 'preferences.theme': theme } },
       );
       res.status(200).json({ message: 'Theme preference updated' });
     } else {
-      this.preferenceModel.create({
+      this._preferenceModel.create({
         userId: new Types.ObjectId(userId),
         preferences: { theme },
       });
@@ -94,7 +107,7 @@ export class CommonService implements ICommonService {
     }
 
     try {
-      const preference = await this.preferenceModel.findOne({
+      const preference = await this._preferenceModel.findOne({
         userId: new Types.ObjectId(userId),
       });
       if (
@@ -113,66 +126,15 @@ export class CommonService implements ICommonService {
     }
   }
 
-  // Helper function to generate JWT tokens
-  private async generateTokens(user: User, role: 'User' | 'Editor') {
-    const [accessToken, refreshToken] = await Promise.all([
-      this.jwtService.signAsync(
-        {
-          userId: user._id,
-          // username: user.username,
-          email: user.email,
-          role,
-        },
-        {
-          secret: this.configService.get<string>('JWT_SECRET'),
-          expiresIn: this.configService.get<string>('ACCESS_TOKEN_EXPIRATION'),
-        },
-      ),
-      this.jwtService.signAsync(
-        {
-          userId: user._id,
-          // username: user.username,
-          email: user.email,
-          role,
-        },
-        {
-          secret: this.configService.get<string>('JWT_SECRET'),
-          expiresIn: this.configService.get<string>('REFRESH_TOKEN_EXPIRATION'),
-        },
-      ),
-    ]);
-
-    return { accessToken, refreshToken };
-  }
-
-  private convertToLanguageEnum(
-    lang: string | undefined,
-  ): Language | undefined {
-    if (!lang) return undefined;
-
-    const language = lang.split('-')[0].toUpperCase();
-
-    // Mapping enum values
-    const languageMap: { [key: string]: Language } = {
-      EN: Language.ENGLISH,
-      ES: Language.SPANISH,
-      FR: Language.FRENCH,
-      DE: Language.GERMAN,
-      HI: Language.HINDI,
-    };
-
-    return languageMap[language] || Language.ENGLISH; // Default to English if not found
-  }
-
   //for google authentication
   async handleGoogleAuth(
     credential: string,
     res: Response,
   ): Promise<{ accessToken: string; message: string }> {
     try {
-      const ticket = await this.googleClient.verifyIdToken({
+      const ticket = await this._googleClient.verifyIdToken({
         idToken: credential,
-        audience: this.configService.get<string>('GOOGLE_CLIENT_ID'),
+        audience: this._configService.get<string>('GOOGLE_CLIENT_ID'),
       });
 
       const payload = ticket.getPayload();
@@ -193,11 +155,11 @@ export class CommonService implements ICommonService {
         throw new BadRequestException('Email not verified');
       }
 
-      const language = this.convertToLanguageEnum(locale);
+      const language = this._convertToLanguageEnum(locale);
 
-      let user: User | null = await this.userService.findByEmail(email);
+      let user: User | null = await this._userService.findByEmail(email);
       if (!user) {
-        user = await this.userService.createGoogleUser({
+        user = await this._userService.createGoogleUser({
           email,
           fullname,
           googleId,
@@ -207,10 +169,10 @@ export class CommonService implements ICommonService {
       }
 
       if (user && !user.googleId) {
-        user = await this.userService.updateUserGoogleId(user._id, googleId);
+        user = await this._userService.updateUserGoogleId(user._id, googleId);
       }
       if (user) {
-        const tokens = await this.generateTokens(
+        const tokens = await this._generateTokens(
           user,
           user.isEditor ? 'Editor' : 'User',
         );
@@ -231,6 +193,73 @@ export class CommonService implements ICommonService {
       }
     } catch (error) {
       throw new BadRequestException('Invalid google Token');
+    }
+  }
+
+  // Helper function to generate JWT tokens
+  private async _generateTokens(user: User, role: 'User' | 'Editor') {
+    const [accessToken, refreshToken] = await Promise.all([
+      this._jwtService.signAsync(
+        {
+          userId: user._id,
+          // username: user.username,
+          email: user.email,
+          role,
+        },
+        {
+          secret: this._configService.get<string>('JWT_SECRET'),
+          expiresIn: this._configService.get<string>('ACCESS_TOKEN_EXPIRATION'),
+        },
+      ),
+      this._jwtService.signAsync(
+        {
+          userId: user._id,
+          // username: user.username,
+          email: user.email,
+          role,
+        },
+        {
+          secret: this._configService.get<string>('JWT_SECRET'),
+          expiresIn: this._configService.get<string>('REFRESH_TOKEN_EXPIRATION'),
+        },
+      ),
+    ]);
+
+    return { accessToken, refreshToken };
+  }
+
+  private _convertToLanguageEnum(
+    lang: string | undefined,
+  ): Language | undefined {
+    if (!lang) return undefined;
+
+    const language = lang.split('-')[0].toUpperCase();
+
+    // Mapping enum values
+    const languageMap: { [key: string]: Language } = {
+      EN: Language.ENGLISH,
+      ES: Language.SPANISH,
+      FR: Language.FRENCH,
+      DE: Language.GERMAN,
+      HI: Language.HINDI,
+    };
+
+    return languageMap[language] || Language.ENGLISH; // Default to English if not found
+  }
+
+  private async _blacklistToken(token: string): Promise<void> {
+    try {
+      const decoded: any = this._jwtService.decode(token);
+      if (decoded && decoded.exp) {
+        const ttl = decoded.exp - Math.floor(Date.now() / 1000);
+        if (ttl > 0) {
+          const key = `blacklist:${token}`;
+          await this._redisService.client.set(key, 'true', { EX: ttl });
+          this._logger.log(`Token blacklisted with TTL: ${ttl}s`);
+        }
+      }
+    } catch (error) {
+      this._logger.error(`Failed to blacklist token: ${error.message}`);
     }
   }
 }
