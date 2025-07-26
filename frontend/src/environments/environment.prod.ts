@@ -1,6 +1,6 @@
 export const environment = {
     production: true,
-    apiUrl: 'http://localhost:5000/api',
+    apiUrl: 'http://www.craftora.store/api',
     googleClientId: '1034076551297-u77efii5tjn7hq7b9liq10v84nstqvnt.apps.googleusercontent.com',
     CLOUDINARY: {
         CLOUD_NAME: 'dt5t71imx',
