@@ -10,7 +10,6 @@ import {
 } from '@nestjs/websockets';
 import { Types } from 'mongoose';
 import { Server, Socket } from 'socket.io';
-import { AiService } from 'src/ai/ai.service';
 import {
   IAiService,
   IAiServiceToken,
@@ -18,8 +17,6 @@ import {
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { RolesGuard } from 'src/auth/guards/role.guard';
-import { WsAuthGuard } from 'src/auth/guards/ws-auth.guard';
-import { WsRolesGuard } from 'src/auth/guards/ws-roles.guard';
 import { Role } from 'src/common/enums/role.enum';
 
 import { IChatGateway } from './interfaces/chat-gateway.interface';
@@ -31,12 +28,11 @@ import { Message, MessageStatus } from './models/chat-message.schema';
 
 @WebSocketGateway({
   cors: {
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5200',
+    origin: process.env.PRODUCTION_CORS_ORIGIN || process.env.DEVELOPMENT_CORS_ORIGIN,
     credentials: true,
   },
   namespace: '/chat',
 })
-// @UseGuards(WsAuthGuard, WsRolesGuard)
 @UseGuards(AuthGuard, RolesGuard)
 @Roles(Role.USER, Role.EDITOR)
 export class ChatGateway

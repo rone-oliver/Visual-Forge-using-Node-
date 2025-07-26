@@ -17,7 +17,7 @@ import { Notification } from './models/notification.schema';
 
 @WebSocketGateway({
   cors: {
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5200',
+    origin: process.env.PRODUCTION_CORS_ORIGIN || process.env.DEVELOPMENT_CORS_ORIGIN,
     credentials: true,
   },
   namespace: '/notifications',

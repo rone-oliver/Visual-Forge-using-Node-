@@ -11,8 +11,6 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Roles } from 'src/auth/decorators/roles.decorator';
-import { WsAuthGuard } from 'src/auth/guards/ws-auth.guard';
-import { WsRolesGuard } from 'src/auth/guards/ws-roles.guard';
 import { Role } from 'src/common/enums/role.enum';
 
 import {
@@ -20,15 +18,17 @@ import {
   ICommunityServiceToken,
 } from './interfaces/community.service.interface';
 import { Community } from './models/community.schema';
+import { AuthGuard } from 'src/auth/guards/auth.guard';
+import { RolesGuard } from 'src/auth/guards/role.guard';
 
 @WebSocketGateway({
   cors: {
-    origin: 'http://localhost:' + process.env.FRONTEND_PORT,
+    origin: process.env.PRODUCTION_CORS_ORIGIN || process.env.DEVELOPMENT_CORS_ORIGIN,
     credentials: true,
   },
   namespace: '/community',
 })
-@UseGuards(WsAuthGuard, WsRolesGuard)
+@UseGuards(AuthGuard, RolesGuard)
 @Roles(Role.EDITOR)
 export class CommunityGateway
   implements OnGatewayConnection, OnGatewayDisconnect
