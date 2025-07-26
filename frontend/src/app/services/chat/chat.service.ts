@@ -63,7 +63,7 @@ export class ChatService {
     const token = this._authService.getAccessToken('User');
     if (!this._userId || !token) return;
 
-    this._socket = io(`${environment.apiUrl}/chat`, {
+    this._socket = io(`${environment.socketIoBaseUrl}/chat`, {
       transports: ['websocket'],
       auth: {
         token: `Bearer ${token}`

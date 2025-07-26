@@ -47,7 +47,7 @@ export class CommunityService {
         return;
     }
 
-    this._socket = io(`${environment.apiUrl}/community`, {
+    this._socket = io(`${environment.socketIoBaseUrl}/community`, {
       transports: ['websocket'],
       auth: {
         token: `Bearer ${token}`
