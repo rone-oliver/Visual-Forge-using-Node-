@@ -1,16 +1,13 @@
 import { Overlay, OverlayRef } from '@angular/cdk/overlay';
-import { CommonModule } from '@angular/common';
 import { AfterViewChecked, Component, ElementRef, HostListener, OnDestroy, OnInit, TemplateRef, ViewChild, ViewContainerRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { Router } from '@angular/router';
-import { combineLatest, Subject, takeUntil, withLatestFrom } from 'rxjs';
+import { Subject, takeUntil, withLatestFrom } from 'rxjs';
 import { TemplatePortal } from '@angular/cdk/portal';
 import { ChatItem, ChatService, Message } from '../../../services/chat/chat.service';
-import { AuthService } from '../../../services/auth.service';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { UserSearchComponent } from '../../mat-dialogs/user-search/user-search.component';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -27,7 +24,7 @@ interface Recipient {
 
 @Component({
   selector: 'app-chat',
-  imports: [CommonModule, MatIconModule, FormsModule, MatMenuModule, MatTooltipModule, MatDialogModule, MediaProtectionDirective],
+  imports: [MatIconModule, FormsModule, MatMenuModule, MatTooltipModule, MatDialogModule, MediaProtectionDirective],
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.scss']
 })
@@ -63,7 +60,6 @@ export class ChatComponent implements OnInit, AfterViewChecked, OnDestroy {
   constructor(
     private breakpointObserver: BreakpointObserver,
     private overlay: Overlay,
-    private router: Router,
     private snackBar: MatSnackBar,
     private viewContainerRef: ViewContainerRef,
     private chatService: ChatService,

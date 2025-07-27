@@ -22,11 +22,11 @@ export class CommunityService {
   private readonly _authService = inject(AuthService);
 
   constructor() {
-    this._userId = this.getLoggedInUserId();
-    this.initializeSocket();
+    this._userId = this._getLoggedInUserId();
+    this._initializeSocket();
   }
 
-  private getLoggedInUserId(): string | null {
+  private _getLoggedInUserId(): string | null {
     const token = this._authService.getAccessToken('User'); // Or 'Editor' if appropriate
     if (token) {
       try {
@@ -40,7 +40,7 @@ export class CommunityService {
     return null;
   }
 
-  private initializeSocket(): void {
+  private _initializeSocket(): void {
     const token = this._authService.getAccessToken('User');
     if (!this._userId || !token) {
         console.error('User not authenticated, cannot connect to community chat.');

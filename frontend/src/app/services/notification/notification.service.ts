@@ -39,7 +39,7 @@ export class NotificationService implements OnDestroy {
       this._logger.error('NotificationService: No user ID found for _socket connection.');
       return;
     }
-    this.initializeSocket();
+    this._initializeSocket();
   }
 
   ngOnDestroy(): void {
@@ -67,7 +67,7 @@ export class NotificationService implements OnDestroy {
     }
   }
 
-  private initializeSocket(): void {
+  private _initializeSocket(): void {
     if (!this._userId || this._socket) {
       if (this._socket) this._logger.warn('NotificationService: Socket already initialized.');
       return;
@@ -120,7 +120,7 @@ export class NotificationService implements OnDestroy {
 
   connect(): void {
     if (!this._socket) {
-      this.initializeSocket();
+      this._initializeSocket();
     } else if (this._socket.disconnected) {
       this._socket.connect();
     }
@@ -135,7 +135,7 @@ export class NotificationService implements OnDestroy {
 
   reconnect(): void {
     if (!this._socket) {
-      this.initializeSocket();
+      this._initializeSocket();
     } else if (this._socket.disconnected) {
       this._socket.connect();
     }
@@ -149,14 +149,14 @@ export class NotificationService implements OnDestroy {
     if (this._socket && this._socket.connected) {
       this._socket.emit('markAsRead', notificationId);
     } else {
-      this._logger.warn('Notification _socket not connected, cannot mark notification as read.');
+      this._logger.warn('Notification socket not connected, cannot mark notification as read.');
     }
   }
 
   onInitialNotifications(): Observable<Notification[]> {
     return new Observable<Notification[]>(observer => {
       if (!this._socket) {
-        this._logger.warn('Notification _socket not initialized for onInitialNotifications.');
+        this._logger.warn('Notification socket not initialized for onInitialNotifications.');
         observer.next([]);
         return;
       }

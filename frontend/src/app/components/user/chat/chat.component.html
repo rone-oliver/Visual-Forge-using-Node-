@@ -17,7 +17,7 @@
     <div class="chat-list-scrollable">
       @for (chat of filteredChats; track chat._id) {
         <div class="chat-item"
-          [ngClass]="{'active': chat._id === selectedChatId}"
+          [class]="{'active': chat._id === selectedChatId}"
           (click)="selectChat(chat)">
           <div class="chat-avatar">
             @if (chat.avatarUrl) {
@@ -58,7 +58,7 @@
   </div>
 
   <!-- Chat Content -->
-  <div class="chat-content" [ngClass]="{'hidden-on-mobile': isMobile && !selectedChatId}">
+  <div class="chat-content" [class]="{'hidden-on-mobile': isMobile && !selectedChatId}">
     <!-- Empty state when no chat is selected -->
     @if (!selectedChatId) {
       <div class="no-chat-selected">
@@ -134,8 +134,8 @@
                 <span>{{ getMessageDateGroup(message) }}</span>
               </div>
             }
-            <div class="message" [ngClass]="{'outgoing': message.isOutgoing, 'incoming': !message.isOutgoing}">
-              <div class="message-content" [ngClass]="{'with-status': message.isOutgoing}">
+            <div class="message" [class]="{'outgoing': message.isOutgoing, 'incoming': !message.isOutgoing}">
+              <div class="message-content" [class]="{'with-status': message.isOutgoing}">
                 {{ message.content }}
                 <div class="message-time">{{ getMessageTime(message) }}</div>
                 @if (message.isOutgoing) {
@@ -209,7 +209,7 @@
             class="send-button"
             [disabled]="!newMessage.trim()"
             (click)="sendMessage()"
-            [ngClass]="{'active': newMessage.trim()}"
+            [class]="{'active': newMessage.trim()}"
             >
             <mat-icon>send</mat-icon>
           </button>

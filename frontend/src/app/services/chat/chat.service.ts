@@ -55,11 +55,11 @@ export class ChatService {
       this._logger.error('No user ID found');
       return;
     }
-    this.initializeSocket();
-    this.setupNewMessageListener();
+    this._initializeSocket();
+    this._setupNewMessageListener();
   }
 
-  private initializeSocket() {
+  private _initializeSocket() {
     const token = this._authService.getAccessToken('User');
     if (!this._userId || !token) return;
 
@@ -219,8 +219,8 @@ export class ChatService {
     });
   }
 
-  private setupNewMessageListener(): void {
-    this._socket?.on('_newMessage', (message: Message) => {
+  private _setupNewMessageListener(): void {
+    this._socket?.on('newMessage', (message: Message) => {
       this._newMessage.next(message);
 
       const recipientId = message.sender === this._userId ? message.recipient : message.sender;
@@ -244,7 +244,7 @@ export class ChatService {
 
   reconnect(): void {
     if (!this._socket?.connected) {
-      this.initializeSocket();
+      this._initializeSocket();
     }
   }
 }
