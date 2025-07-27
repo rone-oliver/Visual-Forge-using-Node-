@@ -29,15 +29,47 @@ export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
         // Get the path after the API URL
         const path = req.url.substring(environment.apiUrl.length);
 
-        // Determine user type based on URL path
-        let userType: 'Admin' | 'User';
+        // Handle /editor routes (most specific)
+        if (path.startsWith('/editor')) {
+            return authService.userRole$.pipe(
+                take(1),
+                switchMap(role => {
+                    console.log('TokenInterceptor - /editor route, User Role:', role);
+                    if (role !== 'Editor') {
+                        console.log('TokenInterceptor - User is not an editor. Redirecting.');
+                        router.navigate(['/user']);
+                        return EMPTY;
+                    }
+                    // Role is 'Editor', proceed to add token for 'User' type
+                    return handleTokenAddition(req, next, 'User', authService, tokenService, router);
+                })
+            );
+        }
+
+        // Handle /user routes
+        if (path.startsWith('/user')) {
+            return authService.userRole$.pipe(
+                take(1),
+                switchMap(role => {
+                    console.log('TokenInterceptor - /user route, User Role:', role);
+                    if (!role || (role !== 'User' && role !== 'Editor')) {
+                        console.log('TokenInterceptor - Invalid role for /user. Redirecting to login.');
+                        router.navigate(['/auth/login']);
+                        return EMPTY;
+                    }
+                    // Role is valid, proceed to add token for 'User' type
+                    return handleTokenAddition(req, next, 'User', authService, tokenService, router);
+                })
+            );
+        }
+
+        // Handle /admin routes
         if (path.startsWith('/admin')) {
-            userType = 'Admin';
-        } else if (path.startsWith('/user')) {
-            userType = 'User';
-        } else if (path.startsWith('/editor')) {
-            userType = 'User';
-        } else if (
+            return handleTokenAddition(req, next, 'Admin', authService, tokenService, router);
+        }
+
+        // Handle specific /auth routes that require a token (e.g., logout, refresh)
+        if (
             path.startsWith('/auth/logout') ||
             path.startsWith('/auth/refresh') ||
             path.startsWith('/auth/theme-preference')
@@ -48,15 +80,15 @@ export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
             ]).pipe(
                 take(1),
                 switchMap(([isAdmin, isUser]) => {
-                    userType = isAdmin ? 'Admin' : 'User';
+                    // Prioritize Admin if both are somehow authenticated.
+                    const userType = isAdmin ? 'Admin' : 'User';
                     return handleTokenAddition(req, next, userType, authService, tokenService, router);
                 })
             );
-        } else {
-            // If not an admin or user route, pass through without token
-            return next(req);
         }
-        return handleTokenAddition(req, next, userType, authService, tokenService, router);
+
+        // For any other request that reaches here, pass it through without modification.
+        return next(req);
     }
     return next(req);
 };
@@ -67,7 +99,8 @@ function handleTokenAddition(
     userType: 'Admin' | 'User',
     authService: AuthService,
     tokenService: TokenService,
-    router: Router) {
+    router: Router,
+) {
     const accessToken = tokenService.getToken(userType);
 
     let requestToHandle = req;
