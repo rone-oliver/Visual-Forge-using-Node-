@@ -11,22 +11,35 @@
   display: flex;
   align-items: center;
 
-  .timeline-event-dot {
+  .timeline-event-icon {
     position: absolute;
     top: 50%;
-    width: 12px;
-    height: 12px;
-    background-color: var(--color-primary);
-    border: 2px solid var(--color-surface);
+    font-size: 18px;
+    color: var(--color-primary);
+    background-color: var(--color-surface);
     border-radius: 50%;
-    transform: translate(-50%, -50%); // Center the dot on its percentage-based position
+    transform: translate(-50%, -50%);
     cursor: pointer;
-    transition: transform 0.2s ease, background-color 0.2s ease;
+    transition: transform 0.2s ease, color 0.2s ease;
     z-index: 2;
 
+    &.align-top {
+      transform: translate(-50%, -150%);
+      &:hover {
+        transform: translate(-50%, -150%) scale(1.2);
+      }
+    }
+
+    &.align-bottom {
+      transform: translate(-50%, 50%);
+      &:hover {
+        transform: translate(-50%, 50%) scale(1.2);
+      }
+    }
+
     &:hover {
-      transform: translate(-50%, -50%) scale(1.4);
-      background-color: var(--color-primary-400); // A slightly lighter/brighter primary color for hover
+      transform: translate(-50%, -50%) scale(1.2);
+      color: var(--color-primary-400);
     }
   }
 
@@ -48,20 +61,35 @@
     z-index: 1;
   }
 
-  .timeline-endpoint-dot {
+  .timeline-endpoint-icon {
     position: absolute;
     top: 50%;
-    width: 14px;
-    height: 14px;
+    font-size: 18px;
+    color: var(--color-primary);
+    background-color: var(--color-surface);
     border-radius: 50%;
     transform: translate(-50%, -50%);
-    z-index: 3;
-    background-color: var(--color-neutral-400);
-    border: 2px solid var(--color-surface);
     cursor: pointer;
+    transition: transform 0.2s ease, color 0.2s ease;
+    z-index: 2;
 
-    &.satisfied {
-      background-color: var(--color-success);
+    &.align-top {
+      transform: translate(-50%, -150%);
+      &:hover {
+        transform: translate(-50%, -150%) scale(1.2);
+      }
+    }
+
+    &.align-bottom {
+      transform: translate(-50%, 50%);
+      &:hover {
+        transform: translate(-50%, 50%) scale(1.2);
+      }
+    }
+
+    &:hover {
+      transform: translate(-50%, -50%) scale(1.2);
+      color: var(--color-primary-400);
     }
   }
 }

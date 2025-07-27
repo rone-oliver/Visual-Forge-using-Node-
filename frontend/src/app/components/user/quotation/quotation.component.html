@@ -324,28 +324,30 @@
                                 </div>
                             }
 
-                            <div class="work-card-actions">
-                                @if (work.comments) {
-                                    <button class="action-btn editor-rate" (click)="openEditorRatingModal(work)">
-                                        <mat-icon>supervisor_account</mat-icon>
-                                        Rate Editor
+                            @if(work.isFullyPaid){
+                                <div class="work-card-actions">
+                                    @if (work.comments) {
+                                        <button class="action-btn editor-rate" (click)="openEditorRatingModal(work)">
+                                            <mat-icon>supervisor_account</mat-icon>
+                                            Rate Editor
+                                        </button>
+                                    }
+                                    <button class="action-btn work-rate" (click)="openWorkRatingModal(work)">
+                                        <mat-icon>star</mat-icon>
+                                        {{ work.rating || work.feedback ? 'Update Rating' : 'Rate Work' }}
                                     </button>
-                                }
-                                <button class="action-btn work-rate" (click)="openWorkRatingModal(work)">
-                                    <mat-icon>star</mat-icon>
-                                    {{ work.rating || work.feedback ? 'Update Rating' : 'Rate Work' }}
-                                </button>
-                                <button class="action-btn feedback-btn" (click)="openFeedbackModal(work.worksId)">
-                                    <mat-icon>feedback</mat-icon>
-                                    Provide Feedback
-                                </button>
-                                @if(!work.isSatisfied){
-                                    <button class="action-btn satisfied-btn" (click)="markAsSatisfied(work.worksId)">
-                                        <mat-icon>check_circle</mat-icon>
-                                        Mark as Satisfied
+                                    <button class="action-btn feedback-btn" (click)="openFeedbackModal(work.worksId)">
+                                        <mat-icon>feedback</mat-icon>
+                                        Provide Feedback
                                     </button>
-                                }
-                            </div>
+                                    @if(!work.isSatisfied){
+                                        <button class="action-btn satisfied-btn" (click)="markAsSatisfied(work.worksId)">
+                                            <mat-icon>check_circle</mat-icon>
+                                            Mark as Satisfied
+                                        </button>
+                                    }
+                                </div>
+                            }
 
                             <div class="timeline-section">
                                 <h4>Project Timeline</h4>

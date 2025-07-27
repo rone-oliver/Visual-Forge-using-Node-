@@ -2,15 +2,17 @@
   <div class="timeline-bar"></div>
 
   @for (event of eventPositions(); track event.timestamp) {
-    <div 
-      [class.timeline-event-dot]="!event.isEndpoint"
-      [class.timeline-endpoint-dot]="event.isEndpoint"
+    <mat-icon 
+      [class.timeline-event-icon]="!event.isEndpoint"
+      [class.timeline-endpoint-icon]="event.isEndpoint"
       [class.satisfied]="event.isEndpoint && isSatisfied()"
+      [class.align-top]="event.verticalAlign === 'top'"
+      [class.align-bottom]="event.verticalAlign === 'bottom'"
       [style.left.%]="event.position"
       [matTooltip]="event.message + '\n' + (event.timestamp | date: 'medium')"
       matTooltipClass="policy-tooltip"
       (click)="$event.stopPropagation()"
-    ></div>
+    >{{ event.icon }}</mat-icon>
   }
 
   @if (eventPositions().length === 0) {

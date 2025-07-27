@@ -31,8 +31,19 @@ export interface FileAttachment {
     uploadedAt?: Date;
 }
 
+export enum TimelineEventEnums {
+    QUOTATION_CREATED = 'QUOTATION_CREATED',
+    EDITOR_ASSIGNED = 'EDITOR_ASSIGNED',
+    WORK_STARTED = 'WORK_STARTED',
+    FIRST_DRAFT_SUBMITTED = 'FIRST_DRAFT_SUBMITTED',
+    FEEDBACK_RECEIVED = 'FEEDBACK_RECEIVED',
+    WORK_REVISED = 'WORK_REVISED',
+    USER_SATISFIED = 'USER_SATISFIED',
+    PAYMENT_COMPLETED = 'PAYMENT_COMPLETED',
+}
+
 export interface TimelineEvent {
-    event: string;
+    event: TimelineEventEnums;
     message: string;
     metadata?: Record<string, any>;
     timestamp: number;
