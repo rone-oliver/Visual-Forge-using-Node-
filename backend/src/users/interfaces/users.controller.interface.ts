@@ -101,19 +101,11 @@ export interface IUsersController {
     workId: string,
     dto: UpdateWorkPublicStatusDto,
   ): Promise<boolean>;
-  rateEditor(req: Request, dto: RateEditorDto): Promise<SuccessResponseDto>;
-  getCurrentEditorRating(
-    req: Request,
-    editorId: string,
-  ): Promise<UserEditorRatingDto | null>;
 
   getPublicWorks(
     query: GetPublicWorksQueryDto,
   ): Promise<PaginatedPublicWorksResponseDto>;
-  // getUser(id: string): Promise<UserBasicInfoDto>;
   getUsers(req: Request): Promise<UserBasicInfoDto[]>;
-
-  // getEditor(id: string): Promise<EditorDetailsResponseDto | null>;
 
   createPayment(
     req: Request,

@@ -4,4 +4,5 @@ export interface RatingDialogData {
     submitText?: string;
     currentRating?: number;
     currentFeedback?: string;
+    editorRating?: number;
 }

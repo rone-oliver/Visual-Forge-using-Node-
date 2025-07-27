@@ -51,6 +51,7 @@ import {
 import {
   GetPublicWorksQueryDto,
   PaginatedPublicWorksResponseDto,
+  RateWorkDto,
   UpdateWorkPublicStatusDto,
 } from 'src/works/dtos/works.dto';
 
@@ -62,14 +63,12 @@ import {
   GetQuotationsParamsDto,
   PaginatedQuotationsResponseDto,
   PaginatedTransactionsResponseDto,
-  RateEditorDto,
   SuccessResponseDto,
   UpdateProfileDto,
   UpdateProfileImageDto,
   UpdateQuotationDto,
   UpdateQuotationPaymentDto,
   UserBasicInfoDto,
-  UserEditorRatingDto,
   UserProfileResponseDto,
   EditorPublicProfileResponseDto,
   GetPublicEditorsDto,
@@ -120,10 +119,8 @@ export class UsersController implements IUsersController {
   @Get('profile')
   @Roles(Role.USER, Role.EDITOR)
   async getUserProfile(@Req() req: Request): Promise<UserProfileResponseDto> {
-    console.log('controller hitted on /user/profile');
     const user = req['user'] as { userId: Types.ObjectId; role: string };
     const userDet = await this._userService.getUserDetails(user.userId);
-    console.log('user profile data', userDet);
     if (!userDet) {
       throw new NotFoundException('User not found');
     }
@@ -131,7 +128,7 @@ export class UsersController implements IUsersController {
   }
 
   @Post('editor-requests')
-  @Roles('User')
+  @Roles(Role.USER)
   async requestForEditor(@Req() req: Request) {
     const user = req['user'] as { userId: Types.ObjectId; role: string };
     const response = await this._userService.requestForEditor(user.userId);
@@ -139,7 +136,7 @@ export class UsersController implements IUsersController {
   }
 
   @Get('editor-requests')
-  @Roles('User')
+  @Roles(Role.USER)
   async getEditorRequestStatus(@Req() req: Request) {
     const user = req['user'] as { userId: Types.ObjectId; role: string };
     const status = await this._userService.getEditorRequestStatus(user.userId);
@@ -321,11 +318,11 @@ export class UsersController implements IUsersController {
   }
 
   @Put('quotations/:workId/rating')
-  @Roles('User', 'Editor')
+  @Roles(Role.USER,Role.EDITOR)
   async rateWork(
     @Req() req: Request,
     @Param('workId') workId: string,
-    @Body() body: UserEditorRatingDto,
+    @Body() body: RateWorkDto,
   ) {
     const user = req['user'] as { userId: Types.ObjectId; role: string };
     console.log('worksId from controller:', workId);
@@ -353,36 +350,6 @@ export class UsersController implements IUsersController {
     return true;
   }
 
-  @Post('editor/rating')
-  @Roles('User', 'Editor')
-  async rateEditor(
-    @Req() req: Request,
-    @Body() body: RateEditorDto,
-  ): Promise<SuccessResponseDto> {
-    this.logger.log(
-      'rating editor:',
-      body.editorId,
-      body.rating,
-      body.feedback,
-    );
-    const user = req['user'] as { userId: Types.ObjectId; role: string };
-    return await this._userService.rateEditor(user.userId, body);
-  }
-
-  @Get('editor/rating')
-  @Roles('User', 'Editor')
-  async getCurrentEditorRating(
-    @Req() req: Request,
-    @Query('editorId') editorId: string,
-  ) {
-    const user = req['user'] as { userId: Types.ObjectId; role: string };
-    const rating = await this._userService.getCurrentEditorRating(
-      user.userId,
-      editorId,
-    );
-    return rating;
-  }
-
   @Get('works/public')
   @Roles('User', 'Editor')
   async getPublicWorks(
@@ -391,16 +358,6 @@ export class UsersController implements IUsersController {
     const works = await this._userService.getPublicWorks(query);
     return works;
   }
-
-  // @Get('')
-  // async getUser(@Query('id') id: string): Promise<UserBasicInfoDto> {
-  //     console.log('getUser controller hit. id: ',id);
-  //     const user = await this._userService.getUser(new Types.ObjectId(id));
-  //     if (!user) {
-  //         throw new NotFoundException('User not found');
-  //     }
-  //     return user;
-  // }
 
   @Post('works/:workId/feedback')
   @Roles(Role.USER, Role.EDITOR)
@@ -453,11 +410,6 @@ export class UsersController implements IUsersController {
     return this._userService.getUsers(new Types.ObjectId(user.userId));
   }
 
-  // @Get('editors/:id')
-  // async getEditor(@Param('id') id: string): Promise<EditorDetailsResponseDto | null> {
-  //     return this.editorService.getEditor(id);
-  // }
-
   @Get('profile/editors/:id')
   @Roles(Role.USER, Role.EDITOR)
   @ApiOperation({ summary: "Get an editor's public profile" })
@@ -504,21 +456,17 @@ export class UsersController implements IUsersController {
       );
     }
 
-    // Explicitly map RazorpayOrder to CreatePaymentResponseDto
     const response: CreatePaymentResponseDto = {
       id: razorpayOrder.id,
       entity: razorpayOrder.entity,
-      amount: Number(razorpayOrder.amount), // Ensure this is a number
-      amount_paid: Number(razorpayOrder.amount_paid), // Ensure this is a number
-      amount_due: Number(razorpayOrder.amount_due), // Ensure this is a number
+      amount: Number(razorpayOrder.amount),
+      amount_paid: Number(razorpayOrder.amount_paid),
+      amount_due: Number(razorpayOrder.amount_due),
       currency: razorpayOrder.currency,
-      receipt: razorpayOrder.receipt ?? undefined, // Handle possible null from Razorpay
-      offer_id: razorpayOrder.offer_id ?? undefined, // Handle possible null from Razorpay
+      receipt: razorpayOrder.receipt ?? undefined,
+      offer_id: razorpayOrder.offer_id ?? undefined,
       status: razorpayOrder.status,
       attempts: razorpayOrder.attempts,
-      // Assuming razorpayOrder.notes is compatible with any[] or needs specific mapping
-      // Based on your DTO (any[]) and sample (notes: []), direct assignment might be okay if SDK type matches.
-      // If razorpayOrder.notes is an object, you might need: Array.isArray(razorpayOrder.notes) ? razorpayOrder.notes : (razorpayOrder.notes ? [razorpayOrder.notes] : [])
       notes: razorpayOrder.notes ? [razorpayOrder.notes] : [],
       created_at: razorpayOrder.created_at,
     };

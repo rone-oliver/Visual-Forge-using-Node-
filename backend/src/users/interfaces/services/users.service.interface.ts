@@ -29,12 +29,12 @@ import {
   TransactionResponseDto,
   SuccessResponseDto,
   UserBaseResponseDto,
-  UserEditorRatingDto,
   PaginatedTransactionsResponseDto,
   EditorPublicProfileResponseDto,
   GetPublicEditorsDto,
   PaginatedPublicEditorsDto,
   ReportUserDto,
+  UserEditorRatingDto,
 } from '../../dto/users.dto';
 
 export const IUsersServiceToken = Symbol('IUsersService');
@@ -119,15 +119,6 @@ export interface IUsersService {
     workId: string,
     updateWorkPublicStatusDto: UpdateWorkPublicStatusDto,
   ): Promise<SuccessResponseDto>;
-
-  rateEditor(
-    userId: Types.ObjectId,
-    rateEditorDto: RateEditorDto,
-  ): Promise<SuccessResponseDto>;
-  getCurrentEditorRating(
-    userId: Types.ObjectId,
-    editorId: string,
-  ): Promise<UserEditorRatingDto | null>;
 
   getPublicWorks(
     params: GetPublicWorksQueryDto,

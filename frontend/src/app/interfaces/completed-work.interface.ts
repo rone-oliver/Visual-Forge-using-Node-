@@ -36,6 +36,7 @@ export interface CompletedWork {
     comments: string;
     isPublic?: boolean;
     rating?: number;
+    editorRating?: number;
     feedback?: string;
 
     // Timestamps

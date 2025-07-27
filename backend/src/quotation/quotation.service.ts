@@ -358,6 +358,7 @@ export class QuotationService implements IQuotationService {
         comments: worksData?.comments || '',
         isPublic: worksData?.isPublic,
         rating: worksData?.rating,
+        editorRating: worksData?.editorRating,
         feedback: worksData?.feedback,
         isSatisfied: worksData?.isSatisfied,
         createdAt: quotation.createdAt,

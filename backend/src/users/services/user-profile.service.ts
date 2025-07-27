@@ -8,10 +8,6 @@ import {
 } from '@nestjs/common';
 import { Types } from 'mongoose';
 import {
-  ICloudinaryService,
-  ICloudinaryServiceToken,
-} from 'src/common/cloudinary/interfaces/cloudinary-service.interface';
-import {
   IHashingService,
   IHashingServiceToken,
 } from 'src/common/hashing/interfaces/hashing.service.interface';
@@ -41,6 +37,7 @@ import {
   IUserRepositoryToken,
 } from '../interfaces/users.repository.interface';
 import { User } from '../models/user.schema';
+import { IWorkService, IWorkServiceToken } from 'src/works/interfaces/works.service.interface';
 
 @Injectable()
 export class UserProfileService implements IUserProfileService {
@@ -49,8 +46,6 @@ export class UserProfileService implements IUserProfileService {
   constructor(
     @Inject(IUserRepositoryToken)
     private readonly _userRepository: IUserRepository,
-    @Inject(ICloudinaryServiceToken)
-    private readonly _cloudinaryService: ICloudinaryService,
     @Inject(IHashingServiceToken)
     private readonly _hashingService: IHashingService,
     @Inject(IAdminWalletServiceToken)
@@ -59,6 +54,8 @@ export class UserProfileService implements IUserProfileService {
     private readonly _relationshipService: IRelationshipService,
     @Inject(IEditorsServiceToken)
     private readonly _editorService: IEditorsService,
+    @Inject(IWorkServiceToken)
+    private readonly _workService: IWorkService,
   ) {}
 
   async findOne(filter: Partial<User>): Promise<User | null> {
@@ -149,6 +146,10 @@ export class UserProfileService implements IUserProfileService {
         if (editorDetails) {
           this._logger.log('Editor details: ', editorDetails);
 
+          const averageRatingResult = await this._workService.getAverageEditorRating(
+            user._id,
+          );
+
           const [followersCount, followingCount] = await Promise.all([
             this._relationshipService
               .getFollowers({ userId: user._id, limit: 0, skip: 0 })
@@ -165,10 +166,8 @@ export class UserProfileService implements IUserProfileService {
               score: editorDetails.score || 0,
               tipsAndTricks: editorDetails.tipsAndTricks || '',
               sharedTutorials: editorDetails.sharedTutorials || [],
-              ratingsCount: editorDetails.ratings?.length || 0,
-              averageRating: this._calculateAverageRating(
-                editorDetails.ratings,
-              ),
+              ratingsCount: averageRatingResult?.count || 0,
+              averageRating: averageRatingResult?.averageRating || 0,
               socialLinks: editorDetails.socialLinks || {},
               warningCount: editorDetails.warningCount || 0,
               createdAt: editorDetails.createdAt,
@@ -263,13 +262,6 @@ export class UserProfileService implements IUserProfileService {
       this._logger.error(`Error updating profile: ${error.message}`);
       throw error;
     }
-  }
-
-  private _calculateAverageRating(ratings: any[] | undefined): number {
-    if (!ratings || ratings.length === 0) return 0;
-
-    const sum = ratings.reduce((acc, curr) => acc + curr.rating, 0);
-    return parseFloat((sum / ratings.length).toFixed(1));
   }
 
   private async _generateUniqueUsername(): Promise<string> {

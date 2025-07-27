@@ -303,16 +303,28 @@
                                 </div>
                             }
 
-                            @if (work.rating || work.feedback) {
+                            @if (work.rating || work.editorRating) {
                                 <div class="work-rating-display">
                                     @if (work.rating) {
                                         <div class="work-rating-stars">
+                                            <span class="rating-label">Work:</span>
                                             @for (star of [].constructor(5); track $index; let i = $index) {
                                                 <mat-icon [ngClass]="{'filled': i < work.rating}">
                                                     star
                                                 </mat-icon>
                                             }
                                             <span class="work-rating-value">{{ work.rating }}/5</span>
+                                        </div>
+                                    }
+                                    @if (work.editorRating) {
+                                        <div class="work-rating-stars editor-rating">
+                                            <span class="rating-label">Editor:</span>
+                                            @for (star of [].constructor(5); track $index; let i = $index) {
+                                                <mat-icon [class.filled]="i < work.editorRating">
+                                                    star
+                                                </mat-icon>
+                                            }
+                                            <span class="work-rating-value">{{ work.editorRating }}/5</span>
                                         </div>
                                     }
                                     @if (work.feedback) {
@@ -326,12 +338,6 @@
 
                             @if(work.isFullyPaid){
                                 <div class="work-card-actions">
-                                    @if (work.comments) {
-                                        <button class="action-btn editor-rate" (click)="openEditorRatingModal(work)">
-                                            <mat-icon>supervisor_account</mat-icon>
-                                            Rate Editor
-                                        </button>
-                                    }
                                     <button class="action-btn work-rate" (click)="openWorkRatingModal(work)">
                                         <mat-icon>star</mat-icon>
                                         {{ work.rating || work.feedback ? 'Update Rating' : 'Rate Work' }}

@@ -172,4 +172,36 @@ export class WorkRepository implements IWorkRepository {
       },
     ]);
   }
+
+  async getAverageEditorRating(
+    editorId: Types.ObjectId
+  ): Promise<{ averageRating: number; count: number; } | null> {
+    const result = await this._workModel.aggregate([
+      {
+        $match: {
+          editorId: new Types.ObjectId(editorId),
+          editorRating: { $exists: true, $ne: null, $gt: 0 },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          averageRating: { $avg: '$editorRating' },
+          count: { $count: {} },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          averageRating: 1,
+          count: 1,
+        },
+      },
+    ]);
+
+    if(result.length > 0){
+      return result[0];
+    }
+    return { averageRating: 0, count: 0 };
+  }
 }

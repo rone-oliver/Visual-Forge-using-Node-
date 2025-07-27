@@ -24,19 +24,6 @@ export class Editor {
   @Prop({ type: Number, default: 0 })
   avgTime?: number;
 
-  @Prop({
-    type: [
-      {
-        rating: { type: Number, min: 1, max: 5, required: true },
-        feedback: { type: String },
-        userId: { type: Types.ObjectId, ref: 'User', required: true },
-      },
-    ],
-    _id: false,
-    default: [],
-  })
-  ratings?: Rating[];
-
   @Prop({ type: Object, default: {} })
   socialLinks?: {
     linkedIn?: string;

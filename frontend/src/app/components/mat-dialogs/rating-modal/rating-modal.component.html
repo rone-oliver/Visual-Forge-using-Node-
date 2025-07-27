@@ -20,6 +20,24 @@
       }
     </div>
 
+    <div class="star-rating">
+      <mat-label>{{ 'How would you rate the editor?' }}</mat-label>
+
+      <mat-button-toggle-group [(ngModel)]="editorRating" aria-label="Editor Rating" class="stars">
+        @for (star of [1,2,3,4,5]; track star) {
+          <mat-button-toggle [value]="star">
+            <mat-icon>{{ star <= editorRating ? 'star' : 'star_border' }}</mat-icon>
+          </mat-button-toggle>
+        }
+      </mat-button-toggle-group>
+
+      @if (editorRating) {
+        <div class="rating-text">
+          {{ getRatingText(editorRating) }}
+        </div>
+      }
+    </div>
+
     <mat-form-field appearance="outline" class="feedback-field">
       <mat-label>Share your feedback</mat-label>
       <textarea matInput [(ngModel)]="feedback" rows="4"

@@ -56,8 +56,6 @@ export interface IEditorsService {
 
   getCompletedWorks(editorId: Types.ObjectId): Promise<CompletedWorkDto[]>;
 
-  getEditor(editorId: string): Promise<EditorDetailsResponseDto | null>;
-
   // Editor Bids
   createBid(
     editorId: Types.ObjectId,

@@ -416,6 +416,11 @@ export class CompletedWorkDto {
   rating?: number;
 
   @ApiPropertyOptional()
+  @IsNumber()
+  @IsOptional()
+  editorRating?: number;
+
+  @ApiPropertyOptional()
   @IsString()
   @IsOptional()
   feedback?: string;

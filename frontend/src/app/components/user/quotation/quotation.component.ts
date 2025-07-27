@@ -280,63 +280,6 @@ export class QuotationComponent implements OnInit, OnDestroy {
     });
   }
 
-  openEditorRatingModal(work: CompletedWork): void {
-    this.userService.getCurrentEditorRating(work.editorId).subscribe({
-      next: (rating) => {
-        console.log('Current editor rating: ', rating);
-        const dialogRef = this.dialog.open(RatingModalComponent, {
-          width: '400px',
-          data: {
-            title: 'Rate the Editor',
-            label: 'How would you rate the editor?',
-            submitText: rating ? 'Update Rating' : 'Submit Rating',
-            currentRating: rating?.rating ?? null,
-            currentFeedback: rating?.feedback ?? ''
-          }
-        });
-        dialogRef.afterClosed().subscribe(result => {
-          if (result) {
-            console.log(result);
-            this.userService.rateEditor(work.editorId, result.rating, result.feedback).subscribe({
-              next: () => {
-                console.log('Editor rated successfully');
-                this.loadCompletedWorks();
-              },
-              error: (err) => {
-                console.error('Error rating editor: ', err);
-              }
-            })
-          }
-        });
-      },
-      error: (err) => {
-        console.error('Error fetching current editor rating: ', err);
-        const dialogRef = this.dialog.open(RatingModalComponent, {
-          width: '400px',
-          data: {
-            title: 'Rate the Editor',
-            label: 'How would you rate the editor?',
-            submitText: 'Submit Rating'
-          }
-        });
-        dialogRef.afterClosed().subscribe(result => {
-          if (result) {
-            console.log(result);
-            this.userService.rateEditor(work.editorId, result.rating, result.feedback).subscribe({
-              next: () => {
-                console.log('Editor rated successfully');
-                this.loadCompletedWorks();
-              },
-              error: (err) => {
-                console.error('Error rating editor: ', err);
-              }
-            })
-          }
-        });
-      }
-    })
-  }
-
   markAsSatisfied(workId: string): void {
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       width: '400px',
@@ -378,7 +321,8 @@ export class QuotationComponent implements OnInit, OnDestroy {
         label: 'How would you rate this work?',
         submitText: 'Submit Rating',
         currentRating: work.rating,
-        currentFeedback: work.feedback
+        currentFeedback: work.feedback,
+        editorRating: work.editorRating,
       }
     });
 
@@ -386,7 +330,7 @@ export class QuotationComponent implements OnInit, OnDestroy {
       if (result) {
         console.log(result);
         console.log('worksId:', work.worksId);
-        this.userService.rateWork(work.worksId, result.rating, result.feedback).subscribe({
+        this.userService.rateWork(work.worksId, result).subscribe({
           next: () => {
             this.loadCompletedWorks();
           },

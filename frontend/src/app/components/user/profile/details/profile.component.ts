@@ -25,10 +25,10 @@ export class ProfileComponent implements OnInit{
   @ViewChild('fileInput') fileInput!: ElementRef;
 
   constructor(
-    private userService: UserService,
-    private snackBar: MatSnackBar,
-    private cloudinaryService: CloudinaryService,
-    private dialog: MatDialog,
+    private _userService: UserService,
+    private _snackBar: MatSnackBar,
+    private _cloudinaryService: CloudinaryService,
+    private _dialog: MatDialog,
   ) { }
 
   showSuccess(message:string):void {
@@ -38,19 +38,19 @@ export class ProfileComponent implements OnInit{
         verticalPosition: 'top',
         panelClass: ['success-snackbar'],
     }
-    this.snackBar.open(message, 'Close', config);
+    this._snackBar.open(message, 'Close', config);
   }
 
   ngOnInit(): void {
-    this.getUserData();
+    this._getUserData();
   }
 
-  private getUserData(){
-    this.userService.getUserProfile().subscribe({
+  private _getUserData(){
+    this._userService.getUserProfile().subscribe({
       next:(userData)=>{
         this.user = userData;
         if(!this.user.isEditor){
-          this.checkEditorRequestStatus();
+          this._checkEditorRequestStatus();
         }
       },
       error:(error)=>{
@@ -59,8 +59,8 @@ export class ProfileComponent implements OnInit{
     })
   }
 
-  private checkEditorRequestStatus(): void {
-    this.userService.getEditorRequestStatus().subscribe({
+  private _checkEditorRequestStatus(): void {
+    this._userService.getEditorRequestStatus().subscribe({
       next: (status) => {
         this.editorRequestStatus = status;
       },
@@ -72,11 +72,11 @@ export class ProfileComponent implements OnInit{
 
   requestEditorStatus(): void {
     console.log('Editor status requested');
-    this.userService.requestForEditor().subscribe({
+    this._userService.requestForEditor().subscribe({
       next:(response)=>{
         console.log('Editor request response:', response);
         this.showSuccess('Editor request sent successfully!');
-        this.checkEditorRequestStatus();
+        this._checkEditorRequestStatus();
       },
       error:(error)=>{
         console.error('Error requesting for becoming Editor: ', error);
@@ -92,11 +92,11 @@ export class ProfileComponent implements OnInit{
   onFileSelected(event:any){
     if (event.target.files && event.target.files.length > 0) {
       this.selectedFile = event.target.files[0];
-      this.createImagePreview();
+      this._createImagePreview();
     }
   }
 
-  private createImagePreview() {
+  private _createImagePreview() {
     if(!this.selectedFile) return;
     const reader = new FileReader();
     reader.onload = () => {
@@ -117,11 +117,11 @@ export class ProfileComponent implements OnInit{
 
   uploadImage(){
     if(this.selectedFile){
-      this.cloudinaryService.uploadProfileImage(this.selectedFile).subscribe((url:string)=>{
-        this.userService.updateProfileImage(url).subscribe((response)=>{
+      this._cloudinaryService.uploadProfileImage(this.selectedFile).subscribe((url:string)=>{
+        this._userService.updateProfileImage(url).subscribe((response)=>{
           if(response.success){
             this.showSuccess('Profile image updated successfully!');
-            this.getUserData();
+            this._getUserData();
           }
           this.cancelUpload();
         })
@@ -130,7 +130,7 @@ export class ProfileComponent implements OnInit{
   }
 
   openEditProfileModal() {
-    const dialogRef = this.dialog.open(ProfileEditModalComponent,{
+    const dialogRef = this._dialog.open(ProfileEditModalComponent,{
       width: '600px',
       maxWidth: '95vw',
       maxHeight: '90vh',
@@ -139,10 +139,10 @@ export class ProfileComponent implements OnInit{
     })
     dialogRef.afterClosed().subscribe(result => {
       if(result){
-        this.userService.updateProfile(result).subscribe({
+        this._userService.updateProfile(result).subscribe({
           next:()=>{
             this.user = {...this.user,...result};
-            this.snackBar.open('Profile updated!','Close',{ duration: 3000, horizontalPosition: 'center', verticalPosition: 'bottom', panelClass: ['custom-snackbar']})
+            this._snackBar.open('Profile updated!','Close',{ duration: 3000, horizontalPosition: 'center', verticalPosition: 'bottom', panelClass: ['custom-snackbar']})
           },
           error: (error) => {
             console.error('Error updating profile:', error);
@@ -153,7 +153,7 @@ export class ProfileComponent implements OnInit{
   }
 
   openResetPasswordDialog(): void {
-    const dialogRef = this.dialog.open(ResetPasswordComponent, {
+    const dialogRef = this._dialog.open(ResetPasswordComponent, {
       width: '450px',
       panelClass: 'custom-dialog-container',
       disableClose: true
@@ -161,7 +161,6 @@ export class ProfileComponent implements OnInit{
 
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
-        // Handle successful password reset if needed
         console.log('Password reset successful');
       }
     });

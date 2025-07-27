@@ -183,9 +183,16 @@ export class UserService {
     );
   }
 
-  rateWork(workId: string, rating: number, feedback: string): Observable<boolean> {
+  rateWork(
+    workId: string,
+    ratingDto: {
+      rating: number,
+      feedback: string,
+      editorRating: number
+    }
+  ): Observable<boolean> {
     this._logger.debug('worksId', workId);
-    return this._http.put<boolean>(`${this._userApiUrl}/quotations/${workId}/rating`, { rating, feedback }).pipe(
+    return this._http.put<boolean>(`${this._userApiUrl}/quotations/${workId}/rating`, ratingDto).pipe(
       map(response => response),
       catchError(error => { throw error })
     );
@@ -197,20 +204,6 @@ export class UserService {
 
   markWorkAsSatisfied(workId: string): Observable<{ success: boolean }> {
     return this._http.patch<{ success: boolean }>(`${this._userApiUrl}/works/${workId}/satisfied`, {});
-  }
-
-  rateEditor(editorId: string, rating: number, feedback: string): Observable<boolean> {
-    return this._http.post<boolean>(`${this._userApiUrl}/editor/rating`, { editorId, rating, feedback }).pipe(
-      map(response => response),
-      catchError(error => { throw error })
-    )
-  }
-
-  getCurrentEditorRating(editorId: string): Observable<{ rating: number, feedback: string }> {
-    return this._http.get<{ rating: number, feedback: string }>(`${this._userApiUrl}/editor/rating`, { params: { editorId } }).pipe(
-      map(response => response),
-      catchError(error => { throw error })
-    )
   }
 
   updateWorkPublicStatus(workId: string, isPublic: boolean): Observable<boolean> {

@@ -39,4 +39,7 @@ export interface IWorkService {
     updates: Partial<Works>,
   ): Promise<Works | null>;
   getTopEditorsByCompletedWorks(limit: number): Promise<TopEditorDto[]>;
+  getAverageEditorRating(
+    editorId: Types.ObjectId
+  ): Promise<{ averageRating: number; count: number } | null>;
 }

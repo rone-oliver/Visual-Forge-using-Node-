@@ -79,6 +79,12 @@ export class RateWorkDto {
   @Max(5)
   rating: number;
 
+  @ApiProperty({ description: 'Rating for the editor (1-5)', example: 5 })
+  @IsNumber()
+  @Min(1)
+  @Max(5)
+  editorRating: number;
+
   @ApiPropertyOptional({
     description: 'Feedback for the work',
     example: 'Excellent work!',

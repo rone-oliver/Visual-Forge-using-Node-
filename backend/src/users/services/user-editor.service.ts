@@ -3,7 +3,6 @@ import {
   forwardRef,
   Inject,
   Injectable,
-  InternalServerErrorException,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
@@ -23,7 +22,6 @@ import {
   EditorRequestStatusResponseDto,
   GetPublicEditorsDto,
   PaginatedPublicEditorsDto,
-  RateEditorDto,
   SuccessResponseDto,
   UserRatingForEditorDto,
 } from '../dto/users.dto';
@@ -33,6 +31,7 @@ import {
   IUserRepositoryToken,
 } from '../interfaces/users.repository.interface';
 import { User } from '../models/user.schema';
+import { IWorkService, IWorkServiceToken } from 'src/works/interfaces/works.service.interface';
 
 @Injectable()
 export class UserEditorService implements IUserEditorService {
@@ -45,6 +44,8 @@ export class UserEditorService implements IUserEditorService {
     private readonly _userRepository: IUserRepository,
     @Inject(forwardRef(() => IRelationshipServiceToken))
     private readonly _relationshipService: IRelationshipService,
+    @Inject(IWorkServiceToken)
+    private readonly _workService: IWorkService,
   ) {}
 
   async requestForEditor(userId: Types.ObjectId): Promise<SuccessResponseDto> {
@@ -90,44 +91,6 @@ export class UserEditorService implements IUserEditorService {
     }
   }
 
-  async rateEditor(
-    userId: Types.ObjectId,
-    rateEditorDto: RateEditorDto,
-  ): Promise<SuccessResponseDto> {
-    try {
-      const editorObjectId = new Types.ObjectId(rateEditorDto.editorId);
-
-      await this._editorService.updateEditor(editorObjectId, {
-        $pull: { ratings: { userId: userId } },
-      });
-
-      const result = await this._editorService.updateEditor(editorObjectId, {
-        $push: {
-          ratings: {
-            rating: rateEditorDto.rating,
-            feedback: rateEditorDto.feedback,
-            userId,
-          },
-        },
-      });
-
-      if (result) {
-        this._logger.log('rating editor success');
-        return { success: true };
-      } else {
-        this._logger.error(
-          'rating editor failed: Editor not found or not updated',
-        );
-        throw new NotFoundException(
-          'Editor not found or rating could not be updated.',
-        );
-      }
-    } catch (error) {
-      this._logger.error('rating editor failed', error);
-      throw new InternalServerErrorException('Failed to rate editor');
-    }
-  }
-
   async getPublicEditors(
     params: GetPublicEditorsDto,
   ): Promise<PaginatedPublicEditorsDto> {
@@ -163,8 +126,18 @@ export class UserEditorService implements IUserEditorService {
       { $unwind: '$user' },
       { $match: matchStage },
       {
+        $lookup: {
+          from: 'Works',
+          localField: 'userId',
+          foreignField: 'editorId',
+          as: 'works',
+        },
+      },
+      {
         $addFields: {
-          averageRating: { $ifNull: [{ $avg: '$ratings.rating' }, 0] },
+          averageRating: {
+            $ifNull: [{ $avg: '$works.editorRating' }, 0]
+          },
         },
       },
     ];
@@ -186,7 +159,7 @@ export class UserEditorService implements IUserEditorService {
               profileImage: '$user.profileImage',
               category: '$category',
               score: '$score',
-              averageRating: '$averageRating',
+              averageRating: { $round: ['$averageRating', 1] },
               isVerified: '$user.isVerified',
             },
           },
@@ -229,6 +202,10 @@ export class UserEditorService implements IUserEditorService {
 
     const user = editor.userId as unknown as User;
 
+    const averageRatingResult = await this._workService.getAverageEditorRating(
+      editorObjectId,
+    );
+
     const [followersCount, followingCount, isFollowing] = await Promise.all([
       this._relationshipService
         .getFollowers({ userId: editorObjectId, limit: 0, skip: 0 })
@@ -244,7 +221,7 @@ export class UserEditorService implements IUserEditorService {
         : Promise.resolve(false),
     ]);
 
-    const averageRating = this._calculateAverageRating(editor.ratings);
+    const averageRating = averageRatingResult?.averageRating || 0;
 
     const sharedTutorials = (editor.sharedTutorials || [])
       .map(getYouTubeEmbedUrl)
@@ -266,52 +243,5 @@ export class UserEditorService implements IUserEditorService {
       followingCount,
       isFollowing,
     };
-  }
-
-  async getCurrentEditorRating(
-    userId: Types.ObjectId,
-    editorId: string,
-  ): Promise<UserRatingForEditorDto | null> {
-    try {
-      const editor = await this._editorService.getEditorRating(
-        new Types.ObjectId(editorId),
-      );
-      if (editor?.ratings && editor.ratings.length > 0) {
-        this._logger.log(
-          `Editor ratings for user ${editorId}: ${editor.ratings}`,
-        );
-        const specificRating = editor.ratings.find((rating) =>
-          rating.userId.equals(userId),
-        );
-        if (specificRating) {
-          this._logger.log(
-            `Current rating of user ${userId} on editor ${editorId}: ${specificRating.rating}`,
-          );
-          return {
-            rating: specificRating.rating,
-            feedback: specificRating.feedback,
-            userId: specificRating.userId.toString(), // Convert ObjectId to string
-          };
-        }
-        this._logger.log(
-          `No specific rating found for user ${userId} on editor ${editorId}`,
-        );
-        return null;
-      }
-      this._logger.log(`No ratings found for editor ${editorId}`);
-      return null;
-    } catch (error) {
-      this._logger.error(
-        `Error getting current editor rating: ${error.message}`,
-      );
-      throw error;
-    }
-  }
-
-  private _calculateAverageRating(ratings: any[] | undefined): number {
-    if (!ratings || ratings.length === 0) return 0;
-
-    const sum = ratings.reduce((acc, curr) => acc + curr.rating, 0);
-    return parseFloat((sum / ratings.length).toFixed(1));
   }
 }

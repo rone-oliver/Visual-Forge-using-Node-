@@ -122,7 +122,11 @@ export class WorksService implements IWorkService {
       await this._workRepository.updateOne(
         { _id: new Types.ObjectId(workId) },
         {
-          $set: { rating: rateWorkDto.rating, feedback: rateWorkDto.feedback },
+          $set: {
+            rating: rateWorkDto.rating,
+            editorRating: rateWorkDto.editorRating,
+            feedback: rateWorkDto.feedback,
+          },
         },
       );
       this._logger.log('rating work success');
@@ -279,6 +283,17 @@ export class WorksService implements IWorkService {
       return this._workRepository.getTopEditorsByCompletedWorks(limit);
     } catch (error) {
       this._logger.error('Failed to get top editors by completed works', error);
+      throw error;
+    }
+  }
+
+  async getAverageEditorRating(
+    editorId: Types.ObjectId
+  ): Promise<{ averageRating: number; count: number; } | null> {
+    try {
+      return this._workRepository.getAverageEditorRating(editorId);
+    } catch (error) {
+      this._logger.error('Failed to get average editor rating', error);
       throw error;
     }
   }

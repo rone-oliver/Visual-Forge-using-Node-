@@ -226,13 +226,6 @@ export class UsersService implements IUsersService {
     return this._userEditorService.getEditorRequestStatus(userId);
   }
 
-  async rateEditor(
-    userId: Types.ObjectId,
-    rateEditorDto: RateEditorDto,
-  ): Promise<SuccessResponseDto> {
-    return this._userEditorService.rateEditor(userId, rateEditorDto);
-  }
-
   async getPublicEditors(
     params: GetPublicEditorsDto,
   ): Promise<PaginatedPublicEditorsDto> {
@@ -247,13 +240,6 @@ export class UsersService implements IUsersService {
       editorId,
       currentUserId,
     );
-  }
-
-  async getCurrentEditorRating(
-    userId: Types.ObjectId,
-    editorId: string,
-  ): Promise<UserRatingForEditorDto | null> {
-    return this._userEditorService.getCurrentEditorRating(userId, editorId);
   }
 
   async getTransactionHistory(
@@ -402,7 +388,7 @@ export class UsersService implements IUsersService {
     rateWorkDto: RateWorkDto,
   ): Promise<SuccessResponseDto> {
     try {
-      return this._workService.rateWork(workId, rateWorkDto);
+      return await this._workService.rateWork(workId, rateWorkDto);
     } catch (error) {
       this._logger.error(`Error rating work: ${error.message}`);
       throw error;

@@ -1007,7 +1007,23 @@
     .work-rating-stars {
         display: flex;
         align-items: center;
-        margin-bottom: 0.25rem;
+
+        // Add space between stacked rating rows
+        & + .work-rating-stars {
+            margin-top: 0.5rem;
+        }
+
+        .rating-label {
+            font-size: 0.875rem; // 14px
+            font-weight: 600;
+            color: var(--color-neutral-700);
+            width: 55px; // Fixed width for alignment
+            flex-shrink: 0; // Prevent shrinking
+
+            .dark & {
+                color: var(--color-neutral-300);
+            }
+        }
 
         mat-icon {
             color: #FDB52A;
@@ -1032,6 +1048,7 @@
     .work-rating-feedback {
         display: flex;
         align-items: center;
+        margin-top: 0.75rem; // Add space above feedback
 
         mat-icon {
             margin-right: 0.3em;

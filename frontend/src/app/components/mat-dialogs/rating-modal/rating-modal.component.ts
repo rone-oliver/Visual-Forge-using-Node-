@@ -24,6 +24,7 @@ import { MatInputModule } from '@angular/material/input';
 })
 export class RatingModalComponent {
   rating: number;
+  editorRating: number;
   feedback: string;
 
   constructor(
@@ -32,6 +33,7 @@ export class RatingModalComponent {
   ) {
     this.rating = data.currentRating || 0;
     this.feedback = data.currentFeedback || '';
+    this.editorRating = data.editorRating || 0;
   }
 
   getRatingText(rating: number): string {
@@ -49,7 +51,8 @@ export class RatingModalComponent {
   submit() {
     this.dialogRef.close({
       rating: this.rating,
-      feedback: this.feedback.trim()
+      feedback: this.feedback.trim(),
+      editorRating: this.editorRating,
     });
   }
 }

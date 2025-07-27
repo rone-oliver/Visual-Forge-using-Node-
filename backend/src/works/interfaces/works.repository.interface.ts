@@ -32,4 +32,5 @@ export interface IWorkRepository {
     filter: GetPublicWorksQueryDto,
   ): Promise<[PopulatedWork[], number]>;
   getTopEditorsByCompletedWorks(limit: number): Promise<TopEditorDto[]>;
+  getAverageEditorRating(editorId: Types.ObjectId): Promise<{ averageRating: number; count: number } | null>;
 }

@@ -16,10 +16,6 @@ export interface IUserEditorService {
   getEditorRequestStatus(
     userId: Types.ObjectId,
   ): Promise<EditorRequestStatusResponseDto>;
-  rateEditor(
-    userId: Types.ObjectId,
-    rateEditorDto: RateEditorDto,
-  ): Promise<SuccessResponseDto>;
   getPublicEditors(
     params: GetPublicEditorsDto,
   ): Promise<PaginatedPublicEditorsDto>;
@@ -27,8 +23,4 @@ export interface IUserEditorService {
     editorId: string,
     currentUserId?: string,
   ): Promise<EditorPublicProfileResponseDto>;
-  getCurrentEditorRating(
-    userId: Types.ObjectId,
-    editorId: string,
-  ): Promise<UserRatingForEditorDto | null>;
 }

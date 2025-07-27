@@ -8,10 +8,6 @@ import {
 import { FilterQuery, Types, UpdateQuery } from 'mongoose';
 import { FormattedEditor, GetEditorsQueryDto } from 'src/admins/dto/admin.dto';
 import {
-  ICloudinaryService,
-  ICloudinaryServiceToken,
-} from 'src/common/cloudinary/interfaces/cloudinary-service.interface';
-import {
   IRelationshipService,
   IRelationshipServiceToken,
 } from 'src/common/relationship/interfaces/service.interface';
@@ -35,10 +31,6 @@ import {
   IUsersServiceToken,
 } from 'src/users/interfaces/services/users.service.interface';
 import { UpdateWorkFilesDto } from 'src/works/dtos/works.dto';
-import {
-  IWorkService,
-  IWorkServiceToken,
-} from 'src/works/interfaces/works.service.interface';
 
 import {
   SubmitWorkBodyDto,
@@ -302,65 +294,6 @@ export class EditorsService implements IEditorsService {
       files,
       updateWorkFilesDto,
     );
-  }
-  async getEditor(editorId: string): Promise<EditorDetailsResponseDto | null> {
-    try {
-      const user = await this._userService.getUserById(
-        new Types.ObjectId(editorId),
-      );
-      if (user && user.isEditor) {
-        this._logger.log('Fetching the editor details');
-        const editorDetailsDoc =
-          await this._editorRepository.findByUserIdAndLean(user._id);
-
-        if (editorDetailsDoc) {
-          this._logger.log('Editor details: ', editorDetailsDoc);
-          const [followersCount, followingCount] = await Promise.all([
-            this._relationshipService.getFollowerCount(user._id),
-            this._relationshipService.getFollowingCount(user._id),
-          ]);
-          const userDto: UserForEditorDetailsDto = {
-            _id: user._id,
-            fullname: user.fullname,
-            username: user.username,
-            email: user.email,
-            profileImage: user.profileImage,
-            isEditor: user.isEditor,
-          };
-
-          const editorDto: EditorDetailsDto = {
-            category: editorDetailsDoc.category || [],
-            score: editorDetailsDoc.score || 0,
-            ratingsCount: editorDetailsDoc.ratings?.length || 0,
-            averageRating: calculateAverageRating(editorDetailsDoc.ratings),
-            socialLinks: editorDetailsDoc.socialLinks || {},
-            createdAt: editorDetailsDoc.createdAt,
-            followersCount,
-            followingCount,
-          };
-
-          return { ...userDto, editorDetails: editorDto };
-        } else {
-          this._logger.warn(
-            `No editor sub-document found for user ID: ${user._id}`,
-          );
-          // Still return user details if they are an editor, but editorDetails might be minimal or absent
-          const userDto: UserForEditorDetailsDto = {
-            _id: user._id,
-            fullname: user.fullname,
-            username: user.username,
-            email: user.email,
-            profileImage: user.profileImage,
-            isEditor: user.isEditor,
-          };
-          return { ...userDto, editorDetails: undefined };
-        }
-      }
-      return null;
-    } catch (error) {
-      this._logger.error('Error getting the editor', error);
-      throw new Error('Error getting the editor');
-    }
   }
 
   async createBid(

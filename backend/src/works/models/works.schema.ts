@@ -54,6 +54,9 @@ export class Works {
   @Prop({ type: Number, min: 1, max: 5 })
   rating: number;
 
+  @Prop({ type: Number, min: 1, max: 5 })
+  editorRating: number;
+
   @Prop({ type: String, trim: true })
   feedback?: string;
 
