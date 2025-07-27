@@ -426,7 +426,7 @@ export class UsersController implements IUsersController {
   }
 
   @Patch('works/:workId/satisfied')
-  @Roles(Role.USER)
+  @Roles(Role.USER,Role.EDITOR)
   @ApiOperation({ summary: 'Mark a work as satisfied' })
   @ApiResponse({
     status: 200,

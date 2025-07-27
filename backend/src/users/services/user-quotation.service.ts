@@ -442,6 +442,13 @@ export class UserQuotationService implements IUserQuotationService {
           quotation,
           paymentDetails.paymentId,
         );
+        await this._timelineService.create({
+          quotationId: new Types.ObjectId(quotationId),
+          event: TimelineEvent.PAYMENT_COMPLETED,
+          userId: new Types.ObjectId(userId),
+          editorId: new Types.ObjectId(quotation.editorId),
+          message: 'Final payment completed by user.',
+        });
       }
 
       return transaction;
