@@ -41,6 +41,7 @@ export class AdminsController implements IAdminsController {
   constructor(
     @Inject(IAdminsServiceToken) private _adminService: IAdminsService,
   ) {}
+
   @Get('users')
   @Roles(Role.ADMIN)
   async getAllUsers(

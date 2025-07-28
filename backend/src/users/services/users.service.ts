@@ -656,6 +656,7 @@ export class UsersService implements IUsersService {
       filter,
       (parseInt(page) - 1) * parseInt(limit),
       parseInt(limit),
+      { password: 0 }
     );
     return { users, total };
   }

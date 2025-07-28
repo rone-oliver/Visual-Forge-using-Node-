@@ -199,7 +199,7 @@ export class FileUploadResultDto {
 export class UserBaseResponseDto {
   @ApiProperty({ type: String, description: 'User ID' })
   @IsMongoId()
-  _id: Types.ObjectId; // Represent ObjectId as string
+  _id: Types.ObjectId;
 
   @ApiProperty({ example: 'john_doe' })
   @IsString()

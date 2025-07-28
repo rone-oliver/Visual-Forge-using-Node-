@@ -161,6 +161,7 @@ export class UserProfileService implements IUserProfileService {
 
           return {
             ...user.toObject(),
+            password: undefined,
             editorDetails: {
               category: editorDetails.category || [],
               score: editorDetails.score || 0,

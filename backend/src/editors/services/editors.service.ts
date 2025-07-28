@@ -82,7 +82,7 @@ export class EditorsService implements IEditorsService {
     private readonly _editorBidService: IEditorBidService,
     @Inject(IEditorWorkServiceToken)
     private readonly _editorWorkService: IEditorWorkService,
-  ) {}
+  ) { }
 
   // Editor Requests
   async getEditorRequests(): Promise<EditorRequest[]> {
@@ -162,17 +162,32 @@ export class EditorsService implements IEditorsService {
         pipeline.push({ $match: matchStage });
       }
 
-      pipeline.push({
-        $addFields: {
-          averageRating: {
-            $cond: {
-              if: { $eq: [{ $size: '$ratings' }, 0] },
-              then: 0,
-              else: { $avg: '$ratings.rating' },
-            },
-          },
+      pipeline.push(
+        {
+          $lookup: {
+            from: 'Works',
+            localField: 'userId',
+            foreignField: 'editorId',
+            as: 'works',
+          }
         },
-      });
+        {
+          $addFields: {
+            averageRating: {
+              $ifNull: [{ $avg: '$works.editorRating' }, 0],
+            },
+            ratingsCount: {
+              $size: {
+                $filter: {
+                  input: '$works',
+                  as: 'work',
+                  cond: { $ifNull: ['$$work.editorRating', 0] }
+                }
+              }
+            }
+          },
+        }
+      );
 
       if (rating) {
         pipeline.push({
@@ -230,7 +245,7 @@ export class EditorsService implements IEditorsService {
           profileImage: '$userInfo.profileImage',
           category: { $ifNull: ['$category', []] },
           score: { $ifNull: ['$score', 0] },
-          ratingsCount: { $size: '$ratings' },
+          ratingsCount: 1,
           averageRating: 1,
           createdAt: 1,
           isVerified: '$userInfo.isVerified',
