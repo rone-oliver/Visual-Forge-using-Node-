@@ -74,7 +74,7 @@ export class CommunityController {
     status: 200,
     description: 'The member has been successfully added.',
   })
-  addMember(@Param('id') communityId: string, @Body('userId') userId: string) {
+  addMember(@Param('id') communityId: string, @GetUser('userId') userId: string) {
     return this._communityService.addMember(communityId, userId);
   }
 
