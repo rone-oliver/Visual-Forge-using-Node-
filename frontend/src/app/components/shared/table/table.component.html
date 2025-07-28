@@ -92,14 +92,14 @@
                   (click)="onActionClick('delete', item, $event)">
                   <lucide-icon [name]="icons.delete"></lucide-icon>
                 </button> -->
-                @if (getNestedProperty(item, 'canResolve') !== false) {
+                @if (getNestedProperty(item, 'canResolve') !== false && showResolveAction()) {
                   <button class="action-btn resolve"
                     title="Resolve Report"
                     (click)="onActionClick('resolve', item, $event)">
                     <lucide-icon [name]="icons.resolve"></lucide-icon>
                   </button>
                 }
-                @if (getNestedProperty(item, 'canView') !== false) {
+                @if (getNestedProperty(item, 'canView') !== false && showBlockAction()) {
                   <button class="action-btn"
                     [title]="isItemBlocked(item) ? 'Unblock User' : 'Block User'"
                     (click)="onActionClick('block', item, $event)">

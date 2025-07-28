@@ -35,6 +35,8 @@ export class TableComponent {
   @Input() emptyMessage = 'No data available';
   @Input() blockedStatusKey = 'isBlocked'; // Default key
 
+  showResolveAction = input<boolean>(true);
+  showBlockAction = input<boolean>(true);
   @Output() rowClick = new EventEmitter<any>();
   @Output() actionClick = new EventEmitter<{ action: string, item: any}>();
   pageChange = output<number>();

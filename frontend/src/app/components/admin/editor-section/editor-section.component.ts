@@ -142,7 +142,7 @@ export class EditorSectionComponent implements OnInit {
     { key: 'averageRating', header: 'Rating', sortable: true },
     { key: 'createdAt', header: 'Joined', type: 'date' },
     { key: 'isVerified', header: 'Verified', type: 'boolean' },
-    { key: 'type', header: 'Actions', type: 'actions' }
+    // { key: 'type', header: 'Actions', type: 'actions' }
   ];
 
   // Handle row click
