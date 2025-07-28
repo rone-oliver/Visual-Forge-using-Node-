@@ -193,7 +193,7 @@ export class WorkRepository implements IWorkRepository {
       {
         $project: {
           _id: 0,
-          averageRating: 1,
+          averageRating: { $round: ['$averageRating', 1] },
           count: 1,
         },
       },
